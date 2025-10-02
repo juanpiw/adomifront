@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://api.adomiapp.cl'
+  apiBaseUrl: 'https://adomi.impactrenderstudio.com'
 };
 
