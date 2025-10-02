@@ -1,0 +1,6 @@
+﻿<div class="dropdown">
+  <button class="trigger" type="button" (click)="open = !open">{{ value || placeholder }}</button>
+  <ul class="menu" *ngIf="open">
+    <li *ngFor="let o of options" (click)="select(o.value)">{{ o.label }}</li>
+  </ul>
+</div>

@@ -1,0 +1,19 @@
+﻿<section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+  <div style="grid-column: span 2;">
+    <avatar-uploader [(src)]="avatar"></avatar-uploader>
+  </div>
+  <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
+  <ui-input label="TelÃ©fono" placeholder="Ej: +54 11 1234 5678" [(value)]="phone"></ui-input>
+  <ui-input label="Bio" variant="textarea" placeholder="CuÃ©ntanos sobre ti" [(value)]="bio"></ui-input>
+  <div>
+    <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
+    <language-select [(value)]="lang"></language-select>
+  </div>
+  <div>
+    <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
+    <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
+  </div>
+  <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
+    <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
+  </div>
+</section>

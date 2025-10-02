@@ -1,1 +1,42 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --color-bg: #ffffff;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-primary: #667eea;
+  --elev-border: 1px solid rgba(17, 24, 39, 0.08);
+  --elev-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+:root.dark {
+  --color-bg: #0b1220;
+  --color-text: #e5e7eb;
+  --color-muted: #9ca3af;
+  --color-border: rgba(255,255,255,0.12);
+  --color-primary: #8ba2ff;
+  --elev-border: 1px solid rgba(255, 255, 255, 0.12);
+  --elev-shadow: 0 12px 32px rgba(0,0,0,0.5);
+}
+
+html, body { 
+  height: 100%; 
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Utilidades */
+.elevated {
+  border: var(--elev-border);
+  box-shadow: var(--elev-shadow);
+  border-radius: 16px;
+}

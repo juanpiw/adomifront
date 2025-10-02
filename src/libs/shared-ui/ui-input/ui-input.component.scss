@@ -1,0 +1,64 @@
+﻿:root {
+  --color-primary: #667eea;
+  --color-border: #e5e7eb;
+  --color-text: #374151;
+  --color-muted: #9ca3af;
+  --color-bg-a: #f8fafc;
+  --color-bg-b: #f1f5f9;
+}
+
+.ui-input-label {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 14px;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.ui-input-wrapper { display: flex; flex-direction: column; gap: 8px; }
+
+.ui-input {
+ 
+  padding: 18px 24px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 14px;
+  font-size: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, var(--color-bg-a) 0%, var(--color-bg-b) 100%);
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0,0,0,0.04);
+
+  &::placeholder { color: var(--color-muted); transition: all 0.3s ease; }
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+  }
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.10), 0 8px 24px rgba(102, 126, 234, 0.10), inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+  }
+  &:focus::placeholder { color: #d1d5db; transform: translateY(-2px); }
+
+  &.size-sm { padding: 10px 14px; font-size: 14px; border-radius: 12px; }
+  &.size-md { padding: 18px 24px; font-size: 16px; border-radius: 14px; }
+  &.size-lg { padding: 22px 28px; font-size: 18px; border-radius: 18px; }
+
+  &.has-error {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08), 0 4px 16px rgba(220, 38, 38, 0.08), inset 0 1px 2px rgba(0,0,0,0.04);
+  }
+}
+
+/* Variantes */
+.variant-underline { border: 0; border-bottom: 2px solid var(--color-border); border-radius: 0; background: transparent; }
+.variant-outline { background: var(--color-bg); }
+.variant-filled { background: var(--color-bg-b); }
+.variant-ghost { background: transparent; border-color: transparent; box-shadow: none; }
+.variant-search { padding-left: 44px; }
+.variant-password { letter-spacing: 0.1em; }
+.variant-with-icon { padding-left: 44px; }
+
+.ui-input-error { color: #dc2626; font-size: 12px; }
+.ui-input-hint { color: var(--color-muted); font-size: 12px; }

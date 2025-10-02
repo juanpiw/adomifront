@@ -1,0 +1,16 @@
+﻿<div class="avatar-uploader">
+  <label class="lbl">{{label}}</label>
+  <div class="preview elevated" *ngIf="src; else pick">
+    <img [src]="src!" alt="avatar" />
+    <div class="actions">
+      <button type="button" (click)="clear()">Quitar</button>
+      <label class="btn">Cambiar<input type="file" accept="image/*" (change)="onFileChange($event)" hidden></label>
+    </div>
+  </div>
+  <ng-template #pick>
+    <label class="picker">
+      <span>Subir imagen</span>
+      <input type="file" accept="image/*" (change)="onFileChange($event)" hidden>
+    </label>
+  </ng-template>
+</div>

@@ -1,0 +1,38 @@
+<div class="payment-error-container">
+  <div class="error-card">
+    <div class="error-icon">❌</div>
+    <h1>Error en el Pago</h1>
+    <p>{{ errorMessage }}</p>
+    
+    <div class="error-details">
+      <h3>¿Qué puedes hacer?</h3>
+      <ul>
+        <li>Verifica que tu tarjeta tenga fondos suficientes</li>
+        <li>Confirma que los datos de la tarjeta sean correctos</li>
+        <li>Intenta con otra tarjeta de crédito o débito</li>
+        <li>Contacta a tu banco si el problema persiste</li>
+      </ul>
+    </div>
+    
+    <div class="actions">
+      <button class="btn-secondary" (click)="goToRegister()">
+        Empezar de Nuevo
+      </button>
+      <button class="btn-secondary" (click)="goToSelectPlan()">
+        Cambiar Plan
+      </button>
+      <button class="btn-primary" (click)="retryPayment()">
+        Reintentar Pago
+      </button>
+    </div>
+    
+    <div class="support-info">
+      <p>
+        <strong>¿Necesitas ayuda?</strong><br>
+        Contacta a nuestro soporte en 
+        <a href="mailto:soporte@adomiapp.cl">soporte@adomiapp.cl</a>
+      </p>
+    </div>
+  </div>
+</div>
+

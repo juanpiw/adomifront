@@ -1,0 +1,103 @@
+﻿<div class="auth-card elevated" style="max-width:560px; margin:40px auto; padding:24px; display:flex; flex-direction:column; gap:16px;">
+  <h2 style="margin:0 0 8px;">Crear cuenta</h2>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+    <button type="button" (click)="setRole('client')" [class.active]="selectedRole==='client'" class="role-card">
+      <div style="font-size:24px;">👤 Soy Cliente</div>
+      <div style="color:var(--color-muted); font-size:12px;">Reserva servicios de profesionales verificados.</div>
+    </button>
+    <button type="button" (click)="setRole('provider')" [class.active]="selectedRole==='provider'" class="role-card">
+      <div style="font-size:24px;">💼 Soy Profesional</div>
+      <div style="color:var(--color-muted); font-size:12px;">Publica tus servicios y gestiona tus reservas.</div>
+    </button>
+  </div>
+
+  <div class="role-note">
+    <div *ngIf="selectedRole === 'client'">
+      <strong>✅ Registro Gratuito</strong> - Acceso completo a la plataforma
+    </div>
+    <div *ngIf="selectedRole === 'provider'">
+      <strong>💰 Requiere Suscripción</strong> - Selecciona tu plan después del registro
+    </div>
+  </div>
+
+  <ui-input 
+    label="Nombre completo" 
+    placeholder="Tu nombre completo" 
+    [(value)]="name"
+    [error]="nameError">
+  </ui-input>
+
+  <ui-input 
+    label="Email" 
+    type="email" 
+    placeholder="tucorreo@dominio.com" 
+    [(value)]="email" 
+    [error]="emailError">
+  </ui-input>
+
+  <ui-input 
+    label="Contraseña" 
+    [type]="showPassword ? 'text' : 'password'" 
+    placeholder="Mínimo 6 caracteres" 
+    [(value)]="password" 
+    [error]="passwordError">
+    <button 
+      type="button" 
+      class="password-toggle" 
+      (click)="togglePasswordVisibility()"
+      [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+      {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+    </button>
+  </ui-input>
+
+  <ui-input 
+    label="Confirmar contraseña" 
+    [type]="showConfirmPassword ? 'text' : 'password'" 
+    placeholder="Repite tu contraseña" 
+    [(value)]="confirmPassword" 
+    [error]="confirmPasswordError">
+    <button 
+      type="button" 
+      class="password-toggle" 
+      (click)="toggleConfirmPasswordVisibility()"
+      [attr.aria-label]="showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+      {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+    </button>
+  </ui-input>
+
+  <div class="password-requirements" *ngIf="password">
+    <div class="requirement" [class.valid]="password.length >= 6">
+      ✓ Mínimo 6 caracteres
+    </div>
+    <div class="requirement" [class.valid]="hasLowerCase(password)">
+      ✓ Al menos una letra minúscula
+    </div>
+    <div class="requirement" [class.valid]="hasUpperCase(password)">
+      ✓ Al menos una letra mayúscula
+    </div>
+    <div class="requirement" [class.valid]="hasNumber(password)">
+      ✓ Al menos un número
+    </div>
+  </div>
+
+  <button 
+    class="btn-primary" 
+    [disabled]="loading" 
+    style="width:100%; margin-top:12px;" 
+    (click)="onRegister()">
+    <span *ngIf="!loading">
+      {{ selectedRole === 'client' ? 'Registrarme Gratis' : 'Continuar a Planes' }}
+    </span>
+    <span *ngIf="loading">Registrando…</span>
+  </button>
+
+  <div aria-live="polite" class="feedback">
+    <div *ngIf="serverSuccess" class="msg success">{{ serverSuccess }}</div>
+    <div *ngIf="serverError" class="msg error">{{ serverError }}</div>
+  </div>
+
+  <div style="text-align:center; margin-top:8px;">
+    <a routerLink="/auth/login">¿Ya tienes cuenta? Inicia sesión</a>
+  </div>
+</div>

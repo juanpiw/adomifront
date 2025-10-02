@@ -1,0 +1,4 @@
+﻿<div class="ui-date">
+  <label *ngIf="label" class="lbl">{{label}}</label>
+  <input #d type="date" class="inp" [value]="value ?? ''" (input)="valueChange.emit(d.value)" />
+</div>

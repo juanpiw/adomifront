@@ -1,0 +1,19 @@
+﻿<div class="client-layout">
+  <aside class="sidebar elevated">
+    <div class="brand">Adomi Cliente</div>
+    <nav class="menu">
+      <a routerLink="/client/reservas" routerLinkActive="active"><ui-icon name="calendar"></ui-icon> Mis Reservas</a>
+      <a routerLink="/client/favoritos" routerLinkActive="active"><ui-icon name="heart"></ui-icon> Favoritos</a>
+      <a routerLink="/client/perfil" routerLinkActive="active"><ui-icon name="user"></ui-icon> Mi Perfil</a>
+      <a routerLink="/client/pagos" routerLinkActive="active"><ui-icon name="card"></ui-icon> Métodos de Pago</a>
+      <a routerLink="/client/configuracion" routerLinkActive="active"><ui-icon name="settings"></ui-icon> Configuración</a>
+    </nav>
+    <div class="footer">
+      <theme-switch size="sm"></theme-switch>
+      <a routerLink="/auth/login" class="logout">Salir</a>
+    </div>
+  </aside>
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

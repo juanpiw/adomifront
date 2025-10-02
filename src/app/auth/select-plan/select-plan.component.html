@@ -1,0 +1,82 @@
+<div class="plan-selection-container">
+  <div class="header">
+    <h1>Elige tu plan</h1>
+    <p>Selecciona el plan que mejor se adapte a tus necesidades</p>
+    
+    <!-- Billing Toggle -->
+    <div class="billing-toggle-container">
+      <div class="billing-toggle">
+        <span class="billing-label" [class.active]="!isAnnualBilling">Mensual</span>
+        <div class="toggle-switch" (click)="toggleBilling()">
+          <div class="toggle-slider" [class.annual]="isAnnualBilling"></div>
+        </div>
+        <span class="billing-label" [class.active]="isAnnualBilling">Anual</span>
+      </div>
+      <div *ngIf="isAnnualBilling && getSavingsPercentage() > 0" class="savings-badge">
+        Ahorra hasta {{ getSavingsPercentage() }}%
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando planes...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadPlans()">Reintentar</button>
+  </div>
+
+  <!-- Plans grid -->
+  <div *ngIf="!loading && !error" class="plans-grid">
+    <div 
+      *ngFor="let plan of getCurrentPlans()" 
+      class="plan-card"
+      [class.selected]="selectedPlan?.id === plan.id"
+      [class.recommended]="isPlanRecommended(plan)"
+      (click)="selectPlan(plan)"
+    >
+      <div class="plan-header">
+        <h3>{{ plan.name }}</h3>
+        <div *ngIf="isPlanRecommended(plan)" class="recommended-badge">Recomendado</div>
+      </div>
+      
+      <div class="plan-price">
+        <span class="price">{{ formatPrice(plan.price) }}</span>
+        <span class="interval">/{{ plan.interval === 'month' ? 'mes' : 'año' }}</span>
+      </div>
+      
+      <p class="plan-description">{{ plan.description }}</p>
+      
+      <ul class="plan-features">
+        <li *ngFor="let feature of plan.features">{{ feature }}</li>
+      </ul>
+      
+      <div class="plan-limits">
+        <div class="limit">
+          <span class="label">Servicios:</span>
+          <span class="value">{{ plan.max_services === 999 ? 'Ilimitados' : plan.max_services }}</span>
+        </div>
+        <div class="limit">
+          <span class="label">Reservas:</span>
+          <span class="value">{{ plan.max_bookings === 9999 ? 'Ilimitadas' : plan.max_bookings + '/mes' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div *ngIf="!loading && !error" class="actions">
+    <button class="btn-secondary" (click)="goBack()">Volver</button>
+    <button 
+      class="btn-primary" 
+      [disabled]="!selectedPlan"
+      (click)="continueToPayment()"
+    >
+      Continuar al Pago
+    </button>
+  </div>
+</div>

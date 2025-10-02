@@ -1,0 +1,17 @@
+﻿<div class="ui-input-wrapper" [class.has-icon-left]="iconLeft" [class.has-icon-right]="iconRight">
+  <label *ngIf="label" class="ui-input-label" [for]="inputId">{{ label }}</label>
+  <ng-container [ngSwitch]="variant">
+    <textarea *ngSwitchCase="'textarea'" class="{{classes()}}" [class.has-error]="!!error" [id]="inputId" [placeholder]="placeholder" [disabled]="disabled" [readOnly]="readonly" (input)="onInput($event)">{{ value }}</textarea>
+    <div *ngSwitchCase="'file'" class="ui-input-upload elevated" style="padding:12px; border-radius:14px;">
+      <input type="file" (change)="onFileChange($event)" />
+    </div>
+    <div *ngSwitchDefault style="position:relative;">
+      <input class="{{classes()}}" [class.has-error]="!!error" [id]="inputId" [type]="resolvedType()" [placeholder]="placeholder" [disabled]="disabled" [readOnly]="readonly" [value]="value ?? ''" (input)="onInput($event)" style="padding-right:44px;" />
+      <button *ngIf="type==='password' && togglePassword" type="button" (click)="togglePwVisibility()" aria-label="Mostrar/Ocultar contraseña" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); border:1px solid var(--color-border); background: var(--color-bg); width:32px; height:32px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+        <span>{{ showPassword() ? '🙈' : '👁️' }}</span>
+      </button>
+    </div>
+  </ng-container>
+  <div *ngIf="hint && !error" class="ui-input-hint">{{ hint }}</div>
+  <div *ngIf="error" class="ui-input-error">{{ error }}</div>
+</div>

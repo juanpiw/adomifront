@@ -1,0 +1,106 @@
+<div class="checkout-container">
+  <div class="checkout-card">
+    <div class="header">
+      <h1>Confirmar Pago</h1>
+      <p>Revisa tu plan seleccionado y procede con el pago</p>
+    </div>
+
+    <!-- Plan Summary -->
+    <div *ngIf="selectedPlan" class="plan-summary">
+      <h3>Plan Seleccionado</h3>
+      <div class="plan-details">
+        <div class="plan-info">
+          <h4>{{ selectedPlan.name }}</h4>
+          <p>{{ selectedPlan.description }}</p>
+        </div>
+        <div class="plan-price">
+          <span class="price">{{ formatPrice(selectedPlan.price) }}</span>
+          <span class="interval">/{{ selectedPlan.interval === 'month' ? 'mes' : 'año' }}</span>
+        </div>
+      </div>
+      
+      <div class="plan-features">
+        <h5>Incluye:</h5>
+        <ul>
+          <li *ngFor="let feature of selectedPlan.features">{{ feature }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- User Info -->
+    <div *ngIf="tempUserData" class="user-info">
+      <h3>Información del Usuario</h3>
+      <div class="user-details">
+        <div class="detail">
+          <span class="label">Nombre:</span>
+          <span class="value">{{ tempUserData.name }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Email:</span>
+          <span class="value">{{ tempUserData.email }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Tipo de cuenta:</span>
+          <span class="value">{{ tempUserData.role === 'client' ? 'Cliente' : 'Profesional' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Info -->
+    <div class="payment-info">
+      <h3>Información de Pago</h3>
+      <div class="payment-details">
+        <div class="detail">
+          <span class="label">Método de pago:</span>
+          <span class="value">Tarjeta de crédito/débito (Stripe)</span>
+        </div>
+        <div class="detail">
+          <span class="label">Seguridad:</span>
+          <span class="value">Pago 100% seguro con Stripe</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Messages -->
+    <div *ngIf="getMainError()" class="error-message">
+      <div class="error-content">
+        <span class="error-icon">⚠️</span>
+        <p>{{ getMainError() }}</p>
+        <button class="error-close" (click)="clearErrors()" title="Cerrar">×</button>
+      </div>
+    </div>
+
+    <!-- Stripe Error (específico) -->
+    <div *ngIf="stripeError && !error" class="stripe-error">
+      <div class="error-content">
+        <span class="error-icon">💳</span>
+        <p>{{ stripeError }}</p>
+        <button class="error-close" (click)="clearErrors()" title="Cerrar">×</button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button class="btn-secondary" (click)="goBack()" [disabled]="loading">
+        Volver
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="proceedToPayment()"
+        [disabled]="loading"
+      >
+        <span *ngIf="!loading">Proceder al Pago</span>
+        <span *ngIf="loading">Procesando...</span>
+      </button>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="security-notice">
+      <p>
+        <strong>🔒 Pago Seguro:</strong> 
+        Tu información de pago está protegida con encriptación de nivel bancario. 
+        No almacenamos datos de tarjetas de crédito.
+      </p>
+    </div>
+  </div>
+</div>

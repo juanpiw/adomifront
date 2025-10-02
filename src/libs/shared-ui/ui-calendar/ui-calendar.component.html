@@ -1,0 +1,11 @@
+﻿<div class="calendar">
+  <div class="header">
+    <div class="title">{{ today | date:'MMMM yyyy' }}</div>
+  </div>
+  <div class="grid">
+    <div class="dow" *ngFor="let d of ['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b']">{{d}}</div>
+    <ng-container *ngFor="let d of getMonthMatrix().days">
+      <div class="cell" [class.other]="d.getMonth() !== today.getMonth()" [class.today]="d.toDateString() === today.toDateString()">{{ d.getDate() }}</div>
+    </ng-container>
+  </div>
+</div>

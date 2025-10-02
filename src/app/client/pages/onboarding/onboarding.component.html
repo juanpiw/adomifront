@@ -1,0 +1,77 @@
+<div class="onboarding-container">
+  <div class="onboarding-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="progress-bar">
+        <div class="progress" [style.width.%]="((currentSlide + 1) / slides.length) * 100"></div>
+      </div>
+      <button class="skip-btn" (click)="skipOnboarding()">Omitir</button>
+    </div>
+
+    <!-- Slide Content -->
+    <div class="slide-container">
+      <div class="slide">
+        <div class="slide-content">
+          <!-- Icon/Image -->
+          <div class="slide-icon">
+            <ui-icon [name]="getSlideIcon()" [size]="48"></ui-icon>
+          </div>
+
+          <!-- Title -->
+          <h1 class="slide-title">{{ slides[currentSlide].title }}</h1>
+
+          <!-- Description -->
+          <p class="slide-description">{{ slides[currentSlide].description }}</p>
+
+          <!-- Role-specific content -->
+          <div class="role-content" *ngIf="currentSlide === 2">
+            <div class="role-card" [class.active]="userRole === 'client'">
+              <ui-icon name="user" [size]="32"></ui-icon>
+              <h3>Cliente</h3>
+              <p>Busca y reserva servicios</p>
+            </div>
+            <div class="role-card" [class.active]="userRole === 'provider'">
+              <ui-icon name="briefcase" [size]="32"></ui-icon>
+              <h3>Profesional</h3>
+              <p>Gestiona tu negocio</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation">
+      <!-- Dots -->
+      <div class="dots">
+        <button 
+          *ngFor="let slide of slides; let i = index"
+          class="dot"
+          [class.active]="i === currentSlide"
+          (click)="goToSlide(i)"
+        ></button>
+      </div>
+
+      <!-- Buttons -->
+      <div class="buttons">
+        <button 
+          class="btn btn-secondary" 
+          (click)="prevSlide()"
+          [disabled]="currentSlide === 0"
+        >
+          <ui-icon name="chevron-left" [size]="16"></ui-icon>
+          Anterior
+        </button>
+        
+        <button 
+          class="btn btn-primary" 
+          (click)="nextSlide()"
+        >
+          <span *ngIf="currentSlide < slides.length - 1">Siguiente</span>
+          <span *ngIf="currentSlide === slides.length - 1">¡Comenzar!</span>
+          <ui-icon name="chevron-right" [size]="16"></ui-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

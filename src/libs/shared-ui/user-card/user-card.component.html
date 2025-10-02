@@ -1,0 +1,10 @@
+﻿<div class="user-card elevated">
+  <img *ngIf="avatarUrl; else placeholder" [src]="avatarUrl" alt="avatar" class="avatar" />
+  <ng-template #placeholder>
+    <div class="avatar placeholder">{{ name[0] | uppercase }}</div>
+  </ng-template>
+  <div class="info">
+    <div class="name">{{name}}</div>
+    <div class="email">{{email}}</div>
+  </div>
+</div>

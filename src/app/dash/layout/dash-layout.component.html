@@ -1,0 +1,56 @@
+﻿<!-- Alerta de actualización de plan -->
+<plan-upgrade-alert 
+  [planInfo]="planInfo" 
+  [show]="showPlanAlert"
+  (upgrade)="onPlanUpgrade()"
+  (dismiss)="onPlanAlertDismiss()">
+</plan-upgrade-alert>
+
+<div class="dash-layout" [class.sidebar-collapsed]="isCollapsed">
+  <aside class="sidebar" [class.collapsed]="isCollapsed">
+    <div class="rail">
+      <button class="rail-toggle" (click)="isCollapsed = !isCollapsed" title="Contraer/Expandir">
+        <ui-icon [name]="isCollapsed ? 'chevron-right' : 'chevron-left'" [size]="18"></ui-icon>
+      </button>
+      <a class="rail-item" routerLink="/dash/home" routerLinkActive="active" title="Inicio" (click)="onNav()"><ui-icon name="home" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/agenda" routerLinkActive="active" title="Agenda" (click)="onNav()"><ui-icon name="calendar" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/ingresos" routerLinkActive="active" title="Ingresos" (click)="onNav()"><ui-icon name="money" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/estadisticas" routerLinkActive="active" title="Estadísticas" (click)="onNav()"><ui-icon name="chart" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/promocion" routerLinkActive="active" title="Promoción" (click)="onNav()"><ui-icon name="star" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/mensajes" routerLinkActive="active" title="Mensajes" (click)="onNav()"><ui-icon name="message" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/servicios" routerLinkActive="active" title="Servicios" (click)="onNav()"><ui-icon name="briefcase" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/perfil" routerLinkActive="active" title="Perfil" (click)="onNav()"><ui-icon name="user" [size]="20"></ui-icon></a>
+      <div class="spacer"></div>
+      <a class="rail-item" routerLink="/auth/login" title="Salir"><ui-icon name="logout" [size]="20"></ui-icon></a>
+    </div>
+    <div class="panel elevated">
+      <div class="brand">Adomi</div>
+      <nav class="menu">
+        <a routerLink="/dash/home" routerLinkActive="active" (click)="onNav()"><ui-icon name="home"></ui-icon><span>Inicio</span></a>
+        <a routerLink="/dash/agenda" routerLinkActive="active" (click)="onNav()"><ui-icon name="calendar"></ui-icon><span>Agenda</span></a>
+        <a routerLink="/dash/ingresos" routerLinkActive="active" (click)="onNav()"><ui-icon name="money"></ui-icon><span>Ingresos</span></a>
+        <a routerLink="/dash/estadisticas" routerLinkActive="active" (click)="onNav()"><ui-icon name="chart"></ui-icon><span>Estadísticas</span></a>
+        <a routerLink="/dash/mensajes" routerLinkActive="active" (click)="onNav()"><ui-icon name="message"></ui-icon><span>Mensajes</span></a>
+        <a routerLink="/dash/servicios" routerLinkActive="active" (click)="onNav()"><ui-icon name="briefcase"></ui-icon><span>Mis Servicios</span></a>
+        <a routerLink="/dash/promocion" routerLinkActive="active" (click)="onNav()"><ui-icon name="star"></ui-icon><span>Promoción</span></a>
+        <a routerLink="/dash/perfil" routerLinkActive="active" (click)="onNav()"><ui-icon name="user"></ui-icon><span>Mi Perfil</span></a>
+      </nav>
+      <div class="footer">
+        <theme-switch size="sm"></theme-switch>
+      </div>
+    </div>
+  </aside>
+  <main class="content">
+    <div class="topbar elevated">
+      <input class="search" placeholder="Buscar..." />
+      <div class="actions">
+        <button class="hamburger" (click)="isCollapsed = !isCollapsed"><ui-icon name="menu"></ui-icon></button>
+        <button class="icon"><ui-icon name="bell"></ui-icon></button>
+        <button class="icon"><ui-icon name="settings"></ui-icon></button>
+      </div>
+    </div>
+    <div class="main-slot">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

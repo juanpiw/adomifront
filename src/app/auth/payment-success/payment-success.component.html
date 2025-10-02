@@ -1,0 +1,57 @@
+<div class="payment-success-container">
+  <div class="success-card">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <h2>Procesando pago...</h2>
+      <p>Por favor espera mientras confirmamos tu pago</p>
+    </div>
+
+    <!-- Success State -->
+    <div *ngIf="success && !loading" class="success">
+      <div class="success-icon">✅</div>
+      <h1>¡Pago Exitoso!</h1>
+      <p>Tu cuenta ha sido creada correctamente y tu suscripción está activa.</p>
+      
+      <div class="success-details">
+        <div class="detail">
+          <span class="label">Sesión de pago:</span>
+          <span class="value">{{ sessionId }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Estado:</span>
+          <span class="value success-text">Confirmado</span>
+        </div>
+      </div>
+      
+      <div class="next-steps">
+        <h3>Próximos pasos:</h3>
+        <ul>
+          <li>Completa tu perfil en el onboarding</li>
+          <li>Configura tus preferencias</li>
+          <li>¡Comienza a usar AdomiApp!</li>
+        </ul>
+      </div>
+      
+      <button class="btn-primary" (click)="goToDashboard()">
+        Continuar al Onboarding
+      </button>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error">
+      <div class="error-icon">❌</div>
+      <h2>Error en el Proceso</h2>
+      <p>{{ error }}</p>
+      
+      <div class="error-actions">
+        <button class="btn-secondary" (click)="goToDashboard()">
+          Ir al Dashboard
+        </button>
+        <button class="btn-primary" (click)="retryPayment()">
+          Reintentar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

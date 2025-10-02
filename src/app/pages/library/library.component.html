@@ -1,0 +1,27 @@
+﻿<div style="padding: 16px; display:flex; justify-content:center;">
+  <theme-switch></theme-switch>
+</div>
+
+<section class="elevated" style="padding: 24px; max-width: 560px; margin: 0 auto 24px; display: flex; flex-direction: column; gap: 16px;">
+  <ui-input label="Nombre" placeholder="Ingresa tu nombre" hint="Texto de ayuda" />
+  <ui-input label="Búsqueda" placeholder="Buscar..." variant="search" />
+  <ui-input label="Password" type="password" variant="password" />
+  <ui-input label="Descripción" variant="textarea" placeholder="Escribe aquí..."></ui-input>
+  <ui-input label="Avatar" type="file" hint="Sube tu imagen de perfil"></ui-input>
+</section>
+
+<section class="elevated" style="padding: 24px; max-width: 560px; margin: 0 auto 24px; display: flex; flex-direction: column; gap: 12px;">
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <ui-button>Primario</ui-button>
+    <ui-button variant="secondary">Secundario</ui-button>
+    <ui-button variant="ghost">Ghost</ui-button>
+    <ui-button variant="danger">Peligro</ui-button>
+  </div>
+  <ui-dropdown [options]="[{label:'Opción A', value:'A'},{label:'Opción B', value:'B'}]"></ui-dropdown>
+  <ui-date label="Fecha"></ui-date>
+  <user-card name="Jane Doe" email="jane@example.com"></user-card>
+</section>
+
+<section class="elevated" style="padding: 16px; max-width: 960px; margin: 0 auto;">
+  <ui-calendar></ui-calendar>
+</section>
