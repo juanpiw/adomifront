@@ -1,0 +1,22 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+        # Configurar variables de entorno para Angular
+        - echo "Configurando variables de entorno..."
+        - echo "NG_APP_API_BASE_URL=$NG_APP_API_BASE_URL"
+        - echo "NG_APP_GOOGLE_CLIENT_ID=$NG_APP_GOOGLE_CLIENT_ID"
+        - echo "NG_APP_GOOGLE_REDIRECT_URI=$NG_APP_GOOGLE_REDIRECT_URI"
+    build:
+      commands:
+        - npm run build:prod
+  artifacts:
+    baseDirectory: dist/adomi-app/browser
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .angular/cache/**/*
