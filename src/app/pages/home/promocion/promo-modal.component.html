@@ -96,6 +96,18 @@
         <div *ngIf="errors.profesion" class="error-message">
           {{ errors.profesion }}
         </div>
+        
+        <!-- Mensaje dinámico para "Otro" -->
+        <div *ngIf="showOtroMessage" class="otro-message">
+          <div class="otro-message-content">
+            <svg class="otro-message-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="otro-message-text">
+              <strong>¡Perfecto!</strong> En el campo de "Notas adicionales" puedes escribirnos qué servicio o profesión específica deseas impartir. Nos encanta conocer nuevos talentos.
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Notas -->
@@ -112,7 +124,7 @@
           (input)="onInputChange('notas')"
           name="notas"
           class="form-textarea"
-          placeholder="Cuéntanos más sobre tu negocio, experiencia, o cualquier cosa que quieras que sepamos..."
+          [placeholder]="notesPlaceholder"
           rows="4"></textarea>
       </div>
 

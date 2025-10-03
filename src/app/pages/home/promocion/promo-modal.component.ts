@@ -40,6 +40,19 @@ export class PromoModalComponent {
     return this.promoService.getProfesionOptions();
   }
 
+  // Check if "Otro" is selected
+  get showOtroMessage() {
+    return this.formData.profesion === 'otro';
+  }
+
+  // Dynamic placeholder for notes
+  get notesPlaceholder() {
+    if (this.formData.profesion === 'otro') {
+      return 'Cuéntanos qué servicio o profesión específica deseas impartir...';
+    }
+    return 'Cuéntanos más sobre tu negocio, experiencia, o cualquier cosa que quieras que sepamos...';
+  }
+
   // Close modal
   onClose() {
     this.close.emit();
