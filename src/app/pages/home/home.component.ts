@@ -46,12 +46,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Modal handlers
   openModal() {
     this.showModal = true;
-    document.body.style.overflow = 'hidden';
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   closeModal() {
     this.showModal = false;
-    document.body.style.overflow = 'auto';
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'auto';
+    }
   }
 
   // FAQ handlers
@@ -61,43 +65,49 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Animation initialization
   private initAnimations() {
-    // Smooth scrolling for navigation links
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.matches('a[href^="#"]')) {
-        e.preventDefault();
-        const targetId = target.getAttribute('href')?.substring(1);
-        if (targetId) {
-          const targetElement = document.getElementById(targetId);
-          if (targetElement) {
-            targetElement.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
+    // Check if we're in browser environment
+    if (typeof document !== 'undefined') {
+      // Smooth scrolling for navigation links
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.matches('a[href^="#"]')) {
+          e.preventDefault();
+          const targetId = target.getAttribute('href')?.substring(1);
+          if (targetId) {
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+              targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
           }
         }
-      }
-    });
+      });
+    }
   }
 
   private initScrollAnimations() {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
+    // Check if we're in browser environment
+    if (typeof document !== 'undefined' && typeof IntersectionObserver !== 'undefined') {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate');
-        }
-      });
-    }, observerOptions);
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+          }
+        });
+      }, observerOptions);
 
-    // Observe elements with animation classes
-    setTimeout(() => {
-      const animatedElements = document.querySelectorAll('.fade-in-up, .animate-fade-in-up');
-      animatedElements.forEach(el => observer.observe(el));
-    }, 100);
+      // Observe elements with animation classes
+      setTimeout(() => {
+        const animatedElements = document.querySelectorAll('.fade-in-up, .animate-fade-in-up');
+        animatedElements.forEach(el => observer.observe(el));
+      }, 100);
+    }
   }
 }
