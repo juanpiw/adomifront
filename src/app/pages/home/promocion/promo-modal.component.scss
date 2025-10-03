@@ -25,7 +25,7 @@
   background: white;
   border-radius: 1.5rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  max-width: 500px;
+  max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -65,6 +65,15 @@
   color: #1f2937;
   margin: 0 0 0.5rem 0;
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #4f46e5;
 }
 
 .modal-subtitle {
@@ -119,8 +128,11 @@
 }
 
 .label-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
   margin-right: 0.5rem;
-  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .form-input,
@@ -171,8 +183,9 @@
 }
 
 .error-message::before {
-  content: "⚠️";
+  content: "⚠";
   margin-right: 0.25rem;
+  font-size: 0.75rem;
 }
 
 /* Benefits Section */
@@ -189,6 +202,15 @@
   font-weight: 700;
   color: #0c4a6e;
   margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.benefits-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #0c4a6e;
 }
 
 .benefits-list {
@@ -204,6 +226,14 @@
   display: flex;
   align-items: center;
   line-height: 1.4;
+  gap: 0.5rem;
+}
+
+.benefit-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #0369a1;
+  flex-shrink: 0;
 }
 
 .benefits-list li:last-child {
@@ -277,6 +307,17 @@
   font-size: 0.75rem;
   margin: 0;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.footer-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #6b7280;
+  flex-shrink: 0;
 }
 
 /* Responsive */
