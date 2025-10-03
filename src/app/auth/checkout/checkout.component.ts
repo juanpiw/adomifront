@@ -66,7 +66,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   async proceedToPayment() {
-    if (!this.selectedPlan || !this.tempUserData) {
+    if (!this.selectedPlan) {
       return;
     }
 
@@ -75,11 +75,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.stripeError = null;
 
     try {
+      // Si tenemos datos temporales, primero registrar al usuario
+      if (this.tempUserData) {
+        await this.registerUserFirst();
+      }
+
       // Crear sesión de checkout
-      this.http.post<CheckoutResponse>(`${environment.apiBaseUrl}/subscriptions/create-checkout`, {
-        planId: this.selectedPlan.id,
-        userEmail: this.tempUserData.email,
-        userName: this.tempUserData.name
+      this.http.post<CheckoutResponse>(`${environment.apiBaseUrl}/stripe/create-checkout-session`, {
+        planId: this.selectedPlan.id
       }).subscribe({
         next: async (response) => {
           if (response.ok && response.sessionId) {
@@ -115,6 +118,44 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.error = 'Error inesperado. Inténtalo nuevamente.';
       this.loading = false;
     }
+  }
+
+  async registerUserFirst() {
+    return new Promise<void>((resolve, reject) => {
+      if (!this.tempUserData) {
+        resolve();
+        return;
+      }
+
+      this.http.post(`${environment.apiBaseUrl}/auth/register`, {
+        email: this.tempUserData.email,
+        password: this.tempUserData.password,
+        name: this.tempUserData.name,
+        role: this.tempUserData.role
+      }).subscribe({
+        next: (response: any) => {
+          if (response.success) {
+            console.log('[CHECKOUT] Usuario registrado exitosamente');
+            // Limpiar datos temporales
+            if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+              sessionStorage.removeItem('tempUserData');
+            }
+            resolve();
+          } else {
+            console.error('[CHECKOUT] Error en registro:', response.error);
+            this.error = response.error || 'Error al registrar usuario';
+            this.loading = false;
+            reject(response.error);
+          }
+        },
+        error: (error) => {
+          console.error('[CHECKOUT] Error en registro:', error);
+          this.error = 'Error al registrar usuario. Inténtalo nuevamente.';
+          this.loading = false;
+          reject(error);
+        }
+      });
+    });
   }
 
   goBack() {
