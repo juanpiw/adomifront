@@ -34,6 +34,8 @@ export class PromoModalComponent {
   // Form validation
   errors: Partial<PromoFormData> = {};
   loading = false;
+  success = false;
+  errorMessage = '';
 
   // Profesiones disponibles
   get profesionOptions() {
@@ -101,13 +103,29 @@ export class PromoModalComponent {
     }
 
     this.loading = true;
+    this.errorMessage = '';
+    this.success = false;
     
-    // Simulate API call
-    setTimeout(() => {
-      this.submit.emit({ ...this.formData });
-      this.loading = false;
-      this.onClose();
-    }, 1000);
+    // Enviar datos al backend
+    this.promoService.signupForFreeTrial(this.formData).subscribe({
+      next: (response) => {
+        this.loading = false;
+        if (response.success) {
+          this.success = true;
+          // Cerrar modal después de 3 segundos
+          setTimeout(() => {
+            this.onClose();
+          }, 3000);
+        } else {
+          this.errorMessage = response.error || 'No se pudo procesar tu registro';
+        }
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Network error:', error);
+        this.errorMessage = 'Error de conexión. Por favor, intenta de nuevo más tarde.';
+      }
+    });
   }
 
   // Clear errors when user starts typing
@@ -115,5 +133,19 @@ export class PromoModalComponent {
     if (this.errors[field]) {
       delete this.errors[field];
     }
+  }
+
+  // Reset modal state
+  resetModal() {
+    this.formData = {
+      nombre: '',
+      correo: '',
+      profesion: '',
+      notas: ''
+    };
+    this.errors = {};
+    this.loading = false;
+    this.success = false;
+    this.errorMessage = '';
   }
 }

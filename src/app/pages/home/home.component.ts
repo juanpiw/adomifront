@@ -86,16 +86,16 @@ export class HomeComponent implements OnInit, OnDestroy {
       next: (response) => {
         if (response.success) {
           console.log('Signup successful:', response.data);
-          alert(`¡Gracias ${formData.nombre}! Te contactaremos pronto en ${formData.correo} para activar tu prueba gratis.`);
+          // No mostrar alert, el modal se encargará del estado de éxito
           this.closePromoModal();
         } else {
           console.error('Signup failed:', response.error);
-          alert(`Error: ${response.error || 'No se pudo procesar tu registro'}`);
+          // No mostrar alert, el modal manejará el error
         }
       },
       error: (error) => {
         console.error('Network error:', error);
-        alert('Error de conexión. Por favor, intenta de nuevo más tarde.');
+        // No mostrar alert, el modal manejará el error
       }
     });
   }
