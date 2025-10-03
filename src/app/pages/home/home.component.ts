@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PromoModalComponent, PromoFormData } from './promocion/promo-modal.component';
+import { PromoService } from '../../services/promo.service';
 
 @Component({
   selector: 'app-home',
@@ -17,6 +18,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   showModal = false;
   showPromoModal = false;
   faqOpen: boolean[] = [false, false, false];
+
+  constructor(private promoService: PromoService) {}
 
   ngOnInit() {
     this.initAnimations();
@@ -77,9 +80,24 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onPromoSubmit(formData: PromoFormData) {
     console.log('Promo form submitted:', formData);
-    // Here you would typically send the data to your backend
-    alert(`¡Gracias ${formData.nombre}! Te contactaremos pronto en ${formData.correo} para activar tu prueba gratis.`);
-    this.closePromoModal();
+    
+    // Enviar datos al backend
+    this.promoService.signupForFreeTrial(formData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          console.log('Signup successful:', response.data);
+          alert(`¡Gracias ${formData.nombre}! Te contactaremos pronto en ${formData.correo} para activar tu prueba gratis.`);
+          this.closePromoModal();
+        } else {
+          console.error('Signup failed:', response.error);
+          alert(`Error: ${response.error || 'No se pudo procesar tu registro'}`);
+        }
+      },
+      error: (error) => {
+        console.error('Network error:', error);
+        alert('Error de conexión. Por favor, intenta de nuevo más tarde.');
+      }
+    });
   }
 
   // FAQ handlers

@@ -91,15 +91,7 @@
           [class.error]="errors.profesion"
           required>
           <option value="">Selecciona tu profesión</option>
-          <option value="estilista">Estilista / Peluquero(a)</option>
-          <option value="chef">Chef / Cocina</option>
-          <option value="masajista">Masajista / Terapeuta</option>
-          <option value="profesor">Profesor / Instructor</option>
-          <option value="tecnico">Técnico / Mantenimiento</option>
-          <option value="entrenador">Entrenador Personal</option>
-          <option value="limpieza">Limpieza / Aseo</option>
-          <option value="cuidado">Cuidado de Mascotas</option>
-          <option value="otro">Otro</option>
+          <option *ngFor="let option of profesionOptions" [value]="option.value">{{ option.label }}</option>
         </select>
         <div *ngIf="errors.profesion" class="error-message">
           {{ errors.profesion }}

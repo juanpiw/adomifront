@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PromoService } from '../../../services/promo.service';
 
 export interface PromoFormData {
   nombre: string;
@@ -20,6 +21,8 @@ export class PromoModalComponent {
   @Output() close = new EventEmitter<void>();
   @Output() submit = new EventEmitter<PromoFormData>();
 
+  private promoService = inject(PromoService);
+
   // Form data
   formData: PromoFormData = {
     nombre: '',
@@ -31,6 +34,11 @@ export class PromoModalComponent {
   // Form validation
   errors: Partial<PromoFormData> = {};
   loading = false;
+
+  // Profesiones disponibles
+  get profesionOptions() {
+    return this.promoService.getProfesionOptions();
+  }
 
   // Close modal
   onClose() {
