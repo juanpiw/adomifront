@@ -7,6 +7,7 @@ import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme
 import { AuthService, AuthResponse, LoginPayload } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
 import { ErrorHandlerService, ErrorDetails } from '../../core/services/error-handler.service';
+import { GoogleAuthService } from '../services/google-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit {
   private auth = inject(AuthService);
   private session = inject(SessionService);
   private errorHandler = inject(ErrorHandlerService);
+  private googleAuth = inject(GoogleAuthService);
 
   ngOnInit() {
     // Si ya está autenticado, redirigir al dashboard correspondiente
@@ -160,5 +162,19 @@ export class LoginComponent implements OnInit {
   // Método para ir a recuperar contraseña
   goToForgotPassword() {
     this.router.navigateByUrl('/auth/forgot');
+  }
+
+  // Método para login con Google
+  signInWithGoogle() {
+    console.log('[LOGIN] Iniciando login con Google');
+    
+    if (!this.googleAuth.isGoogleAuthAvailable()) {
+      this.errorMessage = 'Autenticación con Google no está disponible en este momento.';
+      return;
+    }
+
+    // Por defecto, usar rol 'client' para login
+    // El usuario puede cambiar su rol después si es necesario
+    this.googleAuth.signInWithGoogle('client');
   }
 }

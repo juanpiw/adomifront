@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService, AuthResponse, RegisterPayload } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
 import { ErrorHandlerService, ErrorDetails } from '../../core/services/error-handler.service';
+import { GoogleAuthService } from '../services/google-auth.service';
 
 @Component({
   selector: 'app-register',
@@ -34,6 +35,7 @@ export class RegisterComponent implements OnInit {
   private router = inject(Router);
   private session = inject(SessionService);
   private errorHandler = inject(ErrorHandlerService);
+  private googleAuth = inject(GoogleAuthService);
 
   ngOnInit() {
     // Si ya está autenticado, redirigir al dashboard correspondiente
@@ -255,5 +257,23 @@ export class RegisterComponent implements OnInit {
 
   hasNumber(password: string): boolean {
     return /\d/.test(password);
+  }
+
+  // Método para registro con Google
+  signUpWithGoogle() {
+    console.log('[REGISTER] Iniciando registro con Google para rol:', this.selectedRole);
+    
+    if (!this.googleAuth.isGoogleAuthAvailable()) {
+      this.serverError = 'Autenticación con Google no está disponible en este momento.';
+      return;
+    }
+
+    if (!this.selectedRole) {
+      this.serverError = 'Por favor, selecciona un rol antes de continuar.';
+      return;
+    }
+
+    // Usar el rol seleccionado para el registro con Google
+    this.googleAuth.signInWithGoogle(this.selectedRole);
   }
 }

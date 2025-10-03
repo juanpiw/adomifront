@@ -26,6 +26,7 @@ import { CheckoutComponent } from './auth/checkout/checkout.component';
 import { PaymentSuccessComponent } from './auth/payment-success/payment-success.component';
 import { PaymentErrorComponent } from './auth/payment-error/payment-error.component';
 import { ValidacionDatosTrabajadorComponent } from './client/validacion-datos-trabajador/validacion-datos-trabajador';
+import { GoogleCallbackComponent } from './auth/google-callback/google-callback.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -49,7 +50,8 @@ export const routes: Routes = [
           { path: 'payment-success', component: PaymentSuccessComponent },
           { path: 'payment-error', component: PaymentErrorComponent },
           { path: 'forgot', component: ForgotComponent },
-          { path: 'reset-password', component: ResetPasswordComponent }
+          { path: 'reset-password', component: ResetPasswordComponent },
+          { path: 'google/callback', component: GoogleCallbackComponent }
         ] },
   { path: 'dash', component: DashLayoutComponent, children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },

@@ -35,7 +35,15 @@
     <span *ngIf="!loading">Entrar</span>
     <span *ngIf="loading">Iniciando sesión...</span>
   </button>
-  <button class="btn-google" style="width:100%; margin-top:8px;">Continuar con Google</button>
+  <button 
+    class="btn-google" 
+    style="width:100%; margin-top:8px;" 
+    (click)="signInWithGoogle()"
+    [disabled]="loading"
+  >
+    <span *ngIf="!loading">Continuar con Google</span>
+    <span *ngIf="loading">Procesando...</span>
+  </button>
   <div style="display:flex; justify-content:space-between; margin-top:12px;">
     <a routerLink="/auth/forgot">¿Olvidaste tu contraseña?</a>
     <a routerLink="/auth/register">Crear cuenta</a>
