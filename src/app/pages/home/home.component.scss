@@ -76,9 +76,10 @@
 
 /* Glass effect for navigation */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Gradient text */
@@ -232,6 +233,16 @@
 
 /* Essential utility classes */
 .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+/* Navigation specific styles */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  width: 100%;
+}
 .flex { display: flex; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
