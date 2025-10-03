@@ -2,11 +2,12 @@
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { PromoModalComponent, PromoFormData } from './promocion/promo-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, PromoModalComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
@@ -14,6 +15,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   email = '';
   modalEmail = '';
   showModal = false;
+  showPromoModal = false;
   faqOpen: boolean[] = [false, false, false];
 
   ngOnInit() {
@@ -56,6 +58,28 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (typeof document !== 'undefined') {
       document.body.style.overflow = 'auto';
     }
+  }
+
+  // Promo modal handlers
+  openPromoModal() {
+    this.showPromoModal = true;
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closePromoModal() {
+    this.showPromoModal = false;
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  onPromoSubmit(formData: PromoFormData) {
+    console.log('Promo form submitted:', formData);
+    // Here you would typically send the data to your backend
+    alert(`¡Gracias ${formData.nombre}! Te contactaremos pronto en ${formData.correo} para activar tu prueba gratis.`);
+    this.closePromoModal();
   }
 
   // FAQ handlers

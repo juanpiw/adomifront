@@ -1,0 +1,158 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <!-- Modal Content -->
+  <div class="modal-content" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <h2 id="modal-title" class="modal-title">
+          🚀 ¡Asegura tu Prueba Gratis!
+        </h2>
+        <p class="modal-subtitle">
+          Únete a los primeros profesionales y obtén 3 meses sin comisiones
+        </p>
+      </div>
+      <button 
+        type="button" 
+        class="close-button" 
+        (click)="onClose()"
+        aria-label="Cerrar modal">
+        <svg class="close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form class="modal-form" (ngSubmit)="onSubmit($event)">
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="nombre" class="form-label">
+          <span class="label-icon">👤</span>
+          Nombre completo
+        </label>
+        <input
+          id="nombre"
+          type="text"
+          [(ngModel)]="formData.nombre"
+          (input)="onInputChange('nombre')"
+          name="nombre"
+          class="form-input"
+          [class.error]="errors.nombre"
+          placeholder="Tu nombre completo"
+          required>
+        <div *ngIf="errors.nombre" class="error-message">
+          {{ errors.nombre }}
+        </div>
+      </div>
+
+      <!-- Correo -->
+      <div class="form-group">
+        <label for="correo" class="form-label">
+          <span class="label-icon">📧</span>
+          Correo electrónico
+        </label>
+        <input
+          id="correo"
+          type="email"
+          [(ngModel)]="formData.correo"
+          (input)="onInputChange('correo')"
+          name="correo"
+          class="form-input"
+          [class.error]="errors.correo"
+          placeholder="tu@correo.com"
+          required>
+        <div *ngIf="errors.correo" class="error-message">
+          {{ errors.correo }}
+        </div>
+      </div>
+
+      <!-- Profesión/Servicio -->
+      <div class="form-group">
+        <label for="profesion" class="form-label">
+          <span class="label-icon">💼</span>
+          Profesión o servicio
+        </label>
+        <select
+          id="profesion"
+          [(ngModel)]="formData.profesion"
+          (change)="onInputChange('profesion')"
+          name="profesion"
+          class="form-select"
+          [class.error]="errors.profesion"
+          required>
+          <option value="">Selecciona tu profesión</option>
+          <option value="estilista">Estilista / Peluquero(a)</option>
+          <option value="chef">Chef / Cocina</option>
+          <option value="masajista">Masajista / Terapeuta</option>
+          <option value="profesor">Profesor / Instructor</option>
+          <option value="tecnico">Técnico / Mantenimiento</option>
+          <option value="entrenador">Entrenador Personal</option>
+          <option value="limpieza">Limpieza / Aseo</option>
+          <option value="cuidado">Cuidado de Mascotas</option>
+          <option value="otro">Otro</option>
+        </select>
+        <div *ngIf="errors.profesion" class="error-message">
+          {{ errors.profesion }}
+        </div>
+      </div>
+
+      <!-- Notas -->
+      <div class="form-group">
+        <label for="notas" class="form-label">
+          <span class="label-icon">📝</span>
+          Notas adicionales (opcional)
+        </label>
+        <textarea
+          id="notas"
+          [(ngModel)]="formData.notas"
+          (input)="onInputChange('notas')"
+          name="notas"
+          class="form-textarea"
+          placeholder="Cuéntanos más sobre tu negocio, experiencia, o cualquier cosa que quieras que sepamos..."
+          rows="4"></textarea>
+      </div>
+
+      <!-- Benefits -->
+      <div class="benefits-section">
+        <h3 class="benefits-title">✨ Lo que obtienes:</h3>
+        <ul class="benefits-list">
+          <li>🎉 3 meses completamente GRATIS</li>
+          <li>💰 Sin comisiones por transacciones</li>
+          <li>📱 Acceso a toda la plataforma</li>
+          <li>🎯 Conecta con clientes locales</li>
+          <li>📊 Herramientas de gestión incluidas</li>
+        </ul>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="submit-button"
+          [disabled]="loading">
+          <span *ngIf="!loading" class="button-content">
+            <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+            ¡Quiero mi Prueba Gratis!
+          </span>
+          <span *ngIf="loading" class="button-content loading">
+            <svg class="animate-spin button-icon" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Enviando...
+          </span>
+        </button>
+      </div>
+
+      <!-- Footer note -->
+      <div class="modal-footer">
+        <p class="footer-note">
+          🔒 Tus datos están seguros. No compartimos tu información con terceros.
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

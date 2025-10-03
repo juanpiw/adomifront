@@ -13,7 +13,7 @@
         <a href="#pricing" class="text-gray-700 hover:text-primary transition-colors">Precios</a>
       </div>
       <div class="flex items-center space-x-4">
-        <button (click)="openModal()" class="modern-button px-4 py-2 rounded-full text-xs font-medium md:px-6 md:py-2 md:text-sm">
+        <button (click)="openPromoModal()" class="modern-button px-4 py-2 rounded-full text-xs font-medium md:px-6 md:py-2 md:text-sm">
           <span class="hidden sm:inline">Asegura tu Prueba Gratis</span>
           <span class="sm:hidden">Prueba Gratis</span>
         </button>
@@ -507,3 +507,10 @@
     </div>
   </div>
 </div>
+
+<!-- Promo Modal -->
+<app-promo-modal 
+  *ngIf="showPromoModal"
+  (close)="closePromoModal()"
+  (submit)="onPromoSubmit($event)">
+</app-promo-modal>
