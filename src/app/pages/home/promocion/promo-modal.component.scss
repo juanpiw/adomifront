@@ -1,5 +1,10 @@
 /* Promo Modal Styles */
 
+/* Reset box-sizing for all elements */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -31,6 +36,7 @@
   overflow-y: auto;
   animation: slideIn 0.3s ease-out;
   position: relative;
+  box-sizing: border-box;
 }
 
 @keyframes slideIn {
@@ -112,6 +118,8 @@
 /* Form */
 .modal-form {
   padding: 0 2rem 2rem 2rem;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .form-group {
@@ -146,6 +154,8 @@
   transition: all 0.2s ease;
   background: white;
   color: #1f2937;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .form-input:focus,
