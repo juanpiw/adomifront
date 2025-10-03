@@ -1,6 +1,7 @@
 ﻿import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { UiInputComponent } from '../../../libs/shared-ui/ui-input/ui-input.component';
 import { AuthService, AuthResponse, RegisterPayload } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
@@ -9,7 +10,7 @@ import { ErrorHandlerService, ErrorDetails } from '../../core/services/error-han
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, RouterLink, UiInputComponent],
+  imports: [CommonModule, RouterLink, FormsModule, UiInputComponent],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
@@ -19,6 +20,7 @@ export class RegisterComponent implements OnInit {
   password = '';
   confirmPassword = '';
   selectedRole: 'client' | 'provider' = 'client';
+  currentStep: number = 1; // Nuevo: control de pasos
   emailError: string | null = null;
   passwordError: string | null = null;
   confirmPasswordError: string | null = null;
@@ -43,6 +45,16 @@ export class RegisterComponent implements OnInit {
 
   setRole(role: 'client'|'provider') {
     this.selectedRole = role;
+    this.clearErrors();
+    
+    // Avanzar al siguiente paso después de seleccionar rol
+    setTimeout(() => {
+      this.currentStep = 2;
+    }, 300); // Pequeño delay para que se vea la selección
+  }
+
+  goBackToStep1() {
+    this.currentStep = 1;
     this.clearErrors();
   }
 
