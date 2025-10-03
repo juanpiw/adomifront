@@ -2,7 +2,6 @@
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { UiInputComponent } from '../../../libs/shared-ui/ui-input/ui-input.component';
 import { AuthService, AuthResponse, RegisterPayload } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
 import { ErrorHandlerService, ErrorDetails } from '../../core/services/error-handler.service';
@@ -10,7 +9,7 @@ import { ErrorHandlerService, ErrorDetails } from '../../core/services/error-han
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, UiInputComponent],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
