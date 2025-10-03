@@ -1,7 +1,8 @@
-﻿import { Component } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+﻿import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -10,4 +11,22 @@ import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
   templateUrl: './client-layout.component.html',
   styleUrls: ['./client-layout.component.scss']
 })
-export class ClientLayoutComponent {}
+export class ClientLayoutComponent {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => {
+        // Logout exitoso, redirigir al home
+        this.router.navigateByUrl('/');
+      },
+      error: (error) => {
+        console.error('Error during logout:', error);
+        // Aunque falle el logout en el servidor, ya se limpiaron los datos localmente
+        // Redirigir al home de todas formas
+        this.router.navigateByUrl('/');
+      }
+    });
+  }
+}
