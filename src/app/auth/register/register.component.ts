@@ -30,6 +30,7 @@ export class RegisterComponent implements OnInit {
   serverSuccess: string | null = null;
   showPassword = false;
   showConfirmPassword = false;
+  termsAccepted = false;
   
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -41,6 +42,15 @@ export class RegisterComponent implements OnInit {
     // Si ya está autenticado, redirigir al dashboard correspondiente
     if (this.session.isLoggedIn()) {
       this.redirectToDashboard();
+    }
+    
+    // Verificar si los términos ya fueron aceptados
+    this.checkTermsAccepted();
+  }
+
+  checkTermsAccepted() {
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      this.termsAccepted = sessionStorage.getItem('termsAccepted') === 'true';
     }
   }
 
@@ -275,5 +285,9 @@ export class RegisterComponent implements OnInit {
 
     // Usar el rol seleccionado para el registro con Google
     this.googleAuth.signInWithGoogle(this.selectedRole);
+  }
+
+  goToTerms() {
+    this.router.navigate(['/auth/terms']);
   }
 }
