@@ -49,6 +49,26 @@
         (addImage)="onAddPortfolioImage()"
         (deleteImage)="onDeletePortfolioImage($event)">
       </app-portafolio>
+
+      <!-- Configuraciones adicionales -->
+      <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div style="grid-column: span 2;">
+          <avatar-uploader [(src)]="avatar"></avatar-uploader>
+        </div>
+        <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
+        <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
+        <div>
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
+          <language-select [(value)]="lang"></language-select>
+        </div>
+        <div>
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
+          <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
+        </div>
+        <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
+          <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
+        </div>
+      </section>
     </div>
 
     <!-- Tab: Verificación -->
@@ -86,26 +106,6 @@
         (addException)="onAddException($event)"
         (removeException)="onRemoveException($event)">
       </app-excepciones-feriados>
-
-      <!-- Configuraciones adicionales (mantener las existentes) -->
-      <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-        <div style="grid-column: span 2;">
-          <avatar-uploader [(src)]="avatar"></avatar-uploader>
-        </div>
-        <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
-        <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
-        <div>
-          <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
-          <language-select [(value)]="lang"></language-select>
-        </div>
-        <div>
-          <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
-          <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
-        </div>
-        <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
-          <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
-        </div>
-      </section>
     </div>
 
   </div>
