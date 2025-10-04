@@ -8,27 +8,43 @@
       (publicProfileClick)="onPublicProfileClick()">
     </app-inicio-header>
 
-    <!-- Dashboard Components -->
-    <app-inicio-solicitudes 
-      [data]="solicitudData"
-      (acceptClick)="onAcceptClick($event)"
-      (declineClick)="onDeclineClick($event)">
-    </app-inicio-solicitudes>
+   
+<div class="container-pro">
 
-    <app-inicio-ingresos-mes 
-      [data]="ingresosData"
-      (viewReportClick)="onViewReportClick($event)">
-    </app-inicio-ingresos-mes>
+    <div class="container-pro-1">
+        <!-- Dashboard Components -->
+        <app-inicio-solicitudes 
+        [data]="solicitudData"
+        (acceptClick)="onAcceptClick($event)"
+        (declineClick)="onDeclineClick($event)">
+       </app-inicio-solicitudes>
+       
+       
+       
+       <app-inicio-proxima-cita 
+        [data]="proximaCitaData"
+        (viewDetailsClick)="onViewDetailsClick($event)">
+       </app-inicio-proxima-cita>
+       
+       <app-inicio-gestion-disponibilidad 
+        [data]="gestionData"
+        (addTimeBlock)="onAddTimeBlock($event)"
+        (removeTimeBlock)="onRemoveTimeBlock($event)">
+       </app-inicio-gestion-disponibilidad>
+           </div>
+            <div class="ingresos-container">
+                <app-inicio-ingresos-mes 
+                [data]="ingresosData"
+                (viewReportClick)="onViewReportClick($event)">
+              </app-inicio-ingresos-mes>
+              
+              <app-inicio-ingresos-dia 
+                [data]="ingresosDiaData"
+                (viewReportClick)="onViewDayReportClick($event)">
+              </app-inicio-ingresos-dia>
+            </div>
+</div>
 
-    <app-inicio-proxima-cita 
-      [data]="proximaCitaData"
-      (viewDetailsClick)="onViewDetailsClick($event)">
-    </app-inicio-proxima-cita>
 
-    <app-inicio-gestion-disponibilidad 
-      [data]="gestionData"
-      (addTimeBlock)="onAddTimeBlock($event)"
-      (removeTimeBlock)="onRemoveTimeBlock($event)">
-    </app-inicio-gestion-disponibilidad>
   </div>
 </div>

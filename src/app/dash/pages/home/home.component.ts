@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
 import { InicioProximaCitaComponent, ProximaCitaData } from '../../../../libs/shared-ui/inicio-proxima-cita/inicio-proxima-cita.component';
 import { InicioIngresosMesComponent, IngresosData } from '../../../../libs/shared-ui/inicio-ingresos-mes/inicio-ingresos-mes.component';
+import { InicioIngresosDiaComponent, IngresosDiaData } from '../../../../libs/shared-ui/inicio-ingresos-dia/inicio-ingresos-dia.component';
 import { InicioSolicitudesComponent, SolicitudData } from '../../../../libs/shared-ui/inicio-solicitudes/inicio-solicitudes.component';
 import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
 
@@ -14,6 +15,7 @@ import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from 
     InicioHeaderComponent,
     InicioProximaCitaComponent,
     InicioIngresosMesComponent,
+    InicioIngresosDiaComponent,
     InicioSolicitudesComponent,
     InicioGestionDisponibilidadComponent
   ],
@@ -41,6 +43,14 @@ export class DashHomeComponent {
     completedAppointments: 22,
     averageRating: 4.9,
     chartData: [45, 62, 78, 55, 89, 95, 82]
+  };
+
+  // Datos para ingresos del día
+  ingresosDiaData: IngresosDiaData = {
+    amount: '$25.000',
+    completedAppointments: 3,
+    averageRating: 4.8,
+    chartData: [8, 12, 15, 18, 25, 22, 20]
   };
 
   // Datos para solicitudes
@@ -81,6 +91,11 @@ export class DashHomeComponent {
   onViewReportClick(data: IngresosData) {
     console.log('Ver reporte completo:', data);
     // TODO: Navegar al reporte completo
+  }
+
+  onViewDayReportClick(data: IngresosDiaData) {
+    console.log('Ver reporte del día:', data);
+    // TODO: Navegar al reporte del día
   }
 
   onAcceptClick(data: SolicitudData) {
