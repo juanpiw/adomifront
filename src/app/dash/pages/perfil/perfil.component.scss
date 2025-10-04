@@ -35,3 +35,75 @@
     margin-bottom: 0.5rem;
   }
 }
+
+.configuracion-app {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+  }
+
+  &__subtitle {
+    color: #64748b;
+    margin: 0 0 1.5rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: auto 1fr;
+      align-items: start;
+    }
+  }
+
+  &__avatar {
+    display: flex;
+    justify-content: center;
+
+    @media (min-width: 768px) {
+      justify-content: flex-start;
+    }
+  }
+
+  &__fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  &__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+}

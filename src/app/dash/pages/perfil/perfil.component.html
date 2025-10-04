@@ -58,26 +58,6 @@
         (addCoverageZone)="onAddCoverageZone($event)"
         (removeCoverageZone)="onRemoveCoverageZone($event)">
       </app-ubicacion-disponibilidad>
-
-      <!-- Configuraciones adicionales -->
-      <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-        <div style="grid-column: span 2;">
-          <avatar-uploader [(src)]="avatar"></avatar-uploader>
-        </div>
-        <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
-        <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
-        <div>
-          <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
-          <language-select [(value)]="lang"></language-select>
-        </div>
-        <div>
-          <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
-          <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
-        </div>
-        <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
-          <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
-        </div>
-      </section>
     </div>
 
     <!-- Tab: Verificación -->
@@ -91,6 +71,37 @@
 
     <!-- Tab: Configuración -->
     <div *ngIf="activeTab === 'configuracion'" class="perfil-trabajador__tab-content">
+      <!-- Configuración del Perfil de la Aplicación -->
+      <section class="configuracion-app">
+        <h2 class="configuracion-app__title">Configuración del Perfil de la Aplicación</h2>
+        <p class="configuracion-app__subtitle">Estas configuraciones son privadas y solo las ves tú. No afectan tu perfil público.</p>
+        
+        <div class="configuracion-app__content">
+          <div class="configuracion-app__avatar">
+            <avatar-uploader [(src)]="avatar"></avatar-uploader>
+          </div>
+          
+          <div class="configuracion-app__fields">
+            <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
+            <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
+            
+            <div class="configuracion-app__field">
+              <label class="configuracion-app__label">Idioma</label>
+              <language-select [(value)]="lang"></language-select>
+            </div>
+            
+            <div class="configuracion-app__field">
+              <label class="configuracion-app__label">Notificaciones</label>
+              <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
+            </div>
+          </div>
+          
+          <div class="configuracion-app__actions">
+            <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
+          </div>
+        </div>
+      </section>
+
       <!-- Horario y Disponibilidad -->
       <app-horario-disponibilidad 
         [schedule]="weeklySchedule"
