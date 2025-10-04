@@ -153,7 +153,8 @@
   
   .map-section {
     border-radius: 0 0 16px 16px;
-    min-height: 250px;
+    min-height: 280px; /* tighter */
+    padding: 8px 0; /* reduce inner padding if any */
   }
   
   .section-title {
