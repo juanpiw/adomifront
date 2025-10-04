@@ -21,15 +21,15 @@ export interface MapCardMarker {
   name: string;
   position: { lat: number; lng: number };
   type: 'provider' | 'service' | 'location';
-  data: any;
-  icon?: IconName;
+  data?: any;
+  icon?: string;
   color?: string;
 }
 
 @Component({
   selector: 'ui-map-card',
   standalone: true,
-  imports: [CommonModule, IconComponent, MapViewComponent],
+  imports: [CommonModule, MapViewComponent],
   templateUrl: './map-card.component.html',
   styleUrls: ['./map-card.component.scss']
 })

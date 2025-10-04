@@ -5,7 +5,6 @@ import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { SearchInputComponent } from '../../../libs/shared-ui/search-input/search-input.component';
-import { MapViewComponent } from '../../../libs/shared-ui/map-view/map-view.component';
 import { MapCardComponent, ProfessionalCard, MapCardMarker } from '../../../libs/shared-ui/map-card/map-card.component';
 import { IconName } from '../../../libs/shared-ui/icon/icon.component';
 
@@ -39,7 +38,7 @@ interface Service {
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapViewComponent, MapCardComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent],
   template: `
     <div class="explorar-container">
       <!-- Header with Search -->
@@ -529,7 +528,7 @@ export class ExplorarComponent implements OnInit {
       },
       type: 'provider' as const,
       data: provider,
-      icon: 'user' as IconName,
+      icon: 'user',
       color: '#3b82f6'
     }));
   }
