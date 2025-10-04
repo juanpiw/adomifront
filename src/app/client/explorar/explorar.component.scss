@@ -1,10 +1,17 @@
 :host {
   display: block;
-  padding: 1rem;
+  padding: 0;
   background-color: #f7f8fc;
   min-height: calc(100vh - 60px);
   font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
 
+.explorar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  
   @media (min-width: 640px) {
     padding: 1.5rem;
   }
@@ -12,11 +19,6 @@
   @media (min-width: 1024px) {
     padding: 2.5rem;
   }
-}
-
-.explorar-container {
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
 // Custom shadows from the example HTML
@@ -539,14 +541,17 @@ h3 {
 
   // Map card responsive adjustments
   ui-map-card {
-    height: 400px !important;
+    height: 500px !important; // Default for mobile
+    margin: 0 -1rem; // Full width on mobile
     
     @media (min-width: 640px) {
-      height: 500px !important;
+      height: 550px !important; // Tablet
+      margin: 0 -1.5rem;
     }
     
     @media (min-width: 1024px) {
-      height: 600px !important;
+      height: 600px !important; // Desktop
+      margin: 0;
     }
   }
 }

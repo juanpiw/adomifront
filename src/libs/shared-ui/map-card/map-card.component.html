@@ -27,16 +27,20 @@
 
     <!-- Right Panel: Map Section -->
     <div class="map-section">
-      <div class="map-placeholder">
-        <div class="placeholder-content">
-          <div class="map-icon">
-            <svg class="w-16 h-16 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"></path>
-            </svg>
-          </div>
-          <p class="placeholder-text">[ Aquí iría el mapa interactivo ]</p>
-        </div>
-      </div>
+      <ui-map-view
+        [title]="'Mapa de Servicios'"
+        [subtitle]="'Encuentra servicios cerca de ti'"
+        [markers]="mapMarkers"
+        [center]="mapCenter"
+        [zoom]="mapZoom"
+        [height]="'100%'"
+        [showControls]="showMapControls"
+        [showLegend]="showMapLegend"
+        [allowFullscreen]="true"
+        (markerClick)="onMarkerClick($event)"
+        (markerAction)="onMarkerAction($event)"
+        (viewModeChange)="onViewModeChange($event)">
+      </ui-map-view>
     </div>
     
   </div>
