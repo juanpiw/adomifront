@@ -76,6 +76,9 @@ export class DashPerfilComponent {
   // Estado de las tabs
   activeTab: TabType = 'perfil-publico';
 
+  // Estados de carga
+  savingPublicProfile = false;
+
   // Datos para ubicación y disponibilidad
   locationSettings: LocationSettings = {
     availableForNewBookings: true,
@@ -268,5 +271,36 @@ export class DashPerfilComponent {
       portfolioImages: this.portfolioImages
     });
     // TODO: Implementar persistencia
+  }
+
+  savePublicProfile() {
+    this.savingPublicProfile = true;
+    
+    // Simular llamada al backend
+    setTimeout(() => {
+      console.log('Guardando perfil público...', {
+        basicInfo: this.basicInfo,
+        bio: this.bio,
+        services: this.services,
+        portfolioImages: this.portfolioImages,
+        locationSettings: this.locationSettings
+      });
+      
+      // TODO: Implementar llamada real al backend
+      // this.profileService.updatePublicProfile(profileData).subscribe({
+      //   next: (response) => {
+      //     console.log('Perfil público guardado:', response);
+      //     this.savingPublicProfile = false;
+      //     // Mostrar mensaje de éxito
+      //   },
+      //   error: (error) => {
+      //     console.error('Error al guardar perfil público:', error);
+      //     this.savingPublicProfile = false;
+      //     // Mostrar mensaje de error
+      //   }
+      // });
+      
+      this.savingPublicProfile = false;
+    }, 1500);
   }
 }

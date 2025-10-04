@@ -1,3 +1,5 @@
-﻿<button class="btn" [class.v-primary]="variant==='primary'" [class.v-secondary]="variant==='secondary'" [class.v-ghost]="variant==='ghost'" [class.v-danger]="variant==='danger'" [class.s-sm]="size==='sm'" [class.s-lg]="size==='lg'" [disabled]="disabled">
-  <ng-content></ng-content>
+﻿<button class="btn" [class.v-primary]="variant==='primary'" [class.v-secondary]="variant==='secondary'" [class.v-ghost]="variant==='ghost'" [class.v-danger]="variant==='danger'" [class.s-sm]="size==='sm'" [class.s-lg]="size==='lg'" [disabled]="disabled || loading">
+  <span *ngIf="loading" class="btn__spinner">⏳</span>
+  <ng-content *ngIf="!loading"></ng-content>
+  <span *ngIf="loading" class="btn__loading-text">Guardando...</span>
 </button>

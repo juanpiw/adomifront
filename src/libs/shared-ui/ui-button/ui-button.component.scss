@@ -7,3 +7,17 @@
 .btn.v-danger { background: #ef4444; color: white; border-color: transparent; }
 .btn.s-sm { padding: 8px 12px; font-size: 12px; border-radius: 10px; }
 .btn.s-lg { padding: 14px 18px; font-size: 18px; border-radius: 14px; }
+
+.btn__spinner {
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+}
+
+.btn__loading-text {
+  margin-left: 4px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

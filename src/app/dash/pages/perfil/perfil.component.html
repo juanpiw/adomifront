@@ -58,6 +58,13 @@
         (addCoverageZone)="onAddCoverageZone($event)"
         (removeCoverageZone)="onRemoveCoverageZone($event)">
       </app-ubicacion-disponibilidad>
+
+      <!-- Botón para guardar cambios del perfil público -->
+      <div class="perfil-publico__actions">
+        <ui-button variant="primary" (click)="savePublicProfile()" [loading]="savingPublicProfile">
+          Guardar cambios del perfil
+        </ui-button>
+      </div>
     </div>
 
     <!-- Tab: Verificación -->
