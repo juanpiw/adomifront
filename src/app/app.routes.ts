@@ -20,6 +20,7 @@ import { ClientPerfilComponent } from './client/pages/perfil/perfil.component';
 import { ClientPagosComponent } from './client/pages/pagos/pagos.component';
 import { ClientConfigComponent } from './client/pages/configuracion/configuracion.component';
 import { ExplorarComponent } from './client/explorar/explorar.component';
+import { PerfilTrabajadorComponent } from './client/pages/perfil-trabajador/perfil-trabajador.component';
 import { OnboardingComponent } from './client/pages/onboarding/onboarding.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { SelectPlanComponent } from './auth/select-plan/select-plan.component';
@@ -39,6 +40,7 @@ export const routes: Routes = [
   { path: 'client', component: ClientLayoutComponent, children: [
       { path: '', redirectTo: 'explorar', pathMatch: 'full' },
       { path: 'explorar', component: ExplorarComponent },
+      { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
       { path: 'reservas', component: ClientReservasComponent },
       { path: 'favoritos', component: ClientFavoritosComponent },
       { path: 'perfil', component: ClientPerfilComponent },

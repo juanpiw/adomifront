@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
@@ -134,7 +135,7 @@ interface Service {
                 <span class="text-gray-800 font-bold ml-1.5">{{ provider.rating }}</span>
                 <span class="text-gray-400 text-sm ml-2">({{ provider.review_count }})</span>
               </div>
-              <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id)">
+              <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id, $event)">
                 Ver Perfil
               </a>
             </div>
@@ -177,6 +178,7 @@ interface Service {
 })
 export class ExplorarComponent implements OnInit {
   private http = inject(HttpClient);
+  private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
 
   // User data
@@ -436,9 +438,13 @@ export class ExplorarComponent implements OnInit {
     }).format(price);
   }
 
-  viewProviderProfile(providerId: number) {
+  viewProviderProfile(providerId: number, event?: Event) {
+    if (event) {
+      event.preventDefault();
+    }
     console.log('Ver perfil del proveedor:', providerId);
-    // Implement navigation to provider profile
+    // Navigate to worker profile with dynamic route
+    this.router.navigate(['/client/explorar', providerId]);
   }
 
   toggleFavorite(providerId: number) {
