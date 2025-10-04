@@ -1,0 +1,89 @@
+<div class="perfil-trabajador-page">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando perfil del trabajador...</p>
+  </div>
+
+  <!-- Perfil del Trabajador -->
+  <div *ngIf="!loading && workerData" class="perfil-trabajador-content">
+    
+    <!-- Profile Hero Section -->
+    <app-profile-hero 
+      [data]="profileHeroData"
+      (playVideoClick)="onPlayVideoClick()"
+      (avatarClick)="onAvatarClick()">
+    </app-profile-hero>
+
+    <!-- Main Content Layout -->
+    <div class="perfil-trabajador-main">
+      
+      <!-- Left Content -->
+      <div class="perfil-trabajador-left">
+        
+        <!-- Trust Stats -->
+        <app-trust-stats 
+          [data]="trustStatsData"
+          (ratingClick)="onRatingClick($event)"
+          (verificationClick)="onVerificationClick()">
+        </app-trust-stats>
+
+        <!-- Portfolio Section -->
+        <app-portfolio 
+          [data]="portfolioData"
+          (itemClick)="onPortfolioItemClick($event)">
+        </app-portfolio>
+
+        <!-- Reviews Section -->
+        <app-reviews 
+          [data]="reviewsData"
+          (reviewClick)="onReviewClick($event)"
+          (showAllClick)="onShowAllReviewsClick()">
+        </app-reviews>
+
+        <!-- FAQ Section -->
+        <app-faq 
+          [data]="faqData"
+          (itemClick)="onFaqItemClick($event)"
+          (itemToggle)="onFaqItemToggle($event)">
+        </app-faq>
+
+      </div>
+
+      <!-- Right Sidebar - Booking Panel -->
+      <div class="perfil-trabajador-right">
+        <app-booking-panel 
+          [data]="bookingPanelData"
+          (serviceSelected)="onServiceSelected($event)"
+          (dateSelected)="onDateSelected($event)"
+          (timeSelected)="onTimeSelected($event)"
+          (bookingConfirmed)="onBookingConfirmed($event)"
+          (messageClicked)="onMessageClicked()">
+        </app-booking-panel>
+      </div>
+
+    </div>
+
+    <!-- Back Button -->
+    <div class="perfil-trabajador-footer">
+      <button class="back-button" (click)="goBack()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Volver a explorar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !workerData" class="error-container">
+    <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <h2>Trabajador no encontrado</h2>
+    <p>El perfil que buscas no existe o ha sido eliminado.</p>
+    <button class="back-to-explore" (click)="goBack()">
+      Volver a explorar
+    </button>
+  </div>
+</div>

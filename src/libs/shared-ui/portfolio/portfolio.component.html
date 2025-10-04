@@ -1,0 +1,16 @@
+<section class="portfolio">
+  <h3 class="portfolio__title">{{ data.title }}</h3>
+  <div class="portfolio__grid">
+    <div *ngFor="let item of data.items" 
+         class="portfolio__item"
+         (click)="onItemClick(item)">
+      <img [src]="item.imageUrl" 
+           [alt]="item.title || 'Portfolio item'" 
+           class="portfolio__img">
+      <div *ngIf="item.title || item.description" class="portfolio__overlay">
+        <h4 *ngIf="item.title" class="portfolio__item-title">{{ item.title }}</h4>
+        <p *ngIf="item.description" class="portfolio__item-description">{{ item.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>

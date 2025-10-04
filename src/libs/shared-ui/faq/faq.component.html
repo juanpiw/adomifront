@@ -1,0 +1,22 @@
+<section class="faq">
+  <h3 class="faq__title">{{ data.title }}</h3>
+  <div class="faq__list">
+    <div *ngFor="let item of data.items" 
+         class="faq__item"
+         [class.faq__item--expanded]="item.isExpanded">
+      <div class="faq__question" (click)="onItemToggle(item)">
+        <p class="faq__q">{{ item.question }}</p>
+        <svg class="faq__icon" 
+             [class.faq__icon--rotated]="item.isExpanded"
+             fill="none" 
+             stroke="currentColor" 
+             viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+      <div class="faq__answer" [class.faq__answer--visible]="item.isExpanded">
+        <p class="faq__a">{{ item.answer }}</p>
+      </div>
+    </div>
+  </div>
+</section>

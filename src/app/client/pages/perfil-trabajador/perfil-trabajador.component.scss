@@ -1,0 +1,135 @@
+.perfil-trabajador-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 1rem;
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 1rem;
+
+  .loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid #e2e8f0;
+    border-top: 2px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.perfil-trabajador-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.perfil-trabajador-main {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.perfil-trabajador-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.perfil-trabajador-right {
+  position: sticky;
+  top: 2rem;
+}
+
+.perfil-trabajador-footer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 1rem;
+  text-align: center;
+
+  svg {
+    width: 3rem;
+    height: 3rem;
+    color: #dc2626;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #dc2626;
+    margin: 0;
+  }
+
+  p {
+    color: #64748b;
+    margin: 0 0 1rem 0;
+  }
+}
+
+.back-to-explore {
+  padding: 0.75rem 1.5rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #4338ca;
+  }
+}

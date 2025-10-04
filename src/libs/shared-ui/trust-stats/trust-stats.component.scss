@@ -1,0 +1,53 @@
+.trust-stats {
+  margin-top: 1rem; /* mt-4 */
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* space-x-6 */
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  &__rating {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__score {
+    color: #1e293b; /* text-slate-800 */
+    font-weight: 700; /* font-bold */
+    font-size: 1.125rem; /* text-lg */
+    margin-left: 0.5rem; /* ml-2 */
+  }
+
+  &__reviews {
+    color: #64748b; /* text-slate-500 */
+    font-size: 1rem; /* text-base */
+    margin-left: 0.5rem; /* ml-2 */
+  }
+
+  &__verified {
+    display: flex;
+    align-items: center;
+    color: #059669; /* text-green-600 */
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__verified-text {
+    font-weight: 600; /* font-semibold */
+    margin-left: 0.5rem; /* ml-2 */
+  }
+}

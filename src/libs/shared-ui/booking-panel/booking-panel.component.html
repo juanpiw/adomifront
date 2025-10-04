@@ -1,0 +1,67 @@
+<aside class="booking-panel">
+  <div class="booking-panel__card">
+    <h3 class="booking-panel__title">Agendar una cita</h3>
+    <div class="booking-panel__scroll">
+      <div class="booking-panel__content">
+        <div class="booking-panel__step">
+          <p class="booking-panel__step-title">1. Elige un servicio</p>
+          <div class="booking-panel__services">
+            <button *ngFor="let service of data.services" 
+                    class="booking-panel__service"
+                    [class.booking-panel__service--active]="service.isActive"
+                    (click)="onServiceClick(service.id)">
+              <p class="booking-panel__service-name">{{ service.name }}</p>
+              <p class="booking-panel__service-meta">{{ service.duration }} · {{ service.price }}</p>
+            </button>
+          </div>
+        </div>
+        
+        <div class="booking-panel__step">
+          <p class="booking-panel__step-title">2. Elige una fecha</p>
+          <div class="booking-panel__datepicker">
+            <input type="date" 
+                   class="booking-panel__date-input"
+                   [value]="data.selectedDate"
+                   (change)="onDateChange($event.target?.value || '')">
+          </div>
+        </div>
+        
+        <div class="booking-panel__step">
+          <p class="booking-panel__step-title">3. Elige una hora</p>
+          <div class="booking-panel__times">
+            <button *ngFor="let slot of data.timeSlots" 
+                    class="booking-panel__time"
+                    [class.booking-panel__time--selected]="slot.isSelected"
+                    [disabled]="!slot.isAvailable"
+                    (click)="onTimeClick(slot.time)">
+              {{ slot.time }}
+            </button>
+          </div>
+        </div>
+        
+        <div class="booking-panel__summary">
+          <div class="booking-panel__summary-card">
+            <div class="booking-panel__row">
+              <p class="booking-panel__label">Servicio:</p>
+              <p class="booking-panel__value">{{ data.summary.service }}</p>
+            </div>
+            <div class="booking-panel__row">
+              <p class="booking-panel__label">Fecha:</p>
+              <p class="booking-panel__value">{{ data.summary.date }} a las {{ data.summary.time }}</p>
+            </div>
+            <div class="booking-panel__row">
+              <p class="booking-panel__label">Precio:</p>
+              <p class="booking-panel__value">{{ data.summary.price }}</p>
+            </div>
+          </div>
+          <button class="booking-panel__confirm" (click)="onConfirmBooking()">
+            Agendar Cita
+          </button>
+          <button class="booking-panel__message" (click)="onSendMessage()">
+            Enviar un mensaje
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>

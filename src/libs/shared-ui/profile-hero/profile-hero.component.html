@@ -1,0 +1,18 @@
+<section class="profile-hero">
+  <div class="profile-hero__cover" [style.background-image]="'url(' + data.coverImage + ')'"></div>
+  <button *ngIf="data.hasVideo" class="profile-hero__play" (click)="onPlayVideoClick()">
+    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+    </svg>
+  </button>
+  <div class="profile-hero__info">
+    <img [src]="data.avatar" 
+         [alt]="data.name" 
+         class="profile-hero__avatar"
+         (click)="onAvatarClick()">
+    <div class="profile-hero__text">
+      <h2 class="profile-hero__name">{{ data.name }}</h2>
+      <p class="profile-hero__title">{{ data.title }}</p>
+    </div>
+  </div>
+</section>
