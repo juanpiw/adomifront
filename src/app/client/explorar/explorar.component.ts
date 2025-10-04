@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { SearchInputComponent } from '../../../libs/shared-ui/search-input/search-input.component';
 import { MapViewComponent } from '../../../libs/shared-ui/map-view/map-view.component';
+import { MapCardComponent, ProfessionalCard, MapCardMarker } from '../../../libs/shared-ui/map-card/map-card.component';
+import { IconName } from '../../../libs/shared-ui/icon/icon.component';
 
 interface Provider {
   id: number;
@@ -37,7 +39,7 @@ interface Service {
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapViewComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapViewComponent, MapCardComponent],
   template: `
     <div class="explorar-container">
       <!-- Header with Search -->
@@ -138,33 +140,24 @@ interface Service {
         </div>
       </section>
 
-      <!-- Map Section -->
+      <!-- Map Card Section -->
       <section *ngIf="!loading" class="mt-12">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-2xl font-bold text-gray-800">Servicios en tu Área</h3>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-500">{{ mapMarkers.length }} servicios encontrados</span>
-          </div>
-        </div>
-        
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 600px;">
-          <ui-map-view
-            [title]="'Mapa de Servicios'"
-            [subtitle]="'Encuentra servicios cerca de ti'"
-            [markers]="mapMarkers"
-            [center]="mapCenter"
-            [zoom]="mapZoom"
-            [height]="'100%'"
-            [showControls]="true"
-            [showLegend]="true"
-            [allowFullscreen]="true"
-            (markerClick)="onMarkerClick($event)"
-            (markerAction)="onMarkerAction($event)"
-            (viewModeChange)="onViewModeChange($event)"
-            (boundsChange)="onBoundsChange($event)"
-            (centerChange)="onCenterChange($event)"
-          ></ui-map-view>
-        </div>
+        <ui-map-card
+          [title]="'estilistas disponibles'"
+          [professionals]="professionalCards"
+          [highlightedProfessional]="highlightedProfessional"
+          [mapMarkers]="mapCardMarkers"
+          [mapCenter]="mapCenter"
+          [mapZoom]="mapZoom"
+          [height]="'600px'"
+          [showMapControls]="true"
+          [showMapLegend]="true"
+          (professionalClick)="onProfessionalClick($event)"
+          (professionalBook)="onProfessionalBook($event)"
+          (markerClick)="onMapCardMarkerClick($event)"
+          (markerAction)="onMapCardMarkerAction($event)"
+          (viewModeChange)="onMapCardViewModeChange($event)"
+        ></ui-map-card>
       </section>
 
       <!-- No Results -->
@@ -202,6 +195,11 @@ export class ExplorarComponent implements OnInit {
   mapMarkers: any[] = [];
   mapCenter: { lat: number; lng: number } = { lat: -33.4489, lng: -70.6693 };
   mapZoom: number = 12;
+  
+  // Map Card data
+  professionalCards: ProfessionalCard[] = [];
+  highlightedProfessional: ProfessionalCard | null = null;
+  mapCardMarkers: MapCardMarker[] = [];
 
   // Data
   providers: Provider[] = [];
@@ -218,6 +216,8 @@ export class ExplorarComponent implements OnInit {
       this.loadProviders();
       this.loadServices();
       this.generateMapMarkers();
+      this.generateProfessionalCards();
+      this.generateMapCardMarkers();
     }
   }
 
@@ -372,6 +372,8 @@ export class ExplorarComponent implements OnInit {
 
     // Update map markers based on filtered results
     this.generateMapMarkers();
+    this.generateProfessionalCards();
+    this.generateMapCardMarkers();
   }
 
   applyFilters() {
@@ -496,6 +498,65 @@ export class ExplorarComponent implements OnInit {
         color: '#10b981'
       });
     });
+  }
+
+  // Map Card methods
+  generateProfessionalCards() {
+    this.professionalCards = this.providers.map(provider => ({
+      id: provider.id.toString(),
+      name: provider.name,
+      profession: provider.profession,
+      avatar: provider.avatar_url || `https://placehold.co/64x64/C7D2FE/4338CA?text=${provider.name.charAt(0)}`,
+      rating: provider.rating,
+      reviews: provider.review_count,
+      description: provider.description,
+      location: provider.location,
+      price: this.services.find(s => s.provider_id === provider.id)?.price?.toString() || 'Consultar',
+      isHighlighted: provider.id === 1 // Highlight first provider
+    }));
+
+    // Set highlighted professional (first one)
+    this.highlightedProfessional = this.professionalCards[0] || null;
+  }
+
+  generateMapCardMarkers() {
+    this.mapCardMarkers = this.providers.map(provider => ({
+      id: `provider-${provider.id}`,
+      name: provider.name,
+      position: {
+        lat: this.mapCenter.lat + (Math.random() - 0.5) * 0.1,
+        lng: this.mapCenter.lng + (Math.random() - 0.5) * 0.1
+      },
+      type: 'provider' as const,
+      data: provider,
+      icon: 'user' as IconName,
+      color: '#3b82f6'
+    }));
+  }
+
+  onProfessionalClick(professional: ProfessionalCard) {
+    console.log('Professional clicked:', professional);
+    // Handle professional click - could show details, navigate, etc.
+  }
+
+  onProfessionalBook(professional: ProfessionalCard) {
+    console.log('Professional book:', professional);
+    // Handle booking - navigate to booking flow
+  }
+
+  onMapCardMarkerClick(marker: MapCardMarker) {
+    console.log('Map card marker clicked:', marker);
+    // Handle marker click
+  }
+
+  onMapCardMarkerAction(event: { marker: MapCardMarker; action: string }) {
+    console.log('Map card marker action:', event);
+    // Handle marker action
+  }
+
+  onMapCardViewModeChange(mode: 'map' | 'list') {
+    console.log('Map card view mode changed to:', mode);
+    // Handle view mode change
   }
 
   onMarkerClick(marker: any) {
