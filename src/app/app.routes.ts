@@ -19,6 +19,7 @@ import { ClientFavoritosComponent } from './client/pages/favoritos/favoritos.com
 import { ClientPerfilComponent } from './client/pages/perfil/perfil.component';
 import { ClientPagosComponent } from './client/pages/pagos/pagos.component';
 import { ClientConfigComponent } from './client/pages/configuracion/configuracion.component';
+import { ExplorarComponent } from './client/explorar/explorar.component';
 import { OnboardingComponent } from './client/pages/onboarding/onboarding.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { SelectPlanComponent } from './auth/select-plan/select-plan.component';
@@ -36,7 +37,8 @@ export const routes: Routes = [
   { path: 'libreria', component: LibraryComponent },
   { path: 'onboarding', component: OnboardingComponent },
   { path: 'client', component: ClientLayoutComponent, children: [
-      { path: '', redirectTo: 'reservas', pathMatch: 'full' },
+      { path: '', redirectTo: 'explorar', pathMatch: 'full' },
+      { path: 'explorar', component: ExplorarComponent },
       { path: 'reservas', component: ClientReservasComponent },
       { path: 'favoritos', component: ClientFavoritosComponent },
       { path: 'perfil', component: ClientPerfilComponent },
