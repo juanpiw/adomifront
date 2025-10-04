@@ -15,6 +15,7 @@ import { TabsPerfilComponent, TabType } from '../../../../libs/shared-ui/tabs-pe
 import { UbicacionDisponibilidadComponent, LocationSettings, CoverageZone } from '../../../../libs/shared-ui/ubicacion-disponibilidad/ubicacion-disponibilidad.component';
 import { HorarioDisponibilidadComponent, WeeklySchedule } from '../../../../libs/shared-ui/horario-disponibilidad/horario-disponibilidad.component';
 import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
+import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/verificacion-perfil.component';
 
 @Component({
   selector: 'app-d-perfil',
@@ -35,7 +36,8 @@ import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/sh
     TabsPerfilComponent,
     UbicacionDisponibilidadComponent,
     HorarioDisponibilidadComponent,
-    ExcepcionesFeriadosComponent
+    ExcepcionesFeriadosComponent,
+    VerificacionPerfilComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
