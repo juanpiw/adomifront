@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { SearchInputComponent } from '../../../libs/shared-ui/search-input/search-input.component';
+import { MapViewComponent } from '../../../libs/shared-ui/map-view/map-view.component';
 
 interface Provider {
   id: number;
@@ -36,7 +37,7 @@ interface Service {
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapViewComponent],
   template: `
     <div class="explorar-container">
       <!-- Header with Search -->
@@ -137,29 +138,32 @@ interface Service {
         </div>
       </section>
 
-      <!-- Services Section -->
-      <section *ngIf="!loading && filteredServices.length > 0" class="mt-12">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">Servicios Destacados</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div *ngFor="let service of filteredServices" class="bg-white rounded-3xl p-6 custom-shadow custom-shadow-hover transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="font-bold text-lg text-gray-900">{{ service.name }}</h4>
-              <span class="text-indigo-600 font-bold">{{ formatPrice(service.price) }}</span>
-            </div>
-            <p class="text-gray-600 text-sm mb-4">{{ service.description }}</p>
-            <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-              <span>{{ service.provider_name }}</span>
-              <span>{{ service.duration_minutes }} min</span>
-            </div>
-            <div class="flex gap-2">
-              <button class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition" (click)="bookService(service.id)">
-                Reservar
-              </button>
-              <button class="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition" (click)="toggleServiceFavorite(service.id)">
-                <ui-icon name="heart" class="w-5 h-5 text-gray-400"></ui-icon>
-              </button>
-            </div>
+      <!-- Map Section -->
+      <section *ngIf="!loading" class="mt-12">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-2xl font-bold text-gray-800">Servicios en tu Área</h3>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">{{ mapMarkers.length }} servicios encontrados</span>
           </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" style="height: 600px;">
+          <ui-map-view
+            [title]="'Mapa de Servicios'"
+            [subtitle]="'Encuentra servicios cerca de ti'"
+            [markers]="mapMarkers"
+            [center]="mapCenter"
+            [zoom]="mapZoom"
+            [height]="'100%'"
+            [showControls]="true"
+            [showLegend]="true"
+            [allowFullscreen]="true"
+            (markerClick)="onMarkerClick($event)"
+            (markerAction)="onMarkerAction($event)"
+            (viewModeChange)="onViewModeChange($event)"
+            (boundsChange)="onBoundsChange($event)"
+            (centerChange)="onCenterChange($event)"
+          ></ui-map-view>
         </div>
       </section>
 
@@ -193,6 +197,11 @@ export class ExplorarComponent implements OnInit {
   selectedService: string = '';
   selectedLocationId: string = '';
   selectedDateTime: any = null;
+  
+  // Map data
+  mapMarkers: any[] = [];
+  mapCenter: { lat: number; lng: number } = { lat: -33.4489, lng: -70.6693 };
+  mapZoom: number = 12;
 
   // Data
   providers: Provider[] = [];
@@ -208,6 +217,7 @@ export class ExplorarComponent implements OnInit {
       this.loadUserData();
       this.loadProviders();
       this.loadServices();
+      this.generateMapMarkers();
     }
   }
 
@@ -359,6 +369,9 @@ export class ExplorarComponent implements OnInit {
 
       return matchesService;
     });
+
+    // Update map markers based on filtered results
+    this.generateMapMarkers();
   }
 
   applyFilters() {
@@ -446,5 +459,91 @@ export class ExplorarComponent implements OnInit {
   showCategories() {
     console.log('Mostrar categorías');
     // Implement categories modal or navigation
+  }
+
+  // Map methods
+  generateMapMarkers() {
+    this.mapMarkers = [];
+    
+    // Generate markers from providers
+    this.providers.forEach(provider => {
+      this.mapMarkers.push({
+        id: `provider-${provider.id}`,
+        name: provider.name,
+        position: {
+          lat: this.mapCenter.lat + (Math.random() - 0.5) * 0.1,
+          lng: this.mapCenter.lng + (Math.random() - 0.5) * 0.1
+        },
+        type: 'provider',
+        data: provider,
+        icon: 'user',
+        color: '#3b82f6'
+      });
+    });
+
+    // Generate markers from services
+    this.services.forEach(service => {
+      this.mapMarkers.push({
+        id: `service-${service.id}`,
+        name: service.name,
+        position: {
+          lat: this.mapCenter.lat + (Math.random() - 0.5) * 0.1,
+          lng: this.mapCenter.lng + (Math.random() - 0.5) * 0.1
+        },
+        type: 'service',
+        data: service,
+        icon: 'briefcase',
+        color: '#10b981'
+      });
+    });
+  }
+
+  onMarkerClick(marker: any) {
+    console.log('Marker clicked:', marker);
+    // Handle marker click - could show details, navigate, etc.
+  }
+
+  onMarkerAction(event: { marker: any; action: string }) {
+    console.log('Marker action:', event);
+    const { marker, action } = event;
+    
+    switch (action) {
+      case 'view':
+        this.viewMarkerDetails(marker);
+        break;
+      case 'book':
+        this.bookMarkerService(marker);
+        break;
+    }
+  }
+
+  onViewModeChange(mode: 'map' | 'list') {
+    console.log('View mode changed to:', mode);
+    // Handle view mode change
+  }
+
+  onBoundsChange(bounds: any) {
+    console.log('Map bounds changed:', bounds);
+    // Handle bounds change - could filter results based on visible area
+  }
+
+  onCenterChange(center: { lat: number; lng: number }) {
+    console.log('Map center changed:', center);
+    this.mapCenter = center;
+  }
+
+  private viewMarkerDetails(marker: any) {
+    // Show marker details in a modal or navigate to details page
+    console.log('Viewing details for:', marker.name);
+  }
+
+  private bookMarkerService(marker: any) {
+    // Handle booking for the marker's service
+    if (marker.type === 'service') {
+      this.bookService(marker.data.id);
+    } else if (marker.type === 'provider') {
+      // Navigate to provider's services
+      console.log('Navigate to provider services:', marker.data.id);
+    }
   }
 }
