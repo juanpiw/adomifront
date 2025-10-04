@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { IconComponent, IconName } from '../icon/icon.component';
 import { MapViewComponent } from '../map-view/map-view.component';
 import { UserCardComponent, UserCardData } from '../user-card/user-card.component';
@@ -45,6 +45,10 @@ export class MapCardComponent implements OnInit {
   @Input() showMapControls: boolean = true;
   @Input() showMapLegend: boolean = true;
 
+  isMobile: boolean = false;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   @Output() professionalClick = new EventEmitter<ProfessionalCard>();
   @Output() professionalBook = new EventEmitter<ProfessionalCard>();
   @Output() markerClick = new EventEmitter<MapCardMarker>();
@@ -52,6 +56,16 @@ export class MapCardComponent implements OnInit {
   @Output() viewModeChange = new EventEmitter<'map' | 'list'>();
 
   ngOnInit() {
+    // Detect mobile device
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile = window.innerWidth <= 1024;
+      
+      // Listen for window resize events
+      window.addEventListener('resize', () => {
+        this.isMobile = window.innerWidth <= 1024;
+      });
+    }
+    
     // Si no hay profesional destacado, tomar el primero de la lista
     if (!this.highlightedProfessional && this.professionals.length > 0) {
       this.highlightedProfessional = this.professionals[0];

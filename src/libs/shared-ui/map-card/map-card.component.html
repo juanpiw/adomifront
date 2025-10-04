@@ -27,7 +27,9 @@
 
     <!-- Right Panel: Map Section -->
     <div class="map-section">
+      <!-- Desktop: Full Map View -->
       <ui-map-view
+        *ngIf="!isMobile"
         [title]="'Mapa de Servicios'"
         [subtitle]="'Encuentra servicios cerca de ti'"
         [markers]="mapMarkers"
@@ -41,6 +43,26 @@
         (markerAction)="onMarkerAction($event)"
         (viewModeChange)="onViewModeChange($event)">
       </ui-map-view>
+      
+      <!-- Mobile: Simplified Map Placeholder -->
+      <div *ngIf="isMobile" class="mobile-map-placeholder">
+        <div class="mobile-map-content">
+          <div class="mobile-map-icon">
+            <svg class="w-12 h-12 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </div>
+          <h4 class="mobile-map-title">Mapa Interactivo</h4>
+          <p class="mobile-map-subtitle">Ver ubicaciones de servicios</p>
+          <div class="mobile-map-markers">
+            <div *ngFor="let marker of mapMarkers" class="mobile-marker-item">
+              <div class="mobile-marker-dot" [style.background-color]="marker.color || '#6366f1'"></div>
+              <span class="mobile-marker-name">{{ marker.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     
   </div>
