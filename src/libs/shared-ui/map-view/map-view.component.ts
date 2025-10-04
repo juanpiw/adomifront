@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { IconComponent } from '../icon/icon.component';
+import { IconComponent, IconName } from '../icon/icon.component';
 
 interface MapMarker {
   id: string;
@@ -401,9 +401,9 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     return `${baseClass} ${typeClass}`;
   }
 
-  getMarkerIconName(marker: MapMarker): 'user' | 'briefcase' | 'map-pin' {
+  getMarkerIconName(marker: MapMarker): IconName {
     if (marker.icon && (marker.icon === 'user' || marker.icon === 'briefcase' || marker.icon === 'map-pin')) {
-      return marker.icon;
+      return marker.icon as IconName;
     }
     
     switch (marker.type) {
