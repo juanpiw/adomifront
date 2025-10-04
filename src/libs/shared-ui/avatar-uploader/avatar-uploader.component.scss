@@ -5,3 +5,5 @@
 .preview .actions { display:flex; gap:8px; }
 .picker { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border:1px dashed var(--color-border); border-radius:12px; cursor:pointer; color: var(--color-muted); }
 .btn { border:1px solid var(--color-border); border-radius:10px; padding:8px 10px; background: var(--color-bg); cursor:pointer; }
+.preview .actions button { border:1px solid var(--color-border); border-radius:10px; padding:8px 10px; background: var(--color-bg); cursor:pointer; color: var(--color-text); font-size: 0.875rem; transition: all 0.2s ease-in-out; }
+.preview .actions button:hover { background: var(--color-bg-hover, #f3f4f6); border-color: var(--color-border-hover, #d1d5db); }
