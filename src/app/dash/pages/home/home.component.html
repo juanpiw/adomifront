@@ -8,6 +8,14 @@
       (publicProfileClick)="onPublicProfileClick()">
     </app-inicio-header>
 
+    <!-- Online Status Switch -->
+    <div class="online-status-container">
+      <app-online-status-switch 
+        [isOnline]="isOnline"
+        (statusChange)="onStatusChange($event)">
+      </app-online-status-switch>
+    </div>
+
    
 <div class="container-pro">
 

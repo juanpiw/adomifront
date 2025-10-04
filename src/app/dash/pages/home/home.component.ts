@@ -6,6 +6,7 @@ import { InicioIngresosMesComponent, IngresosData } from '../../../../libs/share
 import { InicioIngresosDiaComponent, IngresosDiaData } from '../../../../libs/shared-ui/inicio-ingresos-dia/inicio-ingresos-dia.component';
 import { InicioSolicitudesComponent, SolicitudData } from '../../../../libs/shared-ui/inicio-solicitudes/inicio-solicitudes.component';
 import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
+import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 
 @Component({
   selector: 'app-d-home',
@@ -17,12 +18,16 @@ import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from 
     InicioIngresosMesComponent,
     InicioIngresosDiaComponent,
     InicioSolicitudesComponent,
-    InicioGestionDisponibilidadComponent
+    InicioGestionDisponibilidadComponent,
+    OnlineStatusSwitchComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class DashHomeComponent {
+  // Estado online/offline
+  isOnline: boolean = true;
+
   // Datos para el header
   headerData: HeaderData = {
     userName: 'Elena',
@@ -121,5 +126,11 @@ export class DashHomeComponent {
   onRemoveTimeBlock(blockId: string) {
     this.gestionData.timeBlocks = this.gestionData.timeBlocks.filter(block => block.id !== blockId);
     console.log('Bloque de tiempo eliminado:', blockId);
+  }
+
+  onStatusChange(isOnline: boolean) {
+    this.isOnline = isOnline;
+    console.log('Estado cambiado a:', isOnline ? 'Online' : 'Offline');
+    // TODO: Implementar lógica para actualizar estado en el backend
   }
 }
