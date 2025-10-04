@@ -1,35 +1,81 @@
 .seccion-fotos {
-  @apply bg-white p-8 rounded-2xl shadow-sm border border-slate-200;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
 
   &__title {
-    @apply text-2xl font-bold text-slate-900;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0f172a;
+    margin: 0;
   }
 
   &__subtitle {
-    @apply text-slate-500 mt-1;
+    color: #64748b;
+    margin: 0.25rem 0 0 0;
   }
 
   &__content {
-    @apply mt-6 flex items-center space-x-8;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 3rem;
+    }
   }
 
   &__photo-section {
-    @apply flex flex-col;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 
   &__photo-label {
-    @apply font-semibold text-slate-700 mb-2;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
   }
 
   &__photo-controls {
-    @apply flex items-center space-x-4;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: center;
+      gap: 1.5rem;
+    }
   }
 
   &__profile-image {
-    @apply w-24 h-24 rounded-full object-cover;
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
   &__cover-image {
-    @apply w-64 h-24 rounded-lg object-cover;
+    width: 16rem;
+    height: 6rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    border: 3px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: 640px) {
+      width: 100%;
+      max-width: 16rem;
+    }
   }
 }
