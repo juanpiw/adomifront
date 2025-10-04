@@ -12,8 +12,16 @@ import { AuthService } from '../../auth/services/auth.service';
   styleUrls: ['./client-layout.component.scss']
 })
 export class ClientLayoutComponent {
+  isCollapsed = false;
+  
   private auth = inject(AuthService);
   private router = inject(Router);
+
+  onNav() {
+    if (window && window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
+      this.isCollapsed = true;
+    }
+  }
 
   logout(): void {
     this.auth.logout().subscribe({
