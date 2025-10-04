@@ -1,38 +1,36 @@
 ﻿@if (user) {
-  <div class="uc-card" (click)="onUserClick()">
-    <!-- Header con Imagen y Nombre -->
-    <div class="uc-header">
-      <img class="uc-avatar" [src]="user.avatar" [alt]="'Foto de ' + user.name">
-      <div class="uc-header-text">
-        <h2 class="uc-name">{{ user.name }}</h2>
-        <p class="uc-profession">{{ user.profession }}</p>
+  <div class="card" (click)="onUserClick()">
+    <div class="card-header">
+      <img class="avatar" [src]="user.avatar" [alt]="'Foto de ' + user.name">
+      <div class="user-details">
+        <h2 class="user-name">{{ user.name }}</h2>
+        <p class="user-profession">{{ user.profession }}</p>
       </div>
     </div>
 
-    <!-- Descripción (opcional) -->
     @if (user.description) {
-      <p class="uc-desc">{{ user.description }}</p>
+      <p class="card-description">
+        {{ user.description }}
+      </p>
+    }
+    
+    @if (showRating) {
+      <div class="rating-section">
+        <div class="rating-stars">
+          <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+          <span class="rating-value">{{ user.rating.toFixed(1) }}</span>
+        </div>
+        <span class="rating-reviews">({{ user.reviews }} reseñas)</span>
+      </div>
     }
 
-    <!-- Rating y Reseñas -->
-    <div class="uc-rating">
-      <div class="uc-rating-left">
-        <svg class="uc-star" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-        </svg>
-        <span class="uc-rating-value">{{ user.rating.toFixed(1) }}</span>
-      </div>
-      <span class="uc-reviews">({{ user.reviews }} reseñas)</span>
-    </div>
-
-    <!-- Botón de Acción -->
-    <button class="uc-button" (click)="onButtonClick($event)">
+    <button class="action-button" (click)="onButtonClick($event)">
       {{ buttonText }}
-      <span class="uc-shine"></span>
+      <span class="button-shine"></span>
     </button>
   </div>
 } @else {
-  <div class="uc-card uc-card-empty">
-    <p class="uc-empty">Cargando datos del profesional...</p>
+  <div class="card">
+    <p class="card-description">Cargando datos del profesional...</p>
   </div>
 }
