@@ -20,7 +20,7 @@ export class InicioIngresosMesComponent implements OnInit, OnDestroy {
     amount: '$450.000',
     completedAppointments: 22,
     averageRating: 4.9,
-    chartData: [100, 150, 200, 180, 250, 300, 280]
+    chartData: [45, 62, 78, 55, 89, 95, 82]
   };
 
   @Output() viewReportClick = new EventEmitter<IngresosData>();
@@ -51,16 +51,17 @@ export class InicioIngresosMesComponent implements OnInit, OnDestroy {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           this.chart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
               labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
               datasets: [{
                 label: 'Ingresos',
                 data: this.data.chartData,
+                backgroundColor: 'rgba(79, 70, 229, 0.8)',
                 borderColor: '#4f46e5',
-                backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                tension: 0.4,
-                fill: true
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false
               }]
             },
             options: {
@@ -76,6 +77,11 @@ export class InicioIngresosMesComponent implements OnInit, OnDestroy {
                   beginAtZero: true,
                   grid: {
                     color: '#f1f5f9'
+                  },
+                  ticks: {
+                    callback: function(value) {
+                      return '$' + value + 'k';
+                    }
                   }
                 },
                 x: {
@@ -83,6 +89,10 @@ export class InicioIngresosMesComponent implements OnInit, OnDestroy {
                     display: false
                   }
                 }
+              },
+              interaction: {
+                intersect: false,
+                mode: 'index'
               }
             }
           });

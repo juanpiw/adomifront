@@ -40,7 +40,7 @@ export class DashHomeComponent {
     amount: '$450.000',
     completedAppointments: 22,
     averageRating: 4.9,
-    chartData: [100, 150, 200, 180, 250, 300, 280]
+    chartData: [45, 62, 78, 55, 89, 95, 82]
   };
 
   // Datos para solicitudes
