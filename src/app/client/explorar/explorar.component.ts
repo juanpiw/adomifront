@@ -46,11 +46,14 @@ interface Service {
         <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white relative overflow-hidden">
           <div class="relative z-10">
             <h3 class="text-xl font-bold">Relájate, nosotros nos encargamos</h3>
-            <p class="mt-1 max-w-lg text-xs">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>
-            <button class="mt-3 bg-white text-indigo-600 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition duration-300" (click)="showCategories()">
+            <p class="mt-1 max-w-lg text-xs">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>  
+          </div>
+          <div>
+           <button class="mt-3 bg-white text-indigo-600 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition duration-300" (click)="showCategories()">
               Explorar Categorías
             </button>
           </div>
+          
           <div class="absolute -bottom-4 -right-4 w-24 h-24 bg-white/20 rounded-full"></div>
           <div class="absolute top-4 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
         </div>

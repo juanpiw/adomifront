@@ -1,5 +1,5 @@
 ﻿/* Reset minimal inside component scope (safe) */
-:host { display: block; font-family: 'Inter', sans-serif; }
+:host { display: block; font-family: 'Inter', sans-serif; width: 100%; }
 
 /* --- Contenedor de la Tarjeta (Frost/Glass) --- */
 .card {
