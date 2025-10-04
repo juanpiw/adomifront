@@ -33,6 +33,11 @@
   width: 60px;
   min-height: 100vh;
   box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rail:hover {
+  background: linear-gradient(180deg, #334155, #475569);
 }
 
 .rail .rail-item { 
@@ -44,19 +49,42 @@
   justify-content: center; 
   color: #94a3b8; 
   text-decoration: none; 
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  background: transparent;
+}
+
+.rail .rail-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.1);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.rail .rail-item:hover::before { 
+  opacity: 1;
+  background: rgba(99, 102, 241, 0.2);
 }
 
 .rail .rail-item:hover { 
-  background: rgba(99, 102, 241, 0.15); 
   color: #e2e8f0; 
   transform: scale(1.05);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
+.rail .rail-item.active::before {
+  opacity: 1;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
 .rail .rail-item.active { 
-  background: linear-gradient(135deg, #6366f1, #8b5cf6); 
   color: #fff; 
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
   transform: scale(1.05);
@@ -98,20 +126,45 @@
   padding: 12px 14px; 
   border-radius: 12px; 
   text-decoration: none; 
-  color: var(--color-text); 
+  color: #64748b; 
   display: flex; 
   align-items: center; 
   gap: 10px; 
-  transition: transform .15s ease, background .2s ease, box-shadow .2s ease; 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background: transparent;
+}
+
+.menu a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.08);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.menu a:hover::before { 
+  opacity: 1;
+  background: rgba(99, 102, 241, 0.12);
 }
 
 .menu a:hover { 
-  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg)); 
+  color: #475569;
   transform: translateX(2px); 
 }
 
+.menu a.active::before {
+  opacity: 1;
+  background: linear-gradient(135deg, #f3f0ff 0%, #eef2ff 100%);
+}
+
 .menu a.active { 
-  background: linear-gradient(135deg, #f3f0ff 0%, #eef2ff 100%); 
   color: #6366f1;
   font-weight: 600;
   border: 1px solid #c7d2fe;
@@ -119,7 +172,7 @@
   position: relative;
   transform: translateX(4px);
   
-  &::before {
+  &::after {
     content: '';
     position: absolute;
     left: -1px;
@@ -130,10 +183,23 @@
     background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
     border-radius: 0 2px 2px 0;
     box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   ui-icon {
     color: #6366f1;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 4px;
+    opacity: 1;
   }
 }
 
