@@ -42,10 +42,10 @@ import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/sh
 })
 export class DashPerfilComponent {
   // Datos básicos del perfil
-  name = '';
-  bio = '';
-  phone = '';
-  avatar: string | null = null;
+  name = 'Elena Torres';
+  bio = 'Estilista profesional con más de 5 años de experiencia en cortes modernos y coloración. Especializada en técnicas de color y cortes personalizados.';
+  phone = '+56 9 1234 5678';
+  avatar: string | null = 'https://placehold.co/96x96/C7D2FE/4338CA?text=ET';
   lang = 'es';
   emailNoti = true;
   pushNoti = true;
