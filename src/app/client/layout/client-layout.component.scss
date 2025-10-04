@@ -222,6 +222,10 @@
     grid-template-columns: 1fr; 
   }
   
+  .client-layout.sidebar-collapsed { 
+    grid-template-columns: 1fr; /* Override: 100% width on mobile */
+  }
+  
   .sidebar { 
     position: fixed; 
     left: 0; 

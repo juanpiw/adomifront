@@ -57,17 +57,17 @@ interface Service {
       </header>
 
       <!-- Hero Banner -->
-      <section class="mb-12">
-        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-10 text-white relative overflow-hidden">
+      <section class="mb-8">
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden">
           <div class="relative z-10">
-            <h3 class="text-3xl font-bold">Relájate, nosotros nos encargamos</h3>
-            <p class="mt-2 max-w-lg">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>
-            <button class="mt-6 bg-white text-indigo-600 font-bold px-6 py-3 rounded-xl hover:bg-indigo-50 transition duration-300" (click)="showCategories()">
+            <h3 class="text-2xl font-bold">Relájate, nosotros nos encargamos</h3>
+            <p class="mt-2 max-w-lg text-sm">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>
+            <button class="mt-4 bg-white text-indigo-600 font-bold px-4 py-2 rounded-lg hover:bg-indigo-50 transition duration-300" (click)="showCategories()">
               Explorar Categorías
             </button>
           </div>
-          <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-white/20 rounded-full"></div>
-          <div class="absolute top-10 -right-20 w-64 h-64 bg-white/10 rounded-full"></div>
+          <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-white/20 rounded-full"></div>
+          <div class="absolute top-6 -right-12 w-40 h-40 bg-white/10 rounded-full"></div>
         </div>
       </section>
 
