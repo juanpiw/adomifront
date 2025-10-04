@@ -41,8 +41,23 @@ interface Service {
   imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent],
   template: `
     <div class="explorar-container">
+      <!-- Hero Banner (ahora arriba del header) -->
+      <section class="mb-6">
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white relative overflow-hidden">
+          <div class="relative z-10">
+            <h3 class="text-xl font-bold">Relájate, nosotros nos encargamos</h3>
+            <p class="mt-1 max-w-lg text-xs">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>
+            <button class="mt-3 bg-white text-indigo-600 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition duration-300" (click)="showCategories()">
+              Explorar Categorías
+            </button>
+          </div>
+          <div class="absolute -bottom-4 -right-4 w-24 h-24 bg-white/20 rounded-full"></div>
+          <div class="absolute top-4 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
+        </div>
+      </section>
+
       <!-- Header with Search -->
-      <header class="mb-10">
+      <header class="mb-8">
         <h2 class="text-4xl font-extrabold text-gray-800">Hola, {{ user?.name || 'Usuario' }}!</h2>
         <p class="text-gray-500 mt-2 text-lg">Encuentra y agenda los mejores servicios a domicilio.</p>
         <ui-search-input
@@ -55,21 +70,6 @@ interface Service {
           ariaLabel="Búsqueda avanzada de servicios"
         ></ui-search-input>
       </header>
-
-      <!-- Hero Banner -->
-      <section class="mb-8">
-        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden">
-          <div class="relative z-10">
-            <h3 class="text-2xl font-bold">Relájate, nosotros nos encargamos</h3>
-            <p class="mt-2 max-w-lg text-sm">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>
-            <button class="mt-4 bg-white text-indigo-600 font-bold px-4 py-2 rounded-lg hover:bg-indigo-50 transition duration-300" (click)="showCategories()">
-              Explorar Categorías
-            </button>
-          </div>
-          <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-white/20 rounded-full"></div>
-          <div class="absolute top-6 -right-12 w-40 h-40 bg-white/10 rounded-full"></div>
-        </div>
-      </section>
 
       <!-- Filters Section -->
       <div class="filters-section mb-8">
