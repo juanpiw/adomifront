@@ -213,3 +213,6 @@ firebase.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Templates (moved outside project to avoid compilation issues)
+/templates/
