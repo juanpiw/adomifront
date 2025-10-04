@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
 
 interface MapMarker {
@@ -92,10 +92,9 @@ interface MapBounds {
           class="map-view" 
           [class]="mapViewClass"
           [class.hidden]="viewMode !== 'map'"
-          #mapContainer
         >
-          <!-- Map Placeholder/Canvas -->
-          <div class="map-canvas" [class]="canvasClass">
+          <!-- Interactive Map Canvas -->
+          <div class="map-canvas" [class]="canvasClass" #mapContainer>
             <!-- Map will be rendered here -->
             <div class="map-placeholder" [class]="placeholderClass">
               <div class="map-info" [class]="infoClass">
@@ -105,7 +104,7 @@ interface MapBounds {
               </div>
             </div>
             
-            <!-- Map Markers -->
+            <!-- Interactive Map Markers -->
             <div class="map-markers" [class]="markersClass">
               <div 
                 *ngFor="let marker of markers; trackBy: trackByMarkerId"
@@ -117,7 +116,7 @@ interface MapBounds {
                 [attr.aria-label]="marker.name"
               >
                 <div class="marker-pin" [class]="getMarkerPinClass(marker)">
-                  <ui-icon [name]="getMarkerIcon(marker)" [class]="getMarkerIconClass(marker)"></ui-icon>
+                  <ui-icon [name]="getMarkerIconName(marker)" [class]="getMarkerIconClass(marker)"></ui-icon>
                 </div>
                 <div class="marker-label" [class]="markerLabelClass">{{ marker.name }}</div>
               </div>
@@ -143,14 +142,14 @@ interface MapBounds {
                     <button 
                       class="overlay-action-btn primary"
                       [class]="overlayActionButtonClass"
-                      (click)="onMarkerAction(selectedMarker, 'view')"
+                      (click)="onMarkerAction({ marker: selectedMarker, action: 'view' })"
                     >
                       {{ viewDetailsLabel }}
                     </button>
                     <button 
                       class="overlay-action-btn secondary"
                       [class]="overlayActionButtonClass"
-                      (click)="onMarkerAction(selectedMarker, 'book')"
+                      (click)="onMarkerAction({ marker: selectedMarker, action: 'book' })"
                     >
                       {{ bookServiceLabel }}
                     </button>
@@ -201,7 +200,7 @@ interface MapBounds {
               (click)="onListItemClick(marker)"
             >
               <div class="item-marker" [class]="getItemMarkerClass(marker)">
-                <ui-icon [name]="getMarkerIcon(marker)" [class]="getItemIconClass(marker)"></ui-icon>
+                <ui-icon [name]="getMarkerIconName(marker)" [class]="getItemIconClass(marker)"></ui-icon>
               </div>
               <div class="item-content" [class]="itemContentClass">
                 <h5 class="item-title" [class]="itemTitleClass">{{ marker.name }}</h5>
@@ -220,7 +219,7 @@ interface MapBounds {
                 <button 
                   class="item-action-btn"
                   [class]="itemActionButtonClass"
-                  (click)="onMarkerAction(marker, 'view')"
+                  (click)="onMarkerAction({ marker: marker, action: 'view' })"
                 >
                   {{ viewDetailsLabel }}
                 </button>
@@ -233,7 +232,7 @@ interface MapBounds {
   `,
   styleUrls: ['./map-view.component.scss']
 })
-export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   @Input() title: string = 'Mapa de Servicios';
   @Input() subtitle: string = 'Encuentra servicios cerca de ti';
   @Input() markers: MapMarker[] = [];
@@ -342,6 +341,10 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cleanup();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    // Handle input changes if needed
+  }
+
   private initializeMap() {
     // Initialize map settings
     if (this.mapContainer) {
@@ -357,7 +360,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cleanup() {
-    // Cleanup any map instances or event listeners
+    // Cleanup any resources
   }
 
   // Public methods
@@ -367,13 +370,13 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   centerMap() {
+    // Center the map view
     this.centerChange.emit(this.center);
-    // In a real implementation, this would center the actual map
   }
 
   toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
-    // In a real implementation, this would toggle fullscreen mode
+    // Handle fullscreen toggle
   }
 
   closeOverlay() {
@@ -398,7 +401,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${baseClass} ${typeClass}`;
   }
 
-  getMarkerIcon(marker: MapMarker): 'user' | 'briefcase' | 'map-pin' {
+  getMarkerIconName(marker: MapMarker): 'user' | 'briefcase' | 'map-pin' {
     if (marker.icon && (marker.icon === 'user' || marker.icon === 'briefcase' || marker.icon === 'map-pin')) {
       return marker.icon;
     }
@@ -416,11 +419,21 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getMarkerPosition(marker: MapMarker): { x: number; y: number } {
-    // Simplified positioning - in a real implementation, this would calculate
-    // the position based on lat/lng coordinates and map bounds
+    // Calculate position based on lat/lng coordinates
+    const centerLat = this.center.lat;
+    const centerLng = this.center.lng;
+    
+    // Simple positioning calculation
+    const latDiff = marker.position.lat - centerLat;
+    const lngDiff = marker.position.lng - centerLng;
+    
+    // Convert to percentage positions (simplified)
+    const x = 50 + (lngDiff * 1000); // Scale factor for longitude
+    const y = 50 - (latDiff * 1000); // Scale factor for latitude
+    
     return {
-      x: Math.random() * 80 + 10, // Random position for demo
-      y: Math.random() * 80 + 10
+      x: Math.max(5, Math.min(95, x)),
+      y: Math.max(5, Math.min(95, y))
     };
   }
 
@@ -436,8 +449,10 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getMarkerDistance(marker: MapMarker): string {
-    // Simplified distance calculation
-    const distance = Math.random() * 5 + 0.5;
+    // Calculate distance from center (simplified)
+    const latDiff = marker.position.lat - this.center.lat;
+    const lngDiff = marker.position.lng - this.center.lng;
+    const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111; // Rough km conversion
     return `${distance.toFixed(1)} km`;
   }
 
@@ -471,7 +486,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.markerClick.emit(marker);
   }
 
-  onMarkerAction(marker: MapMarker, action: string) {
-    this.markerAction.emit({ marker, action });
+  onMarkerAction(event: { marker: MapMarker; action: string }) {
+    this.markerAction.emit(event);
   }
 }
