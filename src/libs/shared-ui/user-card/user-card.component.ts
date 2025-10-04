@@ -1,6 +1,5 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent, IconName } from '../icon/icon.component';
 
 export interface UserCardData {
   id: string;
@@ -17,7 +16,7 @@ export interface UserCardData {
 @Component({
   selector: 'ui-user-card',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule],
   templateUrl: './user-card.component.html',
   styleUrls: ['./user-card.component.scss']
 })

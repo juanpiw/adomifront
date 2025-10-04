@@ -19,7 +19,7 @@
   </div>
   <ui-dropdown [options]="[{label:'Opción A', value:'A'},{label:'Opción B', value:'B'}]"></ui-dropdown>
   <ui-date label="Fecha"></ui-date>
-  <user-card name="Jane Doe" email="jane@example.com"></user-card>
+  <ui-user-card [user]="mockUser" [variant]="'default'" [size]="'md'"></ui-user-card>
 </section>
 
 <section class="elevated" style="padding: 16px; max-width: 960px; margin: 0 auto;">
