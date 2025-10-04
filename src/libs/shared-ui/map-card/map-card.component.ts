@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent, IconName } from '../icon/icon.component';
 import { MapViewComponent } from '../map-view/map-view.component';
+import { UserCardComponent, UserCardData } from '../user-card/user-card.component';
 
 export interface ProfessionalCard {
   id: string;
@@ -29,7 +30,7 @@ export interface MapCardMarker {
 @Component({
   selector: 'ui-map-card',
   standalone: true,
-  imports: [CommonModule, MapViewComponent],
+  imports: [CommonModule, MapViewComponent, UserCardComponent],
   templateUrl: './map-card.component.html',
   styleUrls: ['./map-card.component.scss']
 })
@@ -97,5 +98,20 @@ export class MapCardComponent implements OnInit {
     if (fill === 1) return 'star';
     if (fill === 0.5) return 'star-half';
     return 'star-outline';
+  }
+
+  // Convert ProfessionalCard to UserCardData
+  convertToUserCardData(professional: ProfessionalCard): UserCardData {
+    return {
+      id: professional.id,
+      name: professional.name,
+      profession: professional.profession,
+      avatar: professional.avatar,
+      rating: professional.rating,
+      reviews: professional.reviews,
+      description: professional.description,
+      location: professional.location,
+      isHighlighted: professional.isHighlighted
+    };
   }
 }
