@@ -1,0 +1,61 @@
+<section class="horario-disponibilidad">
+  <h3 class="horario-disponibilidad__title">Horario y Disponibilidad</h3>
+  <p class="horario-disponibilidad__subtitle">Define tu horario semanal y programa días de excepción específicos.</p>
+
+  <div class="horario-disponibilidad__content">
+    <h4 class="horario-disponibilidad__section-title">Horario Semanal Estándar</h4>
+    
+    <div class="horario-disponibilidad__days">
+      <div 
+        *ngFor="let day of schedule.days"
+        class="horario-disponibilidad__day"
+        [class.horario-disponibilidad__day--active]="day.enabled"
+        [class.horario-disponibilidad__day--inactive]="!day.enabled">
+        
+        <div class="horario-disponibilidad__day-header">
+          <span class="horario-disponibilidad__day-name">{{ day.day }}</span>
+          <div class="horario-disponibilidad__toggle" (click)="onToggleDay(day)">
+            <div class="horario-disponibilidad__toggle-track" 
+                 [class.horario-disponibilidad__toggle-track--active]="day.enabled">
+              <div class="horario-disponibilidad__toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!day.enabled" class="horario-disponibilidad__day-inactive-message">
+          (Día de descanso, sin reservas)
+        </div>
+
+        <div *ngIf="day.enabled" class="horario-disponibilidad__day-content">
+          <div *ngFor="let block of day.timeBlocks" class="horario-disponibilidad__time-block">
+            <div class="horario-disponibilidad__time-inputs">
+              <span class="horario-disponibilidad__time-label">De</span>
+              <input 
+                type="time"
+                class="horario-disponibilidad__time-input"
+                [value]="block.start"
+                (change)="onTimeBlockChange(day, block.id, 'start', $event.target.value)">
+              <span class="horario-disponibilidad__time-label">a</span>
+              <input 
+                type="time"
+                class="horario-disponibilidad__time-input"
+                [value]="block.end"
+                (change)="onTimeBlockChange(day, block.id, 'end', $event.target.value)">
+              <button 
+                class="horario-disponibilidad__remove-button"
+                (click)="onRemoveTimeBlock(day, block.id)">
+                ✖
+              </button>
+            </div>
+          </div>
+          
+          <button 
+            class="horario-disponibilidad__add-button"
+            (click)="onAddTimeBlock(day)">
+            + Añadir bloque
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

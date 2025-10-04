@@ -1,0 +1,51 @@
+<section class="excepciones-feriados">
+  <h4 class="excepciones-feriados__title">Fechas de Excepción (Feriados, Vacaciones)</h4>
+  <p class="excepciones-feriados__description">
+    Bloquea fechas específicas en las que no estarás disponible. Estas anulan tu horario semanal.
+  </p>
+
+  <div class="excepciones-feriados__form">
+    <div class="excepciones-feriados__form-row">
+      <div class="excepciones-feriados__input-group">
+        <label class="excepciones-feriados__label">Seleccionar Fecha</label>
+        <input 
+          type="date"
+          class="excepciones-feriados__input"
+          [(ngModel)]="newDate">
+      </div>
+      
+      <div class="excepciones-feriados__input-group">
+        <label class="excepciones-feriados__label">Razón (Opcional)</label>
+        <input 
+          type="text"
+          class="excepciones-feriados__input"
+          placeholder="Ej: Vacaciones, Feriado, etc."
+          [(ngModel)]="newReason">
+      </div>
+      
+      <button 
+        class="excepciones-feriados__add-button"
+        (click)="onAddException()">
+        Bloquear Fecha
+      </button>
+    </div>
+  </div>
+
+  <div class="excepciones-feriados__list">
+    <div 
+      *ngFor="let exception of exceptions"
+      class="excepciones-feriados__item">
+      <div class="excepciones-feriados__item-content">
+        <span class="excepciones-feriados__item-date">{{ formatDate(exception.date) }}</span>
+        <span *ngIf="exception.reason" class="excepciones-feriados__item-reason">
+          — {{ exception.reason }}
+        </span>
+      </div>
+      <button 
+        class="excepciones-feriados__remove-button"
+        (click)="onRemoveException(exception.id)">
+        🗑️
+      </button>
+    </div>
+  </div>
+</section>

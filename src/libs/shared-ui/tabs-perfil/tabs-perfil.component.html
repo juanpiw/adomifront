@@ -1,0 +1,13 @@
+<div class="tabs-perfil">
+  <div class="tabs-perfil__container">
+    <nav class="tabs-perfil__nav">
+      <button 
+        *ngFor="let tab of tabs"
+        class="tabs-perfil__button"
+        [class.tabs-perfil__button--active]="isActive(tab.id)"
+        (click)="onTabClick(tab.id)">
+        {{ tab.label }}
+      </button>
+    </nav>
+  </div>
+</div>

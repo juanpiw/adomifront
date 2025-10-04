@@ -1,0 +1,60 @@
+<section class="ubicacion-disponibilidad">
+  <h3 class="ubicacion-disponibilidad__title">Ubicación y Disponibilidad</h3>
+  <p class="ubicacion-disponibilidad__subtitle">Define dónde trabajas y si estás aceptando nuevas reservas.</p>
+  
+  <div class="ubicacion-disponibilidad__content">
+    <!-- Disponible para nuevas reservas -->
+    <div class="ubicacion-disponibilidad__toggle-item">
+      <label class="ubicacion-disponibilidad__toggle-label">Disponible para nuevas reservas</label>
+      <div class="ubicacion-disponibilidad__toggle" (click)="onToggleNewBookings()">
+        <div class="ubicacion-disponibilidad__toggle-track" 
+             [class.ubicacion-disponibilidad__toggle-track--active]="settings.availableForNewBookings">
+          <div class="ubicacion-disponibilidad__toggle-thumb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compartir ubicación en tiempo real -->
+    <div class="ubicacion-disponibilidad__toggle-item">
+      <div class="ubicacion-disponibilidad__toggle-info">
+        <label class="ubicacion-disponibilidad__toggle-label">Compartir mi ubicación en tiempo real</label>
+        <p class="ubicacion-disponibilidad__toggle-description">
+          Al activar, aparecerás en el mapa para clientes cercanos que buscan un servicio inmediato.
+        </p>
+      </div>
+      <div class="ubicacion-disponibilidad__toggle" (click)="onToggleRealTimeLocation()">
+        <div class="ubicacion-disponibilidad__toggle-track" 
+             [class.ubicacion-disponibilidad__toggle-track--active]="settings.shareRealTimeLocation">
+          <div class="ubicacion-disponibilidad__toggle-thumb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zonas de cobertura -->
+    <div class="ubicacion-disponibilidad__zones">
+      <label class="ubicacion-disponibilidad__zones-label">Zonas de Cobertura (a domicilio)</label>
+      <p class="ubicacion-disponibilidad__zones-description">Añade las comunas en las que ofreces tus servicios.</p>
+      
+      <div class="ubicacion-disponibilidad__zones-input-container">
+        <input 
+          type="text" 
+          class="ubicacion-disponibilidad__zones-input"
+          placeholder="Buscar o agregar comuna..."
+          (keyup.enter)="onAddZone()">
+      </div>
+      
+      <div class="ubicacion-disponibilidad__zones-tags">
+        <span 
+          *ngFor="let zone of settings.coverageZones"
+          class="ubicacion-disponibilidad__zone-tag">
+          {{ zone.name }}
+          <button 
+            class="ubicacion-disponibilidad__zone-remove"
+            (click)="onRemoveZone(zone.id)">
+            ×
+          </button>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>

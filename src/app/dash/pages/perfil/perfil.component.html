@@ -1,61 +1,112 @@
 ﻿<div class="perfil-trabajador">
-  <!-- Progreso del perfil -->
-  <app-progress-perfil 
-    [progress]="profileProgress"
-    suggestion="Sugerencia: Añade fotos a tu portafolio para llegar al 100%.">
-  </app-progress-perfil>
+  <!-- Tabs de navegación -->
+  <app-tabs-perfil 
+    [activeTab]="activeTab"
+    (tabChange)="onTabChange($event)">
+  </app-tabs-perfil>
 
-  <!-- Información básica -->
-  <app-info-basica 
-    [info]="basicInfo"
-    (infoChange)="onBasicInfoChange($event)">
-  </app-info-basica>
+  <!-- Contenido del tab activo -->
+  <div class="perfil-trabajador__content">
+    
+    <!-- Tab: Perfil Público -->
+    <div *ngIf="activeTab === 'perfil-publico'" class="perfil-trabajador__tab-content">
+      <!-- Progreso del perfil -->
+      <app-progress-perfil 
+        [progress]="profileProgress"
+        suggestion="Sugerencia: Añade fotos a tu portafolio para llegar al 100%.">
+      </app-progress-perfil>
 
-  <!-- Fotos de perfil -->
-  <app-seccion-fotos
-    (changeProfilePhoto)="onProfilePhotoChange()"
-    (changeCoverPhoto)="onCoverPhotoChange()">
-  </app-seccion-fotos>
+      <!-- Información básica -->
+      <app-info-basica 
+        [info]="basicInfo"
+        (infoChange)="onBasicInfoChange($event)">
+      </app-info-basica>
 
-  <!-- Sobre mí -->
-  <app-sobre-mi
-    [bio]="bio"
-    (bioChange)="onBioChange($event)">
-  </app-sobre-mi>
+      <!-- Fotos de perfil -->
+      <app-seccion-fotos 
+        (changeProfilePhoto)="onProfilePhotoChange()"
+        (changeCoverPhoto)="onCoverPhotoChange()">
+      </app-seccion-fotos>
 
-  <!-- Mis servicios -->
-  <app-mis-servicios
-    [services]="services"
-    (editService)="onEditService($event)"
-    (deleteService)="onDeleteService($event)"
-    (addService)="onAddService()">
-  </app-mis-servicios>
+      <!-- Sobre mí -->
+      <app-sobre-mi 
+        [bio]="bio"
+        (bioChange)="onBioChange($event)">
+      </app-sobre-mi>
 
-  <!-- Portafolio -->
-  <app-portafolio
-    [images]="portfolioImages"
-    [maxImages]="10"
-    (addImage)="onAddPortfolioImage()"
-    (deleteImage)="onDeletePortfolioImage($event)">
-  </app-portafolio>
+      <!-- Mis servicios -->
+      <app-mis-servicios 
+        [services]="services"
+        (editService)="onEditService($event)"
+        (deleteService)="onDeleteService($event)"
+        (addService)="onAddService()">
+      </app-mis-servicios>
 
-  <!-- Configuraciones adicionales (mantener las existentes) -->
-  <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-    <div style="grid-column: span 2;">
-      <avatar-uploader [(src)]="avatar"></avatar-uploader>
+      <!-- Portafolio -->
+      <app-portafolio 
+        [images]="portfolioImages"
+        [maxImages]="10"
+        (addImage)="onAddPortfolioImage()"
+        (deleteImage)="onDeletePortfolioImage($event)">
+      </app-portafolio>
     </div>
-    <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
-    <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
-    <div>
-      <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
-      <language-select [(value)]="lang"></language-select>
+
+    <!-- Tab: Verificación -->
+    <div *ngIf="activeTab === 'verificacion'" class="perfil-trabajador__tab-content">
+      <div class="verificacion-placeholder">
+        <h2>Verificación</h2>
+        <p>Contenido de verificación pendiente de implementar.</p>
+        <p>Aquí se mostrarán los documentos de verificación, estado de verificación, etc.</p>
+      </div>
     </div>
-    <div>
-      <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
-      <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
+
+    <!-- Tab: Configuración -->
+    <div *ngIf="activeTab === 'configuracion'" class="perfil-trabajador__tab-content">
+      <!-- Ubicación y Disponibilidad -->
+      <app-ubicacion-disponibilidad 
+        [settings]="locationSettings"
+        (settingsChange)="onLocationSettingsChange($event)"
+        (addCoverageZone)="onAddCoverageZone($event)"
+        (removeCoverageZone)="onRemoveCoverageZone($event)">
+      </app-ubicacion-disponibilidad>
+
+      <!-- Horario y Disponibilidad -->
+      <app-horario-disponibilidad 
+        [schedule]="weeklySchedule"
+        (scheduleChange)="onScheduleChange($event)"
+        (addTimeBlock)="onAddTimeBlock($event)"
+        (removeTimeBlock)="onRemoveTimeBlock($event)"
+        (toggleDay)="onToggleDay($event)">
+      </app-horario-disponibilidad>
+
+      <!-- Excepciones y Feriados -->
+      <app-excepciones-feriados 
+        [exceptions]="exceptions"
+        (exceptionsChange)="onExceptionsChange($event)"
+        (addException)="onAddException($event)"
+        (removeException)="onRemoveException($event)">
+      </app-excepciones-feriados>
+
+      <!-- Configuraciones adicionales (mantener las existentes) -->
+      <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div style="grid-column: span 2;">
+          <avatar-uploader [(src)]="avatar"></avatar-uploader>
+        </div>
+        <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
+        <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
+        <div>
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
+          <language-select [(value)]="lang"></language-select>
+        </div>
+        <div>
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
+          <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
+        </div>
+        <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
+          <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
+        </div>
+      </section>
     </div>
-    <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
-      <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
-    </div>
-  </section>
+
+  </div>
 </div>

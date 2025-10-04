@@ -1,4 +1,5 @@
 ﻿import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
 import { UiButtonComponent } from '../../../../libs/shared-ui/ui-button/ui-button.component';
 import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploader/avatar-uploader.component';
@@ -10,22 +11,31 @@ import { SobreMiComponent } from '../../../../libs/shared-ui/sobre-mi/sobre-mi.c
 import { ProgressPerfilComponent } from '../../../../libs/shared-ui/progress-perfil/progress-perfil.component';
 import { SeccionFotosComponent } from '../../../../libs/shared-ui/seccion-fotos/seccion-fotos.component';
 import { PortafolioComponent, PortfolioImage } from '../../../../libs/shared-ui/portafolio/portafolio.component';
+import { TabsPerfilComponent, TabType } from '../../../../libs/shared-ui/tabs-perfil/tabs-perfil.component';
+import { UbicacionDisponibilidadComponent, LocationSettings, CoverageZone } from '../../../../libs/shared-ui/ubicacion-disponibilidad/ubicacion-disponibilidad.component';
+import { HorarioDisponibilidadComponent, WeeklySchedule } from '../../../../libs/shared-ui/horario-disponibilidad/horario-disponibilidad.component';
+import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
 
 @Component({
   selector: 'app-d-perfil',
   standalone: true,
   imports: [
-    UiInputComponent, 
-    UiButtonComponent, 
-    AvatarUploaderComponent, 
-    LanguageSelectComponent, 
+    CommonModule,
+    UiInputComponent,
+    UiButtonComponent,
+    AvatarUploaderComponent,
+    LanguageSelectComponent,
     NotificationToggleComponent,
     InfoBasicaComponent,
     MisServiciosComponent,
     SobreMiComponent,
     ProgressPerfilComponent,
     SeccionFotosComponent,
-    PortafolioComponent
+    PortafolioComponent,
+    TabsPerfilComponent,
+    UbicacionDisponibilidadComponent,
+    HorarioDisponibilidadComponent,
+    ExcepcionesFeriadosComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
@@ -59,6 +69,80 @@ export class DashPerfilComponent {
   ];
 
   profileProgress = 75;
+
+  // Estado de las tabs
+  activeTab: TabType = 'perfil-publico';
+
+  // Datos para ubicación y disponibilidad
+  locationSettings: LocationSettings = {
+    availableForNewBookings: true,
+    shareRealTimeLocation: false,
+    coverageZones: [
+      { id: '1', name: 'Providencia' },
+      { id: '2', name: 'Las Condes' },
+      { id: '3', name: 'Ñuñoa' }
+    ]
+  };
+
+  // Datos para horario semanal
+  weeklySchedule: WeeklySchedule = {
+    days: [
+      {
+        day: 'Lunes',
+        enabled: true,
+        timeBlocks: [
+          { id: '1', start: '09:00', end: '18:00' }
+        ]
+      },
+      {
+        day: 'Martes',
+        enabled: false,
+        timeBlocks: []
+      },
+      {
+        day: 'Miércoles',
+        enabled: true,
+        timeBlocks: [
+          { id: '2', start: '09:00', end: '18:00' }
+        ]
+      },
+      {
+        day: 'Jueves',
+        enabled: true,
+        timeBlocks: [
+          { id: '3', start: '09:00', end: '18:00' }
+        ]
+      },
+      {
+        day: 'Viernes',
+        enabled: true,
+        timeBlocks: [
+          { id: '4', start: '09:00', end: '18:00' }
+        ]
+      },
+      {
+        day: 'Sábado',
+        enabled: true,
+        timeBlocks: [
+          { id: '5', start: '10:00', end: '16:00' }
+        ]
+      },
+      {
+        day: 'Domingo',
+        enabled: false,
+        timeBlocks: []
+      }
+    ]
+  };
+
+  // Datos para excepciones
+  exceptions: ExceptionDate[] = [
+    {
+      id: '1',
+      date: '2025-10-05',
+      reason: 'Ejemplo: Día de Limpieza/Mantenimiento'
+    }
+  ];
 
   // Event handlers para los componentes
   onBasicInfoChange(info: BasicInfo) {
@@ -100,6 +184,69 @@ export class DashPerfilComponent {
 
   onDeletePortfolioImage(imageId: string) {
     this.portfolioImages = this.portfolioImages.filter(img => img.id !== imageId);
+  }
+
+  // Event handlers para tabs
+  onTabChange(tab: TabType) {
+    this.activeTab = tab;
+  }
+
+  // Event handlers para ubicación y disponibilidad
+  onLocationSettingsChange(settings: LocationSettings) {
+    this.locationSettings = settings;
+  }
+
+  onAddCoverageZone(zoneName: string) {
+    const newZone: CoverageZone = {
+      id: Date.now().toString(),
+      name: zoneName
+    };
+    this.locationSettings = {
+      ...this.locationSettings,
+      coverageZones: [...this.locationSettings.coverageZones, newZone]
+    };
+  }
+
+  onRemoveCoverageZone(zoneId: string) {
+    this.locationSettings = {
+      ...this.locationSettings,
+      coverageZones: this.locationSettings.coverageZones.filter(zone => zone.id !== zoneId)
+    };
+  }
+
+  // Event handlers para horario
+  onScheduleChange(schedule: WeeklySchedule) {
+    this.weeklySchedule = schedule;
+  }
+
+  onAddTimeBlock(data: { day: string; block: any }) {
+    console.log('Agregar bloque de tiempo:', data);
+    // La lógica ya está en el componente
+  }
+
+  onRemoveTimeBlock(data: { day: string; blockId: string }) {
+    console.log('Remover bloque de tiempo:', data);
+    // La lógica ya está en el componente
+  }
+
+  onToggleDay(data: { day: string; enabled: boolean }) {
+    console.log('Toggle día:', data);
+    // La lógica ya está en el componente
+  }
+
+  // Event handlers para excepciones
+  onExceptionsChange(exceptions: ExceptionDate[]) {
+    this.exceptions = exceptions;
+  }
+
+  onAddException(data: { date: string; reason?: string }) {
+    console.log('Agregar excepción:', data);
+    // La lógica ya está en el componente
+  }
+
+  onRemoveException(exceptionId: string) {
+    console.log('Remover excepción:', exceptionId);
+    // La lógica ya está en el componente
   }
 
   save() { 

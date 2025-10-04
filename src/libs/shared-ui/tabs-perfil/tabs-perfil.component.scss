@@ -1,0 +1,38 @@
+.tabs-perfil {
+  border-bottom: 1px solid #e2e8f0;
+
+  &__container {
+    // Container styles if needed
+  }
+
+  &__nav {
+    display: flex;
+    margin-bottom: -1px;
+    gap: 2rem;
+  }
+
+  &__button {
+    white-space: nowrap;
+    padding: 1rem 0.25rem;
+    border-bottom: 2px solid transparent;
+    font-weight: 600;
+    font-size: 1rem;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      color: #374151;
+      border-bottom-color: #cbd5e1;
+    }
+
+    &--active {
+      color: #4338ca;
+      border-bottom-color: #4338ca;
+    }
+  }
+}
