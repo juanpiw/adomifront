@@ -1,39 +1,112 @@
 .mis-servicios {
-  @apply bg-white p-8 rounded-2xl shadow-sm border border-slate-200;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
 
   &__title {
-    @apply text-2xl font-bold text-slate-900;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0f172a;
+    margin: 0;
   }
 
   &__subtitle {
-    @apply text-slate-500 mt-1;
+    color: #64748b;
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
   }
 
   &__list {
-    @apply mt-6 space-y-4;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   &__item {
-    @apply p-4 border border-slate-200 rounded-xl flex items-center;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    background: #fafafa;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    }
   }
 
   &__item-content {
-    @apply flex-grow;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
   &__item-name {
-    @apply font-bold text-slate-800;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1rem;
+    margin: 0;
   }
 
   &__item-details {
-    @apply text-sm text-slate-500;
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+      content: '⏱️';
+      font-size: 0.75rem;
+    }
   }
 
   &__item-actions {
-    @apply flex space-x-2;
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
   }
 
   &__add-button {
-    @apply w-full mt-2 py-3 border-2 border-dashed border-slate-300 text-slate-600 font-semibold rounded-xl hover:border-slate-400 hover:text-slate-700 transition-colors;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 1rem;
+    border: 2px dashed #cbd5e1;
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &:hover {
+      border-color: #94a3b8;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &::before {
+      content: '+';
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
   }
 }
