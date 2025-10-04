@@ -27,8 +27,17 @@ export class InfoBasicaComponent {
   @Output() infoChange = new EventEmitter<BasicInfo>();
 
   onFieldChange(field: keyof BasicInfo, value: string | number | File | null) {
-    const stringValue = typeof value === 'string' ? value : value?.toString() || '';
-    this.info = { ...this.info, [field]: stringValue };
+    let processedValue: string | number;
+    
+    if (field === 'yearsExperience') {
+      // Para años de experiencia, mantener como número
+      processedValue = typeof value === 'number' ? value : parseInt(value?.toString() || '0') || 0;
+    } else {
+      // Para otros campos, convertir a string
+      processedValue = typeof value === 'string' ? value : value?.toString() || '';
+    }
+    
+    this.info = { ...this.info, [field]: processedValue };
     this.infoChange.emit(this.info);
   }
 }

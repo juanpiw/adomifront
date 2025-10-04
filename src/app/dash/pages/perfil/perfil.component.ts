@@ -54,7 +54,8 @@ export class DashPerfilComponent {
   basicInfo: BasicInfo = {
     fullName: 'Elena Torres',
     professionalTitle: 'Estilista Profesional',
-    mainCommune: 'Providencia'
+    mainCommune: 'Providencia',
+    yearsExperience: 5
   };
 
   services: Service[] = [

@@ -25,5 +25,14 @@
         placeholder="Ej: Providencia, Las Condes">
       </ui-input>
     </div>
+    <div class="info-basica__field">
+      <label class="info-basica__label">Años de Experiencia</label>
+      <ui-input
+        type="number"
+        [value]="info.yearsExperience"
+        (valueChange)="onFieldChange('yearsExperience', $event)"
+        placeholder="Ej: 3, 5, 10">
+      </ui-input>
+    </div>
   </div>
 </section>
