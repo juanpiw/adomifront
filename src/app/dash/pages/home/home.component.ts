@@ -1,7 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
-import { InicioSidebarComponent, SidebarItem } from '../../../../libs/shared-ui/inicio-sidebar/inicio-sidebar.component';
 import { InicioProximaCitaComponent, ProximaCitaData } from '../../../../libs/shared-ui/inicio-proxima-cita/inicio-proxima-cita.component';
 import { InicioIngresosMesComponent, IngresosData } from '../../../../libs/shared-ui/inicio-ingresos-mes/inicio-ingresos-mes.component';
 import { InicioSolicitudesComponent, SolicitudData } from '../../../../libs/shared-ui/inicio-solicitudes/inicio-solicitudes.component';
@@ -13,7 +12,6 @@ import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from 
   imports: [
     CommonModule,
     InicioHeaderComponent,
-    InicioSidebarComponent,
     InicioProximaCitaComponent,
     InicioIngresosMesComponent,
     InicioSolicitudesComponent,
@@ -74,10 +72,6 @@ export class DashHomeComponent {
     // TODO: Navegar al perfil público
   }
 
-  onSidebarItemClick(item: SidebarItem) {
-    console.log('Sidebar item clickeado:', item);
-    // TODO: Implementar navegación
-  }
 
   onViewDetailsClick(data: ProximaCitaData) {
     console.log('Ver detalles de cita:', data);
