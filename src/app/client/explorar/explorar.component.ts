@@ -234,13 +234,13 @@ export class ExplorarComponent implements OnInit {
     this.providers = [
       {
         id: 1,
-        name: 'Ana Pérez',
-        email: 'ana@example.com',
+        name: 'Elena Torres',
+        email: 'elena@example.com',
         profession: 'Estilista Profesional',
         description: 'Con más de 10 años de experiencia en color y cortes de vanguardia.',
         rating: 4.9,
-        review_count: 121,
-        avatar_url: 'https://placehold.co/56x56/E0E7FF/4338CA?text=AP',
+        review_count: 85,
+        avatar_url: 'https://placehold.co/64x64/C7D2FE/4338CA?text=ET',
         location: 'Santiago',
         services_count: 5,
         experience_years: 10
@@ -253,7 +253,7 @@ export class ExplorarComponent implements OnInit {
         description: 'Especialista en cocina mediterránea para eventos privados y cenas.',
         rating: 5.0,
         review_count: 89,
-        avatar_url: 'https://placehold.co/56x56/E0E7FF/4338CA?text=MR',
+        avatar_url: 'https://placehold.co/64x64/C7D2FE/4338CA?text=MR',
         location: 'Valparaíso',
         services_count: 3,
         experience_years: 8
@@ -266,7 +266,7 @@ export class ExplorarComponent implements OnInit {
         description: 'Montaje rápido y profesional de todo tipo de muebles. Experiencia garantizada.',
         rating: 4.8,
         review_count: 204,
-        avatar_url: 'https://placehold.co/56x56/E0E7FF/4338CA?text=LG',
+        avatar_url: 'https://placehold.co/64x64/C7D2FE/4338CA?text=LG',
         location: 'Concepción',
         services_count: 4,
         experience_years: 6
