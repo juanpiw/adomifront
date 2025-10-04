@@ -10,6 +10,15 @@
 
     <!-- Dashboard Grid -->
     <div class="dash-home__grid">
+      <!-- Solicitudes Pendientes -->
+      <div class="dash-home__grid-item dash-home__grid-item--full">
+        <app-inicio-solicitudes 
+          [data]="solicitudData"
+          (acceptClick)="onAcceptClick($event)"
+          (declineClick)="onDeclineClick($event)">
+        </app-inicio-solicitudes>
+      </div>
+
       <!-- Próxima Cita -->
       <div class="dash-home__grid-item">
         <app-inicio-proxima-cita 
@@ -24,15 +33,6 @@
           [data]="ingresosData"
           (viewReportClick)="onViewReportClick($event)">
         </app-inicio-ingresos-mes>
-      </div>
-
-      <!-- Solicitudes Pendientes -->
-      <div class="dash-home__grid-item dash-home__grid-item--full">
-        <app-inicio-solicitudes 
-          [data]="solicitudData"
-          (acceptClick)="onAcceptClick($event)"
-          (declineClick)="onDeclineClick($event)">
-        </app-inicio-solicitudes>
       </div>
 
       <!-- Gestión de Disponibilidad -->
