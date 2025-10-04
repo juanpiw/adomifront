@@ -1,6 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { IconComponent, IconName } from '../icon/icon.component';
+import { environment } from '../../../environments/environment';
+
+// Avoid TS errors for Google global
+declare const google: any;
 
 interface MapMarker {
   id: string;
@@ -96,7 +100,7 @@ interface MapBounds {
           <!-- Interactive Map Canvas -->
           <div class="map-canvas" [class]="canvasClass" #mapContainer>
             <!-- Map will be rendered here -->
-            <div class="map-placeholder" [class]="placeholderClass">
+            <div class="map-placeholder" [class]="placeholderClass" *ngIf="!googleMapReady">
               <div class="map-info" [class]="infoClass">
                 <ui-icon name="map" [class]="infoIconClass"></ui-icon>
                 <h4 class="info-title" [class]="infoTitleClass">{{ mapTitle }}</h4>
@@ -104,8 +108,8 @@ interface MapBounds {
               </div>
             </div>
             
-            <!-- Interactive Map Markers -->
-            <div class="map-markers" [class]="markersClass">
+            <!-- Interactive Map Markers (fallback CSS map) -->
+            <div class="map-markers" [class]="markersClass" *ngIf="!googleMapReady">
               <div 
                 *ngFor="let marker of markers; trackBy: trackByMarkerId"
                 class="map-marker"
@@ -119,42 +123,6 @@ interface MapBounds {
                   <ui-icon [name]="getMarkerIconName(marker)" [class]="getMarkerIconClass(marker)"></ui-icon>
                 </div>
                 <div class="marker-label" [class]="markerLabelClass">{{ marker.name }}</div>
-              </div>
-            </div>
-            
-            <!-- Map Overlay Info -->
-            <div class="map-overlay" [class]="overlayClass" *ngIf="selectedMarker">
-              <div class="overlay-content" [class]="overlayContentClass">
-                <button 
-                  class="overlay-close" 
-                  [class]="overlayCloseClass"
-                  (click)="closeOverlay()"
-                  [attr.aria-label]="closeOverlayLabel"
-                >
-                  <ui-icon name="x" [class]="overlayCloseIconClass"></ui-icon>
-                </button>
-                <div class="overlay-body" [class]="overlayBodyClass">
-                  <h5 class="overlay-title" [class]="overlayTitleClass">{{ selectedMarker.name }}</h5>
-                  <p class="overlay-description" [class]="overlayDescriptionClass">
-                    {{ getMarkerDescription(selectedMarker) }}
-                  </p>
-                  <div class="overlay-actions" [class]="overlayActionsClass">
-                    <button 
-                      class="overlay-action-btn primary"
-                      [class]="overlayActionButtonClass"
-                      (click)="onMarkerAction({ marker: selectedMarker, action: 'view' })"
-                    >
-                      {{ viewDetailsLabel }}
-                    </button>
-                    <button 
-                      class="overlay-action-btn secondary"
-                      [class]="overlayActionButtonClass"
-                      (click)="onMarkerAction({ marker: selectedMarker, action: 'book' })"
-                    >
-                      {{ bookServiceLabel }}
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -242,6 +210,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   @Input() showControls: boolean = true;
   @Input() showLegend: boolean = true;
   @Input() allowFullscreen: boolean = true;
+  @Input() useGoogleMaps: boolean = true; // Enable real map when API key is configured
 
   // Labels
   @Input() mapViewLabel: string = 'Mapa';
@@ -329,12 +298,20 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   isFullscreen: boolean = false;
   mapBounds: MapBounds | null = null;
 
+  // Google Maps state
+  private map: any | null = null;
+  private markerRefs: any[] = [];
+  googleMapReady: boolean = false;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   ngOnInit() {
     this.initializeMap();
   }
 
   ngAfterViewInit() {
     this.setupMapContainer();
+    this.tryLoadGoogleMaps();
   }
 
   ngOnDestroy() {
@@ -342,11 +319,94 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // Handle input changes if needed
+    if (this.googleMapReady && (changes['center'] || changes['zoom'])) {
+      this.map?.setCenter(this.center);
+      this.map?.setZoom(this.zoom);
+    }
+    if (this.googleMapReady && changes['markers']) {
+      this.renderGoogleMarkers();
+    }
+  }
+
+  private async tryLoadGoogleMaps() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.useGoogleMaps) return;
+    const apiKey = (environment as any).googleMapsApiKey;
+    if (!apiKey) {
+      // Keep placeholder if no key configured
+      return;
+    }
+
+    await this.loadGoogleMapsScript(apiKey);
+    this.initGoogleMap();
+  }
+
+  private loadGoogleMapsScript(apiKey: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // If already loaded
+      if ((window as any).google && (window as any).google.maps) {
+        resolve();
+        return;
+      }
+
+      const scriptId = 'google-maps-script';
+      const existing = document.getElementById(scriptId);
+      if (existing) {
+        existing.addEventListener('load', () => resolve());
+        existing.addEventListener('error', () => reject());
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject();
+      document.head.appendChild(script);
+    });
+  }
+
+  private initGoogleMap() {
+    try {
+      const element = this.mapContainer?.nativeElement;
+      if (!element || !(window as any).google) return;
+      this.map = new google.maps.Map(element, {
+        center: this.center,
+        zoom: this.zoom,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false
+      });
+      this.googleMapReady = true;
+      this.renderGoogleMarkers();
+    } catch (err) {
+      console.error('Google Maps init error:', err);
+      this.googleMapReady = false;
+    }
+  }
+
+  private renderGoogleMarkers() {
+    // Clear existing
+    this.markerRefs.forEach(m => m.setMap(null));
+    this.markerRefs = [];
+
+    if (!this.map) return;
+
+    this.markers.forEach(marker => {
+      const pin = new google.maps.Marker({
+        position: marker.position,
+        map: this.map,
+        title: marker.name,
+        icon: undefined // default pin; could customize by type
+      });
+      pin.addListener('click', () => this.onMarkerClick(marker));
+      this.markerRefs.push(pin);
+    });
   }
 
   private initializeMap() {
-    // Initialize map settings
     if (this.mapContainer) {
       this.setupMapContainer();
     }
@@ -360,7 +420,9 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   private cleanup() {
-    // Cleanup any resources
+    this.markerRefs.forEach(m => m.setMap(null));
+    this.markerRefs = [];
+    this.map = null;
   }
 
   // Public methods
@@ -370,20 +432,21 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   centerMap() {
-    // Center the map view
+    if (this.map && this.googleMapReady) {
+      this.map.setCenter(this.center);
+    }
     this.centerChange.emit(this.center);
   }
 
   toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
-    // Handle fullscreen toggle
   }
 
   closeOverlay() {
     this.selectedMarker = null;
   }
 
-  // Marker methods
+  // Marker methods (fallback CSS map helpers)
   trackByMarkerId(index: number, marker: MapMarker): string {
     return marker.id;
   }
@@ -405,7 +468,6 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     if (marker.icon && (marker.icon === 'user' || marker.icon === 'briefcase' || marker.icon === 'map-pin')) {
       return marker.icon as IconName;
     }
-    
     switch (marker.type) {
       case 'provider': return 'user';
       case 'service': return 'briefcase';
@@ -419,18 +481,12 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   getMarkerPosition(marker: MapMarker): { x: number; y: number } {
-    // Calculate position based on lat/lng coordinates
     const centerLat = this.center.lat;
     const centerLng = this.center.lng;
-    
-    // Simple positioning calculation
     const latDiff = marker.position.lat - centerLat;
     const lngDiff = marker.position.lng - centerLng;
-    
-    // Convert to percentage positions (simplified)
-    const x = 50 + (lngDiff * 1000); // Scale factor for longitude
-    const y = 50 - (latDiff * 1000); // Scale factor for latitude
-    
+    const x = 50 + (lngDiff * 1000);
+    const y = 50 - (latDiff * 1000);
     return {
       x: Math.max(5, Math.min(95, x)),
       y: Math.max(5, Math.min(95, y))
@@ -439,7 +495,6 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
 
   getMarkerDescription(marker: MapMarker): string {
     if (marker.data?.description) return marker.data.description;
-    
     switch (marker.type) {
       case 'provider': return 'Proveedor de servicios';
       case 'service': return 'Servicio disponible';
@@ -449,10 +504,9 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   getMarkerDistance(marker: MapMarker): string {
-    // Calculate distance from center (simplified)
     const latDiff = marker.position.lat - this.center.lat;
     const lngDiff = marker.position.lng - this.center.lng;
-    const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111; // Rough km conversion
+    const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111; // km aprox
     return `${distance.toFixed(1)} km`;
   }
 

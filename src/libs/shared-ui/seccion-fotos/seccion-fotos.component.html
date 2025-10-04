@@ -1,0 +1,36 @@
+<section class="seccion-fotos">
+  <h3 class="seccion-fotos__title">Fotos de Perfil</h3>
+  <p class="seccion-fotos__subtitle">Sube una foto de perfil clara y una foto de portada que represente tu trabajo.</p>
+  
+  <div class="seccion-fotos__content">
+    <div class="seccion-fotos__photo-section">
+      <label class="seccion-fotos__photo-label">Foto de Perfil</label>
+      <div class="seccion-fotos__photo-controls">
+        <img 
+          [src]="profilePhoto" 
+          alt="Foto de perfil"
+          class="seccion-fotos__profile-image">
+        <ui-button 
+          variant="secondary"
+          (click)="onProfilePhotoChange()">
+          Cambiar
+        </ui-button>
+      </div>
+    </div>
+    
+    <div class="seccion-fotos__photo-section">
+      <label class="seccion-fotos__photo-label">Foto de Portada</label>
+      <div class="seccion-fotos__photo-controls">
+        <img 
+          [src]="coverPhoto" 
+          alt="Foto de portada"
+          class="seccion-fotos__cover-image">
+        <ui-button 
+          variant="secondary"
+          (click)="onCoverPhotoChange()">
+          Cambiar
+        </ui-button>
+      </div>
+    </div>
+  </div>
+</section>

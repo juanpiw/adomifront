@@ -1,0 +1,31 @@
+.portafolio {
+  @apply bg-white p-8 rounded-2xl shadow-sm border border-slate-200;
+
+  &__title {
+    @apply text-2xl font-bold text-slate-900;
+  }
+
+  &__subtitle {
+    @apply text-slate-500 mt-1;
+  }
+
+  &__grid {
+    @apply mt-6 grid grid-cols-3 gap-4;
+  }
+
+  &__image-container {
+    @apply relative group;
+  }
+
+  &__image {
+    @apply rounded-xl object-cover h-48 w-full;
+  }
+
+  &__delete-button {
+    @apply absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600;
+  }
+
+  &__add-container {
+    @apply flex items-center justify-center border-2 border-dashed border-slate-300 rounded-xl h-48 hover:border-slate-400 transition-colors;
+  }
+}

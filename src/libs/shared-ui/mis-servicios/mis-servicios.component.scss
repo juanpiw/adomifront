@@ -1,0 +1,39 @@
+.mis-servicios {
+  @apply bg-white p-8 rounded-2xl shadow-sm border border-slate-200;
+
+  &__title {
+    @apply text-2xl font-bold text-slate-900;
+  }
+
+  &__subtitle {
+    @apply text-slate-500 mt-1;
+  }
+
+  &__list {
+    @apply mt-6 space-y-4;
+  }
+
+  &__item {
+    @apply p-4 border border-slate-200 rounded-xl flex items-center;
+  }
+
+  &__item-content {
+    @apply flex-grow;
+  }
+
+  &__item-name {
+    @apply font-bold text-slate-800;
+  }
+
+  &__item-details {
+    @apply text-sm text-slate-500;
+  }
+
+  &__item-actions {
+    @apply flex space-x-2;
+  }
+
+  &__add-button {
+    @apply w-full mt-2 py-3 border-2 border-dashed border-slate-300 text-slate-600 font-semibold rounded-xl hover:border-slate-400 hover:text-slate-700 transition-colors;
+  }
+}

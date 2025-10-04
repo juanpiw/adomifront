@@ -1,0 +1,35 @@
+<section class="mis-servicios">
+  <h3 class="mis-servicios__title">Mis Servicios</h3>
+  <p class="mis-servicios__subtitle">Define los servicios que ofreces, su duración y precio. Esto es lo que tus clientes podrán agendar.</p>
+  
+  <div class="mis-servicios__list">
+    <div 
+      *ngFor="let service of services" 
+      class="mis-servicios__item">
+      <div class="mis-servicios__item-content">
+        <p class="mis-servicios__item-name">{{ service.name }}</p>
+        <p class="mis-servicios__item-details">{{ service.duration }} min · {{ formatPrice(service.price) }}</p>
+      </div>
+      <div class="mis-servicios__item-actions">
+        <ui-button 
+          variant="secondary" 
+          size="sm"
+          (click)="onEdit(service)">
+          Editar
+        </ui-button>
+        <ui-button 
+          variant="danger" 
+          size="sm"
+          (click)="onDelete(service.id)">
+          Eliminar
+        </ui-button>
+      </div>
+    </div>
+    
+    <button 
+      class="mis-servicios__add-button"
+      (click)="onAdd()">
+      + Añadir nuevo servicio
+    </button>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+.rp-card{background:#fff;padding:1.5rem;border-radius:1rem;border:1px solid #e2e8f0;opacity:.95}
+.rp-row{display:flex;align-items:center}
+.rp-avatar{width:64px;height:64px;border-radius:9999px;object-fit:cover}
+.rp-info{margin-left:1rem}
+.rp-title{font-size:1.25rem;font-weight:800;color:#0f172a;margin:0}
+.rp-date{color:#64748b;margin-top:.125rem}
+.rp-right{margin-left:auto;text-align:right}
+.rp-price{font-weight:700;color:#0f172a}
+.rp-state{font-size:.875rem;color:#64748b}
+.rp-actions{display:flex;gap:.75rem;border-top:1px solid #e2e8f0;margin-top:1rem;padding-top:1rem}
+.rp-btn{flex:1;padding:.75rem;border-radius:.75rem;font-weight:700;border:none;cursor:pointer;transition:background .2s ease}
+.rp-btn.primary{background:#4f46e5;color:#fff}
+.rp-btn.primary:hover{background:#4338ca}
+.rp-btn.dark{background:#0f172a;color:#fff}
+.rp-btn.dark:hover{background:#0b1220}
+

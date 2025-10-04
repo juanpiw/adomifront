@@ -1,0 +1,23 @@
+.sobre-mi {
+  @apply bg-white p-8 rounded-2xl shadow-sm border border-slate-200;
+
+  &__title {
+    @apply text-2xl font-bold text-slate-900;
+  }
+
+  &__subtitle {
+    @apply text-slate-500 mt-1;
+  }
+
+  &__content {
+    @apply mt-6;
+  }
+
+  &__textarea {
+    @apply w-full p-4 border border-slate-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
+    
+    &::placeholder {
+      @apply text-slate-400;
+    }
+  }
+}

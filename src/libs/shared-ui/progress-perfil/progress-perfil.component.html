@@ -1,0 +1,12 @@
+<div class="progress-perfil">
+  <div class="progress-perfil__header">
+    <span class="progress-perfil__label">Progreso del Perfil</span>
+    <span class="progress-perfil__percentage">{{ normalizedProgress }}%</span>
+  </div>
+  
+  <div class="progress-perfil__bar">
+    <div class="progress-perfil__fill" [style.width.%]="normalizedProgress"></div>
+  </div>
+  
+  <p class="progress-perfil__suggestion">{{ suggestion }}</p>
+</div>

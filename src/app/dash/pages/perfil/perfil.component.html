@@ -1,19 +1,61 @@
-﻿<section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-  <div style="grid-column: span 2;">
-    <avatar-uploader [(src)]="avatar"></avatar-uploader>
-  </div>
-  <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
-  <ui-input label="TelÃ©fono" placeholder="Ej: +54 11 1234 5678" [(value)]="phone"></ui-input>
-  <ui-input label="Bio" variant="textarea" placeholder="CuÃ©ntanos sobre ti" [(value)]="bio"></ui-input>
-  <div>
-    <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
-    <language-select [(value)]="lang"></language-select>
-  </div>
-  <div>
-    <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
-    <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
-  </div>
-  <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
-    <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
-  </div>
-</section>
+﻿<div class="perfil-trabajador">
+  <!-- Progreso del perfil -->
+  <app-progress-perfil 
+    [progress]="profileProgress"
+    suggestion="Sugerencia: Añade fotos a tu portafolio para llegar al 100%.">
+  </app-progress-perfil>
+
+  <!-- Información básica -->
+  <app-info-basica 
+    [info]="basicInfo"
+    (infoChange)="onBasicInfoChange($event)">
+  </app-info-basica>
+
+  <!-- Fotos de perfil -->
+  <app-seccion-fotos
+    (changeProfilePhoto)="onProfilePhotoChange()"
+    (changeCoverPhoto)="onCoverPhotoChange()">
+  </app-seccion-fotos>
+
+  <!-- Sobre mí -->
+  <app-sobre-mi
+    [bio]="bio"
+    (bioChange)="onBioChange($event)">
+  </app-sobre-mi>
+
+  <!-- Mis servicios -->
+  <app-mis-servicios
+    [services]="services"
+    (editService)="onEditService($event)"
+    (deleteService)="onDeleteService($event)"
+    (addService)="onAddService()">
+  </app-mis-servicios>
+
+  <!-- Portafolio -->
+  <app-portafolio
+    [images]="portfolioImages"
+    [maxImages]="10"
+    (addImage)="onAddPortfolioImage()"
+    (deleteImage)="onDeletePortfolioImage($event)">
+  </app-portafolio>
+
+  <!-- Configuraciones adicionales (mantener las existentes) -->
+  <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+    <div style="grid-column: span 2;">
+      <avatar-uploader [(src)]="avatar"></avatar-uploader>
+    </div>
+    <ui-input label="Nombre" placeholder="Tu nombre" [(value)]="name"></ui-input>
+    <ui-input label="Teléfono" placeholder="Ej: +56 9 1234 5678" [(value)]="phone"></ui-input>
+    <div>
+      <label style="font-weight:600; display:block; margin-bottom:6px;">Idioma</label>
+      <language-select [(value)]="lang"></language-select>
+    </div>
+    <div>
+      <label style="font-weight:600; display:block; margin-bottom:6px;">Notificaciones</label>
+      <notification-toggle [(email)]="emailNoti" [(push)]="pushNoti"></notification-toggle>
+    </div>
+    <div style="grid-column: span 2; display:flex; justify-content:flex-end;">
+      <ui-button variant="primary" (click)="save()">Guardar cambios</ui-button>
+    </div>
+  </section>
+</div>

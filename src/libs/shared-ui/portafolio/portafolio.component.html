@@ -1,0 +1,31 @@
+<section class="portafolio">
+  <h3 class="portafolio__title">Portafolio</h3>
+  <p class="portafolio__subtitle">Sube hasta {{ maxImages }} imágenes de tus mejores trabajos.</p>
+  
+  <div class="portafolio__grid">
+    <div 
+      *ngFor="let image of images" 
+      class="portafolio__image-container">
+      <img 
+        [src]="image.url" 
+        [alt]="image.alt"
+        class="portafolio__image">
+      <button 
+        class="portafolio__delete-button"
+        (click)="onDeleteImage(image.id)"
+        title="Eliminar imagen">
+        ×
+      </button>
+    </div>
+    
+    <div 
+      *ngIf="canAddMore"
+      class="portafolio__add-container">
+      <ui-button 
+        variant="secondary"
+        (click)="onAddImage()">
+        + Añadir foto
+      </ui-button>
+    </div>
+  </div>
+</section>

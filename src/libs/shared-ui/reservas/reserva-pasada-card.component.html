@@ -1,0 +1,17 @@
+<div class="rp-card">
+  <div class="rp-row">
+    <img [src]="data.avatarUrl" class="rp-avatar" [alt]="data.titulo">
+    <div class="rp-info">
+      <p class="rp-title">{{ data.titulo }}</p>
+      <p class="rp-date">{{ data.fecha }}</p>
+    </div>
+    <div class="rp-right">
+      <p class="rp-price">{{ data.precio }}</p>
+      <p class="rp-state">{{ data.estado || 'Completado' }}</p>
+    </div>
+  </div>
+  <div class="rp-actions">
+    <button class="rp-btn primary" (click)="onReview.emit()">Dejar una reseña</button>
+    <button class="rp-btn dark" (click)="onReschedule.emit()">Volver a Agendar</button>
+  </div>
+</div>

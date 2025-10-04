@@ -1,0 +1,14 @@
+<section class="sobre-mi">
+  <h3 class="sobre-mi__title">Sobre Mí</h3>
+  <p class="sobre-mi__subtitle">Escribe una biografía breve y amigable. ¿Por qué amas tu trabajo?</p>
+  
+  <div class="sobre-mi__content">
+    <textarea
+      class="sobre-mi__textarea"
+      [value]="bio"
+      (input)="onBioChange($event)"
+      placeholder="Cuéntanos sobre ti, tu experiencia, especialidades y por qué amas lo que haces..."
+      rows="6">
+    </textarea>
+  </div>
+</section>

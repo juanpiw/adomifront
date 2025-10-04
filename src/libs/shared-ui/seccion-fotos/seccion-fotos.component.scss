@@ -1,0 +1,35 @@
+.seccion-fotos {
+  @apply bg-white p-8 rounded-2xl shadow-sm border border-slate-200;
+
+  &__title {
+    @apply text-2xl font-bold text-slate-900;
+  }
+
+  &__subtitle {
+    @apply text-slate-500 mt-1;
+  }
+
+  &__content {
+    @apply mt-6 flex items-center space-x-8;
+  }
+
+  &__photo-section {
+    @apply flex flex-col;
+  }
+
+  &__photo-label {
+    @apply font-semibold text-slate-700 mb-2;
+  }
+
+  &__photo-controls {
+    @apply flex items-center space-x-4;
+  }
+
+  &__profile-image {
+    @apply w-24 h-24 rounded-full object-cover;
+  }
+
+  &__cover-image {
+    @apply w-64 h-24 rounded-lg object-cover;
+  }
+}

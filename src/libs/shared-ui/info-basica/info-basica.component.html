@@ -1,0 +1,29 @@
+<section class="info-basica">
+  <h3 class="info-basica__title">Información Básica</h3>
+  <div class="info-basica__content">
+    <div class="info-basica__field">
+      <label class="info-basica__label">Nombre Completo</label>
+      <ui-input
+        [value]="info.fullName"
+        (valueChange)="onFieldChange('fullName', $event)"
+        placeholder="Ingresa tu nombre completo">
+      </ui-input>
+    </div>
+    <div class="info-basica__field">
+      <label class="info-basica__label">Título Profesional</label>
+      <ui-input
+        [value]="info.professionalTitle"
+        (valueChange)="onFieldChange('professionalTitle', $event)"
+        placeholder="Ej: Estilista, Masajista, Chef">
+      </ui-input>
+    </div>
+    <div class="info-basica__field">
+      <label class="info-basica__label">Comuna Principal</label>
+      <ui-input
+        [value]="info.mainCommune"
+        (valueChange)="onFieldChange('mainCommune', $event)"
+        placeholder="Ej: Providencia, Las Condes">
+      </ui-input>
+    </div>
+  </div>
+</section>

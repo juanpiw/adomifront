@@ -1,0 +1,11 @@
+<div class="rt-container">
+  <nav class="rt-nav" aria-label="Tabs">
+    <button 
+      *ngFor="let t of tabs; index as i"
+      class="rt-tab"
+      [class.active]="i === activeIndex"
+      (click)="setActive(i)">
+      {{ t }}
+    </button>
+  </nav>
+</div>

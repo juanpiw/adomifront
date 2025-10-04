@@ -1,0 +1,17 @@
+<div class="cp-card">
+  <div class="cp-row">
+    <img [src]="data.avatarUrl" class="cp-avatar" [alt]="data.titulo">
+    <div class="cp-info">
+      <p class="cp-title">{{ data.titulo }}</p>
+      <p class="cp-date">{{ data.fecha }}</p>
+    </div>
+    <div class="cp-right">
+      <p class="cp-cause">Cancelada por el profesional</p>
+      <span class="cp-pill" *ngIf="data.pillText">{{ data.pillText }}</span>
+    </div>
+  </div>
+  <div class="cp-actions">
+    <button class="cp-btn primary" (click)="findSimilar.emit()">Buscar un profesional similar</button>
+  </div>
+</div>
+

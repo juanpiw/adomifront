@@ -1,0 +1,43 @@
+.progress-perfil {
+  margin-bottom: 2rem;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+  }
+
+  &__label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4338ca;
+  }
+
+  &__percentage {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4338ca;
+  }
+
+  &__bar {
+    width: 100%;
+    background-color: #e2e8f0;
+    border-radius: 9999px;
+    height: 0.625rem;
+    overflow: hidden;
+  }
+
+  &__fill {
+    background-color: #4338ca;
+    height: 0.625rem;
+    border-radius: 9999px;
+    transition: width 300ms ease-in-out;
+    min-width: 0;
+  }
+
+  &__suggestion {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+  }
+}

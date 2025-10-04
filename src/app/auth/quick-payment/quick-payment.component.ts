@@ -225,3 +225,4 @@ export class QuickPaymentComponent implements OnInit {
     }).format(price);
   }
 }
+

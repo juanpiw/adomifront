@@ -1,0 +1,28 @@
+<div class="pc-card">
+  <p class="pc-kicker">TU PRÓXIMA CITA (CONFIRMADA)</p>
+  <div class="pc-row">
+    <div class="pc-col">
+      <p class="pc-title">{{ data.titulo }}</p>
+      <div class="pc-meta">
+        <span class="pc-meta-item">
+          <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          {{ data.fecha }}
+        </span>
+        <span class="pc-meta-item">
+          <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          {{ data.hora }}
+        </span>
+      </div>
+    </div>
+    <div class="pc-count">
+      <p class="pc-days">{{ data.diasRestantes }}</p>
+      <p class="pc-days-label">días restantes</p>
+    </div>
+  </div>
+  <div class="pc-actions">
+    <button class="pc-btn primary" (click)="contactar.emit()">Contactar</button>
+    <button class="pc-btn secondary" (click)="reprogramar.emit()">Reprogramar</button>
+    <button class="pc-btn danger" (click)="cancelar.emit()">Cancelar Cita</button>
+  </div>
+</div>
+
