@@ -1,21 +1,24 @@
 ﻿/* Reset minimal inside component scope (safe) */
 :host { display: block; font-family: 'Inter', sans-serif; }
 
-/* --- Contenedor de la Tarjeta --- */
+/* --- Contenedor de la Tarjeta (Frost/Glass) --- */
 .card {
   width: 100%;
   max-width: 24rem; /* 384px */
-  background-color: #1f2937;
-  border: 1px solid #374151;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.8); /* slate-200 */
   border-radius: 1.5rem; /* 24px */
   padding: 1.5rem; /* 24px */
   cursor: pointer;
   transition: all 0.3s ease-in-out;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(2, 8, 23, 0.06);
 }
 
 .card:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 0 25px rgba(79, 70, 229, 0.3);
+  border-color: #c7d2fe; /* indigo-200 */
+  box-shadow: 0 16px 40px rgba(99, 102, 241, 0.25);
   transform: translateY(-4px);
 }
 
@@ -38,34 +41,35 @@
 .user-name {
   font-size: 1.5rem; /* 24px */
   line-height: 2rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 800;
+  color: #0f172a; /* slate-900 */
   margin: 0;
 }
 
 .user-profession {
-  color: #818cf8; /* indigo-400 */
-  font-weight: 500;
+  color: #4f46e5; /* indigo-600 */
+  font-weight: 600;
   margin-top: 2px;
 }
 
-/* --- Descripción --- */
+/* --- Descripción (texto oscuro para legibilidad) --- */
 .card-description {
-  color: #9ca3af; /* slate-400 */
+  color: #334155; /* slate-700 */
   margin-top: 1.25rem; /* 20px */
-  font-size: 0.875rem; /* 14px */
-  line-height: 1.6;
+  font-size: 0.95rem; /* ~15px */
+  line-height: 1.65;
 }
 
-/* --- Sección de Calificación --- */
+/* --- Sección de Calificación (frost suave) --- */
 .rating-section {
   margin-top: 1.25rem; /* 20px */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(17, 24, 39, 0.5); /* slate-900/50 */
+  background-color: rgba(255, 255, 255, 0.6);
   padding: 0.75rem; /* 12px */
   border-radius: 0.75rem; /* 12px */
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .rating-stars {
@@ -81,18 +85,18 @@
 }
 
 .rating-value {
-  color: #ffffff;
-  font-weight: 700;
+  color: #0f172a; /* slate-900 */
+  font-weight: 800;
   font-size: 1.125rem; /* 18px */
 }
 
 .rating-reviews {
-  color: #9ca3af; /* slate-400 */
-  font-size: 0.875rem; /* 14px */
-  font-weight: 500;
+  color: #475569; /* slate-600 */
+  font-size: 0.9rem; /* ~14px */
+  font-weight: 600;
 }
 
-/* --- Botón de Acción --- */
+/* --- Botón de Acción (igual que antes) --- */
 .action-button {
   position: relative;
   overflow: hidden;
