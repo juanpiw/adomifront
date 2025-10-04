@@ -223,3 +223,15 @@
     color: #94a3b8;
   }
 }
+
+/* Ensure children do not overflow parent in professionals column */
+.professionals-section,
+.professional-card-container {
+  overflow: hidden;
+}
+
+.professional-card-container ui-user-card,
+.professional-card-container .card {
+  width: 100%;
+  max-width: 100%;
+}

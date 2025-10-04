@@ -43,7 +43,7 @@ interface Service {
     <div class="explorar-container">
       <!-- Hero Banner (ahora arriba del header) -->
       <section class="mb-6">
-        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white relative overflow-hidden">
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white relative overflow-hidden order">
           <div class="relative z-10">
             <h3 class="text-xl font-bold">Relájate, nosotros nos encargamos</h3>
             <p class="mt-1 max-w-lg text-xs">Desde un corte de pelo hasta la reparación de tu hogar, encuentra profesionales de confianza en un solo lugar.</p>  

@@ -20,7 +20,13 @@
     padding: 2.5rem;
   }
 }
-
+.order{
+  display: inline-flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 20px;
+  
+}
 // Custom shadows from the example HTML
 .custom-shadow {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
