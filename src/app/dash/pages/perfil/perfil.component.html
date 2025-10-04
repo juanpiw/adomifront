@@ -51,6 +51,14 @@
         (deleteImage)="onDeletePortfolioImage($event)">
       </app-portafolio>
 
+      <!-- Ubicación y Disponibilidad -->
+      <app-ubicacion-disponibilidad 
+        [settings]="locationSettings"
+        (settingsChange)="onLocationSettingsChange($event)"
+        (addCoverageZone)="onAddCoverageZone($event)"
+        (removeCoverageZone)="onRemoveCoverageZone($event)">
+      </app-ubicacion-disponibilidad>
+
       <!-- Configuraciones adicionales -->
       <section class="elevated" style="padding:24px; display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
         <div style="grid-column: span 2;">
@@ -83,14 +91,6 @@
 
     <!-- Tab: Configuración -->
     <div *ngIf="activeTab === 'configuracion'" class="perfil-trabajador__tab-content">
-      <!-- Ubicación y Disponibilidad -->
-      <app-ubicacion-disponibilidad 
-        [settings]="locationSettings"
-        (settingsChange)="onLocationSettingsChange($event)"
-        (addCoverageZone)="onAddCoverageZone($event)"
-        (removeCoverageZone)="onRemoveCoverageZone($event)">
-      </app-ubicacion-disponibilidad>
-
       <!-- Horario y Disponibilidad -->
       <app-horario-disponibilidad 
         [schedule]="weeklySchedule"
