@@ -30,11 +30,8 @@
 .highlighted-card {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
-  border: 2px solid #c7d2fe;
-  background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
-  transform: translateY(-2px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+  transition: all 0.2s ease;
 }
 
 .highlighted-card::before {
@@ -43,14 +40,13 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #4f46e5, #7c3aed, #8b5cf6);
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  height: 3px;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
 }
 
 .highlighted-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.15);
 }
 
 /* Button animations */
@@ -76,9 +72,8 @@
 }
 
 .action-button:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
 /* Map container */

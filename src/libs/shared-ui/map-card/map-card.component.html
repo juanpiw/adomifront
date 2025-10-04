@@ -1,8 +1,8 @@
 <!-- Map Card Container -->
-<section class="flex-grow flex flex-col lg:flex-row overflow-hidden rounded-2xl border border-slate-200 shadow-sm" [style.height]="height">
+<section class="map-card-container flex-grow flex flex-col lg:flex-row overflow-hidden rounded-2xl border border-slate-200 shadow-sm" [style.height]="height">
   
   <!-- Left Panel: Professionals List -->
-  <aside class="w-full lg:w-1/3 bg-white p-4 overflow-y-auto results-list lg:max-h-none max-h-80">
+  <aside class="professionals-panel w-full lg:w-1/3 bg-white p-4 overflow-y-auto results-list lg:max-h-none max-h-80">
     <h3 class="text-lg font-bold text-slate-800 mb-4">{{ professionals.length }} {{ title.toLowerCase() }}</h3>
     
     <!-- Highlighted Professional Card -->
@@ -61,7 +61,7 @@
   </aside>
 
   <!-- Right Panel: Map View -->
-  <div class="w-full lg:w-2/3 bg-slate-200 flex items-center justify-center relative min-h-64 lg:min-h-0">
+  <div class="map-panel w-full lg:w-2/3 bg-slate-200 flex items-center justify-center relative min-h-64 lg:min-h-0">
     <ui-map-view
       [title]="'Mapa de Servicios'"
       [subtitle]="'Encuentra servicios cerca de ti'"
