@@ -6,6 +6,7 @@ export interface BasicInfo {
   fullName: string;
   professionalTitle: string;
   mainCommune: string;
+  yearsExperience: number;
 }
 
 @Component({
@@ -19,7 +20,8 @@ export class InfoBasicaComponent {
   @Input() info: BasicInfo = {
     fullName: '',
     professionalTitle: '',
-    mainCommune: ''
+    mainCommune: '',
+    yearsExperience: 0
   };
 
   @Output() infoChange = new EventEmitter<BasicInfo>();

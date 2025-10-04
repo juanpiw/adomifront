@@ -2,6 +2,21 @@
   <h3 class="seccion-fotos__title">Fotos de Perfil</h3>
   <p class="seccion-fotos__subtitle">Sube una foto de perfil clara y una foto de portada que represente tu trabajo.</p>
   
+  <!-- Inputs ocultos para seleccionar archivos -->
+  <input 
+    type="file" 
+    id="profile-photo-input"
+    accept="image/*"
+    (change)="onProfilePhotoChange($event)"
+    style="display: none;">
+  
+  <input 
+    type="file" 
+    id="cover-photo-input"
+    accept="image/*"
+    (change)="onCoverPhotoChange($event)"
+    style="display: none;">
+  
   <div class="seccion-fotos__content">
     <div class="seccion-fotos__photo-section">
       <label class="seccion-fotos__photo-label">Foto de Perfil</label>
@@ -12,7 +27,7 @@
           class="seccion-fotos__profile-image">
         <ui-button 
           variant="secondary"
-          (click)="onProfilePhotoChange()">
+          (click)="triggerProfilePhotoUpload()">
           Cambiar
         </ui-button>
       </div>
@@ -27,7 +42,7 @@
           class="seccion-fotos__cover-image">
         <ui-button 
           variant="secondary"
-          (click)="onCoverPhotoChange()">
+          (click)="triggerCoverPhotoUpload()">
           Cambiar
         </ui-button>
       </div>

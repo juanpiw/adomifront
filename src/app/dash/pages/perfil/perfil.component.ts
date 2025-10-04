@@ -167,14 +167,14 @@ export class DashPerfilComponent {
     this.bio = bio;
   }
 
-  onProfilePhotoChange() {
-    console.log('Cambiar foto de perfil');
-    // TODO: Implementar uploader de foto
+  onProfilePhotoChange(imageUrl: string) {
+    console.log('Foto de perfil actualizada:', imageUrl);
+    // La imagen se actualiza automáticamente en el componente
   }
 
-  onCoverPhotoChange() {
-    console.log('Cambiar foto de portada');
-    // TODO: Implementar uploader de portada
+  onCoverPhotoChange(imageUrl: string) {
+    console.log('Foto de portada actualizada:', imageUrl);
+    // La imagen se actualiza automáticamente en el componente
   }
 
   onAddPortfolioImage() {

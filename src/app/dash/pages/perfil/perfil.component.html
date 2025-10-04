@@ -24,8 +24,8 @@
 
       <!-- Fotos de perfil -->
       <app-seccion-fotos 
-        (changeProfilePhoto)="onProfilePhotoChange()"
-        (changeCoverPhoto)="onCoverPhotoChange()">
+        (changeProfilePhoto)="onProfilePhotoChange($event)"
+        (changeCoverPhoto)="onCoverPhotoChange($event)">
       </app-seccion-fotos>
 
       <!-- Sobre mí -->
