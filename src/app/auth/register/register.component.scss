@@ -31,6 +31,7 @@
   max-width: 28rem;
   position: relative;
   transition: all 0.5s ease-in-out;
+  box-sizing: border-box; // Asegurar box-sizing correcto
 }
 
 /* Estilos para los pasos del formulario */
@@ -72,13 +73,30 @@
   background-color: #f8fafc !important;
 }
 
+/* Box-sizing global para el componente */
+.auth-card *,
+.auth-card *::before,
+.auth-card *::after {
+  box-sizing: border-box;
+}
+
+/* Formulario */
+form {
+  box-sizing: border-box;
+  width: 100%;
+}
+
 /* Inputs con labels flotantes */
 .form-group {
   position: relative;
+  box-sizing: border-box; // Asegurar box-sizing correcto
 }
 
 .form-input {
   transition: all 0.2s ease;
+  box-sizing: border-box; // Asegurar que padding y border se incluyan en el width
+  max-width: 100%; // Prevenir que se salga del contenedor
+  width: 100% !important; // Forzar el ancho completo
 }
 
 .form-input:focus {
