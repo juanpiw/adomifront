@@ -3,7 +3,10 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci
+        # Limpiar cache de npm
+        - npm cache clean --force
+        # Instalar dependencias con más memoria
+        - npm ci --maxsockets 1 --prefer-offline
         # Configurar variables de entorno para Angular
         - echo "Configurando variables de entorno..."
         - echo "NG_APP_API_BASE_URL=$NG_APP_API_BASE_URL"
@@ -11,6 +14,8 @@ frontend:
         - echo "NG_APP_GOOGLE_REDIRECT_URI=$NG_APP_GOOGLE_REDIRECT_URI"
     build:
       commands:
+        # Aumentar memoria para Node.js
+        - export NODE_OPTIONS="--max-old-space-size=4096"
         - npm run build:prod
   artifacts:
     baseDirectory: dist/adomi-app/browser
