@@ -1,0 +1,13 @@
+<section class="dashboard-resumen">
+  <h2 class="dashboard-resumen__title">{{ title }}</h2>
+  
+  <div class="dashboard-resumen__cards">
+    <div 
+      *ngFor="let metric of metrics; trackBy: trackByLabel"
+      class="dashboard-resumen__card">
+      <p class="dashboard-resumen__label">{{ metric.label }}</p>
+      <p class="dashboard-resumen__value">{{ metric.value }}</p>
+      <p class="dashboard-resumen__meta">{{ metric.meta }}</p>
+    </div>
+  </div>
+</section>

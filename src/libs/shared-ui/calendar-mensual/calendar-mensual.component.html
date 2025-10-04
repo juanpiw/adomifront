@@ -1,0 +1,57 @@
+<section class="calendar-mensual">
+  <div class="calendar-mensual__header">
+    <h3 class="calendar-mensual__month">{{ getMonthYearDisplay() }}</h3>
+    <div class="calendar-mensual__controls">
+      <button 
+        class="calendar-mensual__btn" 
+        (click)="onPreviousMonth()"
+        [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button 
+        class="calendar-mensual__btn" 
+        (click)="onNextMonth()"
+        [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+      <ui-button variant="primary" size="sm" (click)="onNewAppointment()">
+        Nueva Cita
+      </ui-button>
+    </div>
+  </div>
+
+  <div class="calendar-mensual__grid">
+    <!-- Días de la semana -->
+    <div 
+      *ngFor="let day of weekDays" 
+      class="calendar-mensual__day-header">
+      {{ day }}
+    </div>
+
+    <!-- Días del calendario -->
+    <div 
+      *ngFor="let date of calendarDays; trackBy: trackByDate"
+      class="calendar-mensual__day"
+      [class.calendar-mensual__day--current-month]="isCurrentMonth(date)"
+      [class.calendar-mensual__day--today]="isToday(date)"
+      [class.calendar-mensual__day--other-month]="!isCurrentMonth(date)"
+      (click)="onDateClick(date)">
+      
+      <span class="calendar-mensual__day-number">{{ date.getDate() }}</span>
+      
+      <!-- Eventos del día -->
+      <div class="calendar-mensual__events">
+        <div 
+          *ngFor="let event of getEventsForDate(date); trackBy: trackByEventId"
+          class="calendar-mensual__event"
+          [style.background-color]="getEventColor(event)"
+          [title]="event.title + ' - ' + event.time">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

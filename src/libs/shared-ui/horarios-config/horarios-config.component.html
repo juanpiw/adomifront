@@ -1,0 +1,94 @@
+<section class="horarios-config">
+  <h3 class="horarios-config__title">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-5 h-5 mr-2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    Configuración de Horarios Disponibles
+  </h3>
+
+  <!-- Formulario para agregar nuevo bloque -->
+  <div class="horarios-config__form">
+    <div class="horarios-config__field">
+      <label class="horarios-config__label">Día</label>
+      <select 
+        class="horarios-config__select"
+        [(ngModel)]="newTimeBlock.day">
+        <option *ngFor="let day of days" [value]="day">{{ day }}</option>
+      </select>
+    </div>
+
+    <div class="horarios-config__field">
+      <label class="horarios-config__label">Desde</label>
+      <input 
+        type="time"
+        class="horarios-config__input"
+        [(ngModel)]="newTimeBlock.startTime">
+    </div>
+
+    <div class="horarios-config__field">
+      <label class="horarios-config__label">Hasta</label>
+      <input 
+        type="time"
+        class="horarios-config__input"
+        [(ngModel)]="newTimeBlock.endTime">
+    </div>
+
+    <ui-button 
+      variant="primary" 
+      size="sm"
+      (click)="onAddTimeBlock()"
+      [disabled]="loading">
+      Agregar Bloque
+    </ui-button>
+  </div>
+
+  <!-- Lista de bloques de tiempo -->
+  <div class="horarios-config__blocks">
+    <div 
+      *ngFor="let day of days; trackBy: trackByDay"
+      class="horarios-config__day-section">
+      
+      <h4 class="horarios-config__day-title">{{ day }}</h4>
+      
+      <div class="horarios-config__day-blocks">
+        <div 
+          *ngFor="let block of groupedTimeBlocks[day]; trackBy: trackByTimeBlockId"
+          class="horarios-config__block"
+          [class.horarios-config__block--disabled]="!block.enabled">
+          
+          <div class="horarios-config__block-info">
+            <span class="horarios-config__block-time">
+              {{ formatTime(block.startTime) }} - {{ formatTime(block.endTime) }}
+            </span>
+            <span 
+              class="horarios-config__block-status"
+              [style.background-color]="getTimeBlockColor(block)">
+              {{ getTimeBlockStatus(block) }}
+            </span>
+          </div>
+
+          <div class="horarios-config__block-actions">
+            <button 
+              class="horarios-config__toggle-btn"
+              (click)="onToggleTimeBlock(block)"
+              [title]="block.enabled ? 'Desactivar' : 'Activar'">
+              {{ block.enabled ? '✓' : '○' }}
+            </button>
+            <button 
+              class="horarios-config__remove-btn"
+              (click)="onRemoveTimeBlock(block.id)"
+              title="Eliminar">
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div 
+          *ngIf="groupedTimeBlocks[day].length === 0" 
+          class="horarios-config__empty-day">
+          Sin horarios configurados
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

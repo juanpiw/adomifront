@@ -1,0 +1,12 @@
+.agenda-horarios {
+  @apply bg-white p-6 rounded-xl shadow-lg border border-slate-100;
+  &__title { @apply text-xl font-bold text-gray-900 mb-4 flex items-center; }
+  &__form { @apply flex flex-wrap items-end gap-4 mb-4 p-4 border rounded-xl bg-slate-50; }
+  &__field { @apply flex-1 min-w-[150px]; }
+  &__label { @apply block text-sm font-medium text-gray-700; }
+  &__select, &__input { @apply mt-1 block w-full rounded-md border-gray-300 p-2 border; }
+  &__add { @apply px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition duration-200 whitespace-nowrap flex items-center; }
+  &__list { @apply space-y-3 mt-4; }
+}
+
+

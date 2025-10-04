@@ -1,0 +1,10 @@
+.agenda-dashboard {
+  &__title { @apply text-3xl font-extrabold text-gray-900 mb-6; }
+  &__cards { @apply grid grid-cols-1 md:grid-cols-4 gap-6; }
+  &__card { @apply bg-white p-6 rounded-xl shadow-lg border border-slate-100; }
+  &__label { @apply text-sm font-medium text-indigo-600; }
+  &__value { @apply text-4xl font-bold text-gray-900 mt-1; }
+  &__meta { @apply text-xs text-gray-500 mt-2; }
+}
+
+

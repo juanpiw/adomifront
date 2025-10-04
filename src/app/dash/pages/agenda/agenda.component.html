@@ -1,0 +1,91 @@
+<div class="agenda-container">
+  <!-- Navegación de la agenda -->
+  <nav class="agenda-nav">
+    <button 
+      class="agenda-nav__button"
+      [class.agenda-nav__button--active]="currentView === 'dashboard'"
+      (click)="setView('dashboard')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+      </svg>
+      Panel de Control
+    </button>
+    
+    <button 
+      class="agenda-nav__button"
+      [class.agenda-nav__button--active]="currentView === 'calendar'"
+      (click)="setView('calendar')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      Agenda (Citas)
+    </button>
+    
+    <button 
+      class="agenda-nav__button"
+      [class.agenda-nav__button--active]="currentView === 'config'"
+      (click)="setView('config')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Configuración
+    </button>
+  </nav>
+
+  <!-- Contenido del dashboard -->
+  <div *ngIf="currentView === 'dashboard'" class="agenda-content">
+    <div class="agenda-content__main">
+      <!-- Dashboard Resumen -->
+      <app-dashboard-resumen 
+        [metrics]="dashboardMetrics"
+        [loading]="loading">
+      </app-dashboard-resumen>
+
+      <!-- Dashboard Gráfico -->
+      <app-dashboard-grafico 
+        [loading]="loading">
+      </app-dashboard-grafico>
+    </div>
+  </div>
+
+  <!-- Contenido del calendario -->
+  <div *ngIf="currentView === 'calendar'" class="agenda-content agenda-content--calendar">
+    <div class="agenda-content__calendar">
+      <!-- Calendario Mensual -->
+      <app-calendar-mensual 
+        [events]="calendarEvents"
+        [loading]="loading"
+        (dateSelected)="onDateSelected($event)"
+        (newAppointment)="onNewAppointment()"
+        (previousMonth)="onPreviousMonth()"
+        (nextMonth)="onNextMonth()">
+      </app-calendar-mensual>
+    </div>
+
+    <div class="agenda-content__sidebar">
+      <!-- Detalle del Día -->
+      <app-day-detail 
+        [selectedDate]="selectedDate"
+        [appointments]="dayAppointments"
+        [loading]="loading"
+        (appointmentClick)="onAppointmentClick($event)"
+        (newAppointment)="onNewAppointmentForDay($event)">
+      </app-day-detail>
+    </div>
+  </div>
+
+  <!-- Contenido de configuración -->
+  <div *ngIf="currentView === 'config'" class="agenda-content">
+    <div class="agenda-content__main">
+      <!-- Configuración de Horarios -->
+      <app-horarios-config 
+        [timeBlocks]="timeBlocks"
+        [loading]="loading"
+        (addTimeBlock)="onAddTimeBlock($event)"
+        (removeTimeBlock)="onRemoveTimeBlock($event)"
+        (updateTimeBlock)="onUpdateTimeBlock($event)">
+      </app-horarios-config>
+    </div>
+  </div>
+</div>

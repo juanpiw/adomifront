@@ -1,0 +1,69 @@
+<aside class="day-detail">
+  <div class="day-detail__header">
+    <span class="day-detail__day">{{ selectedDayNumber }}</span>
+    <div class="day-detail__meta">
+      <p class="day-detail__pro">{{ professionalName }}</p>
+      <p class="day-detail__date">{{ selectedDateFormatted }}</p>
+      <p class="day-detail__slug">{{ selectedDateSlug }}</p>
+    </div>
+  </div>
+
+  <div class="day-detail__list">
+    <!-- Estado vacío -->
+    <div *ngIf="!hasAppointments && !loading" class="day-detail__empty">
+      <span class="day-detail__emoji">📅</span>
+      <p class="day-detail__empty-text">Seleccione un día para ver sus citas.</p>
+    </div>
+
+    <!-- Estado de carga -->
+    <div *ngIf="loading" class="day-detail__loading">
+      <div class="day-detail__loading-spinner"></div>
+      <p class="day-detail__loading-text">Cargando citas...</p>
+    </div>
+
+    <!-- Lista de citas -->
+    <div *ngIf="hasAppointments && !loading" class="day-detail__appointments">
+      <div 
+        *ngFor="let appointment of sortedAppointments; trackBy: trackByAppointmentId"
+        class="day-detail__appointment"
+        [class.day-detail__appointment--cancelled]="appointment.status === 'cancelled'"
+        (click)="onAppointmentClick(appointment)">
+        
+        <div class="day-detail__appointment-header">
+          <div class="day-detail__appointment-time">
+            <span class="day-detail__appointment-icon">{{ getTypeIcon(appointment.type) }}</span>
+            <span class="day-detail__appointment-time-text">{{ appointment.time }}</span>
+          </div>
+          <div 
+            class="day-detail__appointment-status"
+            [style.background-color]="getStatusColor(appointment.status)">
+            {{ getStatusText(appointment.status) }}
+          </div>
+        </div>
+
+        <div class="day-detail__appointment-content">
+          <h4 class="day-detail__appointment-title">{{ appointment.title }}</h4>
+          <p class="day-detail__appointment-client">{{ appointment.clientName }}</p>
+          <p *ngIf="appointment.clientPhone" class="day-detail__appointment-phone">
+            📞 {{ appointment.clientPhone }}
+          </p>
+          <p class="day-detail__appointment-duration">
+            ⏱️ {{ appointment.duration }} minutos
+          </p>
+          <p *ngIf="appointment.notes" class="day-detail__appointment-notes">
+            {{ appointment.notes }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón para nueva cita -->
+    <div *ngIf="selectedDate && !loading" class="day-detail__actions">
+      <button 
+        class="day-detail__new-appointment"
+        (click)="onNewAppointment()">
+        + Nueva Cita
+      </button>
+    </div>
+  </div>
+</aside>

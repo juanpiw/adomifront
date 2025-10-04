@@ -1,0 +1,219 @@
+.day-detail {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+  height: fit-content;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: #eef2ff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+  }
+
+  &__day {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #4338ca;
+    margin-right: 0.75rem;
+  }
+
+  &__meta {
+    flex: 1;
+  }
+
+  &__pro {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4338ca;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__date {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__slug {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  &__list {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 2px dashed #d1d5db;
+  }
+
+  &__emoji {
+    font-size: 2.25rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  &__empty-text {
+    color: #6b7280;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  &__loading {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  &__loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #4338ca;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem auto;
+  }
+
+  &__loading-text {
+    color: #6b7280;
+    margin: 0;
+  }
+
+  &__appointments {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__appointment {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      border-color: #4338ca;
+      box-shadow: 0 4px 12px -2px rgba(67, 56, 202, 0.1);
+      transform: translateY(-1px);
+    }
+
+    &--cancelled {
+      opacity: 0.6;
+      background: #f9fafb;
+    }
+  }
+
+  &__appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  &__appointment-time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__appointment-icon {
+    font-size: 1rem;
+  }
+
+  &__appointment-time-text {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  &__appointment-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+  }
+
+  &__appointment-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__appointment-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  &__appointment-client {
+    font-size: 0.875rem;
+    color: #374151;
+    margin: 0;
+  }
+
+  &__appointment-phone {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  &__appointment-duration {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  &__appointment-notes {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-style: italic;
+    margin: 0;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 0.375rem;
+  }
+
+  &__actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  &__new-appointment {
+    width: 100%;
+    padding: 0.75rem;
+    background: #4338ca;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+
+    &:hover {
+      background: #3730a3;
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

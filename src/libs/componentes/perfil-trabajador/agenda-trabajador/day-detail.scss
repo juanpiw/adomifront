@@ -1,0 +1,14 @@
+.agenda-dia {
+  &__header { @apply flex items-center p-3 bg-indigo-50 rounded-xl shadow-md; }
+  &__day { @apply text-3xl font-extrabold text-indigo-700; }
+  &__meta { @apply ml-3 flex-grow; }
+  &__pro { @apply text-sm font-medium text-indigo-600; }
+  &__date { @apply text-lg font-bold text-gray-800; }
+  &__slug { @apply text-xs text-gray-500; }
+  &__list { @apply space-y-4; }
+  &__empty { @apply text-center p-8 bg-white rounded-xl shadow-md border border-dashed border-gray-300; }
+  &__emoji { @apply text-4xl block mb-2; }
+  &__empty-text { @apply text-gray-600 font-medium; }
+}
+
+

@@ -1,0 +1,131 @@
+.agenda-container {
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.agenda-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.agenda-nav__button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  flex: 1;
+  justify-content: center;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  &--active {
+    background: #4338ca;
+    color: white;
+    box-shadow: 0 2px 4px -1px rgba(67, 56, 202, 0.3);
+
+    &:hover {
+      background: #3730a3;
+    }
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.agenda-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &--calendar {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+
+    @media (max-width: 1024px) {
+      flex-direction: column;
+    }
+  }
+
+  &__calendar {
+    flex: 2;
+    min-width: 0;
+  }
+
+  &__sidebar {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+
+    @media (max-width: 1024px) {
+      max-width: none;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .agenda-container {
+    padding: 1rem;
+  }
+
+  .agenda-nav {
+    flex-direction: column;
+    gap: 0.25rem;
+
+    &__button {
+      justify-content: flex-start;
+    }
+  }
+
+  .agenda-content {
+    &--calendar {
+      gap: 1rem;
+    }
+
+    &__sidebar {
+      min-width: auto;
+    }
+  }
+}
+
+/* Animaciones */
+.agenda-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
