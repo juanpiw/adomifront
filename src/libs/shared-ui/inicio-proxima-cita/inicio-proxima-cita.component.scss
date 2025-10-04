@@ -1,0 +1,67 @@
+.inicio-proxima {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+
+  &__badge {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #4f46e5;
+  }
+
+  &__row {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  &__time {
+    text-align: center;
+    border-right: 1px solid #e2e8f0;
+    padding-right: 1.5rem;
+  }
+
+  &__hour {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #4f46e5;
+  }
+
+  &__meridiem {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  &__detail {
+    margin-left: 1.5rem;
+  }
+
+  &__service {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  &__with {
+    color: #64748b;
+  }
+
+  &__cta {
+    margin-left: auto;
+    background-color: #e2e8f0;
+    color: #1e293b;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    border: none;
+
+    &:hover {
+      background-color: #cbd5e1;
+    }
+  }
+}

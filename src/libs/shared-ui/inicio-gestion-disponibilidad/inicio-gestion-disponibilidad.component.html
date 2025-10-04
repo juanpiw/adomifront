@@ -1,0 +1,41 @@
+<section class="inicio-gestion">
+  <h3 class="inicio-gestion__title">Gestión de Disponibilidad</h3>
+  <div class="inicio-gestion__card">
+    <div class="inicio-gestion__add">
+      <h4 class="inicio-gestion__add-title">Añadir Nuevo Bloque</h4>
+      <div class="inicio-gestion__grid">
+        <div>
+          <label class="inicio-gestion__label">Día:</label>
+          <select class="inicio-gestion__select" [(ngModel)]="newTimeBlock.day">
+            <option value="">Seleccionar día</option>
+            <option *ngFor="let day of days" [value]="day">{{ day }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="inicio-gestion__label">Desde:</label>
+          <input type="time" class="inicio-gestion__input" [(ngModel)]="newTimeBlock.startTime">
+        </div>
+        <div>
+          <label class="inicio-gestion__label">Hasta:</label>
+          <input type="time" class="inicio-gestion__input" [(ngModel)]="newTimeBlock.endTime">
+        </div>
+      </div>
+      <div class="inicio-gestion__actions">
+        <span class="inicio-gestion__feedback">{{ feedback }}</span>
+        <button class="inicio-gestion__add-btn" (click)="onAddTimeBlock()">➕ Agregar Bloque</button>
+      </div>
+    </div>
+    <h4 class="inicio-gestion__list-title">Horarios Confirmados</h4>
+    <ul class="inicio-gestion__list">
+      <li *ngFor="let block of data.timeBlocks" 
+          class="inicio-gestion__item" 
+          [class]="getStatusClass(block.status)">
+        <span class="text-lg">
+          <span class="font-extrabold" [class.text-green-700]="block.status === 'confirmed'" [class.text-yellow-700]="block.status === 'pending'">Día:</span> 
+          {{ block.day }} | <span class="font-medium">{{ block.startTime }} - {{ block.endTime }}</span>
+        </span>
+        <button class="inicio-gestion__remove-btn" (click)="onRemoveTimeBlock(block.id)">❌ Eliminar</button>
+      </li>
+    </ul>
+  </div>
+</section>

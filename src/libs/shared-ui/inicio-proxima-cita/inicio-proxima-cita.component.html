@@ -1,0 +1,14 @@
+<div class="inicio-proxima">
+  <p class="inicio-proxima__badge">TU PRÓXIMA CITA</p>
+  <div class="inicio-proxima__row">
+    <div class="inicio-proxima__time">
+      <p class="inicio-proxima__hour">{{ data.time }}</p>
+      <p class="inicio-proxima__meridiem">{{ data.meridiem }}</p>
+    </div>
+    <div class="inicio-proxima__detail">
+      <p class="inicio-proxima__service">{{ data.service }}</p>
+      <p class="inicio-proxima__with">con <span class="font-semibold text-slate-700">{{ data.clientName }}</span></p>
+    </div>
+    <button class="inicio-proxima__cta" (click)="onViewDetailsClick()">Ver Detalles</button>
+  </div>
+</div>

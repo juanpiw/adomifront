@@ -1,0 +1,68 @@
+.inicio-ingresos {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+  }
+
+  &__amount {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #059669;
+    margin-bottom: 1rem;
+  }
+
+  &__chart {
+    height: 200px;
+    margin-bottom: 1rem;
+  }
+
+  &__stats {
+    margin-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  &__stat-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  &__stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+  }
+
+  &__report-btn {
+    margin-top: 1.5rem;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+    background-color: #4f46e5;
+    color: white;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    border: none;
+
+    &:hover {
+      background-color: #4338ca;
+    }
+  }
+}

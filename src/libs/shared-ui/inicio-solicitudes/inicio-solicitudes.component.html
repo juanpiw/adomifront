@@ -1,0 +1,20 @@
+<section class="inicio-solicitudes">
+  <h3 class="inicio-solicitudes__title">Solicitudes de Reserva Pendientes</h3>
+  <div class="inicio-solicitudes__card">
+    <div class="inicio-solicitudes__row">
+      <img [src]="data.clientAvatar" [alt]="data.clientName" class="inicio-solicitudes__avatar">
+      <div class="ml-4">
+        <p class="inicio-solicitudes__name">{{ data.clientName }}</p>
+        <p class="inicio-solicitudes__service">Solicita <span class="font-semibold text-slate-600">{{ data.service }}</span></p>
+      </div>
+      <div class="ml-auto text-right">
+        <p class="inicio-solicitudes__when">{{ data.when }}</p>
+        <p class="inicio-solicitudes__time">{{ data.time }}</p>
+      </div>
+    </div>
+    <div class="inicio-solicitudes__actions">
+      <button class="inicio-solicitudes__btn-accept" (click)="onAcceptClick()">Aceptar</button>
+      <button class="inicio-solicitudes__btn-decline" (click)="onDeclineClick()">Rechazar</button>
+    </div>
+  </div>
+</section>

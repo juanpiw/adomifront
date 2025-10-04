@@ -1,0 +1,26 @@
+<aside class="inicio-sidebar">
+  <div class="inicio-sidebar__brand">
+    <h1 class="inicio-sidebar__brand-title">{{ data.brandTitle }}</h1>
+  </div>
+  
+  <nav class="inicio-sidebar__nav">
+    <a *ngFor="let item of data.items" 
+       (click)="onItemClick(item)"
+       [class.inicio-sidebar__link--active]="item.active"
+       class="inicio-sidebar__link">
+      <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.icon"></path>
+      </svg>
+      {{ item.label }}
+    </a>
+  </nav>
+  
+  <div class="inicio-sidebar__footer">
+    <a (click)="onItemClick(data.footerItem)" class="inicio-sidebar__link">
+      <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="data.footerItem.icon"></path>
+      </svg>
+      {{ data.footerItem.label }}
+    </a>
+  </div>
+</aside>

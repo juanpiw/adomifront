@@ -1,8 +1,116 @@
 ﻿import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
+import { InicioSidebarComponent, SidebarItem } from '../../../../libs/shared-ui/inicio-sidebar/inicio-sidebar.component';
+import { InicioProximaCitaComponent, ProximaCitaData } from '../../../../libs/shared-ui/inicio-proxima-cita/inicio-proxima-cita.component';
+import { InicioIngresosMesComponent, IngresosData } from '../../../../libs/shared-ui/inicio-ingresos-mes/inicio-ingresos-mes.component';
+import { InicioSolicitudesComponent, SolicitudData } from '../../../../libs/shared-ui/inicio-solicitudes/inicio-solicitudes.component';
+import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
 
 @Component({
   selector: 'app-d-home',
   standalone: true,
-  template: `<h2>Inicio</h2><p>¿Cuál es mi próxima cita?</p><p>¿Tengo mensajes nuevos?</p>`
+  imports: [
+    CommonModule,
+    InicioHeaderComponent,
+    InicioSidebarComponent,
+    InicioProximaCitaComponent,
+    InicioIngresosMesComponent,
+    InicioSolicitudesComponent,
+    InicioGestionDisponibilidadComponent
+  ],
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss']
 })
-export class DashHomeComponent {}
+export class DashHomeComponent {
+  // Datos para el header
+  headerData: HeaderData = {
+    userName: 'Elena',
+    hasNotifications: true
+  };
+
+  // Datos para la próxima cita
+  proximaCitaData: ProximaCitaData = {
+    time: '10:00',
+    meridiem: 'AM',
+    service: 'Corte de Pelo',
+    clientName: 'Carlos Rojas'
+  };
+
+  // Datos para ingresos del mes
+  ingresosData: IngresosData = {
+    amount: '$450.000',
+    completedAppointments: 22,
+    averageRating: 4.9,
+    chartData: [100, 150, 200, 180, 250, 300, 280]
+  };
+
+  // Datos para solicitudes
+  solicitudData: SolicitudData = {
+    id: '1',
+    clientName: 'Marcos Reyes',
+    clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=MR',
+    service: 'Maquillaje Profesional',
+    when: 'Mañana',
+    time: '18:00 PM'
+  };
+
+  // Datos para gestión de disponibilidad
+  gestionData: GestionDisponibilidadData = {
+    timeBlocks: [
+      { id: '1', day: 'Lunes y Jueves', startTime: '15:00', endTime: '16:30', status: 'confirmed' },
+      { id: '2', day: 'Miércoles', startTime: '09:00', endTime: '11:00', status: 'confirmed' }
+    ]
+  };
+
+  // Event handlers
+  onNotificationClick() {
+    console.log('Notificación clickeada');
+    // TODO: Implementar lógica de notificaciones
+  }
+
+  onPublicProfileClick() {
+    console.log('Ver perfil público');
+    // TODO: Navegar al perfil público
+  }
+
+  onSidebarItemClick(item: SidebarItem) {
+    console.log('Sidebar item clickeado:', item);
+    // TODO: Implementar navegación
+  }
+
+  onViewDetailsClick(data: ProximaCitaData) {
+    console.log('Ver detalles de cita:', data);
+    // TODO: Implementar modal de detalles
+  }
+
+  onViewReportClick(data: IngresosData) {
+    console.log('Ver reporte completo:', data);
+    // TODO: Navegar al reporte completo
+  }
+
+  onAcceptClick(data: SolicitudData) {
+    console.log('Aceptar solicitud:', data);
+    // TODO: Implementar lógica de aceptación
+  }
+
+  onDeclineClick(data: SolicitudData) {
+    console.log('Rechazar solicitud:', data);
+    // TODO: Implementar lógica de rechazo
+  }
+
+  onAddTimeBlock(data: { day: string; startTime: string; endTime: string }) {
+    const newBlock = {
+      id: Date.now().toString(),
+      ...data,
+      status: 'confirmed' as const
+    };
+    this.gestionData.timeBlocks.push(newBlock);
+    console.log('Bloque de tiempo agregado:', newBlock);
+  }
+
+  onRemoveTimeBlock(blockId: string) {
+    this.gestionData.timeBlocks = this.gestionData.timeBlocks.filter(block => block.id !== blockId);
+    console.log('Bloque de tiempo eliminado:', blockId);
+  }
+}

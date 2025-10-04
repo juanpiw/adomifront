@@ -1,0 +1,51 @@
+.inicio-sidebar {
+  width: 16rem;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e2e8f0;
+  flex-shrink: 0;
+
+  &__brand {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  &__brand-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4f46e5;
+  }
+
+  &__nav {
+    flex-grow: 1;
+    padding: 1rem;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #64748b;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      background-color: #f1f5f9;
+    }
+
+    &--active {
+      background-color: #eef2ff;
+      color: #4f46e5;
+      font-weight: 600;
+    }
+  }
+
+  &__footer {
+    padding: 1rem;
+    margin-top: auto;
+    border-top: 1px solid #e2e8f0;
+  }
+}
