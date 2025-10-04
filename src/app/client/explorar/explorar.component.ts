@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
+import { SearchInputComponent } from '../../../libs/shared-ui/search-input/search-input.component';
 
 interface Provider {
   id: number;
@@ -35,26 +36,22 @@ interface Service {
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent],
   template: `
     <div class="explorar-container">
       <!-- Header with Search -->
       <header class="mb-10">
         <h2 class="text-4xl font-extrabold text-gray-800">Hola, {{ user?.name || 'Usuario' }}!</h2>
         <p class="text-gray-500 mt-2 text-lg">Encuentra y agenda los mejores servicios a domicilio.</p>
-        <div class="relative mt-8">
-          <input 
-            type="text" 
-            placeholder="Busca un estilista, chef, técnico..." 
-            [(ngModel)]="searchTerm"
-            (input)="onSearch()"
-            class="w-full pl-14 pr-4 py-4 bg-white border-2 border-transparent rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-200 transition text-md custom-shadow"
-          >
-          <ui-icon name="search" class="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></ui-icon>
-          <button *ngIf="searchTerm" (click)="clearSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-            <ui-icon name="x" class="w-5 h-5"></ui-icon>
-          </button>
-        </div>
+        <ui-search-input
+          placeholder="Estilista, Chef..."
+          [(ngModel)]="searchTerm"
+          (search)="onAdvancedSearch($event)"
+          (serviceChange)="onServiceChange($event)"
+          (locationChange)="onLocationChange($event)"
+          (datetimeChange)="onDateTimeChange($event)"
+          ariaLabel="Búsqueda avanzada de servicios"
+        ></ui-search-input>
       </header>
 
       <!-- Hero Banner -->
@@ -191,6 +188,11 @@ export class ExplorarComponent implements OnInit {
   selectedCategory: string = '';
   selectedLocation: string = '';
   selectedPriceRange: string = '';
+  
+  // Advanced search
+  selectedService: string = '';
+  selectedLocationId: string = '';
+  selectedDateTime: any = null;
 
   // Data
   providers: Provider[] = [];
@@ -302,13 +304,61 @@ export class ExplorarComponent implements OnInit {
     this.filteredServices = [...this.services];
   }
 
-  onSearch() {
+  onSearch(searchValue: string) {
+    this.searchTerm = searchValue;
     this.applyFilters();
   }
 
   clearSearch() {
     this.searchTerm = '';
     this.applyFilters();
+  }
+
+  // Advanced search methods
+  onAdvancedSearch(searchData: any) {
+    console.log('Búsqueda avanzada:', searchData);
+    this.selectedService = searchData.service;
+    this.selectedLocationId = searchData.location;
+    this.selectedDateTime = searchData.datetime;
+    this.applyAdvancedFilters();
+  }
+
+  onServiceChange(service: string) {
+    this.selectedService = service;
+    this.applyAdvancedFilters();
+  }
+
+  onLocationChange(locationId: string) {
+    this.selectedLocationId = locationId;
+    this.applyAdvancedFilters();
+  }
+
+  onDateTimeChange(dateTime: any) {
+    this.selectedDateTime = dateTime;
+    this.applyAdvancedFilters();
+  }
+
+  applyAdvancedFilters() {
+    this.filteredProviders = this.providers.filter(provider => {
+      const matchesService = !this.selectedService || 
+        provider.name.toLowerCase().includes(this.selectedService.toLowerCase()) ||
+        provider.profession.toLowerCase().includes(this.selectedService.toLowerCase()) ||
+        provider.description.toLowerCase().includes(this.selectedService.toLowerCase());
+
+      const matchesLocation = !this.selectedLocationId || 
+        provider.location.toLowerCase().includes(this.selectedLocationId.toLowerCase());
+
+      return matchesService && matchesLocation;
+    });
+
+    this.filteredServices = this.services.filter(service => {
+      const matchesService = !this.selectedService || 
+        service.name.toLowerCase().includes(this.selectedService.toLowerCase()) ||
+        service.description.toLowerCase().includes(this.selectedService.toLowerCase()) ||
+        service.provider_name.toLowerCase().includes(this.selectedService.toLowerCase());
+
+      return matchesService;
+    });
   }
 
   applyFilters() {

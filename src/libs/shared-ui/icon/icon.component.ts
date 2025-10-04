@@ -1,7 +1,7 @@
 ﻿import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type IconName = 'home'|'calendar'|'money'|'chart'|'star'|'message'|'briefcase'|'user'|'settings'|'bell'|'card'|'logout'|'heart'|'chevron-left'|'chevron-right'|'menu'|'alert-triangle'|'clock'|'info'|'x'|'search'|'users'|'briefcase';
+export type IconName = 'home'|'calendar'|'money'|'chart'|'star'|'message'|'briefcase'|'user'|'settings'|'bell'|'card'|'logout'|'heart'|'chevron-left'|'chevron-right'|'chevron-down'|'chevron-up'|'menu'|'alert-triangle'|'clock'|'info'|'x'|'search'|'users'|'briefcase';
 
 @Component({
   selector: 'ui-icon',
