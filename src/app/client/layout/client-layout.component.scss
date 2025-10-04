@@ -1,55 +1,65 @@
 ﻿.client-layout { 
   display: grid; 
-  grid-template-columns: 312px 1fr; 
+  grid-template-columns: 280px 1fr; 
   min-height: 100vh; 
   background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(102,126,234,0.08), transparent),
               radial-gradient(ellipse 80% 50% at 50% 120%, rgba(255,0,119,0.06), transparent);
 }
 
 .client-layout.sidebar-collapsed { 
-  grid-template-columns: 72px 1fr; 
+  grid-template-columns: 60px 1fr; 
 }
 
 .sidebar { 
-  display: grid; 
-  grid-template-columns: 72px 240px; 
+  display: flex; 
   position: relative; 
   z-index: 3; 
-  transition: grid-template-columns .25s ease; 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar.collapsed { 
-  grid-template-columns: 72px 0px; 
+  /* Solo rail visible */
 }
 
 .rail { 
-  background: linear-gradient(180deg, #905d99, #144ce5); 
+  background: linear-gradient(180deg, #1e293b, #334155); 
   color: #e5e7eb; 
-  padding: 12px 8px; 
+  padding: 8px 6px; 
   display: flex; 
   flex-direction: column; 
-  gap: 8px; 
+  gap: 6px; 
   align-items: center; 
-  border-right: 1px solid rgba(255,255,255,0.08); 
+  border-right: 1px solid rgba(255,255,255,0.1);
+  width: 60px;
+  min-height: 100vh;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
 }
 
 .rail .rail-item { 
-  width: 48px; 
-  height: 48px; 
-  border-radius: 12px; 
+  width: 44px; 
+  height: 44px; 
+  border-radius: 10px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
-  color: #cbd5e1; 
+  color: #94a3b8; 
   text-decoration: none; 
-  transition: all .2s ease; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
-.rail .rail-item:hover, 
+.rail .rail-item:hover { 
+  background: rgba(99, 102, 241, 0.15); 
+  color: #e2e8f0; 
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
 .rail .rail-item.active { 
-  background: rgba(255,255,255,0.06); 
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); 
   color: #fff; 
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); 
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  transform: scale(1.05);
 }
 
 .rail .spacer { 
@@ -61,23 +71,20 @@
   display: flex; 
   flex-direction: column; 
   gap: 14px; 
-  background: rgba(255,255,255,0.65); 
-  backdrop-filter: blur(16px); 
-  border-right: 1px solid var(--color-border); 
-}
-
-.sidebar.collapsed .panel { 
-  width: 0; 
-  overflow: hidden; 
-  padding: 0; 
-  border-right: none; 
+  background: rgba(255,255,255,0.95); 
+  backdrop-filter: blur(20px); 
+  border-right: 1px solid rgba(226, 232, 240, 0.5);
+  width: 220px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 12px rgba(0,0,0,0.05);
 }
 
 .panel .brand { 
   font-weight: 800; 
-  font-size: 20px; 
+  font-size: 18px; 
   margin-bottom: 8px; 
   color: #1e293b;
+  text-align: center;
 }
 
 .menu { 
@@ -199,21 +206,25 @@
 }
 
 .rail-toggle { 
-  width: 48px; 
+  width: 44px; 
   height: 32px; 
   border-radius: 8px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
-  color: #cbd5e1; 
-  background: transparent; 
-  border: 1px solid rgba(255,255,255,0.12); 
+  color: #94a3b8; 
+  background: rgba(99, 102, 241, 0.1); 
+  border: 1px solid rgba(99, 102, 241, 0.2); 
   cursor: pointer; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 8px;
 }
 
 .rail-toggle:hover { 
-  background: rgba(255,255,255,0.08); 
-  color: #fff; 
+  background: rgba(99, 102, 241, 0.2); 
+  color: #e2e8f0; 
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 /* Mobile layout */
@@ -231,14 +242,18 @@
     left: 0; 
     top: 0; 
     bottom: 0; 
-    grid-template-columns: 72px 220px; 
+    display: flex;
     box-shadow: 0 20px 60px rgba(0,0,0,0.25); 
     transform: translateX(0); 
-    transition: transform .25s ease; 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
   }
   
   .client-layout.sidebar-collapsed .sidebar { 
     transform: translateX(-100%); 
+  }
+  
+  .rail {
+    width: 60px;
   }
   
   .panel { 

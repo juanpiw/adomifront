@@ -1,5 +1,6 @@
 ﻿import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { AuthService } from '../../auth/services/auth.service';
@@ -7,7 +8,7 @@ import { AuthService } from '../../auth/services/auth.service';
 @Component({
   selector: 'app-client-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent],
+  imports: [CommonModule, RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent],
   templateUrl: './client-layout.component.html',
   styleUrls: ['./client-layout.component.scss']
 })

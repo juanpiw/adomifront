@@ -1,52 +1,55 @@
 ﻿<div class="client-layout" [class.sidebar-collapsed]="isCollapsed">
-  <aside class="sidebar elevated" [class.collapsed]="isCollapsed">
+  <aside class="sidebar" [class.collapsed]="isCollapsed">
+    <!-- Rail Menu (siempre visible) -->
     <div class="rail">
       <button class="rail-toggle" (click)="isCollapsed = !isCollapsed" title="Contraer/Expandir">
-        <ui-icon [name]="isCollapsed ? 'chevron-right' : 'chevron-left'" [size]="18"></ui-icon>
+        <ui-icon [name]="isCollapsed ? 'chevron-right' : 'chevron-left'" [size]="16"></ui-icon>
       </button>
       <a class="rail-item" routerLink="/client/explorar" routerLinkActive="active" title="Explorar" (click)="onNav()">
-        <ui-icon name="search" [size]="20"></ui-icon>
+        <ui-icon name="search" [size]="18"></ui-icon>
       </a>
       <a class="rail-item" routerLink="/client/reservas" routerLinkActive="active" title="Mis Reservas" (click)="onNav()">
-        <ui-icon name="calendar" [size]="20"></ui-icon>
+        <ui-icon name="calendar" [size]="18"></ui-icon>
       </a>
       <a class="rail-item" routerLink="/client/favoritos" routerLinkActive="active" title="Favoritos" (click)="onNav()">
-        <ui-icon name="heart" [size]="20"></ui-icon>
+        <ui-icon name="heart" [size]="18"></ui-icon>
       </a>
       <a class="rail-item" routerLink="/client/perfil" routerLinkActive="active" title="Mi Perfil" (click)="onNav()">
-        <ui-icon name="user" [size]="20"></ui-icon>
+        <ui-icon name="user" [size]="18"></ui-icon>
       </a>
       <a class="rail-item" routerLink="/client/pagos" routerLinkActive="active" title="Métodos de Pago" (click)="onNav()">
-        <ui-icon name="card" [size]="20"></ui-icon>
+        <ui-icon name="card" [size]="18"></ui-icon>
       </a>
       <a class="rail-item" routerLink="/client/configuracion" routerLinkActive="active" title="Configuración" (click)="onNav()">
-        <ui-icon name="settings" [size]="20"></ui-icon>
+        <ui-icon name="settings" [size]="18"></ui-icon>
       </a>
       <div class="spacer"></div>
       <a class="rail-item" (click)="logout()" title="Salir" style="cursor: pointer;">
-        <ui-icon name="logout" [size]="20"></ui-icon>
+        <ui-icon name="logout" [size]="18"></ui-icon>
       </a>
     </div>
-    <div class="panel elevated">
+    
+    <!-- Panel (solo visible cuando no está colapsado) -->
+    <div class="panel" *ngIf="!isCollapsed">
       <div class="brand">Adomi Cliente</div>
       <nav class="menu">
         <a routerLink="/client/explorar" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="search"></ui-icon><span>Explorar</span>
+          <ui-icon name="search" [size]="16"></ui-icon><span>Explorar</span>
         </a>
         <a routerLink="/client/reservas" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="calendar"></ui-icon><span>Mis Reservas</span>
+          <ui-icon name="calendar" [size]="16"></ui-icon><span>Mis Reservas</span>
         </a>
         <a routerLink="/client/favoritos" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="heart"></ui-icon><span>Favoritos</span>
+          <ui-icon name="heart" [size]="16"></ui-icon><span>Favoritos</span>
         </a>
         <a routerLink="/client/perfil" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="user"></ui-icon><span>Mi Perfil</span>
+          <ui-icon name="user" [size]="16"></ui-icon><span>Mi Perfil</span>
         </a>
         <a routerLink="/client/pagos" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="card"></ui-icon><span>Métodos de Pago</span>
+          <ui-icon name="card" [size]="16"></ui-icon><span>Métodos de Pago</span>
         </a>
         <a routerLink="/client/configuracion" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="settings"></ui-icon><span>Configuración</span>
+          <ui-icon name="settings" [size]="16"></ui-icon><span>Configuración</span>
         </a>
       </nav>
       <div class="footer">
