@@ -30,13 +30,36 @@
   font-weight: 500;
 }
 .menu a:hover { 
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   color: #475569;
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .menu a.active { 
-  background: #eef2ff; 
-  color: #4f46e5;
+  background: linear-gradient(135deg, #f3f0ff 0%, #eef2ff 100%); 
+  color: #6366f1;
   font-weight: 600;
+  border: 1px solid #c7d2fe;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  position: relative;
+  transform: translateX(4px);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+  }
+  
+  ui-icon {
+    color: #6366f1;
+  }
 }
 .menu a ui-icon { 
   margin-right: 12px; 
