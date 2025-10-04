@@ -8,39 +8,27 @@
       (publicProfileClick)="onPublicProfileClick()">
     </app-inicio-header>
 
-    <!-- Dashboard Grid -->
-    <div class="dash-home__grid">
-      <!-- Primera fila: Solicitudes e Ingresos -->
-      <div class="dash-home__grid-item">
-        <app-inicio-solicitudes 
-          [data]="solicitudData"
-          (acceptClick)="onAcceptClick($event)"
-          (declineClick)="onDeclineClick($event)">
-        </app-inicio-solicitudes>
-      </div>
+    <!-- Dashboard Components -->
+    <app-inicio-solicitudes 
+      [data]="solicitudData"
+      (acceptClick)="onAcceptClick($event)"
+      (declineClick)="onDeclineClick($event)">
+    </app-inicio-solicitudes>
 
-      <div class="dash-home__grid-item">
-        <app-inicio-ingresos-mes 
-          [data]="ingresosData"
-          (viewReportClick)="onViewReportClick($event)">
-        </app-inicio-ingresos-mes>
-      </div>
+    <app-inicio-ingresos-mes 
+      [data]="ingresosData"
+      (viewReportClick)="onViewReportClick($event)">
+    </app-inicio-ingresos-mes>
 
-      <!-- Segunda fila: Próxima Cita y Gestión de Disponibilidad -->
-      <div class="dash-home__grid-item">
-        <app-inicio-proxima-cita 
-          [data]="proximaCitaData"
-          (viewDetailsClick)="onViewDetailsClick($event)">
-        </app-inicio-proxima-cita>
-      </div>
+    <app-inicio-proxima-cita 
+      [data]="proximaCitaData"
+      (viewDetailsClick)="onViewDetailsClick($event)">
+    </app-inicio-proxima-cita>
 
-      <div class="dash-home__grid-item">
-        <app-inicio-gestion-disponibilidad 
-          [data]="gestionData"
-          (addTimeBlock)="onAddTimeBlock($event)"
-          (removeTimeBlock)="onRemoveTimeBlock($event)">
-        </app-inicio-gestion-disponibilidad>
-      </div>
-    </div>
+    <app-inicio-gestion-disponibilidad 
+      [data]="gestionData"
+      (addTimeBlock)="onAddTimeBlock($event)"
+      (removeTimeBlock)="onRemoveTimeBlock($event)">
+    </app-inicio-gestion-disponibilidad>
   </div>
 </div>
