@@ -65,8 +65,8 @@ export class DashPerfilComponent {
   ];
 
   portfolioImages: PortfolioImage[] = [
-    { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo' },
-    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración' }
+    { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo', type: 'image' },
+    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image' }
   ];
 
   profileProgress = 75;
@@ -181,6 +181,11 @@ export class DashPerfilComponent {
   onAddPortfolioImage() {
     console.log('Agregar imagen al portafolio');
     // TODO: Implementar uploader de imágenes
+  }
+
+  onAddPortfolioVideo() {
+    console.log('Agregar video al portafolio');
+    // TODO: Implementar uploader de videos
   }
 
   onDeletePortfolioImage(imageId: string) {

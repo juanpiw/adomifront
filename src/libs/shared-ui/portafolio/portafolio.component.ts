@@ -6,6 +6,7 @@ export interface PortfolioImage {
   id: string;
   url: string;
   alt: string;
+  type: 'image' | 'video';
 }
 
 @Component({
@@ -17,12 +18,13 @@ export interface PortfolioImage {
 })
 export class PortafolioComponent {
   @Input() images: PortfolioImage[] = [
-    { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo' },
-    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración' }
+    { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo', type: 'image' },
+    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image' }
   ];
   @Input() maxImages: number = 10;
 
   @Output() addImage = new EventEmitter<void>();
+  @Output() addVideo = new EventEmitter<void>();
   @Output() deleteImage = new EventEmitter<string>();
 
   get canAddMore(): boolean {
@@ -31,6 +33,10 @@ export class PortafolioComponent {
 
   onAddImage() {
     this.addImage.emit();
+  }
+
+  onAddVideo() {
+    this.addVideo.emit();
   }
 
   onDeleteImage(imageId: string) {

@@ -4,16 +4,36 @@
   
   <div class="portafolio__grid">
     <div 
-      *ngFor="let image of images" 
+      *ngFor="let item of images" 
       class="portafolio__image-container">
+      
+      <!-- Imagen -->
       <img 
-        [src]="image.url" 
-        [alt]="image.alt"
-        class="portafolio__image">
+        *ngIf="item.type === 'image'"
+        [src]="item.url" 
+        [alt]="item.alt"
+        class="portafolio__media">
+      
+      <!-- Video -->
+      <video 
+        *ngIf="item.type === 'video'"
+        [src]="item.url" 
+        class="portafolio__media"
+        controls
+        preload="metadata">
+        Tu navegador no soporta videos.
+      </video>
+      
+      <!-- Indicador de tipo -->
+      <div class="portafolio__type-indicator" 
+           [class.portafolio__type-indicator--video]="item.type === 'video'">
+        {{ item.type === 'video' ? '🎥' : '📷' }}
+      </div>
+      
       <button 
         class="portafolio__delete-button"
-        (click)="onDeleteImage(image.id)"
-        title="Eliminar imagen">
+        (click)="onDeleteImage(item.id)"
+        [title]="'Eliminar ' + (item.type === 'video' ? 'video' : 'imagen')">
         ×
       </button>
     </div>
@@ -21,11 +41,20 @@
     <div 
       *ngIf="canAddMore"
       class="portafolio__add-container">
-      <ui-button 
-        variant="secondary"
-        (click)="onAddImage()">
-        + Añadir foto
-      </ui-button>
+      <div class="portafolio__add-buttons">
+        <ui-button 
+          variant="secondary"
+          size="sm"
+          (click)="onAddImage()">
+          📷 Foto
+        </ui-button>
+        <ui-button 
+          variant="secondary"
+          size="sm"
+          (click)="onAddVideo()">
+          🎥 Video
+        </ui-button>
+      </div>
     </div>
   </div>
 </section>
