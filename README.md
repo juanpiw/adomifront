@@ -99,7 +99,7 @@ adomi-app/
 │   │   │       ├── explorar/  # Explorar servicios
 │   │   │       ├── perfil-trabajador/ # Perfil de trabajador
 │   │   │       ├── reservas/  # Gestión de reservas
-│   │   │       ├── favoritos/ # Favoritos
+│   │   │       ├── favoritos/ # Favoritos con componentes migrados
 │   │   │       ├── perfil/    # Perfil del cliente
 │   │   │       ├── pagos/     # Métodos de pago
 │   │   │       └── configuracion/ # Configuración
@@ -144,13 +144,22 @@ adomi-app/
 │   │       ├── inicio-ingresos-dia/ # Ingresos diarios
 │   │       ├── inicio-solicitudes/ # Solicitudes
 │   │       └── inicio-proxima-cita/ # Próxima cita
+│   │       ├── favorites/           # Componentes de favoritos
+│   │       │   ├── hero-section/    # Sección hero con búsqueda
+│   │       │   ├── categories-section/ # Sección de categorías
+│   │       │   ├── professional-card/ # Tarjeta de profesional
+│   │       │   ├── favorites-section/ # Sección de favoritos
+│   │       │   └── recommended-section/ # Sección de recomendados
 │   └── environments/          # Variables de entorno
 ├── templates/                 # Templates HTML/CSS originales
 │   └── componentes/           # Componentes migrados
 │       ├── perfil-trabajador/ # Componentes de perfil
 │       ├── agenda-trabajador/ # Componentes de agenda
 │       ├── inicio/            # Componentes de dashboard
-│       └── agenda/            # Componentes de perfil público
+│       ├── agenda/            # Componentes de perfil público
+│       ├── componentes-chat/  # Componentes de chat
+│       ├── perfil/            # Componentes de perfil de cliente
+│       └── componentes-favoritos/ # Componentes de favoritos
 ├── angular.json               # Configuración de Angular
 └── package.json              # Dependencias
 ```
@@ -215,7 +224,8 @@ Registro → Selección de Plan → Stripe Checkout → Onboarding → Dashboard
 ### **Dashboard de Clientes** (`/client`)
 - 🔍 **Explorar** - Buscar servicios y profesionales
 - 🗓️ **Mis Reservas** - Gestión de citas programadas
-- ❤️ **Favoritos** - Profesionales guardados
+- ❤️ **Favoritos** - Profesionales guardados con componentes migrados
+- 💬 **Conversaciones** - Chat con profesionales
 - 👤 **Mi Perfil** - Información personal
 - 💳 **Métodos de Pago** - Gestión de pagos
 - ⚙️ **Configuración** - Preferencias del usuario
@@ -284,6 +294,13 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 - **PortfolioComponent** - Portafolio de trabajos
 - **FaqComponent** - Preguntas frecuentes
 
+### **Componentes de Favoritos**
+- **HeroSectionComponent** - Sección hero con búsqueda de servicios
+- **CategoriesSectionComponent** - Grid de categorías populares
+- **ProfessionalCardComponent** - Tarjeta individual de profesional
+- **FavoritesSectionComponent** - Lista de profesionales favoritos
+- **RecommendedSectionComponent** - Sección de recomendados
+
 ### **Componentes de Reservas**
 - **ReservasTabsComponent** - Pestañas de reservas
 - **ProximaCitaCardComponent** - Tarjeta de próxima cita
@@ -299,6 +316,15 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
   - Vista de éxito
   - Validación de calificación requerida
   - Hover effects y animaciones
+
+### **Sistema de Chat**
+- **ChatContainerComponent** - Contenedor principal del chat
+- **ChatItemComponent** - Elemento individual de conversación
+- **MessageBubbleComponent** - Burbuja de mensaje
+  - Soporte para mensajes enviados/recibidos
+  - Timestamps y estados de mensaje
+  - Diseño responsive para móviles
+  - Navegación entre conversaciones
 
 ### **Ejemplos de Uso**
 
@@ -354,6 +380,9 @@ Sistema inteligente que proporciona ayuda específica según el contexto:
 
 ### **Rutas Dinámicas**
 - **Perfil de Trabajador**: `/client/explorar/:workerId`
+- **Chat con Profesional**: `/client/conversaciones`
+- **Favoritos**: `/client/favoritos`
+- **Perfil de Cliente**: `/client/perfil`
 - **Navegación contextual** basada en el rol del usuario
 
 ## 📱 **Responsive Design**
@@ -412,6 +441,11 @@ Aplicado a componentes clave para una experiencia visual moderna:
 - **BookingPanelComponent** - Panel de reservas estilizado
 - **ReviewModalComponent** - Modal con efectos modernos
 - **PerfilTrabajadorComponent** - Página completa estilizada
+- **FavoritosComponent** - Página de favoritos con glassmorphism
+- **HeroSectionComponent** - Hero con gradientes y backdrop-blur
+- **CategoriesSectionComponent** - Tarjetas con efectos de profundidad
+- **ProfessionalCardComponent** - Tarjetas con transparencias
+- **FavoritesSectionComponent** - Lista con glassmorphism
 
 ## 🧪 **Testing**
 
@@ -531,6 +565,21 @@ console.log('Debug info:', data);
 ```
 
 ## 📝 **Changelog**
+
+### **v2.1.0 - Migración de Favoritos y Chat**
+- ✅ **Migración de favoritos** - Componentes HTML/CSS a Angular
+- ✅ **Sistema de chat** completo con ChatContainerComponent
+- ✅ **Componentes de favoritos** con estilo Frameblox:
+  * HeroSectionComponent con glassmorphism
+  * CategoriesSectionComponent con gradientes
+  * ProfessionalCardComponent con transparencias
+  * FavoritesSectionComponent con backdrop-blur
+  * RecommendedSectionComponent con texto gradiente
+- ✅ **Estilos reales de explorar** aplicados a favoritos
+- ✅ **Rutas de chat** `/client/conversaciones`
+- ✅ **Rutas de favoritos** `/client/favoritos`
+- ✅ **Navegación móvil** mejorada para chat
+- ✅ **MenuService** para control global de sidebar
 
 ### **v2.0.0 - Migración Completa de Componentes**
 - ✅ **Migración completa** de componentes HTML/CSS a Angular
