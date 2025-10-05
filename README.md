@@ -150,6 +150,12 @@ adomi-app/
 │   │       │   ├── professional-card/ # Tarjeta de profesional
 │   │       │   ├── favorites-section/ # Sección de favoritos
 │   │       │   └── recommended-section/ # Sección de recomendados
+│   │       ├── payment-methods/     # Componentes de métodos de pago
+│   │       │   ├── payment-methods-header/ # Encabezado de métodos de pago
+│   │       │   ├── saved-cards-section/ # Sección de tarjetas guardadas
+│   │       │   ├── balance-card/    # Tarjeta de saldo con estados
+│   │       │   ├── transactions-table/ # Tabla de transacciones
+│   │       │   └── add-card-modal/  # Modal para añadir tarjeta
 │   └── environments/          # Variables de entorno
 ├── templates/                 # Templates HTML/CSS originales
 │   └── componentes/           # Componentes migrados
@@ -159,7 +165,8 @@ adomi-app/
 │       ├── agenda/            # Componentes de perfil público
 │       ├── componentes-chat/  # Componentes de chat
 │       ├── perfil/            # Componentes de perfil de cliente
-│       └── componentes-favoritos/ # Componentes de favoritos
+│       ├── componentes-favoritos/ # Componentes de favoritos
+│       └── componentes_metodo_pago/ # Componentes de métodos de pago
 ├── angular.json               # Configuración de Angular
 └── package.json              # Dependencias
 ```
@@ -227,7 +234,7 @@ Registro → Selección de Plan → Stripe Checkout → Onboarding → Dashboard
 - ❤️ **Favoritos** - Profesionales guardados con componentes migrados
 - 💬 **Conversaciones** - Chat con profesionales
 - 👤 **Mi Perfil** - Información personal
-- 💳 **Métodos de Pago** - Gestión de pagos
+- 💳 **Métodos de Pago** - Gestión de tarjetas, saldo y transacciones
 - ⚙️ **Configuración** - Preferencias del usuario
 - 🚪 **Cerrar Sesión** - Salir del sistema
 
@@ -301,6 +308,13 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 - **FavoritesSectionComponent** - Lista de profesionales favoritos
 - **RecommendedSectionComponent** - Sección de recomendados
 
+### **Componentes de Métodos de Pago**
+- **PaymentMethodsHeaderComponent** - Encabezado de la sección de pagos
+- **SavedCardsSectionComponent** - Lista de tarjetas guardadas con gradientes por tipo
+- **BalanceCardComponent** - Tarjeta de saldo con estados dinámicos (positivo, negativo, cero)
+- **TransactionsTableComponent** - Tabla de historial de transacciones con badges
+- **AddCardModalComponent** - Modal para añadir nueva tarjeta con validación
+
 ### **Componentes de Reservas**
 - **ReservasTabsComponent** - Pestañas de reservas
 - **ProximaCitaCardComponent** - Tarjeta de próxima cita
@@ -360,6 +374,35 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 </app-info-basica>
 ```
 
+#### **SavedCardsSectionComponent**
+```html
+<ui-saved-cards-section
+  [cards]="cards"
+  (cardDeleted)="onCardDeleted($event)"
+  (cardSetPrimary)="onCardSetPrimary($event)"
+  (addCard)="onAddCard()">
+</ui-saved-cards-section>
+```
+
+#### **BalanceCardComponent**
+```html
+<ui-balance-card
+  [balance]="balance"
+  [status]="balanceStatus"
+  (liquidationRequested)="onLiquidationRequested()"
+  (withdrawalRequested)="onWithdrawalRequested()">
+</ui-balance-card>
+```
+
+#### **AddCardModalComponent**
+```html
+<ui-add-card-modal
+  [isOpen]="showAddCardModal"
+  (close)="onCloseModal()"
+  (cardAdded)="onCardAdded($event)">
+</ui-add-card-modal>
+```
+
 ## 🎯 **Sistema de Navegación**
 
 ### **TopbarComponent**
@@ -382,6 +425,7 @@ Sistema inteligente que proporciona ayuda específica según el contexto:
 - **Perfil de Trabajador**: `/client/explorar/:workerId`
 - **Chat con Profesional**: `/client/conversaciones`
 - **Favoritos**: `/client/favoritos`
+- **Métodos de Pago**: `/client/pagos`
 - **Perfil de Cliente**: `/client/perfil`
 - **Navegación contextual** basada en el rol del usuario
 
@@ -446,6 +490,12 @@ Aplicado a componentes clave para una experiencia visual moderna:
 - **CategoriesSectionComponent** - Tarjetas con efectos de profundidad
 - **ProfessionalCardComponent** - Tarjetas con transparencias
 - **FavoritesSectionComponent** - Lista con glassmorphism
+- **PaymentMethodsHeaderComponent** - Encabezado con texto gradiente
+- **SavedCardsSectionComponent** - Tarjetas con gradientes por tipo (Visa, Mastercard, Amex)
+- **BalanceCardComponent** - Tarjeta de saldo con estados dinámicos
+- **TransactionsTableComponent** - Tabla con glassmorphism y badges
+- **AddCardModalComponent** - Modal con backdrop-blur y validación
+- **PagosComponent** - Página completa con estilo Frameblox
 
 ## 🧪 **Testing**
 
@@ -565,6 +615,25 @@ console.log('Debug info:', data);
 ```
 
 ## 📝 **Changelog**
+
+### **v2.2.0 - Migración de Métodos de Pago**
+- ✅ **Migración de métodos de pago** - Componentes HTML/CSS a Angular
+- ✅ **PaymentMethodsHeaderComponent** con texto gradiente
+- ✅ **SavedCardsSectionComponent** con gradientes por tipo de tarjeta:
+  * Visa: gradiente gris oscuro
+  * Mastercard: gradiente naranja
+  * Amex: gradiente azul eléctrico
+- ✅ **BalanceCardComponent** con estados dinámicos:
+  * Positivo: gradiente verde con botón de retiro
+  * Negativo: gradiente rojo con botón de liquidación
+  * Cero: gradiente amarillo sin acciones
+- ✅ **TransactionsTableComponent** con badges de método de pago
+- ✅ **AddCardModalComponent** con validación y aviso de seguridad
+- ✅ **Estilos reales de explorar** aplicados a métodos de pago
+- ✅ **Ruta de pagos** `/client/pagos`
+- ✅ **Interfaces TypeScript** para Card, Transaction, CardFormData
+- ✅ **Formateo automático** de campos de tarjeta
+- ✅ **Gestión de estado** completa para tarjetas y saldo
 
 ### **v2.1.0 - Migración de Favoritos y Chat**
 - ✅ **Migración de favoritos** - Componentes HTML/CSS a Angular
