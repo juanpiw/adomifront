@@ -39,7 +39,7 @@
           type="text" 
           placeholder="Buscar conversaciones..." 
           class="search-input"
-          (input)="onSearchConversations($event.target?.value || '')">
+          (input)="onSearchConversations($event.target.value || '')">
       </div>
 
       <div class="conversations-list">
@@ -110,7 +110,7 @@
           <div 
             *ngFor="let conversation of conversations"
             class="user-item"
-            [class.user-item--active]="conversation.id === currentConversation?.id"
+            [class.user-item--active]="conversation.id === currentConversation.id"
             (click)="selectUserFromMenu(conversation.id)">
             
             <div class="user-avatar" 
@@ -156,12 +156,12 @@
           <ui-icon name="arrow-left" [size]="20"></ui-icon>
         </button>
         <div class="contact-avatar" 
-             [class.contact-avatar--active]="currentConversation?.status === 'active'">
-          {{ getClientInitials(currentConversation?.clientName || '') }}
+             [class.contact-avatar--active]="currentConversation.status === 'active'">
+          {{ getClientInitials(currentConversation.clientName || '') }}
         </div>
         <div class="contact-info">
-          <span class="contact-name">{{ currentConversation?.clientName }}</span>
-          <span class="contact-status">{{ currentConversation?.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
+          <span class="contact-name">{{ currentConversation.clientName }}</span>
+          <span class="contact-status">{{ currentConversation.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
         </div>
         <button class="contact-menu-button" (click)="toggleUsersMenu()">
           <ui-icon name="users" [size]="20"></ui-icon>

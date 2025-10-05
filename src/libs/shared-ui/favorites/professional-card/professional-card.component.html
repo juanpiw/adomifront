@@ -1,0 +1,40 @@
+<!-- Tarjeta Individual de Profesional -->
+<div class="professional-card" (click)="onCardClick()">
+  <div class="card-header">
+    <div class="professional-info">
+      <div class="professional-icon" [ngClass]="'professional-icon--' + (professional.iconColor || 'blue')">
+        {{ professional.icon || getProfessionalInitials(professional.name) }}
+      </div>
+      <div class="professional-details">
+        <h3 class="professional-name">{{ professional.name }}</h3>
+        <p class="professional-role">{{ professional.role }}</p>
+      </div>
+    </div>
+    <button 
+      *ngIf="showFavoriteButton"
+      class="favorite-button" 
+      [ngClass]="{'favorite-button--active': professional.isFavorite}"
+      (click)="onFavoriteToggle($event)"
+      aria-label="Agregar a favoritos">
+      <ui-icon name="heart" class="heart-icon"></ui-icon>
+    </button>
+  </div>
+  
+  <p class="professional-description">
+    {{ professional.description }}
+  </p>
+
+  <div class="card-footer">
+    <div class="professional-rating">
+      <span class="rating-score">{{ professional.rating }}</span>
+      <ui-icon name="star" class="rating-star"></ui-icon>
+      <span class="rating-count">({{ professional.reviewCount }} reseñas)</span>
+    </div>
+    <button 
+      *ngIf="showBookButton"
+      class="book-button"
+      (click)="onBookClick($event)">
+      Agendar
+    </button>
+  </div>
+</div>

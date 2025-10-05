@@ -1,0 +1,17 @@
+<!-- Sección de Servicios Recomendados -->
+<section class="recommended-section">
+  <h2 class="recommended-title">
+    {{ title }}
+  </h2>
+
+  <!-- Grid de Recomendados -->
+  <div class="recommended-grid">
+    <ui-favorites-professional-card
+      *ngFor="let professional of displayProfessionals"
+      [professional]="professional"
+      (cardClick)="onProfessionalClick($event)"
+      (favoriteToggle)="onFavoriteToggle($event)"
+      (bookClick)="onBookClick($event)">
+    </ui-favorites-professional-card>
+  </div>
+</section>

@@ -1,0 +1,19 @@
+<!-- Sección de Categorías Populares -->
+<section class="categories-section">
+  <h2 class="categories-title">
+    {{ title }}
+  </h2>
+
+  <div class="categories-grid">
+    <div 
+      *ngFor="let category of displayCategories" 
+      class="category-card"
+      (click)="onCategoryClick(category)">
+      <div class="category-icon" [ngClass]="'category-icon--' + category.color">
+        {{ category.icon }}
+      </div>
+      <p class="category-name">{{ category.name }}</p>
+      <span class="category-count">{{ category.count }}+ Servicios</span>
+    </div>
+  </div>
+</section>

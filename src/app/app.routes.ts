@@ -15,7 +15,7 @@ import { DashPerfilComponent } from './dash/pages/perfil/perfil.component';
 import { LibraryComponent } from './pages/library/library.component';
 import { ClientLayoutComponent } from './client/layout/client-layout.component';
 import { ClientReservasComponent } from './client/pages/reservas/reservas.component';
-import { ClientFavoritosComponent } from './client/pages/favoritos/favoritos.component';
+import { FavoritosComponent } from './client/pages/favoritos/favoritos.component';
 import { ClientPerfilComponent } from './client/pages/perfil/perfil.component';
 import { ClientPagosComponent } from './client/pages/pagos/pagos.component';
 import { ClientConfigComponent } from './client/pages/configuracion/configuracion.component';
@@ -43,7 +43,7 @@ export const routes: Routes = [
       { path: 'explorar', component: ExplorarComponent },
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
       { path: 'reservas', component: ClientReservasComponent },
-      { path: 'favoritos', component: ClientFavoritosComponent },
+      { path: 'favoritos', component: FavoritosComponent },
       { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },

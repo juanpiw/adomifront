@@ -1,0 +1,32 @@
+<div class="favoritos-container">
+  <div class="favoritos-wrapper">
+    <!-- Hero Section with Search -->
+    <ui-favorites-hero-section
+      [searchValue]="searchValue"
+      (searchChange)="onSearchChange($event)"
+      (searchSubmit)="onSearchSubmit($event)">
+    </ui-favorites-hero-section>
+
+    <!-- Categories Section -->
+    <ui-favorites-categories-section
+      (categoryClick)="onCategoryClick($event)">
+    </ui-favorites-categories-section>
+
+    <!-- Favorites Section -->
+    <ui-favorites-favorites-section
+      [favorites]="favorites"
+      (viewAllClick)="onViewAllFavorites()"
+      (rebookClick)="onRebookFavorite($event)"
+      (messageClick)="onMessageFavorite($event)"
+      (favoriteClick)="onFavoriteClick($event)">
+    </ui-favorites-favorites-section>
+
+    <!-- Recommended Section -->
+    <ui-favorites-recommended-section
+      [professionals]="recommendedProfessionals"
+      (professionalClick)="onProfessionalClick($event)"
+      (favoriteToggle)="onFavoriteToggle($event)"
+      (bookClick)="onBookProfessional($event)">
+    </ui-favorites-recommended-section>
+  </div>
+</div>

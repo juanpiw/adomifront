@@ -1,0 +1,213 @@
+// Sección de Favoritos con estilos reales
+.favorites-section {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  padding: 1.5rem;
+  border-radius: 2rem;
+  box-shadow: 0 30px 80px rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
+
+.favorites-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.favorites-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.favorites-link {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: #764ba2;
+  }
+}
+
+.favorites-description {
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.favorite-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+  }
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.favorite-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+
+  @media (min-width: 640px) {
+    margin-bottom: 0;
+  }
+}
+
+.favorite-avatar {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #667eea;
+  flex-shrink: 0;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.favorite-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.favorite-name {
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.favorite-role {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.favorite-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    width: auto;
+  }
+}
+
+.favorite-rating {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f59e0b;
+  gap: 0.25rem;
+}
+
+.rating-score {
+  margin-right: 0.25rem;
+}
+
+.rating-star {
+  width: 1rem;
+  height: 1rem;
+  color: #fbbf24;
+}
+
+.action-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+
+  &--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+  }
+
+  &--secondary {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+    backdrop-filter: blur(10px);
+    color: #64748b;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.favorites-empty {
+  text-align: center;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 1rem;
+  border: 2px dashed rgba(102, 126, 234, 0.2);
+  margin-top: 1.5rem;
+}
+
+.empty-icon {
+  font-size: 2.25rem;
+  margin-bottom: 0.75rem;
+  display: block;
+  color: #667eea;
+}
+
+.empty-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1.125rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}

@@ -1,0 +1,61 @@
+<!-- Sección de Favoritos -->
+<section class="favorites-section">
+  <div class="favorites-header">
+    <h2 class="favorites-title">
+      {{ title }}
+    </h2>
+    <a 
+      *ngIf="showViewAllLink && hasFavorites" 
+      href="#" 
+      class="favorites-link"
+      (click)="onViewAllClick(); $event.preventDefault()">
+      {{ viewAllLinkText }}
+    </a>
+  </div>
+  
+  <p class="favorites-description">
+    {{ description }}
+  </p>
+
+  <!-- Lista de Favoritos -->
+  <div class="favorites-list">
+    <!-- Favoritos existentes -->
+    <div 
+      *ngFor="let favorite of displayFavorites" 
+      class="favorite-item">
+      <div class="favorite-info">
+        <div class="favorite-avatar">
+          {{ favorite.initials }}
+        </div>
+        <div class="favorite-details">
+          <p class="favorite-name">{{ favorite.name }}</p>
+          <p class="favorite-role">{{ favorite.role }}</p>
+        </div>
+      </div>
+      
+      <div class="favorite-actions">
+        <div class="favorite-rating">
+          <span class="rating-score">{{ favorite.rating }}</span>
+          <ui-icon name="star" class="rating-star"></ui-icon>
+        </div>
+        <button 
+          class="action-button action-button--primary"
+          (click)="onRebookClick(favorite)">
+          Re-Agendar
+        </button>
+        <button 
+          class="action-button action-button--secondary"
+          (click)="onMessageClick(favorite)">
+          Mensaje
+        </button>
+      </div>
+    </div>
+
+    <!-- Placeholder para lista vacía -->
+    <div *ngIf="!hasFavorites" class="favorites-empty">
+      <span class="empty-icon">✨</span>
+      <p class="empty-title">Guarda tu primer profesional favorito</p>
+      <p class="empty-description">Busca en las categorías de abajo y presiona el corazón para agregarlo aquí.</p>
+    </div>
+  </div>
+</section>

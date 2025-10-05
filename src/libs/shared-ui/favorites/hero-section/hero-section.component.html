@@ -1,0 +1,24 @@
+<!-- Sección Hero con Búsqueda -->
+<header class="hero-section">
+  <h1 class="hero-title">
+    {{ title }}
+  </h1>
+  <p class="hero-subtitle">
+    {{ subtitle }}
+  </p>
+  
+  <div class="search-container">
+    <input 
+      type="text" 
+      [placeholder]="searchPlaceholder"
+      class="search-input"
+      [value]="searchValue"
+      (input)="onSearchChange($event.target.value || '')"
+      (keypress)="onKeyPress($event)"
+      aria-label="Buscar servicios">
+    <button class="search-button" (click)="onSearchSubmit()">
+      <ui-icon name="search" class="search-icon"></ui-icon>
+      <span class="search-text">Buscar</span>
+    </button>
+  </div>
+</header>
