@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 export interface Service {
   id: string;
@@ -56,6 +57,8 @@ export class BookingPanelComponent {
   @Output() bookingConfirmed = new EventEmitter<BookingSummary>();
   @Output() messageClicked = new EventEmitter<void>();
 
+  constructor(private router: Router) {}
+
   onServiceClick(serviceId: string) {
     this.serviceSelected.emit(serviceId);
   }
@@ -73,6 +76,8 @@ export class BookingPanelComponent {
   }
 
   onSendMessage() {
+    console.log('Navegando a conversaciones...');
+    this.router.navigate(['/client/conversaciones']);
     this.messageClicked.emit();
   }
 }

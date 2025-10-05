@@ -1,0 +1,151 @@
+<!-- Debug: Chat container isOpen={{isOpen}} -->
+<div class="chat-container" *ngIf="isOpen">
+  <div class="chat-container__overlay" (click)="onClose()"></div>
+  
+  <div class="chat-container__content">
+    <!-- Panel de Conversaciones (Izquierda) -->
+    <div class="conversation-panel">
+      <div class="conversation-header">
+        <h1 class="conversation-title">
+          <ui-icon name="message" class="icon-message"></ui-icon>
+          Bandeja de Entrada
+        </h1>
+        <p class="conversation-subtitle">Mensajes en tiempo real de tus clientes.</p>
+        <div class="search-container">
+          <input 
+            type="text" 
+            placeholder="Buscar cliente..." 
+            class="search-input"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()">
+          <ui-icon name="search" class="search-icon"></ui-icon>
+        </div>
+      </div>
+
+      <!-- Lista de Chats -->
+      <div class="chats-list">
+        <div 
+          *ngFor="let conversation of conversations"
+          class="chat-item"
+          [class.chat-item--active]="conversation.isActive"
+          (click)="onSelectConversation(conversation.id)">
+          
+          <div class="chat-avatar" 
+               [class.chat-avatar--active]="conversation.status === 'active'"
+               [class.chat-avatar--inactive]="conversation.status === 'inactive'">
+            {{ getClientInitials(conversation.clientName) }}
+          </div>
+          
+          <div class="chat-content">
+            <div class="chat-header-row">
+              <span class="chat-name" 
+                    [class.chat-name--unread]="conversation.unreadCount > 0">
+                {{ conversation.clientName }}
+              </span>
+              <span class="chat-time" *ngIf="conversation.lastMessage">
+                {{ formatDate(conversation.lastMessage.timestamp) }}
+              </span>
+            </div>
+            <div class="chat-message-row">
+              <p class="chat-last-message" 
+                 [class.chat-last-message--unread]="conversation.unreadCount > 0">
+                {{ conversation.lastMessage?.content || 'Sin mensajes' }}
+              </p>
+              <span class="chat-unread-badge" *ngIf="conversation.unreadCount > 0">
+                {{ conversation.unreadCount }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <p class="no-chats-message" *ngIf="conversations.length === 0">
+          No hay conversaciones activas.
+        </p>
+      </div>
+      
+      <!-- Display de ID de Usuario -->
+      <div class="user-info">
+        <p class="user-id">ID Profesional: {{ currentUserId }}</p>
+      </div>
+    </div>
+
+    <!-- Panel de Chat Activo (Derecha) -->
+    <div class="chat-active" *ngIf="currentConversation">
+      <!-- Encabezado del Chat -->
+      <div class="chat-header">
+        <button class="back-button" (click)="onClose()">
+          <ui-icon name="arrow-left" class="icon-arrow"></ui-icon>
+        </button>
+        <div class="client-info">
+          <span class="client-name">{{ currentConversation.clientName }}</span>
+          <span class="client-status">
+            Estado: {{ currentConversation.status === 'active' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+        <button class="appointment-button" (click)="onViewAppointment()">
+          <ui-icon name="clock" class="icon-clock"></ui-icon>
+          Ver Cita
+        </button>
+      </div>
+
+      <!-- Cuerpo del Chat (Mensajes) -->
+      <div class="messages-area">
+        <div 
+          *ngFor="let message of messages"
+          class="message-container"
+          [class.message-container--client]="!isMessageFromCurrentUser(message)"
+          [class.message-container--professional]="isMessageFromCurrentUser(message)">
+          
+          <div class="message-wrapper"
+               [class.message-wrapper--client]="!isMessageFromCurrentUser(message)"
+               [class.message-wrapper--professional]="isMessageFromCurrentUser(message)">
+            
+            <div class="message-bubble"
+                 [class.message-bubble--client]="!isMessageFromCurrentUser(message)"
+                 [class.message-bubble--professional]="isMessageFromCurrentUser(message)">
+              {{ message.content }}
+            </div>
+            
+            <span class="message-time"
+                  [class.message-time--client]="!isMessageFromCurrentUser(message)"
+                  [class.message-time--professional]="isMessageFromCurrentUser(message)">
+              {{ formatTime(message.timestamp) }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="no-messages" *ngIf="messages.length === 0">
+          <p>No hay mensajes en esta conversación.</p>
+        </div>
+      </div>
+
+      <!-- Input de Mensaje -->
+      <div class="message-input-area">
+        <div class="input-container">
+          <textarea 
+            placeholder="Escribe tu mensaje..." 
+            class="message-input"
+            [(ngModel)]="newMessage"
+            (keypress)="onKeyPress($event)"
+            rows="1">
+          </textarea>
+          <button 
+            class="send-button" 
+            (click)="onSendMessage()"
+            [disabled]="!newMessage.trim()">
+            <ui-icon name="send" class="icon-send"></ui-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista cuando no hay conversación seleccionada -->
+    <div class="chat-active chat-active--empty" *ngIf="!currentConversation">
+      <div class="empty-state">
+        <ui-icon name="message" class="empty-icon"></ui-icon>
+        <h3>Selecciona una conversación</h3>
+        <p>Elige una conversación de la lista para comenzar a chatear.</p>
+      </div>
+    </div>
+  </div>
+</div>

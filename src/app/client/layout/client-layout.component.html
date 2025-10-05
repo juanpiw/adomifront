@@ -11,12 +11,15 @@
       <a class="rail-item" routerLink="/client/reservas" routerLinkActive="active" title="Mis Reservas" (click)="onNav()">
         <ui-icon name="calendar" [size]="18"></ui-icon>
       </a>
-      <a class="rail-item" routerLink="/client/favoritos" routerLinkActive="active" title="Favoritos" (click)="onNav()">
-        <ui-icon name="heart" [size]="18"></ui-icon>
-      </a>
-      <a class="rail-item" routerLink="/client/perfil" routerLinkActive="active" title="Mi Perfil" (click)="onNav()">
-        <ui-icon name="user" [size]="18"></ui-icon>
-      </a>
+              <a class="rail-item" routerLink="/client/favoritos" routerLinkActive="active" title="Favoritos" (click)="onNav()">
+                <ui-icon name="heart" [size]="18"></ui-icon>
+              </a>
+              <a class="rail-item" routerLink="/client/conversaciones" routerLinkActive="active" title="Conversaciones" (click)="onNav()">
+                <ui-icon name="message" [size]="18"></ui-icon>
+              </a>
+              <a class="rail-item" routerLink="/client/perfil" routerLinkActive="active" title="Mi Perfil" (click)="onNav()">
+                <ui-icon name="user" [size]="18"></ui-icon>
+              </a>
       <a class="rail-item" routerLink="/client/pagos" routerLinkActive="active" title="Métodos de Pago" (click)="onNav()">
         <ui-icon name="card" [size]="18"></ui-icon>
       </a>
@@ -39,12 +42,15 @@
         <a routerLink="/client/reservas" routerLinkActive="active" (click)="onNav()">
           <ui-icon name="calendar" [size]="16"></ui-icon><span>Mis Reservas</span>
         </a>
-        <a routerLink="/client/favoritos" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="heart" [size]="16"></ui-icon><span>Favoritos</span>
-        </a>
-        <a routerLink="/client/perfil" routerLinkActive="active" (click)="onNav()">
-          <ui-icon name="user" [size]="16"></ui-icon><span>Mi Perfil</span>
-        </a>
+                <a routerLink="/client/favoritos" routerLinkActive="active" (click)="onNav()">
+                  <ui-icon name="heart" [size]="16"></ui-icon><span>Favoritos</span>
+                </a>
+                <a routerLink="/client/conversaciones" routerLinkActive="active" (click)="onNav()">
+                  <ui-icon name="message" [size]="16"></ui-icon><span>Conversaciones</span>
+                </a>
+                <a routerLink="/client/perfil" routerLinkActive="active" (click)="onNav()">
+                  <ui-icon name="user" [size]="16"></ui-icon><span>Mi Perfil</span>
+                </a>
         <a routerLink="/client/pagos" routerLinkActive="active" (click)="onNav()">
           <ui-icon name="card" [size]="16"></ui-icon><span>Métodos de Pago</span>
         </a>
@@ -58,19 +64,18 @@
       </div>
     </div>
   </aside>
+  
+  <!-- Overlay para móvil - después del sidebar para que no bloquee -->
+  <div *ngIf="!isCollapsed && isMobile()" class="sidebar-overlay" (click)="isCollapsed = true; menuService.closeMenu()"></div>
+  
   <main class="content">
-    <div class="topbar elevated">
-      <div class="actions">
-        <button class="hamburger" (click)="isCollapsed = !isCollapsed">
-          <ui-icon name="menu"></ui-icon>
-        </button>
-        <div class="brand-mobile">Adomi Cliente</div>
-        <!-- Debug info - remove in production -->
-        <div style="font-size: 12px; color: #666; margin-left: 8px;">
-          Collapsed: {{ isCollapsed }}
-        </div>
-      </div>
-    </div>
+    <app-topbar 
+      [config]="topbarConfig"
+      (hamburgerClick)="isCollapsed = !isCollapsed"
+      (helpClick)="onHelpClick($event)"
+      (notificationClick)="onNotificationClick()"
+      (settingsClick)="onSettingsClick()">
+    </app-topbar>
     <div class="main-slot">
       <router-outlet></router-outlet>
     </div>

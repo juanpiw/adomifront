@@ -1,0 +1,31 @@
+<div class="topbar elevated" [class.topbar--hidden-mobile-conversaciones]="isConversacionesRoute">
+  <input 
+    *ngIf="config.showSearch"
+    class="search" 
+    [placeholder]="config.searchPlaceholder"
+    readonly
+    (click)="onHelpClick()" />
+  
+  <div class="actions">
+    <button 
+      *ngIf="config.showHamburger"
+      class="hamburger" 
+      (click)="onHamburgerClick()">
+      <ui-icon name="menu"></ui-icon>
+    </button>
+    
+    <button 
+      *ngIf="config.showNotifications"
+      class="icon" 
+      (click)="onNotificationClick()">
+      <ui-icon name="bell"></ui-icon>
+    </button>
+    
+    <button 
+      *ngIf="config.showSettings"
+      class="icon" 
+      (click)="onSettingsClick()">
+      <ui-icon name="settings"></ui-icon>
+    </button>
+  </div>
+</div>

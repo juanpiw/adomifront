@@ -1,0 +1,207 @@
+<div class="conversaciones-page">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando conversaciones...</p>
+  </div>
+
+  <!-- Chat Container -->
+  <div *ngIf="!loading" class="conversaciones-content">
+    <!-- Vista para Desktop -->
+    <app-chat-container
+      *ngIf="!isMobile()"
+      [isOpen]="true"
+      [conversations]="conversations"
+      [currentConversation]="currentConversation"
+      [messages]="messages"
+      [currentUserId]="currentUserId"
+      [currentUserName]="currentUserName"
+      (sendMessage)="onSendMessage($event)"
+      (selectConversation)="selectConversation($event)"
+      (searchConversations)="onSearchConversations($event)"
+      (viewAppointment)="onViewAppointment($event)">
+    </app-chat-container>
+
+    <!-- Vista para Móvil - Lista de Conversaciones -->
+    <div *ngIf="isMobile() && showConversationsList" class="mobile-conversations-list">
+      <div class="mobile-header">
+        <button class="hamburger-button" (click)="toggleGeneralMenu()">
+          <ui-icon name="menu" [size]="20"></ui-icon>
+        </button>
+        <h2>Conversaciones</h2>
+        <div class="unread-count" *ngIf="getTotalUnreadCount() > 0">
+          {{ getTotalUnreadCount() }}
+        </div>
+      </div>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          placeholder="Buscar conversaciones..." 
+          class="search-input"
+          (input)="onSearchConversations($event.target?.value || '')">
+      </div>
+
+      <div class="conversations-list">
+        <div 
+          *ngFor="let conversation of conversations"
+          class="conversation-item"
+          [class.conversation-item--active]="conversation.isActive"
+          (click)="selectConversation(conversation.id)">
+          
+          <div class="conversation-avatar" 
+               [class.conversation-avatar--active]="conversation.status === 'active'">
+            {{ getClientInitials(conversation.clientName) }}
+          </div>
+          
+          <div class="conversation-content">
+            <div class="conversation-header">
+              <span class="conversation-name" 
+                    [class.conversation-name--unread]="conversation.unreadCount > 0">
+                {{ conversation.clientName }}
+              </span>
+              <span class="conversation-time" *ngIf="conversation.lastMessage">
+                {{ formatTime(conversation.lastMessage.timestamp) }}
+              </span>
+            </div>
+            <div class="conversation-message">
+              <p class="conversation-last-message" 
+                 [class.conversation-last-message--unread]="conversation.unreadCount > 0">
+                {{ conversation.lastMessage?.content || 'Sin mensajes' }}
+              </p>
+              <span class="conversation-unread-badge" *ngIf="conversation.unreadCount > 0">
+                {{ conversation.unreadCount }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista para Móvil - Chat Individual -->
+    <div *ngIf="isMobile() && showChatView && currentConversation" class="mobile-chat-view">
+      <div class="mobile-chat-header">
+        <button class="back-button" (click)="backToConversationsList()">
+          <ui-icon name="arrow-left" [size]="20"></ui-icon>
+        </button>
+        <button class="users-button" (click)="toggleUsersMenu()">
+          <ui-icon name="users" [size]="20"></ui-icon>
+          <span class="users-count">{{ conversations.length }}</span>
+        </button>
+        <div class="chat-info">
+          <span class="chat-name">{{ currentConversation.clientName }}</span>
+          <span class="chat-status">{{ currentConversation.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
+        </div>
+        <button class="appointment-button" (click)="onViewAppointment(currentConversation.clientId)">
+          <ui-icon name="clock" [size]="16"></ui-icon>
+        </button>
+      </div>
+
+      <!-- Menú de Usuarios Deslizable -->
+      <div class="users-menu" [class.users-menu--open]="showUsersMenu">
+        <div class="users-menu-header">
+          <h3>Conversaciones</h3>
+          <button class="close-users-menu" (click)="toggleUsersMenu()">
+            <ui-icon name="x" [size]="20"></ui-icon>
+          </button>
+        </div>
+
+        <div class="users-list">
+          <div 
+            *ngFor="let conversation of conversations"
+            class="user-item"
+            [class.user-item--active]="conversation.id === currentConversation?.id"
+            (click)="selectUserFromMenu(conversation.id)">
+            
+            <div class="user-avatar" 
+                 [class.user-avatar--active]="conversation.status === 'active'">
+              {{ getClientInitials(conversation.clientName) }}
+            </div>
+            
+            <div class="user-content">
+              <div class="user-header">
+                <span class="user-name" 
+                      [class.user-name--unread]="conversation.unreadCount > 0">
+                  {{ conversation.clientName }}
+                </span>
+                <span class="user-time" *ngIf="conversation.lastMessage">
+                  {{ formatTime(conversation.lastMessage.timestamp) }}
+                </span>
+              </div>
+              <div class="user-message">
+                <p class="user-last-message" 
+                   [class.user-last-message--unread]="conversation.unreadCount > 0">
+                  {{ conversation.lastMessage?.content || 'Sin mensajes' }}
+                </p>
+                <span class="user-unread-badge" *ngIf="conversation.unreadCount > 0">
+                  {{ conversation.unreadCount }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay para cerrar el menú -->
+      <div class="users-menu-overlay" 
+           [class.users-menu-overlay--visible]="showUsersMenu"
+           (click)="toggleUsersMenu()"></div>
+
+      <!-- Header de información del contacto (solo móvil) -->
+      <div class="mobile-contact-header">
+        <button class="hamburger-button" (click)="toggleGeneralMenu()">
+          <ui-icon name="menu" [size]="20"></ui-icon>
+        </button>
+        <button class="back-button" (click)="backToConversationsList()">
+          <ui-icon name="arrow-left" [size]="20"></ui-icon>
+        </button>
+        <div class="contact-avatar" 
+             [class.contact-avatar--active]="currentConversation?.status === 'active'">
+          {{ getClientInitials(currentConversation?.clientName || '') }}
+        </div>
+        <div class="contact-info">
+          <span class="contact-name">{{ currentConversation?.clientName }}</span>
+          <span class="contact-status">{{ currentConversation?.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
+        </div>
+        <button class="contact-menu-button" (click)="toggleUsersMenu()">
+          <ui-icon name="users" [size]="20"></ui-icon>
+          <span class="contact-users-count">{{ conversations.length }}</span>
+        </button>
+      </div>
+
+      <div class="mobile-messages-area">
+        <div 
+          *ngFor="let message of messages"
+          class="message-container"
+          [class.message-container--client]="!isMessageFromCurrentUser(message)"
+          [class.message-container--professional]="isMessageFromCurrentUser(message)">
+          
+          <div class="message-wrapper">
+            <div class="message-bubble"
+                 [class.message-bubble--client]="!isMessageFromCurrentUser(message)"
+                 [class.message-bubble--professional]="isMessageFromCurrentUser(message)">
+              {{ message.content }}
+            </div>
+            <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-message-input">
+        <textarea 
+          placeholder="Escribe tu mensaje..." 
+          class="message-input"
+          [(ngModel)]="newMessage"
+          (keypress)="onKeyPress($event)"
+          rows="1">
+        </textarea>
+        <button 
+          class="send-button" 
+          (click)="onSendMessage({ conversationId: currentConversation.id, content: newMessage })"
+          [disabled]="!newMessage.trim()">
+          <ui-icon name="send" [size]="16"></ui-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

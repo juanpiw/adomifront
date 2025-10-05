@@ -41,14 +41,13 @@
     </div>
   </aside>
   <main class="content">
-    <div class="topbar elevated">
-      <input class="search" placeholder="Buscar..." />
-      <div class="actions">
-        <button class="hamburger" (click)="isCollapsed = !isCollapsed"><ui-icon name="menu"></ui-icon></button>
-        <button class="icon"><ui-icon name="bell"></ui-icon></button>
-        <button class="icon"><ui-icon name="settings"></ui-icon></button>
-      </div>
-    </div>
+    <app-topbar 
+      [config]="topbarConfig"
+      (hamburgerClick)="isCollapsed = !isCollapsed"
+      (helpClick)="onHelpClick($event)"
+      (notificationClick)="onNotificationClick()"
+      (settingsClick)="onSettingsClick()">
+    </app-topbar>
     <div class="main-slot">
       <router-outlet></router-outlet>
     </div>

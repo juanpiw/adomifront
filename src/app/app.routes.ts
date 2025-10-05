@@ -21,6 +21,7 @@ import { ClientPagosComponent } from './client/pages/pagos/pagos.component';
 import { ClientConfigComponent } from './client/pages/configuracion/configuracion.component';
 import { ExplorarComponent } from './client/explorar/explorar.component';
 import { PerfilTrabajadorComponent } from './client/pages/perfil-trabajador/perfil-trabajador.component';
+import { ConversacionesComponent } from './client/pages/conversaciones/conversaciones.component';
 import { OnboardingComponent } from './client/pages/onboarding/onboarding.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { SelectPlanComponent } from './auth/select-plan/select-plan.component';
@@ -43,6 +44,7 @@ export const routes: Routes = [
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
       { path: 'reservas', component: ClientReservasComponent },
       { path: 'favoritos', component: ClientFavoritosComponent },
+      { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },
       { path: 'configuracion', component: ClientConfigComponent },

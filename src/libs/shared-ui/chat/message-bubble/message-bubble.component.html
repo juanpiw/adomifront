@@ -1,0 +1,21 @@
+<div class="message-container"
+     [class.message-container--client]="!isFromCurrentUser"
+     [class.message-container--professional]="isFromCurrentUser">
+  
+  <div class="message-wrapper"
+       [class.message-wrapper--client]="!isFromCurrentUser"
+       [class.message-wrapper--professional]="isFromCurrentUser">
+    
+    <div class="message-bubble"
+         [class.message-bubble--client]="!isFromCurrentUser"
+         [class.message-bubble--professional]="isFromCurrentUser">
+      {{ message.content }}
+    </div>
+    
+    <span class="message-time"
+          [class.message-time--client]="!isFromCurrentUser"
+          [class.message-time--professional]="isFromCurrentUser">
+      {{ formatTime(message.timestamp) }}
+    </span>
+  </div>
+</div>

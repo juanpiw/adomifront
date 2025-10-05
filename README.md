@@ -83,11 +83,26 @@ adomi-app/
 │   │   │   ├── forgot/        # Recuperar contraseña
 │   │   │   └── reset-password/ # Restablecer contraseña
 │   │   ├── dash/              # Dashboard de proveedores
-│   │   │   ├── layout/        # Layout con sidebar
+│   │   │   ├── layout/        # Layout con sidebar y topbar
 │   │   │   └── pages/         # Páginas del dashboard
+│   │   │       ├── home/      # Dashboard principal
+│   │   │       ├── perfil/    # Gestión de perfil
+│   │   │       ├── agenda/    # Gestión de agenda
+│   │   │       ├── ingresos/  # Gestión de ingresos
+│   │   │       ├── estadisticas/ # Estadísticas
+│   │   │       ├── promocion/ # Promoción y marketing
+│   │   │       ├── mensajes/  # Mensajes
+│   │   │       └── servicios/ # Gestión de servicios
 │   │   ├── client/            # Dashboard de clientes
 │   │   │   ├── layout/        # Layout para clientes
 │   │   │   └── pages/         # Páginas del cliente
+│   │   │       ├── explorar/  # Explorar servicios
+│   │   │       ├── perfil-trabajador/ # Perfil de trabajador
+│   │   │       ├── reservas/  # Gestión de reservas
+│   │   │       ├── favoritos/ # Favoritos
+│   │   │       ├── perfil/    # Perfil del cliente
+│   │   │       ├── pagos/     # Métodos de pago
+│   │   │       └── configuracion/ # Configuración
 │   │   ├── services/          # Servicios Angular
 │   │   └── pages/             # Páginas públicas
 │   ├── libs/
@@ -99,8 +114,43 @@ adomi-app/
 │   │       ├── ui-calendar/   # Componente de calendario
 │   │       ├── user-card/     # Tarjeta de usuario
 │   │       ├── theme-switch/  # Switch de tema
-│   │       └── plan-upgrade-alert/ # Alerta de actualización
+│   │       ├── plan-upgrade-alert/ # Alerta de actualización
+│   │       ├── topbar/        # Barra superior
+│   │       ├── icon/          # Sistema de iconos
+│   │       ├── review-modal/  # Modal de reseñas
+│   │       ├── progress-perfil/ # Progreso del perfil
+│   │       ├── info-basica/   # Información básica
+│   │       ├── seccion-fotos/ # Upload de fotos
+│   │       ├── sobre-mi/      # Descripción personal
+│   │       ├── mis-servicios/ # Servicios ofrecidos
+│   │       ├── portafolio/    # Portafolio de trabajos
+│   │       ├── ubicacion-disponibilidad/ # Ubicación y horarios
+│   │       ├── verificacion-perfil/ # Verificación
+│   │       ├── calendar-mensual/ # Calendario mensual
+│   │       ├── dashboard-grafico/ # Gráficos de estadísticas
+│   │       ├── dashboard-resumen/ # Resumen de citas
+│   │       ├── day-detail/    # Detalle de día
+│   │       ├── horarios-config/ # Configuración de horarios
+│   │       ├── sidebar-agenda/ # Sidebar de agenda
+│   │       ├── profile-hero/  # Hero del perfil
+│   │       ├── booking-panel/ # Panel de reservas
+│   │       ├── trust-stats/   # Estadísticas de confianza
+│   │       ├── reviews/       # Sistema de reseñas
+│   │       ├── portfolio/     # Portafolio
+│   │       ├── faq/           # Preguntas frecuentes
+│   │       ├── reservas/      # Componentes de reservas
+│   │       ├── inicio-header/ # Header del dashboard
+│   │       ├── inicio-ingresos-mes/ # Ingresos mensuales
+│   │       ├── inicio-ingresos-dia/ # Ingresos diarios
+│   │       ├── inicio-solicitudes/ # Solicitudes
+│   │       └── inicio-proxima-cita/ # Próxima cita
 │   └── environments/          # Variables de entorno
+├── templates/                 # Templates HTML/CSS originales
+│   └── componentes/           # Componentes migrados
+│       ├── perfil-trabajador/ # Componentes de perfil
+│       ├── agenda-trabajador/ # Componentes de agenda
+│       ├── inicio/            # Componentes de dashboard
+│       └── agenda/            # Componentes de perfil público
 ├── angular.json               # Configuración de Angular
 └── package.json              # Dependencias
 ```
@@ -163,11 +213,12 @@ Registro → Selección de Plan → Stripe Checkout → Onboarding → Dashboard
 - 👤 **Mi Perfil** - Configuración personal
 
 ### **Dashboard de Clientes** (`/client`)
-- 🗓️ **Mis Reservas** - Citas programadas
-- ⭐ **Profesionales Favoritos** - Proveedores guardados
+- 🔍 **Explorar** - Buscar servicios y profesionales
+- 🗓️ **Mis Reservas** - Gestión de citas programadas
+- ❤️ **Favoritos** - Profesionales guardados
 - 👤 **Mi Perfil** - Información personal
 - 💳 **Métodos de Pago** - Gestión de pagos
-- ⚙️ **Configuración** - Preferencias
+- ⚙️ **Configuración** - Preferencias del usuario
 - 🚪 **Cerrar Sesión** - Salir del sistema
 
 ## 🚨 **Sistema de Alertas de Planes**
@@ -191,36 +242,119 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 
 ## 🧩 **Componentes Reutilizables**
 
-### **UiInputComponent**
-Input con múltiples variantes:
+### **Componentes Base**
+- **UiInputComponent** - Input con validación y estilos
+- **UiButtonComponent** - Botones con loading y variantes
+- **UiCalendarComponent** - Calendario para citas
+- **IconComponent** - Sistema de iconos SVG
+- **ThemeSwitchComponent** - Switch de tema claro/oscuro
+
+### **Componentes de Dashboard**
+- **TopbarComponent** - Barra superior con búsqueda y acciones
+- **PlanUpgradeAlertComponent** - Alertas de planes de suscripción
+- **InicioHeaderComponent** - Header del dashboard con estado online/offline
+- **InicioIngresosMesComponent** - Gráfico de ingresos mensuales
+- **InicioIngresosDiaComponent** - Gráfico de ingresos diarios
+- **InicioSolicitudesComponent** - Lista de solicitudes pendientes
+- **InicioProximaCitaComponent** - Próxima cita programada
+
+### **Componentes de Perfil**
+- **ProgressPerfilComponent** - Barra de progreso del perfil
+- **InfoBasicaComponent** - Información básica del trabajador
+- **SeccionFotosComponent** - Upload de fotos de perfil y portada
+- **SobreMiComponent** - Descripción personal
+- **MisServiciosComponent** - Lista de servicios ofrecidos
+- **PortafolioComponent** - Galería de trabajos con videos
+- **UbicacionDisponibilidadComponent** - Ubicación y horarios
+- **VerificacionPerfilComponent** - Sistema de verificación
+
+### **Componentes de Agenda**
+- **CalendarMensualComponent** - Vista mensual del calendario
+- **DashboardGraficoComponent** - Gráficos de estadísticas
+- **DashboardResumenComponent** - Resumen de citas
+- **DayDetailComponent** - Detalle de día específico
+- **HorariosConfigComponent** - Configuración de horarios
+- **SidebarAgendaComponent** - Sidebar de navegación
+
+### **Componentes de Cliente**
+- **ProfileHeroComponent** - Hero del perfil de trabajador
+- **BookingPanelComponent** - Panel de reservas
+- **TrustStatsComponent** - Estadísticas de confianza
+- **ReviewsComponent** - Sistema de reseñas
+- **PortfolioComponent** - Portafolio de trabajos
+- **FaqComponent** - Preguntas frecuentes
+
+### **Componentes de Reservas**
+- **ReservasTabsComponent** - Pestañas de reservas
+- **ProximaCitaCardComponent** - Tarjeta de próxima cita
+- **PendienteCardComponent** - Tarjeta de cita pendiente
+- **ReservaPasadaCardComponent** - Tarjeta de reserva completada
+- **CanceladaClienteCardComponent** - Tarjeta de cancelación por cliente
+- **CanceladaProfesionalCardComponent** - Tarjeta de cancelación por profesional
+
+### **Sistema de Modales**
+- **ReviewModalComponent** - Modal para calificar servicios
+  - Sistema de estrellas interactivo (1-5)
+  - Comentarios opcionales
+  - Vista de éxito
+  - Validación de calificación requerida
+  - Hover effects y animaciones
+
+### **Ejemplos de Uso**
+
+#### **TopbarComponent**
 ```html
-<ui-input 
-  label="Email" 
-  type="email" 
-  placeholder="tu@email.com"
-  [error]="emailError">
-</ui-input>
+<app-topbar 
+  [config]="topbarConfig"
+  (hamburgerClick)="toggleSidebar()"
+  (helpClick)="showHelp($event)"
+  (notificationClick)="showNotifications()"
+  (settingsClick)="showSettings()">
+</app-topbar>
 ```
 
-### **UiButtonComponent**
-Botones con diferentes estilos:
+#### **ReviewModalComponent**
 ```html
-<ui-button 
-  type="primary" 
-  [loading]="isLoading"
-  (click)="onSubmit()">
-  Enviar
-</ui-button>
+<app-review-modal
+  [isOpen]="showReviewModal"
+  [workerName]="'Javier Núñez'"
+  [serviceName]="'Soporte Técnico'"
+  [appointmentId]="'123'"
+  (close)="closeReviewModal()"
+  (reviewSubmitted)="handleReview($event)">
+</app-review-modal>
 ```
 
-### **UiCalendarComponent**
-Calendario para gestión de citas:
+#### **InfoBasicaComponent**
 ```html
-<ui-calendar 
-  [events]="appointments"
-  (dateSelected)="onDateSelect($event)">
-</ui-calendar>
+<app-info-basica
+  [data]="workerInfo"
+  [saving]="savingProfile"
+  (save)="saveBasicInfo($event)">
+</app-info-basica>
 ```
+
+## 🎯 **Sistema de Navegación**
+
+### **TopbarComponent**
+Barra superior reutilizable con funcionalidades contextuales:
+
+- **Búsqueda de Ayuda** - Input readonly que abre modal de ayuda contextual
+- **Menú Hamburger** - Para colapsar sidebar en móviles
+- **Notificaciones** - Sistema de notificaciones
+- **Configuración** - Acceso rápido a configuraciones
+
+### **Ayuda Contextual**
+Sistema inteligente que proporciona ayuda específica según el contexto:
+
+- **Dashboard** - Ayuda general del dashboard
+- **Perfil** - Configuración de perfil y servicios
+- **Agenda** - Gestión de citas y horarios
+- **Cliente** - Navegación y funcionalidades para clientes
+
+### **Rutas Dinámicas**
+- **Perfil de Trabajador**: `/client/explorar/:workerId`
+- **Navegación contextual** basada en el rol del usuario
 
 ## 📱 **Responsive Design**
 
@@ -231,9 +365,11 @@ Calendario para gestión de citas:
 
 ### **Características Móviles**
 - Sidebar colapsible con hamburger menu
+- Topbar adaptativo con búsqueda contextual
 - Navegación táctil optimizada
 - Componentes adaptativos
 - Alertas responsivas
+- Modales responsive con z-index optimizado
 
 ## 🚀 **Despliegue**
 
@@ -260,6 +396,23 @@ ng build --ssr --configuration production
 ### **Servidor Web**
 Configurar servidor web (Nginx/Apache) para servir archivos estáticos y proxy para SSR.
 
+## 🎨 **Sistema de Diseño**
+
+### **Estilo Frameblox**
+Aplicado a componentes clave para una experiencia visual moderna:
+
+- **Gradientes** - Colores suaves y modernos
+- **Backdrop Blur** - Efectos de vidrio esmerilado
+- **Sombras** - Profundidad y elevación
+- **Bordes Redondeados** - Diseño suave y amigable
+- **Animaciones** - Transiciones fluidas
+
+### **Componentes con Estilo Frameblox**
+- **ProfileHeroComponent** - Hero section con gradientes
+- **BookingPanelComponent** - Panel de reservas estilizado
+- **ReviewModalComponent** - Modal con efectos modernos
+- **PerfilTrabajadorComponent** - Página completa estilizada
+
 ## 🧪 **Testing**
 
 ### **Ejecutar Tests**
@@ -285,6 +438,24 @@ describe('PlanUpgradeAlertComponent', () => {
 });
 ```
 
+### **Testing de Modales**
+```typescript
+// Ejemplo de test para modal de reseñas
+describe('ReviewModalComponent', () => {
+  it('should emit review data when submitted', () => {
+    component.rating = 5;
+    component.comment = 'Excelente servicio';
+    component.onSubmit();
+    expect(component.reviewSubmitted.emit).toHaveBeenCalledWith({
+      rating: 5,
+      comment: 'Excelente servicio',
+      workerName: 'Javier Núñez',
+      serviceName: 'Soporte Técnico'
+    });
+  });
+});
+```
+
 ## 🔧 **Desarrollo**
 
 ### **Agregar Nuevos Componentes**
@@ -292,18 +463,41 @@ describe('PlanUpgradeAlertComponent', () => {
 2. Implementar con `@Component` standalone
 3. Exportar en `index.ts`
 4. Documentar props y eventos
+5. Agregar tests unitarios
 
 ### **Agregar Nuevas Páginas**
 1. Crear en `src/app/` correspondiente
 2. Configurar ruta en `app.routes.ts`
 3. Implementar navegación
 4. Agregar al menú correspondiente
+5. Integrar con TopbarComponent
+
+### **Migración de Componentes**
+1. **Identificar** componentes HTML/CSS en `templates/componentes/`
+2. **Crear** componente Angular en `src/libs/shared-ui/`
+3. **Migrar** HTML manteniendo estructura
+4. **Adaptar** estilos SCSS con variables CSS
+5. **Implementar** lógica TypeScript
+6. **Integrar** en páginas correspondientes
+7. **Probar** funcionalidad completa
+
+### **Sistema de Modales**
+Para crear nuevos modales siguiendo el patrón establecido:
+
+1. **Crear** componente en `src/libs/shared-ui/[nombre]-modal/`
+2. **Implementar** interfaz base con `@Input()` y `@Output()`
+3. **Aplicar** estilos consistentes con z-index apropiado
+4. **Agregar** animaciones de entrada/salida
+5. **Implementar** validaciones necesarias
+6. **Documentar** props y eventos
 
 ### **Estilos y Temas**
 - Usar variables CSS para colores
 - Implementar soporte para tema oscuro
 - Seguir patrones de diseño existentes
 - Mantener consistencia visual
+- Aplicar estilo Frameblox cuando sea apropiado
+- Usar gradientes y backdrop-blur para efectos modernos
 
 ## 📊 **Performance**
 
@@ -313,6 +507,9 @@ describe('PlanUpgradeAlertComponent', () => {
 - **TrackBy** functions para listas
 - **Image optimization**
 - **Bundle splitting**
+- **Componentes standalone** para mejor tree-shaking
+- **Modales con z-index optimizado**
+- **Chart.js con SSR compatibility**
 
 ### **Métricas**
 - **First Contentful Paint**: < 1.5s
@@ -332,6 +529,28 @@ describe('PlanUpgradeAlertComponent', () => {
 // Habilitar logs detallados
 console.log('Debug info:', data);
 ```
+
+## 📝 **Changelog**
+
+### **v2.0.0 - Migración Completa de Componentes**
+- ✅ **Migración completa** de componentes HTML/CSS a Angular
+- ✅ **Sistema de modales** reutilizable con ReviewModalComponent
+- ✅ **TopbarComponent** con ayuda contextual
+- ✅ **Sistema de estrellas** interactivo para calificaciones
+- ✅ **Estilo Frameblox** aplicado a componentes clave
+- ✅ **Rutas dinámicas** para perfiles de trabajadores
+- ✅ **Componentes de dashboard** completos
+- ✅ **Sistema de reservas** con modales integrados
+- ✅ **Responsive design** mejorado
+- ✅ **Z-index optimizado** para modales
+
+### **v1.0.0 - Versión Base**
+- ✅ **Angular 20** con SSR
+- ✅ **Sistema de autenticación** completo
+- ✅ **Dashboards diferenciados** por rol
+- ✅ **Sistema de temas** claro/oscuro
+- ✅ **Componentes base** reutilizables
+- ✅ **Integración con Stripe** para pagos
 
 ## 📞 **Soporte**
 

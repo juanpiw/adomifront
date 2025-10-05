@@ -250,8 +250,9 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onMessageClicked(): void {
-    console.log('Message clicked');
-    // TODO: Implementar lógica de mensaje
+    console.log('Message clicked - abriendo chat');
+    // El chat se abre automáticamente desde el BookingPanelComponent
+    // No necesitamos hacer nada aquí ya que el evento se maneja en el componente hijo
   }
 
   onPortfolioItemClick(item: PortfolioItem): void {

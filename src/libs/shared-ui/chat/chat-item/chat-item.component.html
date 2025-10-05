@@ -1,0 +1,31 @@
+<div class="chat-item" 
+     [class.chat-item--active]="isActive"
+     (click)="onSelect()">
+  
+  <div class="chat-avatar" 
+       [class.chat-avatar--active]="conversation.status === 'active'"
+       [class.chat-avatar--inactive]="conversation.status === 'inactive'">
+    {{ getClientInitials(conversation.clientName) }}
+  </div>
+  
+  <div class="chat-content">
+    <div class="chat-header-row">
+      <span class="chat-name" 
+            [class.chat-name--unread]="conversation.unreadCount > 0">
+        {{ conversation.clientName }}
+      </span>
+      <span class="chat-time" *ngIf="conversation.lastMessage">
+        {{ formatDate(conversation.lastMessage.timestamp) }}
+      </span>
+    </div>
+    <div class="chat-message-row">
+      <p class="chat-last-message" 
+         [class.chat-last-message--unread]="conversation.unreadCount > 0">
+        {{ conversation.lastMessage?.content || 'Sin mensajes' }}
+      </p>
+      <span class="chat-unread-badge" *ngIf="conversation.unreadCount > 0">
+        {{ conversation.unreadCount }}
+      </span>
+    </div>
+  </div>
+</div>
