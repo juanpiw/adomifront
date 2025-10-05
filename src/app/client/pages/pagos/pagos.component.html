@@ -1,0 +1,44 @@
+<div class="pagos-container">
+  <div class="pagos-wrapper">
+    <!-- Header -->
+    <ui-payment-methods-header></ui-payment-methods-header>
+
+    <!-- Contenido principal -->
+    <div class="pagos-content">
+      <!-- Sección de tarjetas -->
+      <div class="pagos-section">
+        <ui-saved-cards-section
+          [cards]="cards"
+          (cardDeleted)="onCardDeleted($event)"
+          (cardSetPrimary)="onCardSetPrimary($event)"
+          (addCard)="onAddCard()">
+        </ui-saved-cards-section>
+      </div>
+
+      <!-- Sección de saldo -->
+      <div class="pagos-section">
+        <ui-balance-card
+          [balance]="balance"
+          [status]="balanceStatus"
+          (liquidationRequested)="onLiquidationRequested()"
+          (withdrawalRequested)="onWithdrawalRequested()">
+        </ui-balance-card>
+      </div>
+
+      <!-- Sección de transacciones -->
+      <div class="pagos-section">
+        <ui-transactions-table
+          [transactions]="transactions"
+          [showCount]="5">
+        </ui-transactions-table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para añadir tarjeta -->
+  <ui-add-card-modal
+    [isOpen]="showAddCardModal"
+    (close)="onCloseModal()"
+    (cardAdded)="onCardAdded($event)">
+  </ui-add-card-modal>
+</div>

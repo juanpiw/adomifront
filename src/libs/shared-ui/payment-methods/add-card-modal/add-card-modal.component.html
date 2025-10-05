@@ -1,0 +1,96 @@
+<div class="add-card-modal" 
+     [class.add-card-modal--open]="isOpen"
+     *ngIf="isOpen">
+  <div class="modal-overlay" (click)="onClose()"></div>
+  
+  <div class="modal-content">
+    <h3 class="modal-title">Añadir Nueva Tarjeta</h3>
+    
+    <div class="security-notice">
+      <svg xmlns="http://www.w3.org/2000/svg" class="security-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+        <path d="M12 8v4"/>
+        <path d="M12 16h.01"/>
+      </svg>
+      <p class="security-text">
+        Los datos de tu tarjeta se procesan de forma segura mediante nuestro socio de pagos, <strong>no se almacenan en nuestros servidores</strong>.
+      </p>
+    </div>
+
+    <form class="add-card-form" (ngSubmit)="onSubmit()">
+      <!-- Número de Tarjeta -->
+      <div class="form-field">
+        <label for="cardNumber" class="form-label">Número de Tarjeta</label>
+        <input type="text" 
+               id="cardNumber" 
+               class="form-input"
+               placeholder="XXXX XXXX XXXX XXXX"
+               maxlength="19"
+               [value]="cardForm.cardNumber"
+               (input)="onCardNumberChange($event)"
+               required>
+      </div>
+
+      <div class="form-grid">
+        <!-- Fecha de Vencimiento -->
+        <div class="form-field form-field--expiry">
+          <label for="expiryDate" class="form-label">Fecha de Vencimiento (MM/AA)</label>
+          <input type="text" 
+                 id="expiryDate" 
+                 class="form-input"
+                 placeholder="MM/AA"
+                 maxlength="5"
+                 [value]="cardForm.expiryDate"
+                 (input)="onExpiryDateChange($event)"
+                 required>
+        </div>
+        <!-- CVC -->
+        <div class="form-field form-field--cvc">
+          <label for="cvc" class="form-label">CVC</label>
+          <input type="text" 
+                 id="cvc" 
+                 class="form-input"
+                 placeholder="123"
+                 maxlength="4"
+                 [value]="cardForm.cvc"
+                 (input)="onCvcChange($event)"
+                 required>
+        </div>
+      </div>
+      
+      <!-- Nombre del titular -->
+      <div class="form-field">
+        <label for="cardName" class="form-label">Nombre del Titular</label>
+        <input type="text" 
+               id="cardName" 
+               class="form-input"
+               [(ngModel)]="cardForm.cardName"
+               name="cardName"
+               required>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" 
+                class="cancel-btn"
+                (click)="onClose()">
+          Cancelar
+        </button>
+        <button type="submit" 
+                class="submit-btn"
+                [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Guardar Tarjeta</span>
+          <span *ngIf="isSubmitting">Guardando...</span>
+        </button>
+      </div>
+      
+      <div class="form-feedback" 
+           *ngIf="feedbackMessage"
+           [ngClass]="{
+             'form-feedback--success': feedbackType === 'success',
+             'form-feedback--error': feedbackType === 'error'
+           }">
+        {{ feedbackMessage }}
+      </div>
+    </form>
+  </div>
+</div>

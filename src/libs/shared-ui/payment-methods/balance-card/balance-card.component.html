@@ -1,0 +1,32 @@
+<div class="balance-card"
+     [ngClass]="{
+       'balance-card--positive': status === 'positive',
+       'balance-card--negative': status === 'negative',
+       'balance-card--zero': status === 'zero'
+     }">
+  
+  <div class="balance-header">
+    <p class="balance-title">Saldo Actual de Comisiones Adomi</p>
+    <button *ngIf="showLiquidationButton" 
+            class="liquidation-btn"
+            (click)="onLiquidation()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="liquidation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+      Liquidar Deuda
+    </button>
+    <button *ngIf="showWithdrawalButton" 
+            class="withdrawal-btn"
+            (click)="onWithdrawal()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="withdrawal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+      Solicitar Retiro
+    </button>
+  </div>
+  
+  <p class="current-balance">{{ balanceFormatted }}</p>
+  <p class="status-message">{{ statusMessage }}</p>
+</div>

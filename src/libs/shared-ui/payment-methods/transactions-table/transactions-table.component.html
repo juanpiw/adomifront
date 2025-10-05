@@ -1,0 +1,41 @@
+<section class="transactions-table">
+  <h2 class="transactions-title">
+    Historial de Transacciones (Últimos {{ showCount }})
+  </h2>
+
+  <div class="transactions-container">
+    <table class="transactions-table-content">
+      <thead class="transactions-header">
+        <tr>
+          <th class="transactions-th">Fecha</th>
+          <th class="transactions-th">Servicio</th>
+          <th class="transactions-th">Monto Total</th>
+          <th class="transactions-th">Método</th>
+          <th class="transactions-th transactions-th--right">Comisión Adomi</th>
+        </tr>
+      </thead>
+      <tbody class="transactions-body">
+        <tr *ngFor="let transaction of displayedTransactions" class="transaction-row">
+          <td class="transaction-cell">{{ formatDate(transaction.date) }}</td>
+          <td class="transaction-cell">{{ transaction.service }}</td>
+          <td class="transaction-cell">{{ formatCurrency(transaction.totalAmount) }}</td>
+          <td class="transaction-cell">
+            <span class="payment-method-badge" 
+                  [ngClass]="{
+                    'payment-method-badge--card': transaction.paymentMethod === 'Tarjeta',
+                    'payment-method-badge--cash': transaction.paymentMethod === 'Efectivo'
+                  }">
+              {{ transaction.paymentMethod }}
+            </span>
+          </td>
+          <td class="transaction-cell transaction-cell--right">
+            <span class="commission-amount" 
+                  [ngClass]="getCommissionClass(transaction.commission)">
+              {{ formatCurrency(transaction.commission) }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

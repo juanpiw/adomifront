@@ -1,0 +1,95 @@
+// Tarjeta de Saldo con estilos reales
+.balance-card {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 30px 80px rgba(102, 126, 234, 0.15);
+  color: white;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+
+  &--positive {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  &--negative {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  &--zero {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.balance-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.liquidation-btn,
+.withdrawal-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  background: white;
+  color: #ef4444;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.withdrawal-btn {
+  color: #10b981;
+
+  &:hover {
+    background: #f0fdf4;
+  }
+}
+
+.liquidation-icon,
+.withdrawal-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.current-balance {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0.75rem 0;
+  letter-spacing: -0.025em;
+
+  @media (min-width: 768px) {
+    font-size: 4rem;
+  }
+}
+
+.status-message {
+  font-size: 1.125rem;
+  opacity: 0.8;
+  margin: 0.5rem 0 0 0;
+}
