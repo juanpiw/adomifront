@@ -151,6 +151,13 @@ adomi-app/
 │   │       │   ├── service-form/              # Formulario crear/editar servicio
 │   │       │   ├── confirmation-modal/        # Modal de confirmación de eliminación
 │   │       │   └── feedback-toast/            # Toast de feedback (éxito/error/etc.)
+│   │       ├── statistics/          # Componentes de estadísticas del proveedor
+│   │       │   ├── statistics-header/         # Encabezado de estadísticas
+│   │       │   ├── date-filter/               # Filtro de períodos
+│   │       │   ├── kpi-cards/                 # Tarjetas de KPIs
+│   │       │   ├── revenue-chart/             # Gráfico de ingresos y citas
+│   │       │   ├── services-chart/            # Gráfico de servicios populares
+│   │       │   └── reviews-table/             # Tabla de reseñas recientes
 │   │       ├── favorites/           # Componentes de favoritos
 │   │       │   ├── hero-section/    # Sección hero con búsqueda
 │   │       │   ├── categories-section/ # Sección de categorías
@@ -173,7 +180,10 @@ adomi-app/
 │       ├── componentes-chat/  # Componentes de chat
 │       ├── perfil/            # Componentes de perfil de cliente
 │       ├── componentes-favoritos/ # Componentes de favoritos
-│       └── componentes_metodo_pago/ # Componentes de métodos de pago
+│       ├── componentes_metodo_pago/ # Componentes de métodos de pago
+│       ├── servicios_componente/ # Componentes de servicios del proveedor
+│       ├── promociones_componente/ # Componentes de promociones del proveedor
+│       └── estadisticas_componente/ # Componentes de estadísticas del proveedor
 ├── angular.json               # Configuración de Angular
 └── package.json              # Dependencias
 ```
@@ -362,6 +372,31 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 </ui-service-form>
 ```
 
+### **Componentes de Estadísticas (Proveedor)**
+- **StatisticsHeaderComponent** - Encabezado con título y subtítulo
+- **DateFilterComponent** - Filtro de períodos con dropdown y botón aplicar
+- **KpiCardsComponent** - Tarjetas de KPIs con colores específicos y tendencias
+- **RevenueChartComponent** - Gráfico de líneas para evolución de ingresos y citas
+- **ServicesChartComponent** - Gráfico de dona para servicios más populares
+- **ReviewsTableComponent** - Tabla de reseñas recientes con estrellas
+
+#### Ejemplo de uso en `/dash/estadisticas`
+```html
+<ui-statistics-header></ui-statistics-header>
+<ui-date-filter 
+  [range]="dateRange" 
+  (rangeChange)="onDateRangeChange($event)">
+</ui-date-filter>
+<ui-kpi-cards></ui-kpi-cards>
+
+<div class="charts-grid">
+  <ui-revenue-chart></ui-revenue-chart>
+  <ui-services-chart></ui-services-chart>
+</div>
+
+<ui-reviews-table></ui-reviews-table>
+```
+
 - **ReservasTabsComponent** - Pestañas de reservas
 - **ProximaCitaCardComponent** - Tarjeta de próxima cita
 - **PendienteCardComponent** - Tarjeta de cita pendiente
@@ -473,6 +508,10 @@ Sistema inteligente que proporciona ayuda específica según el contexto:
 - **Favoritos**: `/client/favoritos`
 - **Métodos de Pago**: `/client/pagos`
 - **Perfil de Cliente**: `/client/perfil`
+- **Estadísticas de Proveedor**: `/dash/estadisticas`
+- **Gestión de Servicios**: `/dash/servicios`
+- **Promociones**: `/dash/promocion`
+- **Mensajes del Proveedor**: `/dash/mensajes`
 - **Navegación contextual** basada en el rol del usuario
 
 ## 📱 **Responsive Design**
@@ -542,6 +581,13 @@ Aplicado a componentes clave para una experiencia visual moderna:
 - **TransactionsTableComponent** - Tabla con glassmorphism y badges
 - **AddCardModalComponent** - Modal con backdrop-blur y validación
 - **PagosComponent** - Página completa con estilo Frameblox
+- **StatisticsHeaderComponent** - Encabezado con tipografía moderna
+- **DateFilterComponent** - Filtro con botón púrpura y layout horizontal
+- **KpiCardsComponent** - Tarjetas con colores específicos y iconos SVG
+- **RevenueChartComponent** - Gráfico con Chart.js y diseño moderno
+- **ServicesChartComponent** - Gráfico de dona con colores vibrantes
+- **ReviewsTableComponent** - Tabla con estrellas y hover effects
+- **EstadisticasComponent** - Página completa con layout perfecto
 
 ## 🧪 **Testing**
 
@@ -661,6 +707,19 @@ console.log('Debug info:', data);
 ```
 
 ## 📝 **Changelog**
+
+### **v2.4.0 - Migración de Estadísticas**
+- ✅ **Migración completa de estadísticas** - Componentes HTML/CSS a Angular standalone
+- ✅ **StatisticsHeaderComponent** - Encabezado con tipografía exacta de referencia
+- ✅ **DateFilterComponent** - Filtro de períodos con dropdown y botón púrpura
+- ✅ **KpiCardsComponent** - Tarjetas con colores específicos y grid responsive
+- ✅ **RevenueChartComponent** - Gráfico de líneas con Chart.js y SSR guards
+- ✅ **ServicesChartComponent** - Gráfico de dona para servicios populares
+- ✅ **ReviewsTableComponent** - Tabla de reseñas con estrellas y datos realistas
+- ✅ **Clase base metric-card** - Estilo común para todas las tarjetas de métricas
+- ✅ **Layout perfecto** - Coincide exactamente con imagen de referencia
+- ✅ **Integración completa** en `/dash/estadisticas` con datos hardcodeados
+- ✅ **Interfaces TypeScript** para ReviewItem, ChartSeries, KpiItem
 
 ### **v2.3.0 - Gestión de Servicios (Proveedor)**
 - ✅ Migración de componentes de servicios desde templates a Angular standalone
