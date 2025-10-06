@@ -22,5 +22,7 @@ export interface ChartSeries {
 export * from './statistics-header/statistics-header.component';
 export * from './date-filter/date-filter.component';
 export * from './kpi-cards/kpi-cards.component';
-// Pendiente: agregar export de gráficos y tabla de reseñas cuando sean creados
+export * from './revenue-chart/revenue-chart.component';
+export * from './services-chart/services-chart.component';
+export * from './reviews-table/reviews-table.component';
 

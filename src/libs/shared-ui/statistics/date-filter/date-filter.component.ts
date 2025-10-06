@@ -17,13 +17,33 @@ export class DateFilterComponent {
   @Input() range: DateRange = { startDate: '', endDate: '' };
   @Output() rangeChange = new EventEmitter<DateRange>();
 
-  onStartChange(value: string) {
-    this.range = { ...this.range, startDate: value };
-    this.rangeChange.emit(this.range);
+  selectedPeriod = '6-months';
+
+  onPeriodChange(value: string) {
+    this.selectedPeriod = value;
+    // Calcular fechas basado en el período seleccionado
+    const now = new Date();
+    let startDate = new Date();
+    
+    switch (value) {
+      case '3-months':
+        startDate.setMonth(now.getMonth() - 3);
+        break;
+      case '6-months':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'current-year':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+    }
+    
+    this.range = {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: now.toISOString().split('T')[0]
+    };
   }
 
-  onEndChange(value: string) {
-    this.range = { ...this.range, endDate: value };
+  onApplyFilter() {
     this.rangeChange.emit(this.range);
   }
 }

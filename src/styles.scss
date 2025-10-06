@@ -40,3 +40,17 @@ body {
   box-shadow: var(--elev-shadow);
   border-radius: 16px;
 }
+
+/* Clase base para tarjetas de métricas (estadísticas) */
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}

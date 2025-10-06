@@ -1,6 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { KpiItem } from '../index';
 
 @Component({
   selector: 'ui-kpi-cards',
@@ -10,7 +9,7 @@ import { KpiItem } from '../index';
   styleUrls: ['./kpi-cards.component.scss']
 })
 export class KpiCardsComponent {
-  @Input() items: KpiItem[] = [];
+  // Los datos están hardcodeados en el template para coincidir con la imagen de referencia
 }
 
 

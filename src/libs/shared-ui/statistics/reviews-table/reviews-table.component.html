@@ -1,0 +1,30 @@
+<!-- Componente: Tabla de Reseñas Recientes -->
+<div class="reviews-table metric-card">
+  <h3>Reseñas Recientes (Top 5)</h3>
+  <div class="table-container">
+    <table class="reviews-table-content">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Servicio</th>
+          <th>Valoración</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let review of reviews">
+          <td class="client-name">{{ review.clientName }}</td>
+          <td class="service-name">{{ review.serviceName }}</td>
+          <td class="rating">
+            <span class="rating-value">{{ review.rating }}</span>
+            <div class="stars">
+              <span *ngFor="let star of getStars(review.rating)" 
+                    [class]="'star star-' + star">⭐</span>
+            </div>
+          </td>
+          <td class="comment">{{ review.comment }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,3 +1,20 @@
-.estadisticas-container { padding: 1rem; }
+.estadisticas-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #f8fafc; // bg-slate-50
+  min-height: 100vh;
+  
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: 2fr 1fr; // revenue-chart más ancho, services-chart más estrecho
+    }
+  }
+}
 
 

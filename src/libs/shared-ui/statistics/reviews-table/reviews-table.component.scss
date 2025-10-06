@@ -1,0 +1,103 @@
+/* Componente: Tabla de Reseñas Recientes */
+.reviews-table {
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .reviews-table-content {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    
+    thead {
+      background: #f8fafc;
+      
+      th {
+        padding: 0.75rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e2e8f0;
+      }
+    }
+    
+    tbody {
+      background: #ffffff;
+      
+      tr {
+        transition: background-color 0.15s ease;
+        
+        &:hover {
+          background: #f8fafc;
+        }
+        
+        td {
+          padding: 1rem 1.5rem;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 0.875rem;
+          
+          &.client-name {
+            font-weight: 500;
+            color: #111827;
+          }
+          
+          &.service-name {
+            color: #64748b;
+          }
+          
+          &.rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            
+            .rating-value {
+              font-weight: 600;
+              color: #111827;
+            }
+            
+            .stars {
+              display: flex;
+              gap: 0.125rem;
+              
+              .star {
+                font-size: 0.875rem;
+                
+                &.star-empty {
+                  opacity: 0.3;
+                }
+                
+                &.star-half {
+                  opacity: 0.6;
+                }
+                
+                &.star-full {
+                  opacity: 1;
+                }
+              }
+            }
+          }
+          
+          &.comment {
+            color: #64748b;
+            max-width: 20rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+}

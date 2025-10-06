@@ -1,11 +1,14 @@
 <div class="date-filter">
-  <div class="field">
-    <label for="start">Desde</label>
-    <input id="start" type="date" [value]="range.startDate" (input)="onStartChange($any($event.target).value)"/>
-  </div>
-  <div class="field">
-    <label for="end">Hasta</label>
-    <input id="end" type="date" [value]="range.endDate" (input)="onEndChange($any($event.target).value)"/>
+  <h2>Datos: Últimos 6 Meses</h2>
+  <div class="filter-controls">
+    <select class="date-select" (change)="onPeriodChange($any($event.target).value)">
+      <option value="6-months">Últimos 6 Meses</option>
+      <option value="3-months">Últimos 3 Meses</option>
+      <option value="current-year">Año Actual</option>
+    </select>
+    <button class="apply-filter-btn" (click)="onApplyFilter()">
+      Aplicar
+    </button>
   </div>
 </div>
 

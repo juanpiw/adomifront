@@ -1,0 +1,20 @@
+/* Componente: Gráfico de Servicios Más Populares */
+.services-chart {
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .chart-container {
+    position: relative;
+    height: 20rem; // h-80 equivalent
+    
+    canvas {
+      height: 100%;
+    }
+  }
+}
