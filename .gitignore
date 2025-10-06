@@ -216,3 +216,6 @@ Thumbs.db
 
 # Templates (moved outside project to avoid compilation issues)
 /templates/
+
+# Flujos front (excluded from repository)
+flujos-front/
