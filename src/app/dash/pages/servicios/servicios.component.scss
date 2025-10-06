@@ -1,0 +1,75 @@
+/* Dashboard de Servicios */
+.servicios-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.form-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 4px solid #e0e7ff;
+  position: relative;
+  z-index: 1;
+}
+
+.back-to-list-btn {
+  display: flex;
+  align-items: center;
+  color: #667eea;
+  background: none;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #5a67d8;
+    background: rgba(102, 126, 234, 0.1);
+  }
+}
+
+.back-icon {
+  margin-right: 0.5rem;
+}
+
+.form-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 640px) {
+    font-size: 1.875rem;
+  }
+}
+
+/* Override para que los componentes estén por encima del overlay */
+::ng-deep ui-services-header,
+::ng-deep ui-services-list,
+::ng-deep ui-service-form {
+  position: relative;
+  z-index: 1;
+}

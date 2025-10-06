@@ -1,0 +1,12 @@
+<div class="date-filter">
+  <div class="field">
+    <label for="start">Desde</label>
+    <input id="start" type="date" [value]="range.startDate" (input)="onStartChange($any($event.target).value)"/>
+  </div>
+  <div class="field">
+    <label for="end">Hasta</label>
+    <input id="end" type="date" [value]="range.endDate" (input)="onEndChange($any($event.target).value)"/>
+  </div>
+</div>
+
+

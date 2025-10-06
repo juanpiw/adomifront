@@ -1,0 +1,24 @@
+<!-- Componente: Lista de Servicios -->
+<div class="services-list">
+  <!-- Loading State -->
+  <div class="services-loader" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Cargando tus servicios...</p>
+  </div>
+
+  <!-- Empty State -->
+  <ui-empty-services-state 
+    *ngIf="!loading && services.length === 0"
+    (addService)="onAddService()">
+  </ui-empty-services-state>
+
+  <!-- Services List -->
+  <div class="services-grid" *ngIf="!loading && services.length > 0">
+    <ui-service-card 
+      *ngFor="let service of services; trackBy: trackByServiceId"
+      [service]="service"
+      (editClicked)="onServiceEdited($event)"
+      (deleteClicked)="onServiceDeleted($event)">
+    </ui-service-card>
+  </div>
+</div>

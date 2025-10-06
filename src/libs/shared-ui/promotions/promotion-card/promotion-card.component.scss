@@ -1,0 +1,26 @@
+.promotion-card {
+  padding: 1rem;
+  background: #ecfdf5; /* green-50 */
+  border-radius: .75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #bbf7d0; /* green-200 */
+}
+
+@media (min-width: 640px) {
+  .promotion-card {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.promotion-title { font-weight: 700; font-size: 1.125rem; color: #047857; margin: 0; }
+.promotion-description { font-size: .9rem; color: #475569; margin: .25rem 0 0 0; }
+.promotion-validity { font-size: .75rem; color: #94a3b8; margin: .25rem 0 0 0; }
+
+.promotion-actions { display: flex; gap: .5rem; margin-top: .75rem; }
+.edit-promotion-btn { color: #64748b; padding: .5rem; border-radius: 9999px; border: none; background: #f1f5f9; cursor: pointer; }
+.deactivate-promotion-btn { color: #ef4444; padding: .5rem; border-radius: 9999px; border: none; background: #fee2e2; cursor: pointer; }
+
+

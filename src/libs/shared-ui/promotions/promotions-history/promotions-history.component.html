@@ -1,0 +1,12 @@
+<!-- Componente: Historial de Promociones Finalizadas -->
+<div class="promotions-history">
+  <h3 class="section-title">Historial y Resultados</h3>
+  <p class="section-subtitle">Revisa el impacto de tus promociones anteriores.</p>
+  <div class="history-list">
+    <ui-history-item *ngFor="let promo of promotions" [promotion]="promo"></ui-history-item>
+    <p *ngIf="promotions.length === 0" class="empty-hint">No hay promociones anteriores.</p>
+  </div>
+  
+</div>
+
+

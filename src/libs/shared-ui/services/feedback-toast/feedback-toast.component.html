@@ -1,0 +1,19 @@
+<!-- Componente: Toast de Feedback/Notificación -->
+<div class="feedback-toast" 
+     [class.feedback-toast--visible]="isVisible"
+     [class.feedback-toast--success]="type === 'success'"
+     [class.feedback-toast--error]="type === 'error'"
+     [class.feedback-toast--warning]="type === 'warning'"
+     [class.feedback-toast--info]="type === 'info'">
+  <div class="feedback-content">
+    <div class="feedback-icon">
+      <ui-icon [name]="getIconName()" [size]="20"></ui-icon>
+    </div>
+    <div class="feedback-message">
+      {{ message }}
+    </div>
+    <button class="dismiss-btn" (click)="onDismiss()">
+      <ui-icon name="x" [size]="16"></ui-icon>
+    </button>
+  </div>
+</div>

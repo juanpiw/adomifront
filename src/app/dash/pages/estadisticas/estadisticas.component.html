@@ -1,0 +1,9 @@
+<div class="estadisticas-container">
+  <ui-statistics-header></ui-statistics-header>
+  <ui-date-filter [range]="dateRange" (rangeChange)="onDateRangeChange($event)"></ui-date-filter>
+  <ui-kpi-cards [items]="kpis"></ui-kpi-cards>
+
+  <!-- Próximo paso: gráficos SSR-safe y tabla de reseñas -->
+</div>
+
+

@@ -1,0 +1,24 @@
+<!-- Componente: Tarjeta Individual de Servicio -->
+<div class="service-card">
+  <div class="service-info">
+    <div class="service-badges">
+      <span class="category-badge">{{ service.category }}</span>
+      <span class="type-badge">{{ service.type }}</span>
+    </div>
+    <h4 class="service-name">{{ service.name }}</h4>
+    <p class="service-description">{{ service.description }}</p>
+    <div class="service-details">
+      <span class="service-price">{{ formatPrice(service.price) }}</span>
+      <span class="service-duration">| {{ service.duration }} min</span>
+    </div>
+  </div>
+  
+  <div class="service-actions">
+    <button class="edit-btn" (click)="onEdit()" title="Editar Servicio">
+      <ui-icon name="edit" [size]="20"></ui-icon>
+    </button>
+    <button class="delete-btn" (click)="onDelete()" title="Eliminar Servicio">
+      <ui-icon name="trash" [size]="20"></ui-icon>
+    </button>
+  </div>
+</div>

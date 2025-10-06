@@ -1,0 +1,14 @@
+<!-- Componente: Tarjeta Individual de Promoción -->
+<li class="promotion-card">
+  <div class="promotion-info">
+    <p class="promotion-title">{{ promotion.name }}</p>
+    <p class="promotion-description">{{ promotion.description }}</p>
+    <p class="promotion-validity">Vigencia: {{ promotion.startDate }}<ng-container *ngIf="promotion.endDate"> - {{ promotion.endDate }}</ng-container></p>
+  </div>
+  <div class="promotion-actions">
+    <button class="edit-promotion-btn" (click)="onEdit()">Editar</button>
+    <button class="deactivate-promotion-btn" (click)="onDeactivate()">Desactivar</button>
+  </div>
+</li>
+
+

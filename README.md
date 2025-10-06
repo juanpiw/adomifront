@@ -144,6 +144,13 @@ adomi-app/
 │   │       ├── inicio-ingresos-dia/ # Ingresos diarios
 │   │       ├── inicio-solicitudes/ # Solicitudes
 │   │       └── inicio-proxima-cita/ # Próxima cita
+│   │       ├── services/            # Componentes de servicios del proveedor
+│   │       │   ├── services-header/           # Encabezado "Mis Servicios"
+│   │       │   ├── services-list/             # Lista + estado vacío + loader
+│   │       │   ├── service-card/              # Tarjeta individual de servicio
+│   │       │   ├── service-form/              # Formulario crear/editar servicio
+│   │       │   ├── confirmation-modal/        # Modal de confirmación de eliminación
+│   │       │   └── feedback-toast/            # Toast de feedback (éxito/error/etc.)
 │   │       ├── favorites/           # Componentes de favoritos
 │   │       │   ├── hero-section/    # Sección hero con búsqueda
 │   │       │   ├── categories-section/ # Sección de categorías
@@ -227,6 +234,17 @@ Registro → Selección de Plan → Stripe Checkout → Onboarding → Dashboard
 - 💬 **Mensajes** - Comunicación con clientes
 - 💼 **Mis Servicios** - Gestión de servicios
 - 👤 **Mi Perfil** - Configuración personal
+
+#### Ruta de Gestión de Servicios
+- Página: `/dash/servicios`
+- Componentes:
+  - `ServicesHeaderComponent` (encabezado + botón añadir)
+  - `ServicesListComponent` (lista, loader, estado vacío)
+  - `ServiceCardComponent` (tarjeta individual con editar/eliminar)
+  - `ServiceFormComponent` (crear/editar con categorías y personalizado "Otro")
+  - `ConfirmationModalComponent` (confirmación de eliminación)
+  - `FeedbackToastComponent` (toasts de éxito/error/advertencia/info)
+
 
 ### **Dashboard de Clientes** (`/client`)
 - 🔍 **Explorar** - Buscar servicios y profesionales
@@ -316,6 +334,34 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 - **AddCardModalComponent** - Modal para añadir nueva tarjeta con validación
 
 ### **Componentes de Reservas**
+### **Componentes de Servicios (Proveedor)**
+- **ServicesHeaderComponent** - Encabezado con CTA para añadir
+- **ServicesListComponent** - Lista con loader y estado vacío
+- **ServiceCardComponent** - Tarjeta con badges, precio, duración, acciones
+- **ServiceFormComponent** - Formulario con categorías, tipo "Otro" y validación
+- **ConfirmationModalComponent** - Confirmación para eliminar
+- **FeedbackToastComponent** - Notificaciones de feedback
+
+#### Ejemplo de uso en `/dash/servicios`
+```html
+<ui-services-header (addService)="onAddService()"></ui-services-header>
+<ui-services-list
+  [services]="services"
+  [loading]="loading"
+  (serviceEdited)="onServiceEdited($event)"
+  (serviceDeleted)="onServiceDeleted($event)"
+  (addService)="onAddService()">
+</ui-services-list>
+
+<ui-service-form
+  *ngIf="currentView === 'form'"
+  [service]="editingService"
+  [categories]="categories"
+  (serviceSaved)="onServiceSaved($event)"
+  (formCancelled)="onFormCancelled()">
+</ui-service-form>
+```
+
 - **ReservasTabsComponent** - Pestañas de reservas
 - **ProximaCitaCardComponent** - Tarjeta de próxima cita
 - **PendienteCardComponent** - Tarjeta de cita pendiente
@@ -615,6 +661,14 @@ console.log('Debug info:', data);
 ```
 
 ## 📝 **Changelog**
+
+### **v2.3.0 - Gestión de Servicios (Proveedor)**
+- ✅ Migración de componentes de servicios desde templates a Angular standalone
+- ✅ Nuevos componentes en `shared-ui/services`: header, list, card, form, confirmation-modal, feedback-toast
+- ✅ Integración completa en `/dash/servicios` con CRUD en memoria
+- ✅ Estilo Frameblox: gradientes, blur, sombras, transiciones
+- ✅ Iconos ampliados en `IconComponent` (plus, edit, trash, save, clipboard, check/x-circle)
+- ✅ Tipos e interfaces: `Service`, `ServiceCategory`, `ServiceFormData`, `ToastType`
 
 ### **v2.2.0 - Migración de Métodos de Pago**
 - ✅ **Migración de métodos de pago** - Componentes HTML/CSS a Angular

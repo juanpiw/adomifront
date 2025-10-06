@@ -1,0 +1,137 @@
+<!-- Componente: Formulario de Creación/Edición de Servicios -->
+<div class="service-form-container">
+  <form class="service-form" (ngSubmit)="onSubmit()">
+    
+    <!-- SECCIÓN DE CATEGORIZACIÓN -->
+    <div class="categorization-section">
+      
+      <!-- Categoría Principal -->
+      <div class="form-group">
+        <label for="service-category" class="form-label">
+          Categoría Principal <span class="required-asterisk">*</span>
+        </label>
+        <select 
+          id="service-category" 
+          [(ngModel)]="formData.category" 
+          name="category"
+          class="form-select"
+          (change)="onCategoryChange()"
+          required>
+          <option value="">Selecciona una Categoría...</option>
+          <option *ngFor="let category of categories" [value]="category.name">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Servicio Específico -->
+      <div class="form-group">
+        <label for="service-type" class="form-label">
+          Servicio Específico <span class="required-asterisk">*</span>
+        </label>
+        <select 
+          id="service-type" 
+          [(ngModel)]="formData.type" 
+          name="type"
+          class="form-select"
+          [disabled]="!formData.category"
+          (change)="onTypeChange()"
+          required>
+          <option value="">Primero selecciona una Categoría</option>
+          <option *ngFor="let service of availableServices" [value]="service">
+            {{ service }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Campo de Servicio Personalizado -->
+    <div class="custom-service-container" *ngIf="showCustomService">
+      <label for="other-service-name" class="form-label">
+        Nombre del Servicio Personalizado <span class="required-asterisk">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="other-service-name" 
+        [(ngModel)]="formData.customType"
+        name="customType"
+        class="form-input" 
+        placeholder="Ej: Tatuador de cejas, Consultor de Energía Solar">
+    </div>
+
+    <!-- Nombre Comercial del Servicio -->
+    <div class="form-group">
+      <label for="service-name" class="form-label">
+        Nombre Comercial del Servicio <span class="required-asterisk">*</span>
+      </label>
+      <input 
+        type="text" 
+        id="service-name" 
+        [(ngModel)]="formData.name"
+        name="name"
+        class="form-input" 
+        placeholder="Ej: Servicio de Diagnóstico Premium para Hogares"
+        required>
+    </div>
+
+    <!-- Descripción Detallada -->
+    <div class="form-group">
+      <label for="service-description" class="form-label">
+        Descripción Detallada <span class="required-asterisk">*</span>
+      </label>
+      <textarea 
+        id="service-description" 
+        [(ngModel)]="formData.description"
+        name="description"
+        rows="6" 
+        class="form-textarea" 
+        placeholder="Describe exactamente lo que el cliente recibirá, incluye el valor agregado y el proceso."
+        required>
+      </textarea>
+    </div>
+
+    <!-- Precio y Duración -->
+    <div class="price-duration-section">
+      <div class="form-group">
+        <label for="service-price" class="form-label">
+          Precio Base ($) <span class="required-asterisk">*</span>
+        </label>
+        <input 
+          type="number" 
+          id="service-price" 
+          [(ngModel)]="formData.price"
+          name="price"
+          min="0" 
+          step="0.01" 
+          class="form-input" 
+          placeholder="0.00"
+          required>
+      </div>
+      <div class="form-group">
+        <label for="service-duration" class="form-label">
+          Duración Estimada (min) <span class="required-asterisk">*</span>
+        </label>
+        <input 
+          type="number" 
+          id="service-duration" 
+          [(ngModel)]="formData.duration"
+          name="duration"
+          min="10" 
+          step="5" 
+          class="form-input"
+          required>
+      </div>
+    </div>
+
+    <!-- Botones de Acción del Formulario -->
+    <div class="form-actions">
+      <button type="button" class="cancel-form-btn" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button type="submit" class="save-service-btn">
+        <ui-icon name="save" [size]="20" class="save-icon"></ui-icon>
+        {{ isEditMode ? 'Actualizar Servicio' : 'Guardar Servicio' }}
+      </button>
+    </div>
+  </form>
+</div>

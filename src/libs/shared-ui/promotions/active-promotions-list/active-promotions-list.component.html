@@ -1,0 +1,14 @@
+<!-- Componente: Lista de Promociones Activas -->
+<div class="active-promotions-list">
+  <h3 class="section-title">Promociones Activas ({{ promotions.length }})</h3>
+  <ul class="promotions-list">
+    <ui-promotion-card
+      *ngFor="let promo of promotions"
+      [promotion]="promo"
+      (editClicked)="onEdit($event)"
+      (deactivateClicked)="onDeactivate($event)">
+    </ui-promotion-card>
+  </ul>
+</div>
+
+

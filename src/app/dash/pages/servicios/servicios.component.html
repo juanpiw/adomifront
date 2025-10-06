@@ -1,0 +1,48 @@
+<!-- Vista de Lista de Servicios -->
+<div class="servicios-container" *ngIf="currentView === 'list'">
+  <ui-services-header (addService)="onAddService()"></ui-services-header>
+  
+  <ui-services-list
+    [services]="services"
+    [loading]="loading"
+    (serviceEdited)="onServiceEdited($event)"
+    (serviceDeleted)="onServiceDeleted($event)"
+    (addService)="onAddServiceFromList()">
+  </ui-services-list>
+</div>
+
+<!-- Vista de Formulario -->
+<div class="servicios-container" *ngIf="currentView === 'form'">
+  <header class="form-header">
+    <button class="back-to-list-btn" (click)="onFormCancelled()">
+      <ui-icon name="arrow-left" [size]="20" class="back-icon"></ui-icon>
+      Volver al Listado
+    </button>
+    <h2 class="form-title">
+      {{ editingService ? 'Editar Servicio' : 'Crear Nuevo Servicio' }}
+    </h2>
+  </header>
+  
+  <ui-service-form
+    [service]="editingService"
+    [categories]="categories"
+    (serviceSaved)="onServiceSaved($event)"
+    (formCancelled)="onFormCancelled()">
+  </ui-service-form>
+</div>
+
+<!-- Modal de Confirmación -->
+<ui-confirmation-modal
+  [isOpen]="showConfirmationModal"
+  [serviceName]="serviceToDelete?.name || ''"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()">
+</ui-confirmation-modal>
+
+<!-- Toast de Feedback -->
+<ui-feedback-toast
+  [isVisible]="showToast"
+  [type]="toastType"
+  [message]="toastMessage"
+  (dismissed)="onToastDismissed()">
+</ui-feedback-toast>

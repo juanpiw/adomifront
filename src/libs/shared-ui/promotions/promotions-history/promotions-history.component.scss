@@ -1,0 +1,14 @@
+.promotions-history {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  border: 1px solid #f1f5f9;
+}
+
+.section-title { font-size: 1.25rem; font-weight: 600; color: #111827; margin: 0 0 .75rem 0; padding-bottom: .5rem; border-bottom: 1px solid #e2e8f0; }
+.section-subtitle { color: #64748b; margin: 0 0 1rem 0; }
+.history-list { display: flex; flex-direction: column; gap: .75rem; }
+.empty-hint { color: #94a3b8; font-size: .9rem; margin: 0; }
+
+

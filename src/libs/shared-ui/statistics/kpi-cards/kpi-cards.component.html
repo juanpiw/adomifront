@@ -1,0 +1,10 @@
+<div class="kpi-grid">
+  <div class="kpi-card" *ngFor="let k of items">
+    <p class="kpi-title">{{ k.title }}</p>
+    <p class="kpi-value">{{ k.value }}</p>
+    <p class="kpi-trend" *ngIf="k.percentChange !== undefined">{{ k.trend === 'down' ? '▼' : (k.trend === 'up' ? '▲' : '•') }} {{ k.percentChange }}%</p>
+  </div>
+  
+</div>
+
+

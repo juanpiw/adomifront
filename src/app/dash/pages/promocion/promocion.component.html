@@ -1,0 +1,19 @@
+<div class="promocion-container">
+  <ui-promotions-header></ui-promotions-header>
+
+  <ui-collapsible-promo-form
+    [isExpanded]="isFormExpanded"
+    (formToggled)="onFormToggled($event)"
+    (formSubmitted)="onFormSubmitted($event)">
+  </ui-collapsible-promo-form>
+
+  <ui-active-promotions-list
+    [promotions]="activePromotions"
+    (editPromotion)="onEditPromotion($event)"
+    (deactivatePromotion)="onDeactivatePromotion($event)">
+  </ui-active-promotions-list>
+
+  <ui-promotions-history [promotions]="historyPromotions"></ui-promotions-history>
+</div>
+
+

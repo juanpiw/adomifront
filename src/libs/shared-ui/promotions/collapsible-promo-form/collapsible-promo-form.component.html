@@ -1,0 +1,59 @@
+<!-- Componente: Formulario Plegable de Creación de Promociones -->
+<div class="collapsible-promo-form">
+  <!-- Cabecera del formulario plegable que funciona como botón de toggle -->
+  <button class="toggle-promo-form" type="button" (click)="toggle()">
+    <h3 class="form-header-text">{{ isExpanded ? '▼' : '►' }} Publicar una Nueva Oferta</h3>
+  </button>
+
+  <!-- Contenido del Formulario -->
+  <div class="promo-form-content" *ngIf="isExpanded">
+    <form class="new-promo-form" (ngSubmit)="onSubmit()">
+      <!-- Nombre de la Promoción -->
+      <div class="form-group">
+        <label for="promo-name" class="form-label">Nombre de la Promoción</label>
+        <input type="text" id="promo-name" name="promo-name" class="form-input" [(ngModel)]="formData.name" placeholder="Ej. 20% Off en Martes" required>
+      </div>
+
+      <!-- Descripción/Detalles -->
+      <div class="form-group">
+        <label for="promo-description" class="form-label">Descripción Detallada</label>
+        <textarea id="promo-description" name="promo-description" rows="2" class="form-textarea" [(ngModel)]="formData.description" placeholder="Detalla a qué aplica (servicios, días, etc.)" required></textarea>
+      </div>
+
+      <!-- Tipo de Descuento y Valor -->
+      <div class="discount-section">
+        <div class="form-group">
+          <label for="discount-type" class="form-label">Tipo de Descuento</label>
+          <select id="discount-type" name="discount-type" class="form-select" [(ngModel)]="formData.discountType" required>
+            <option value="percentage">Porcentaje (%)</option>
+            <option value="fixed">Monto Fijo ($)</option>
+            <option value="other">Otro (Ej. 2x1)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="discount-value" class="form-label">Valor / Detalle</label>
+          <input type="text" id="discount-value" name="discount-value" class="form-input" [(ngModel)]="formData.discountValue" placeholder="Ej: 20, 15000, Servicio Adicional" required>
+        </div>
+      </div>
+
+      <!-- Vigencia -->
+      <div class="validity-section">
+        <div class="form-group">
+          <label for="start-date" class="form-label">Fecha de Inicio</label>
+          <input type="date" id="start-date" name="start-date" class="form-input" [(ngModel)]="formData.startDate" required>
+        </div>
+        <div class="form-group">
+          <label for="end-date" class="form-label">Fecha de Fin (Opcional)</label>
+          <input type="date" id="end-date" name="end-date" class="form-input" [(ngModel)]="formData.endDate">
+        </div>
+      </div>
+
+      <!-- Botón de Enviar (Crear Promoción) -->
+      <div class="form-actions">
+        <button type="submit" class="submit-promo-btn">Guardar y Publicar Promoción</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
