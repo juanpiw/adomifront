@@ -1,0 +1,12 @@
+<!-- Componente: Fila Individual de Transacción -->
+<tr class="transaction-row" [class]="'transaction-row--' + transaction.status.toLowerCase()">
+  <td class="date">{{ formatDate(transaction.date) }}</td>
+  <td class="description">{{ transaction.description }}</td>
+  <td class="gross-amount">{{ transaction.grossAmount | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</td>
+  <td class="net-amount">{{ transaction.netAmount | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</td>
+  <td class="status">
+    <span class="status-badge" [class]="statusClass">
+      {{ transaction.status }}
+    </span>
+  </td>
+</tr>

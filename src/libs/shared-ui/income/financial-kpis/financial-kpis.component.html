@@ -1,0 +1,28 @@
+<!-- Componente: KPIs Financieros -->
+<div class="financial-kpis">
+  <h2>Métricas Clave (Últimos 30 días)</h2>
+  
+  <div class="kpi-grid">
+    <div 
+      *ngFor="let card of kpiCards"
+      class="kpi-card"
+      [class]="'kpi-card--' + card.color">
+      
+      <div class="kpi-header">
+        <p class="kpi-label">{{ card.label }}</p>
+        <ui-icon [name]="card.icon" [size]="20" class="kpi-icon"></ui-icon>
+      </div>
+      
+      <p class="kpi-value">{{ formatCurrency(card.value) }}</p>
+      <p class="kpi-description">{{ card.description }}</p>
+      
+      <button 
+        *ngIf="card.actionText"
+        class="kpi-action"
+        (click)="onViewDetails()">
+        {{ card.actionText }}
+        <ui-icon name="chevron-right" [size]="12" class="action-icon"></ui-icon>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<!-- Componente: Navegación de Pestañas -->
+<div class="tab-navigation">
+  <button 
+    *ngFor="let tab of tabs"
+    class="tab-button"
+    [class.tab-button--active]="tab.isActive"
+    (click)="onTabClick(tab.id)">
+    {{ tab.label }}
+  </button>
+</div>

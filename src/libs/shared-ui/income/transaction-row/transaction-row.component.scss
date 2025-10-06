@@ -1,0 +1,70 @@
+/* Componente: Fila Individual de Transacción */
+.transaction-row {
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #f8fafc; // hover:bg-slate-50
+  }
+  
+  &--completado {
+    .status-badge {
+      background-color: #dcfce7; // bg-green-100
+      color: #166534; // text-green-800
+    }
+  }
+  
+  &--pendiente {
+    .status-badge {
+      background-color: #fef3c7; // bg-yellow-100
+      color: #92400e; // text-yellow-800
+    }
+  }
+  
+  &--procesando {
+    .status-badge {
+      background-color: #dbeafe; // bg-blue-100
+      color: #1e40af; // text-blue-800
+    }
+  }
+  
+  td {
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem; // text-sm
+    border-bottom: 1px solid #e2e8f0; // divide-slate-200
+    
+    &.date {
+      color: #64748b; // text-slate-600
+      white-space: nowrap;
+    }
+    
+    &.description {
+      font-weight: 500; // font-medium
+      color: #111827; // text-gray-900
+      white-space: nowrap;
+    }
+    
+    &.gross-amount {
+      color: #64748b; // text-slate-600
+      white-space: nowrap;
+    }
+    
+    &.net-amount {
+      font-weight: 700; // font-bold
+      color: #4338ca; // text-indigo-700
+      white-space: nowrap;
+    }
+    
+    &.status {
+      white-space: nowrap;
+      
+      .status-badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem; // text-xs
+        font-weight: 600; // font-semibold
+        border-radius: 9999px; // rounded-full
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  }
+}

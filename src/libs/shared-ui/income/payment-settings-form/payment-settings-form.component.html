@@ -1,0 +1,92 @@
+<!-- Componente: Formulario de Configuración de Pagos -->
+<div class="payment-settings">
+  <h2>Datos de Transferencia Bancaria</h2>
+
+  <div class="payment-form-container metric-card">
+    <form class="payment-settings-form" (ngSubmit)="onSave()">
+      <!-- Tipo de Cuenta -->
+      <div class="form-group">
+        <label for="account_type" class="form-label">Tipo de Cuenta</label>
+        <select 
+          id="account_type" 
+          name="account_type" 
+          [(ngModel)]="paymentSettings.accountType"
+          (ngModelChange)="onSettingsChange()"
+          required 
+          class="form-select">
+          <option value="corriente">Cuenta Corriente</option>
+          <option value="vista">Cuenta Vista/RUT</option>
+          <option value="ahorro">Cuenta de Ahorro</option>
+        </select>
+      </div>
+
+      <!-- Banco -->
+      <div class="form-group">
+        <label for="bank_name" class="form-label">Banco</label>
+        <input 
+          type="text" 
+          id="bank_name" 
+          name="bank_name" 
+          [(ngModel)]="paymentSettings.bankName"
+          (ngModelChange)="onSettingsChange()"
+          placeholder="Ej: Banco de Chile" 
+          required 
+          class="form-input">
+      </div>
+
+      <!-- Número de Cuenta -->
+      <div class="form-group">
+        <label for="account_number" class="form-label">Número de Cuenta</label>
+        <input 
+          type="text" 
+          id="account_number" 
+          name="account_number" 
+          [(ngModel)]="paymentSettings.accountNumber"
+          (ngModelChange)="onSettingsChange()"
+          placeholder="00012345678" 
+          required 
+          class="form-input">
+      </div>
+
+      <!-- RUT del Titular -->
+      <div class="form-group">
+        <label for="rut_holder" class="form-label">RUT del Titular</label>
+        <input 
+          type="text" 
+          id="rut_holder" 
+          name="rut_holder" 
+          [(ngModel)]="paymentSettings.rutHolder"
+          (ngModelChange)="onSettingsChange()"
+          placeholder="12.345.678-9" 
+          required 
+          class="form-input">
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="save-payment-btn"
+          [disabled]="isSaving">
+          <span *ngIf="!isSaving">Guardar Configuración de Pago</span>
+          <span *ngIf="isSaving">Guardando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Aviso de Seguridad -->
+  <div class="security-notice">
+    <div class="notice-content">
+      <ui-icon name="shield-check" [size]="20" class="notice-icon"></ui-icon>
+      <p>
+        <span class="font-bold">Seguridad:</span> Todos tus datos bancarios son cifrados y utilizados únicamente para realizar tus depósitos de ingresos. Nunca compartimos esta información.
+      </p>
+    </div>
+  </div>
+
+  <!-- Mensaje de Éxito -->
+  <div *ngIf="showSuccessMessage" class="success-message">
+    <ui-icon name="check-circle" [size]="20" class="success-icon"></ui-icon>
+    <span>Configuración guardada exitosamente</span>
+  </div>
+</div>

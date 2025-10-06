@@ -1,0 +1,40 @@
+<!-- Componente: Tabla de Transacciones -->
+<div class="transactions-table metric-card">
+  <h3>Historial de Transacciones</h3>
+  
+  <div class="table-container">
+    <table class="transactions-table-content">
+      <thead>
+        <tr>
+          <th scope="col">Fecha</th>
+          <th scope="col">Descripción</th>
+          <th scope="col">Monto Bruto</th>
+          <th scope="col">Monto Neto</th>
+          <th scope="col">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          *ngFor="let transaction of transactions"
+          class="transaction-row"
+          (click)="onTransactionClick(transaction)">
+          <td class="date">{{ transaction.date | date:'shortDate':'es-CL' }}</td>
+          <td class="description">{{ transaction.description }}</td>
+          <td class="gross-amount">{{ formatCurrency(transaction.grossAmount) }}</td>
+          <td class="net-amount">{{ formatCurrency(transaction.netAmount) }}</td>
+          <td class="status">
+            <span class="status-badge" [class]="'status-badge--' + transaction.status.toLowerCase()">
+              {{ transaction.status }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <button class="view-all-btn" (click)="onViewAll()">
+      Ver todas las transacciones
+    </button>
+  </div>
+</div>

@@ -1,0 +1,139 @@
+/* Componente: KPIs Financieros */
+.financial-kpis {
+  h2 {
+    font-size: 1.5rem; // text-2xl
+    font-weight: 700; // font-bold
+    color: #1f2937; // text-gray-800
+    margin: 0 0 1.5rem 0;
+  }
+  
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .kpi-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid;
+    
+    &--indigo {
+      background-color: #eef2ff; // bg-indigo-50
+      border-color: #c7d2fe; // border-indigo-200
+      
+      .kpi-label {
+        color: #4338ca; // text-indigo-700
+      }
+      
+      .kpi-icon {
+        color: #4f46e5; // text-indigo-600
+      }
+      
+      .kpi-value {
+        color: #3730a3; // text-indigo-800
+      }
+      
+      .kpi-description {
+        color: #4f46e5; // text-indigo-600
+      }
+    }
+    
+    &--red {
+      background-color: #fef2f2; // bg-red-50
+      border-color: #fecaca; // border-red-200
+      
+      .kpi-label {
+        color: #b91c1c; // text-red-700
+      }
+      
+      .kpi-icon {
+        color: #dc2626; // text-red-600
+      }
+      
+      .kpi-value {
+        color: #991b1b; // text-red-800
+      }
+      
+      .kpi-description {
+        color: #dc2626; // text-red-600
+      }
+    }
+    
+    &--yellow {
+      background-color: #fefce8; // bg-yellow-50
+      border-color: #fde68a; // border-yellow-200
+      
+      .kpi-label {
+        color: #a16207; // text-yellow-700
+      }
+      
+      .kpi-icon {
+        color: #d97706; // text-yellow-600
+      }
+      
+      .kpi-value {
+        color: #92400e; // text-yellow-800
+      }
+      
+      .kpi-description {
+        color: #d97706; // text-yellow-600
+      }
+    }
+    
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      
+      .kpi-label {
+        font-size: 0.875rem; // text-sm
+        font-weight: 500; // font-medium
+        margin: 0;
+      }
+      
+      .kpi-icon {
+        flex-shrink: 0;
+      }
+    }
+    
+    .kpi-value {
+      font-size: 2.25rem; // text-4xl
+      font-weight: 800; // font-extrabold
+      margin: 0.5rem 0;
+      line-height: 1;
+    }
+    
+    .kpi-description {
+      font-size: 0.75rem; // text-xs
+      margin: 0.25rem 0 0 0;
+      line-height: 1.4;
+    }
+    
+    .kpi-action {
+      font-size: 0.75rem; // text-xs
+      font-weight: 600; // font-semibold
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4f46e5; // text-indigo-600
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: #3730a3; // text-indigo-800
+      }
+      
+      .action-icon {
+        margin-left: 0.25rem;
+      }
+    }
+  }
+}

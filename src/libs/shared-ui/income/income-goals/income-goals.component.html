@@ -1,0 +1,98 @@
+<!-- Componente: Sección de Metas de Ingreso -->
+<div class="income-goals">
+  <h2>Establecer y Seguir Metas Mensuales</h2>
+
+  <!-- Tarjeta de Progreso de Meta Actual -->
+  <div class="goal-progress-card metric-card">
+    <div class="goal-header">
+      <h3>
+        <ui-icon name="target" [size]="20" class="goal-icon"></ui-icon>
+        Meta Mensual Activa
+      </h3>
+      <button class="go-to-summary-btn" (click)="onGoToSummary()">
+        Ir a Resumen
+      </button>
+    </div>
+
+    <div class="active-goal-display" *ngIf="currentGoal; else noGoal">
+      <div class="goal-info">
+        <p class="goal-amount">
+          {{ formatCurrency(currentGoal.amount) }}
+        </p>
+        <p class="goal-period">{{ currentGoal.period | titlecase }}</p>
+        <p class="goal-progress">
+          Progreso: {{ progressPercentage | number:'1.1-1' }}%
+        </p>
+      </div>
+      
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          [style.width.%]="progressPercentage">
+        </div>
+      </div>
+      
+      <div class="current-income">
+        Ingresos actuales: {{ formatCurrency(currentIncome) }}
+      </div>
+    </div>
+
+    <ng-template #noGoal>
+      <p class="no-goal-message">
+        ¡Aún no has establecido tu meta de ingresos para este mes! Define un objetivo para empezar a desafiarte.
+      </p>
+    </ng-template>
+
+    <div 
+      *ngIf="showCompletionMessage" 
+      class="goal-completion-message">
+      ¡Felicidades! Has alcanzado tu meta de ingresos.
+    </div>
+  </div>
+
+  <!-- Formulario para Establecer Nueva Meta -->
+  <div class="goal-setting-form-container metric-card">
+    <h3>Definir Nueva Meta</h3>
+    <form class="goal-setting-form" (ngSubmit)="onSetGoal()">
+      
+      <div class="goal-amount-group">
+        <label for="goal_amount" class="form-label">Monto Objetivo (Neto)</label>
+        <div class="amount-input-container">
+          <span class="currency-symbol">$</span>
+          <input 
+            type="number" 
+            id="goal_amount" 
+            name="goal_amount" 
+            [(ngModel)]="newGoal.amount"
+            placeholder="Ej: 3000000" 
+            min="1000" 
+            required 
+            class="goal-amount-input">
+        </div>
+      </div>
+
+      <div class="goal-period-group">
+        <label for="goal_period" class="form-label">Período</label>
+        <select 
+          id="goal_period" 
+          name="goal_period" 
+          [(ngModel)]="newGoal.period"
+          required 
+          class="form-select">
+          <option value="mensual">Mensual (Mes en curso)</option>
+          <option value="trimestral" disabled>Trimestral (Próximamente)</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="set-goal-btn"
+          [disabled]="isSettingGoal || newGoal.amount <= 0">
+          <span *ngIf="!isSettingGoal">Establecer Meta</span>
+          <span *ngIf="isSettingGoal">Estableciendo...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

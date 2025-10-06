@@ -1,0 +1,28 @@
+/* Componente: Navegación de Pestañas */
+.tab-navigation {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  
+  .tab-button {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: #64748b; // text-slate-500
+    
+    &:hover {
+      color: #4f46e5; // text-indigo-600
+      border-bottom-color: #a5b4fc; // border-indigo-300
+    }
+    
+    &--active {
+      color: #4f46e5; // text-indigo-600
+      border-bottom-color: #4f46e5; // border-indigo-600
+    }
+  }
+}

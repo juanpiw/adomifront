@@ -1,0 +1,48 @@
+<!-- Página de Ingresos del Dashboard -->
+<div class="ingresos-container">
+  <!-- Encabezado -->
+  <ui-finances-header></ui-finances-header>
+  
+  <!-- Navegación de pestañas -->
+  <ui-tab-navigation 
+    (tabChanged)="onTabChanged($event)">
+  </ui-tab-navigation>
+  
+  <!-- Contenido de pestañas -->
+  <div class="tab-content">
+    
+    <!-- Pestaña: Resumen de Ingresos -->
+    <div *ngIf="activeTab === 'resumen'" class="tab-panel">
+      <ui-financial-kpis 
+        [kpis]="financialKPIs"
+        (viewDetailsClicked)="onViewDetailsClicked()">
+      </ui-financial-kpis>
+      
+      <ui-transactions-table 
+        [transactions]="transactions"
+        (viewAllClicked)="onViewAllTransactions()"
+        (transactionSelected)="onTransactionSelected($event)">
+      </ui-transactions-table>
+    </div>
+    
+    <!-- Pestaña: Configuración de Pagos -->
+    <div *ngIf="activeTab === 'pagos'" class="tab-panel">
+      <ui-payment-settings-form 
+        [paymentSettings]="paymentSettings"
+        (settingsSaved)="onPaymentSettingsSaved($event)"
+        (settingsChanged)="onPaymentSettingsChanged($event)">
+      </ui-payment-settings-form>
+    </div>
+    
+    <!-- Pestaña: Metas de Ingreso -->
+    <div *ngIf="activeTab === 'metas'" class="tab-panel">
+      <ui-income-goals 
+        [currentGoal]="currentGoal"
+        [currentIncome]="currentIncome"
+        (goalSet)="onGoalSet($event)"
+        (goToSummary)="onGoToSummary()">
+      </ui-income-goals>
+    </div>
+    
+  </div>
+</div>
