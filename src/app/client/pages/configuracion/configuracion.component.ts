@@ -81,29 +81,35 @@ export class ClientConfiguracionComponent implements OnInit {
   }
 
   private loadPreferences() {
-    try {
-      const stored = localStorage.getItem('adomiSettings');
-      if (stored) {
-        const settings = JSON.parse(stored);
-        this.preferences = {
-          pushNotifications: settings['push-notifications'] ?? true,
-          promotionalEmails: settings['promotional-emails'] ?? false
-        };
+    // Verificar si estamos en el navegador antes de acceder a localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const stored = localStorage.getItem('adomiSettings');
+        if (stored) {
+          const settings = JSON.parse(stored);
+          this.preferences = {
+            pushNotifications: settings['push-notifications'] ?? true,
+            promotionalEmails: settings['promotional-emails'] ?? false
+          };
+        }
+      } catch (error) {
+        console.error('Error al cargar preferencias:', error);
       }
-    } catch (error) {
-      console.error('Error al cargar preferencias:', error);
     }
   }
 
   private savePreferences() {
-    try {
-      const settings = {
-        'push-notifications': this.preferences.pushNotifications,
-        'promotional-emails': this.preferences.promotionalEmails
-      };
-      localStorage.setItem('adomiSettings', JSON.stringify(settings));
-    } catch (error) {
-      console.error('Error al guardar preferencias:', error);
+    // Verificar si estamos en el navegador antes de acceder a localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const settings = {
+          'push-notifications': this.preferences.pushNotifications,
+          'promotional-emails': this.preferences.promotionalEmails
+        };
+        localStorage.setItem('adomiSettings', JSON.stringify(settings));
+      } catch (error) {
+        console.error('Error al guardar preferencias:', error);
+      }
     }
   }
 
