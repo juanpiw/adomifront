@@ -18,7 +18,7 @@ import { ClientReservasComponent } from './client/pages/reservas/reservas.compon
 import { FavoritosComponent } from './client/pages/favoritos/favoritos.component';
 import { ClientPerfilComponent } from './client/pages/perfil/perfil.component';
 import { ClientPagosComponent } from './client/pages/pagos/pagos.component';
-import { ClientConfigComponent } from './client/pages/configuracion/configuracion.component';
+import { ClientConfiguracionComponent } from './client/pages/configuracion/configuracion.component';
 import { ExplorarComponent } from './client/explorar/explorar.component';
 import { PerfilTrabajadorComponent } from './client/pages/perfil-trabajador/perfil-trabajador.component';
 import { ConversacionesComponent } from './client/pages/conversaciones/conversaciones.component';
@@ -47,7 +47,7 @@ export const routes: Routes = [
       { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },
-      { path: 'configuracion', component: ClientConfigComponent },
+      { path: 'configuracion', component: ClientConfiguracionComponent },
       { path: 'validacion-datos-trabajador', component: ValidacionDatosTrabajadorComponent }
     ] },
       { path: 'auth', children: [

@@ -1,0 +1,31 @@
+<!-- Página de Configuraciones del Cliente -->
+<div class="configuracion-container">
+  <!-- Encabezado -->
+  <ui-settings-header></ui-settings-header>
+  
+  <!-- Secciones de configuración -->
+  <div class="settings-sections">
+    
+    <!-- Cuenta y Perfil -->
+    <ui-account-profile-section 
+      (linkClicked)="onLinkClicked($event)">
+    </ui-account-profile-section>
+    
+    <!-- Pagos y Facturación -->
+    <ui-payments-billing-section 
+      (linkClicked)="onLinkClicked($event)">
+    </ui-payments-billing-section>
+    
+    <!-- Preferencias y Notificaciones -->
+    <ui-preferences-notifications-section 
+      [preferences]="preferences"
+      (preferenceChanged)="onPreferenceChanged($event)">
+    </ui-preferences-notifications-section>
+    
+    <!-- Soporte y Legal -->
+    <ui-support-legal-section 
+      (linkClicked)="onLinkClicked($event)">
+    </ui-support-legal-section>
+    
+  </div>
+</div>

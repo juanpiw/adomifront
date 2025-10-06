@@ -1,0 +1,25 @@
+<!-- Componente: Sección de Preferencias y Notificaciones -->
+<section class="preferences-notifications-section">
+  <h2>
+    <ui-icon name="bell" [size]="24" class="section-icon"></ui-icon>
+    Preferencias y Notificaciones
+  </h2>
+  <div class="settings-rows">
+    <div 
+      *ngFor="let toggle of toggleSettings"
+      class="setting-row">
+      <div class="setting-info">
+        <span class="setting-label">{{ toggle.label }}</span>
+        <span class="setting-description">{{ toggle.description }}</span>
+      </div>
+      <label class="toggle-switch">
+        <input 
+          type="checkbox" 
+          class="toggle-input"
+          [checked]="toggle.value"
+          (change)="toggle.onChange($any($event.target).checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+</section>

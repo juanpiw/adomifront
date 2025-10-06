@@ -1,0 +1,16 @@
+<!-- Componente: Sección de Pagos y Facturación -->
+<section class="payments-billing-section">
+  <h2>
+    <ui-icon name="credit-card" [size]="24" class="section-icon"></ui-icon>
+    Pagos y Facturación
+  </h2>
+  <div class="settings-links">
+    <button 
+      *ngFor="let link of paymentLinks"
+      class="setting-link"
+      (click)="onLinkClick(link)">
+      <span class="link-label">{{ link.label }}</span>
+      <span class="link-description">{{ link.description }}</span>
+    </button>
+  </div>
+</section>

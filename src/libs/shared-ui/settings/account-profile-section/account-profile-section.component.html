@@ -1,0 +1,17 @@
+<!-- Componente: Sección de Cuenta y Perfil -->
+<section class="account-profile-section">
+  <h2>
+    <ui-icon name="user" [size]="24" class="section-icon"></ui-icon>
+    Cuenta y Perfil
+  </h2>
+  <div class="settings-links">
+    <button 
+      *ngFor="let link of profileLinks"
+      class="setting-link"
+      [class.logout-link]="link.isDanger"
+      (click)="onLinkClick(link)">
+      <span class="link-label">{{ link.label }}</span>
+      <span class="link-description">{{ link.description }}</span>
+    </button>
+  </div>
+</section>

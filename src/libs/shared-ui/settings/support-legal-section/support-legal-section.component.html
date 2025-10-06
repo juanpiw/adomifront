@@ -1,0 +1,16 @@
+<!-- Componente: Sección de Soporte y Legal -->
+<section class="support-legal-section">
+  <h2>
+    <ui-icon name="help-circle" [size]="24" class="section-icon"></ui-icon>
+    Soporte y Legal
+  </h2>
+  <div class="settings-links">
+    <button 
+      *ngFor="let link of supportLinks"
+      class="setting-link"
+      (click)="onLinkClick(link)">
+      <span class="link-label">{{ link.label }}</span>
+      <span class="link-description">{{ link.description }}</span>
+    </button>
+  </div>
+</section>
