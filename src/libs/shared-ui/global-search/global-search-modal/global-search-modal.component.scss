@@ -22,13 +22,22 @@
 :host ::ng-deep {
   .fixed {
     backdrop-filter: blur(4px);
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.6) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 9999 !important;
   }
 
   .bg-white {
-    background: white;
+    background: white !important;
     border-radius: 1rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    margin: 0 auto !important;
+    max-width: 42rem !important;
+    width: 100% !important;
   }
 
   .rounded-2xl {
