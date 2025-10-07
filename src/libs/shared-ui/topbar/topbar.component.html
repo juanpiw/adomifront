@@ -1,19 +1,10 @@
 <div class="topbar elevated" [class.topbar--hidden-mobile-conversaciones]="isConversacionesRoute">
-  <!-- Contenedor relativo para el dropdown de búsqueda -->
-  <div *ngIf="config.showSearch" class="search-container">
-    <input 
-      class="search" 
-      [placeholder]="config.searchPlaceholder"
-      readonly
-      (click)="onHelpClick()" />
-    
-    <!-- Dropdown de Búsqueda Global posicionado relativo al input -->
-    <ui-global-search-modal
-      [isOpen]="isSearchModalOpen"
-      (close)="onSearchModalClose()"
-      (suggestionClick)="onSearchSuggestionClick($event)">
-    </ui-global-search-modal>
-  </div>
+  <input 
+    *ngIf="config.showSearch"
+    class="search" 
+    [placeholder]="config.searchPlaceholder"
+    readonly
+    (click)="onHelpClick()" />
   
   <div class="actions">
     <button 
@@ -37,3 +28,10 @@
     </button>
   </div>
 </div>
+
+<!-- Modal de Búsqueda Global -->
+<ui-global-search-modal
+  [isOpen]="isSearchModalOpen"
+  (close)="onSearchModalClose()"
+  (suggestionClick)="onSearchSuggestionClick($event)">
+</ui-global-search-modal>

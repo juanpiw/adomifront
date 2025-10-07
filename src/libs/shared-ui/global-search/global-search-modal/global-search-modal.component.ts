@@ -104,7 +104,7 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
 
   onSuggestionClick(suggestion: SearchSuggestion): void {
     this.suggestionClick.emit(suggestion);
-    this.closeDropdown();
+    this.closeModal();
   }
 
   onRecentSearchClick(query: string): void {
@@ -118,13 +118,19 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
     this.loadRecentSearches();
   }
 
-  closeDropdown(): void {
+  onBackdropClick(event: Event): void {
+    if (event.target === event.currentTarget) {
+      this.closeModal();
+    }
+  }
+
+  closeModal(): void {
     this.searchQuery = '';
     this.searchResults = [];
     this.close.emit();
   }
 
-  // Método para enfocar el input cuando se abre el dropdown
+  // Método para enfocar el input cuando se abre el modal
   focusSearchInput(): void {
     setTimeout(() => {
       if (this.searchInput) {
@@ -136,7 +142,7 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
   // Manejar teclas especiales
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
-      this.closeDropdown();
+      this.closeModal();
     }
   }
 }

@@ -13,13 +13,8 @@
   top: 0;
   z-index: 2;
 
-  .search-container {
-    position: relative;
-    width: 60%;
-  }
-
   .search {
-    width: 100%;
+    width: 60%;
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid var(--color-border);
@@ -99,8 +94,8 @@
     padding: 0.75rem 1rem; // Reducir padding en móvil
     height: auto;
     
-    .search-container {
-      display: none; // Ocultar el contenedor de búsqueda en móvil
+    .search {
+      display: none; // Ocultar solo el search en móvil
     }
     
     .actions {
