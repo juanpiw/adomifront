@@ -12,6 +12,7 @@ Aplicación web Angular para la plataforma Adomi - Conectando profesionales de s
 - ✅ **Dashboard diferenciado** por tipo de usuario
 - ✅ **Integración con Stripe** para pagos
 - ✅ **Sistema de alertas** para planes de suscripción
+- ✅ **Sistema de notificaciones** completo con gestión por perfil
 - ✅ **Diseño responsive** para móviles y desktop
 - ✅ **Onboarding** interactivo para nuevos usuarios
 
@@ -21,6 +22,7 @@ Aplicación web Angular para la plataforma Adomi - Conectando profesionales de s
 - **TypeScript** - Lenguaje de programación
 - **SCSS** - Estilos con variables CSS
 - **Angular Universal** - Server-Side Rendering
+- **Angular Animations** - Animaciones y transiciones
 - **RxJS** - Programación reactiva
 - **Angular Router** - Navegación SPA
 
@@ -117,6 +119,13 @@ adomi-app/
 │   │       ├── plan-upgrade-alert/ # Alerta de actualización
 │   │       ├── topbar/        # Barra superior
 │   │       ├── icon/          # Sistema de iconos
+│   │       ├── notifications/ # Sistema de notificaciones
+│   │       │   ├── notification-bell/     # Campana de notificaciones
+│   │       │   ├── notification-panel/    # Panel desplegable
+│   │       │   ├── notification-container/ # Contenedor principal
+│   │       │   ├── services/              # Servicio de notificaciones
+│   │       │   └── models/                # Modelos y tipos
+│   │       ├── time-filter/   # Filtro de tiempo con iconos elegantes
 │   │       ├── review-modal/  # Modal de reseñas
 │   │       ├── progress-perfil/ # Progreso del perfil
 │   │       ├── info-basica/   # Información básica
@@ -285,6 +294,135 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 </plan-upgrade-alert>
 ```
 
+## 🔔 **Sistema de Notificaciones**
+
+### **Arquitectura Completa**
+Sistema robusto de notificaciones migrado desde templates HTML/CSS a componentes Angular reutilizables, diseñado para manejar múltiples perfiles de usuario con diferentes tipos de notificaciones.
+
+### **Componentes del Sistema**
+
+#### **NotificationBellComponent**
+- **Campana de notificaciones** con contador de no leídas
+- **Badge animado** para notificaciones nuevas
+- **Integración con iconos** del sistema
+
+#### **NotificationPanelComponent**
+- **Panel desplegable** con lista de notificaciones
+- **Separación** entre notificaciones no leídas y leídas
+- **Animaciones suaves** de entrada/salida
+- **Estado vacío** con mensaje amigable
+
+#### **NotificationContainerComponent**
+- **Contenedor principal** que orquesta bell + panel
+- **Manejo de estado** abierto/cerrado
+- **Click fuera** para cerrar
+- **Navegación automática** con Router
+
+### **Tipos de Notificaciones por Perfil**
+
+#### **Cliente (`client`)**
+- `appointment` - Citas y reservas
+- `payment` - Pagos y transacciones
+- `rating` - Calificaciones y reseñas
+- `message` - Mensajes de chat
+- `booking` - Reservas y cancelaciones
+- `promotion` - Promociones y ofertas
+
+#### **Proveedor (`provider`)**
+- `appointment` - Citas y reservas
+- `payment` - Pagos y transacciones
+- `rating` - Calificaciones y reseñas
+- `message` - Mensajes de chat
+- `booking` - Reservas y cancelaciones
+- `availability` - Cambios de disponibilidad
+- `income` - Ingresos y reportes
+- `service` - Servicios y actualizaciones
+- `verification` - Verificaciones de perfil
+
+#### **Administrador (`admin`)**
+- `system` - Notificaciones del sistema
+- `security` - Alertas de seguridad
+- `support` - Soporte y ayuda
+
+### **Prioridades y Estados**
+- **Prioridades**: `low`, `medium`, `high`, `urgent`
+- **Estados**: `unread`, `read`, `archived`, `deleted`
+- **Acciones**: `view`, `accept`, `decline`, `reschedule`, etc.
+
+### **Integración en Topbar**
+```html
+<ui-notification-container
+  *ngIf="config.showNotifications"
+  [userProfile]="config.userProfile || 'client'"
+  (notificationClick)="onNotificationAction($event)">
+</ui-notification-container>
+```
+
+### **Uso del Servicio**
+```typescript
+// Configurar perfil
+this.notificationService.setUserProfile('provider');
+
+// Crear notificación
+this.notificationService.createNotification({
+  type: 'appointment',
+  profile: 'provider',
+  title: 'Nueva cita programada',
+  message: 'Tienes una nueva cita con <strong>María González</strong>',
+  priority: 'high',
+  actions: ['view', 'reschedule']
+});
+```
+
+### **Características Avanzadas**
+- ✅ **Gestión por perfil** de usuario
+- ✅ **Filtros y búsqueda** de notificaciones
+- ✅ **Estadísticas** y métricas
+- ✅ **Animaciones** suaves con Angular Animations
+- ✅ **Responsive design** para móvil y desktop
+- ✅ **Configuración granular** por usuario
+- ✅ **Eventos del sistema** para tracking
+
+## 🔗 **Navegación Inteligente**
+
+### **Botones "Ver Reporte Completo"**
+Los componentes de ingresos (`InicioIngresosMesComponent` e `InicioIngresosDiaComponent`) incluyen navegación inteligente que:
+
+- **Detecta automáticamente** el tipo de reporte (mensual/diario)
+- **Navega a `/dash/ingresos`** con parámetros de consulta
+- **Configura automáticamente** el filtro de tiempo correspondiente
+- **Mantiene el contexto** del período seleccionado
+
+#### **Implementación**
+```typescript
+// En el componente de ingresos
+onViewReportClick() {
+  this.navigateToReport.emit({ 
+    period: 'month', 
+    type: 'monthly' 
+  });
+}
+
+// En el componente padre (home)
+onNavigateToReport(navigationData: {period: string, type: string}) {
+  this.router.navigate(['/dash/ingresos'], {
+    queryParams: {
+      period: navigationData.period,
+      type: navigationData.type
+    }
+  });
+}
+
+// En el componente de ingresos (ingresos.component.ts)
+ngOnInit() {
+  this.route.queryParams.subscribe(params => {
+    if (params['period']) {
+      this.selectedTimeFilter = params['period'];
+    }
+  });
+}
+```
+
 ## 🧩 **Componentes Reutilizables**
 
 ### **Componentes Base**
@@ -293,13 +431,14 @@ Alertas inteligentes que aparecen en el dashboard según el estado del plan:
 - **UiCalendarComponent** - Calendario para citas
 - **IconComponent** - Sistema de iconos SVG
 - **ThemeSwitchComponent** - Switch de tema claro/oscuro
+- **TimeFilterComponent** - Filtro de tiempo con iconos elegantes
 
 ### **Componentes de Dashboard**
 - **TopbarComponent** - Barra superior con búsqueda y acciones
 - **PlanUpgradeAlertComponent** - Alertas de planes de suscripción
 - **InicioHeaderComponent** - Header del dashboard con estado online/offline
-- **InicioIngresosMesComponent** - Gráfico de ingresos mensuales
-- **InicioIngresosDiaComponent** - Gráfico de ingresos diarios
+- **InicioIngresosMesComponent** - Ingresos mensuales con navegación inteligente
+- **InicioIngresosDiaComponent** - Ingresos diarios con navegación inteligente
 - **InicioSolicitudesComponent** - Lista de solicitudes pendientes
 - **InicioProximaCitaComponent** - Próxima cita programada
 
