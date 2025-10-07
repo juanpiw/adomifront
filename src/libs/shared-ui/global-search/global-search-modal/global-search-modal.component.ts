@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -29,7 +29,7 @@ import { IconComponent } from '../../icon/icon.component';
     ])
   ]
 })
-export class GlobalSearchModalComponent implements OnInit, OnDestroy {
+export class GlobalSearchModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() isOpen: boolean = false;
   @Output() close = new EventEmitter<void>();
   @Output() suggestionClick = new EventEmitter<SearchSuggestion>();
@@ -50,6 +50,12 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
     this.loadDefaultSuggestions();
     this.loadRecentSearches();
     this.setupSearchSubscription();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen'] && changes['isOpen'].currentValue) {
+      this.focusSearchInput();
+    }
   }
 
   ngOnDestroy(): void {
