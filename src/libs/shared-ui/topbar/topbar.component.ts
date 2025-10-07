@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IconComponent } from '../icon/icon.component';
+import { NotificationContainerComponent } from '../notifications/notification-container/notification-container.component';
+import { Notification, UserProfile } from '../notifications/models/notification.model';
 
 export interface TopbarConfig {
   showSearch?: boolean;
@@ -12,12 +14,13 @@ export interface TopbarConfig {
   searchPlaceholder?: string;
   searchValue?: string;
   helpContext?: string; // Contexto de ayuda (ej: 'dashboard', 'explorar', 'perfil')
+  userProfile?: UserProfile; // Perfil del usuario para notificaciones
 }
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, NotificationContainerComponent],
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss']
 })
@@ -29,13 +32,15 @@ export class TopbarComponent implements OnInit {
     showSettings: true,
     searchPlaceholder: '¿Necesitas ayuda?',
     searchValue: '',
-    helpContext: 'general'
+    helpContext: 'general',
+    userProfile: 'client'
   };
 
   @Output() helpClick = new EventEmitter<string>();
   @Output() hamburgerClick = new EventEmitter<void>();
   @Output() notificationClick = new EventEmitter<void>();
   @Output() settingsClick = new EventEmitter<void>();
+  @Output() notificationAction = new EventEmitter<Notification>();
 
   isConversacionesRoute = false;
 
@@ -65,5 +70,9 @@ export class TopbarComponent implements OnInit {
 
   onSettingsClick(): void {
     this.settingsClick.emit();
+  }
+
+  onNotificationAction(notification: Notification): void {
+    this.notificationAction.emit(notification);
   }
 }

@@ -14,12 +14,11 @@
       <ui-icon name="menu"></ui-icon>
     </button>
     
-    <button 
+    <ui-notification-container
       *ngIf="config.showNotifications"
-      class="icon" 
-      (click)="onNotificationClick()">
-      <ui-icon name="bell"></ui-icon>
-    </button>
+      [userProfile]="config.userProfile || 'client'"
+      (notificationClick)="onNotificationAction($event)">
+    </ui-notification-container>
     
     <button 
       *ngIf="config.showSettings"

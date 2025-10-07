@@ -24,6 +24,7 @@ export class InicioIngresosMesComponent implements OnInit, OnDestroy {
   };
 
   @Output() viewReportClick = new EventEmitter<IngresosData>();
+  @Output() navigateToReport = new EventEmitter<{period: string, type: string}>();
 
   private chart: any = null;
 
@@ -39,6 +40,7 @@ export class InicioIngresosMesComponent implements OnInit, OnDestroy {
 
   onViewReportClick() {
     this.viewReportClick.emit(this.data);
+    this.navigateToReport.emit({ period: 'month', type: 'monthly' });
   }
 
   private async createChart() {

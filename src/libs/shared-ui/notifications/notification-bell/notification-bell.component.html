@@ -1,0 +1,17 @@
+<!-- Botón/Icono de la Campana de Notificaciones -->
+<button 
+  class="notification-bell__button"
+  (click)="toggleNotifications()"
+  [attr.aria-expanded]="isOpen"
+  aria-label="Ver notificaciones">
+  
+  <ui-icon name="bell" class="notification-bell__icon"></ui-icon>
+  
+  <!-- Badge de notificaciones no leídas -->
+  <span 
+    *ngIf="hasUnreadNotifications" 
+    class="notification-bell__badge"
+    [class.notification-bell__badge--animated]="hasUnreadNotifications">
+    {{ unreadCount > 99 ? '99+' : unreadCount }}
+  </span>
+</button>

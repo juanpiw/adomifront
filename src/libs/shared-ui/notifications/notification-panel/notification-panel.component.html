@@ -1,0 +1,96 @@
+<!-- Panel Desplegable de Notificaciones -->
+<div 
+  *ngIf="isOpen"
+  class="notification-panel"
+  [@slideInOut]
+  (click)="$event.stopPropagation()">
+  
+  <!-- Header del Panel -->
+  <div class="notification-panel__header">
+    <div class="notification-panel__header-content">
+      <h3 class="notification-panel__title">Notificaciones</h3>
+      <button 
+        *ngIf="unreadNotifications.length > 0"
+        (click)="onMarkAllAsRead()" 
+        class="notification-panel__mark-all-btn">
+        Marcar todas como leídas
+      </button>
+    </div>
+  </div>
+  
+  <!-- Contenido del Panel -->
+  <div class="notification-panel__content">
+    <!-- Sección de Notificaciones Nuevas -->
+    <div *ngIf="unreadNotifications.length > 0" class="notification-panel__section">
+      <h4 class="notification-panel__section-title">
+        Nuevas ({{ unreadNotifications.length }})
+      </h4>
+      <div class="notification-panel__notifications">
+        <div 
+          *ngFor="let notification of unreadNotifications" 
+          class="notification-panel__notification notification-panel__notification--unread"
+          (click)="onNotificationClick(notification)">
+          
+          <!-- Icono de prioridad -->
+          <div 
+            class="notification-panel__priority-indicator"
+            [style.background-color]="getPriorityColor(notification.priority)">
+          </div>
+          
+          <!-- Contenido de la notificación -->
+          <div class="notification-panel__notification-content">
+            <div class="notification-panel__notification-header">
+              <h5 class="notification-panel__notification-title">{{ notification.title }}</h5>
+              <span class="notification-panel__notification-time">
+                {{ formatTimeAgo(notification.createdAt) }}
+              </span>
+            </div>
+            <p class="notification-panel__notification-message" [innerHTML]="notification.message"></p>
+          </div>
+          
+          <!-- Indicador de no leída -->
+          <div class="notification-panel__unread-indicator"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sección de Notificaciones Anteriores -->
+    <div *ngIf="readNotifications.length > 0" class="notification-panel__section">
+      <h4 class="notification-panel__section-title">Anteriores</h4>
+      <div class="notification-panel__notifications">
+        <div 
+          *ngFor="let notification of readNotifications" 
+          class="notification-panel__notification"
+          (click)="onNotificationClick(notification)">
+          
+          <!-- Contenido de la notificación -->
+          <div class="notification-panel__notification-content">
+            <div class="notification-panel__notification-header">
+              <h5 class="notification-panel__notification-title">{{ notification.title }}</h5>
+              <span class="notification-panel__notification-time">
+                {{ formatTimeAgo(notification.createdAt) }}
+              </span>
+            </div>
+            <p class="notification-panel__notification-message" [innerHTML]="notification.message"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Estado vacío -->
+    <div *ngIf="notifications.length === 0" class="notification-panel__empty">
+      <ui-icon name="bell" class="notification-panel__empty-icon"></ui-icon>
+      <p class="notification-panel__empty-text">No hay notificaciones</p>
+      <p class="notification-panel__empty-subtext">Te notificaremos cuando tengas nuevas actualizaciones</p>
+    </div>
+  </div>
+  
+  <!-- Footer del Panel -->
+  <div *ngIf="notifications.length > 0" class="notification-panel__footer">
+    <button 
+      (click)="onViewAllNotifications()"
+      class="notification-panel__view-all-btn">
+      Ver todas las notificaciones
+    </button>
+  </div>
+</div>

@@ -24,6 +24,7 @@ export class InicioIngresosDiaComponent implements OnInit, OnDestroy {
   };
 
   @Output() viewReportClick = new EventEmitter<IngresosDiaData>();
+  @Output() navigateToReport = new EventEmitter<{period: string, type: string}>();
 
   private chart: any = null;
 
@@ -39,6 +40,7 @@ export class InicioIngresosDiaComponent implements OnInit, OnDestroy {
 
   onViewReportClick() {
     this.viewReportClick.emit(this.data);
+    this.navigateToReport.emit({ period: 'day', type: 'daily' });
   }
 
   private async createChart() {

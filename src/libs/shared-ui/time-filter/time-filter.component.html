@@ -1,0 +1,46 @@
+<div class="time-filter">
+  <div class="time-filter__container">
+    <!-- Selector de período -->
+    <div class="time-filter__period-selector">
+      <div class="time-filter__options">
+        <button 
+          *ngFor="let option of timeOptions" 
+          class="time-filter__option"
+          [class.time-filter__option--active]="selectedPeriod === option.value"
+          (click)="onPeriodChange(option.value)">
+          <ui-icon [name]="option.icon" class="time-filter__option-icon"></ui-icon>
+          <span class="time-filter__option-label">{{ option.label }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Selector de fechas personalizadas -->
+    <div *ngIf="showCustomDatePicker" class="time-filter__custom-dates">
+      <div class="time-filter__date-inputs">
+        <div class="time-filter__date-group">
+          <label class="time-filter__date-label">Desde:</label>
+          <input 
+            type="date" 
+            class="time-filter__date-input"
+            [(ngModel)]="customStart"
+            (change)="onCustomDateChange()">
+        </div>
+        <div class="time-filter__date-group">
+          <label class="time-filter__date-label">Hasta:</label>
+          <input 
+            type="date" 
+            class="time-filter__date-input"
+            [(ngModel)]="customEnd"
+            (change)="onCustomDateChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del período seleccionado -->
+    <div class="time-filter__info">
+      <span class="time-filter__info-text">
+        {{ getSelectedOption().label }}
+      </span>
+    </div>
+  </div>
+</div>

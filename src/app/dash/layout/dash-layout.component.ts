@@ -27,7 +27,8 @@ export class DashLayoutComponent implements OnInit {
     showNotifications: true,
     showSettings: true,
     searchPlaceholder: '¿Necesitas ayuda con el dashboard?',
-    helpContext: 'dashboard'
+    helpContext: 'dashboard',
+    userProfile: 'provider'
   };
 
   private planService = inject(PlanService);

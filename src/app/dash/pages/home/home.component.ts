@@ -1,5 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
 import { 
   InicioProximaCitaComponent, 
@@ -37,6 +38,7 @@ import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-s
   styleUrls: ['./home.component.scss']
 })
 export class DashHomeComponent {
+  constructor(private router: Router) {}
   // Estado online/offline
   isOnline: boolean = true;
 
@@ -144,6 +146,18 @@ export class DashHomeComponent {
   onViewDayReportClick(data: IngresosDiaData) {
     console.log('Ver reporte del día:', data);
     // TODO: Navegar al reporte del día
+  }
+
+  onNavigateToReport(navigationData: {period: string, type: string}) {
+    console.log('Navegando a reporte:', navigationData);
+    
+    // Navegar a la página de ingresos con query parameters
+    this.router.navigate(['/dash/ingresos'], {
+      queryParams: {
+        period: navigationData.period,
+        type: navigationData.type
+      }
+    });
   }
 
   onAcceptClick(data: SolicitudData) {

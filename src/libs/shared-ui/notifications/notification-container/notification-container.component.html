@@ -1,0 +1,17 @@
+<div class="notification-container">
+  <!-- Botón de notificaciones -->
+  <ui-notification-bell
+    [isOpen]="isOpen"
+    (toggle)="togglePanel()"
+    (notificationClick)="onNotificationClick($event)">
+  </ui-notification-bell>
+
+  <!-- Panel de notificaciones -->
+  <ui-notification-panel
+    [isOpen]="isOpen"
+    (markAsRead)="onMarkAsRead($event)"
+    (markAllAsRead)="onMarkAllAsRead()"
+    (close)="closePanel()"
+    (notificationClick)="onNotificationClick($event)">
+  </ui-notification-panel>
+</div>

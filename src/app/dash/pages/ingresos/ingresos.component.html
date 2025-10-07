@@ -3,6 +3,12 @@
   <!-- Encabezado -->
   <ui-finances-header></ui-finances-header>
   
+  <!-- Filtro de Tiempo -->
+  <ui-time-filter 
+    [selectedPeriod]="selectedTimeFilter"
+    (filterChanged)="onTimeFilterChanged($event)">
+  </ui-time-filter>
+  
   <!-- Navegación de pestañas -->
   <ui-tab-navigation 
     (tabChanged)="onTabChanged($event)">

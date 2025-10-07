@@ -47,12 +47,14 @@
             <div class="ingresos-container">
                 <app-inicio-ingresos-mes 
                 [data]="ingresosData"
-                (viewReportClick)="onViewReportClick($event)">
+                (viewReportClick)="onViewReportClick($event)"
+                (navigateToReport)="onNavigateToReport($event)">
               </app-inicio-ingresos-mes>
               
               <app-inicio-ingresos-dia 
                 [data]="ingresosDiaData"
-                (viewReportClick)="onViewDayReportClick($event)">
+                (viewReportClick)="onViewDayReportClick($event)"
+                (navigateToReport)="onNavigateToReport($event)">
               </app-inicio-ingresos-dia>
             </div>
 </div>

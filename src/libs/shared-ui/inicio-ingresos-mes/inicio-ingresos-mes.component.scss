@@ -1,69 +1,153 @@
 .inicio-ingresos {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
-  max-width: 300px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(248, 250, 252, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  box-shadow: 
+    0 8px 25px -5px rgba(0, 0, 0, 0.1),
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.3);
+  max-width: 280px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Efecto de brillo sutil
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.8) 50%, 
+      transparent 100%);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 12px 30px -5px rgba(0, 0, 0, 0.15),
+      0 6px 8px -1px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
 
   &__title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 0.25rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &::before {
+      content: '💰';
+      font-size: 0.875rem;
+    }
   }
 
   &__amount {
-    font-size: 1.875rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #059669;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
   }
 
   &__chart {
-    height: 200px;
-    margin-bottom: 1rem;
+    height: 120px;
+    margin-bottom: 0.75rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: linear-gradient(135deg, 
+      rgba(5, 150, 105, 0.05) 0%, 
+      rgba(16, 185, 129, 0.05) 100%);
   }
 
   &__stats {
-    margin-top: 1rem;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 1rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid rgba(226, 232, 240, 0.3);
+    padding-top: 0.75rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   &__stat-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
   }
 
   &__stat-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #1e293b;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
     display: flex;
     align-items: center;
+    gap: 0.25rem;
+    
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      opacity: 0.8;
+    }
   }
 
   &__report-btn {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     display: block;
     width: 100%;
     text-align: center;
-    padding: 0.75rem;
-    background-color: #4f46e5;
+    padding: 0.625rem 1rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 0.875rem;
     border-radius: 0.75rem;
-    transition: background-color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     border: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+
+    // Efecto de brillo animado
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+      transition: left 0.6s ease;
+    }
 
     &:hover {
-      background-color: #4338ca;
+      background: linear-gradient(135deg, #5b52e8 0%, #8b5cf6 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
     }
   }
 }

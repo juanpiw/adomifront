@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { 
   FinancesHeaderComponent,
   TabNavigationComponent,
@@ -12,6 +13,10 @@ import {
   PaymentSettings,
   IncomeGoal
 } from '../../../../libs/shared-ui/income';
+import { 
+  TimeFilterComponent,
+  TimeFilterChange
+} from '../../../../libs/shared-ui/time-filter/time-filter.component';
 
 @Component({
   selector: 'app-dash-ingresos',
@@ -23,13 +28,20 @@ import {
     FinancialKpisComponent,
     TransactionsTableComponent,
     PaymentSettingsFormComponent,
-    IncomeGoalsComponent
+    IncomeGoalsComponent,
+    TimeFilterComponent
   ],
   templateUrl: './ingresos.component.html',
   styleUrls: ['./ingresos.component.scss']
 })
 export class DashIngresosComponent implements OnInit {
+  constructor(private route: ActivatedRoute) {}
   activeTab = 'resumen';
+  selectedTimeFilter = 'month';
+  currentDateRange: { startDate: Date; endDate: Date } = {
+    startDate: new Date(),
+    endDate: new Date()
+  };
   
   // Datos de KPIs financieros
   financialKPIs: FinancialKPIs = {
@@ -97,6 +109,17 @@ export class DashIngresosComponent implements OnInit {
   currentIncome = 2150000;
 
   ngOnInit() {
+    // Leer query parameters para configurar el filtro automáticamente
+    this.route.queryParams.subscribe(params => {
+      if (params['period']) {
+        this.selectedTimeFilter = params['period'];
+        console.log('Filtro configurado automáticamente desde query params:', params['period']);
+      }
+      if (params['type']) {
+        console.log('Tipo de reporte:', params['type']);
+      }
+    });
+    
     // Cargar datos iniciales
     this.loadFinancialData();
   }
@@ -140,8 +163,53 @@ export class DashIngresosComponent implements OnInit {
     this.activeTab = 'resumen';
   }
 
+  onTimeFilterChanged(filterChange: TimeFilterChange) {
+    this.selectedTimeFilter = filterChange.period;
+    this.currentDateRange = {
+      startDate: filterChange.startDate,
+      endDate: filterChange.endDate
+    };
+    
+    console.log('Filtro de tiempo cambiado:', {
+      period: filterChange.period,
+      startDate: filterChange.startDate,
+      endDate: filterChange.endDate
+    });
+    
+    // Recargar datos con el nuevo rango de fechas
+    this.loadFinancialData();
+  }
+
   private loadFinancialData() {
     // Aquí se cargarían los datos reales desde un servicio
-    console.log('Cargando datos financieros...');
+    // usando this.currentDateRange.startDate y this.currentDateRange.endDate
+    console.log('Cargando datos financieros para el período:', {
+      desde: this.currentDateRange.startDate,
+      hasta: this.currentDateRange.endDate,
+      período: this.selectedTimeFilter
+    });
+    
+    // Simular carga de datos basada en el período seleccionado
+    this.updateFinancialDataBasedOnPeriod();
+  }
+
+  private updateFinancialDataBasedOnPeriod() {
+    // Simular diferentes datos según el período seleccionado
+    const baseData = {
+      day: { netIncome: 75000, commissions: 12000, pendingPayments: 0 },
+      week: { netIncome: 450000, commissions: 72000, pendingPayments: 0 },
+      month: { netIncome: 2150000, commissions: 350000, pendingPayments: 420000 },
+      quarter: { netIncome: 6500000, commissions: 1050000, pendingPayments: 1200000 },
+      year: { netIncome: 25000000, commissions: 4000000, pendingPayments: 5000000 }
+    };
+
+    const data = baseData[this.selectedTimeFilter as keyof typeof baseData] || baseData.month;
+    
+    this.financialKPIs = {
+      ...this.financialKPIs,
+      netIncome: data.netIncome,
+      commissions: data.commissions,
+      pendingPayments: data.pendingPayments
+    };
   }
 }
