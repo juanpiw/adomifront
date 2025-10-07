@@ -4,27 +4,27 @@
   class="flex items-center p-3 hover:bg-slate-100 rounded-lg transition-colors group cursor-pointer"
   (click)="onSuggestionClick()">
   
-  <!-- Icono de la sugerencia -->
+  <!-- Contenido de la sugerencia (izquierda) -->
+  <div class="flex-1 mr-4">
+    <p class="text-slate-700 font-medium">{{ suggestion.title }}</p>
+    <p *ngIf="suggestion.description" class="text-sm text-slate-500 mt-1">{{ suggestion.description }}</p>
+  </div>
+  
+  <!-- Indicador de categoría -->
+  <div class="flex-shrink-0 mr-3">
+    <span 
+      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+      [ngClass]="getCategoryBadgeClass(suggestion.category)">
+      {{ getCategoryLabel(suggestion.category) }}
+    </span>
+  </div>
+  
+  <!-- Icono de la sugerencia (derecha) -->
   <div 
     class="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
     <ui-icon 
       [name]="getCategoryIcon(suggestion.category)"
       class="w-6 h-6 text-slate-500 group-hover:text-indigo-600 transition-colors">
     </ui-icon>
-  </div>
-  
-  <!-- Contenido de la sugerencia -->
-  <div class="ml-4 flex-1">
-    <p class="text-slate-700 font-medium">{{ suggestion.title }}</p>
-    <p *ngIf="suggestion.description" class="text-sm text-slate-500 mt-1">{{ suggestion.description }}</p>
-  </div>
-  
-  <!-- Indicador de categoría -->
-  <div class="flex-shrink-0">
-    <span 
-      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-      [ngClass]="getCategoryBadgeClass(suggestion.category)">
-      {{ getCategoryLabel(suggestion.category) }}
-    </span>
   </div>
 </a>
