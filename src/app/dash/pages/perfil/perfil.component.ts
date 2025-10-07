@@ -16,6 +16,7 @@ import { UbicacionDisponibilidadComponent, LocationSettings, CoverageZone } from
 import { HorarioDisponibilidadComponent, WeeklySchedule } from '../../../../libs/shared-ui/horario-disponibilidad/horario-disponibilidad.component';
 import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
 import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/verificacion-perfil.component';
+import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 
 @Component({
   selector: 'app-d-perfil',
@@ -37,7 +38,8 @@ import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verifica
     UbicacionDisponibilidadComponent,
     HorarioDisponibilidadComponent,
     ExcepcionesFeriadosComponent,
-    VerificacionPerfilComponent
+    VerificacionPerfilComponent,
+    IconComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
@@ -68,13 +70,19 @@ export class DashPerfilComponent {
 
   portfolioImages: PortfolioImage[] = [
     { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo', type: 'image' },
-    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image' }
+    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image' },
+    { id: '3', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Peinado', alt: 'Peinado elegante', type: 'image' },
+    { id: '4', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Maquillaje', alt: 'Maquillaje profesional', type: 'image' },
+    { id: '5', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Manicura', alt: 'Manicura artística', type: 'image' }
   ];
 
   profileProgress = 75;
 
   // Estado de las tabs
   activeTab: TabType = 'perfil-publico';
+
+  // Estado del carrusel del portafolio
+  currentSlide = 0;
 
   // Estados de carga
   savingPublicProfile = false;
@@ -327,5 +335,22 @@ export class DashPerfilComponent {
       navigator.clipboard.writeText(window.location.origin + '/client/explorar/1');
       alert('URL del perfil copiada al portapapeles');
     }
+  }
+
+  // Métodos para el carrusel del portafolio
+  nextSlide() {
+    if (this.currentSlide < this.portfolioImages.length - 1) {
+      this.currentSlide++;
+    }
+  }
+
+  previousSlide() {
+    if (this.currentSlide > 0) {
+      this.currentSlide--;
+    }
+  }
+
+  goToSlide(index: number) {
+    this.currentSlide = index;
   }
 }

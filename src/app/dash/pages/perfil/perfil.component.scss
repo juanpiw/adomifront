@@ -404,55 +404,185 @@
   }
 }
 
-.portfolio-preview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+// Carrusel del portafolio - Diseño dinámico con efectos wow
+.portfolio-carousel {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid rgba(226, 232, 240, 0.3);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  &__item {
-    aspect-ratio: 4/3;
-    border-radius: 1.25rem;
-    overflow: hidden;
-    border: 1px solid rgba(226, 232, 240, 0.3);
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.05),
-      0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    transition: all 0.3s ease;
+  &__container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  &__slide {
+    min-width: 100%;
+    height: 100%;
     position: relative;
+    opacity: 0.7;
+    transition: all 0.6s ease;
 
-    &:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 
-        0 20px 40px -10px rgba(0, 0, 0, 0.15),
-        0 8px 12px -4px rgba(0, 0, 0, 0.1);
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      z-index: 1;
-    }
-
-    &:hover::before {
+    &--active {
       opacity: 1;
     }
+  }
+
+  &__item {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
+      transition: transform 0.6s ease;
     }
 
     &:hover img {
-      transform: scale(1.05);
+      transform: scale(1.1);
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(0, 0, 0, 0.3) 50%,
+      rgba(0, 0, 0, 0.8) 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.4s ease;
+    backdrop-filter: blur(2px);
+  }
+
+  &__item:hover &__overlay {
+    opacity: 1;
+  }
+
+  &__content {
+    text-align: center;
+    color: white;
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    p {
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 0;
+      opacity: 0.9;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  &__item:hover &__content {
+    transform: translateY(0);
+  }
+
+  &__controls {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 1rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  &__btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: all;
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+
+    &:hover:not(:disabled) {
+      background: white;
+      transform: scale(1.1);
+      box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: scale(0.9);
+    }
+
+    ui-icon {
+      width: 20px;
+      height: 20px;
+      color: #4f46e5;
+    }
+  }
+
+  &__indicators {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+
+    &--active {
+      background: white;
+      transform: scale(1.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    &:hover:not(&--active) {
+      background: rgba(255, 255, 255, 0.8);
+      transform: scale(1.1);
     }
   }
 }

@@ -174,9 +174,44 @@
             <!-- Portafolio -->
             <div class="profile-preview__section" *ngIf="portfolioImages.length > 0">
               <h3>Portafolio</h3>
-              <div class="portfolio-preview">
-                <div *ngFor="let image of portfolioImages.slice(0, 3)" class="portfolio-preview__item">
-                  <img [src]="image.url" [alt]="image.alt">
+              <div class="portfolio-carousel">
+                <div class="portfolio-carousel__container" [style.transform]="'translateX(' + currentSlide * -100 + '%)'">
+                  <div *ngFor="let image of portfolioImages; let i = index" 
+                       class="portfolio-carousel__slide"
+                       [class.portfolio-carousel__slide--active]="i === currentSlide">
+                    <div class="portfolio-carousel__item">
+                      <img [src]="image.url" [alt]="image.alt">
+                      <div class="portfolio-carousel__overlay">
+                        <div class="portfolio-carousel__content">
+                          <h4>{{ image.alt }}</h4>
+                          <p>Ver detalles</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Controles del carrusel -->
+                <div class="portfolio-carousel__controls">
+                  <button class="portfolio-carousel__btn portfolio-carousel__btn--prev" 
+                          (click)="previousSlide()"
+                          [disabled]="currentSlide === 0">
+                    <ui-icon name="chevron-left"></ui-icon>
+                  </button>
+                  <button class="portfolio-carousel__btn portfolio-carousel__btn--next" 
+                          (click)="nextSlide()"
+                          [disabled]="currentSlide === portfolioImages.length - 1">
+                    <ui-icon name="chevron-right"></ui-icon>
+                  </button>
+                </div>
+                
+                <!-- Indicadores -->
+                <div class="portfolio-carousel__indicators">
+                  <button *ngFor="let image of portfolioImages; let i = index" 
+                          class="portfolio-carousel__indicator"
+                          [class.portfolio-carousel__indicator--active]="i === currentSlide"
+                          (click)="goToSlide(i)">
+                  </button>
                 </div>
               </div>
             </div>
