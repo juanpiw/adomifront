@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 export interface HeaderData {
   userName: string;
@@ -9,7 +10,7 @@ export interface HeaderData {
 @Component({
   selector: 'app-inicio-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './inicio-header.component.html',
   styleUrls: ['./inicio-header.component.scss']
 })
