@@ -13,8 +13,35 @@
       </div>
     </div>
     <div class="inicio-solicitudes__actions">
-      <button class="inicio-solicitudes__btn-accept" (click)="onAcceptClick()">Aceptar</button>
-      <button class="inicio-solicitudes__btn-decline" (click)="onDeclineClick()">Rechazar</button>
+      <button 
+        class="inicio-solicitudes__btn-accept" 
+        (click)="onAcceptClick()"
+        [disabled]="loading">
+        {{ loading ? 'Procesando...' : 'Aceptar' }}
+      </button>
+      <button 
+        class="inicio-solicitudes__btn-decline" 
+        (click)="onDeclineClick()"
+        [disabled]="loading">
+        {{ loading ? 'Procesando...' : 'Rechazar' }}
+      </button>
     </div>
   </div>
+
+  <!-- Modales -->
+  <app-accept-reserva-modal
+    [isOpen]="showAcceptModal"
+    [reservaData]="data"
+    [loading]="loading"
+    (close)="onAcceptModalClose()"
+    (confirm)="onAcceptConfirm($event)">
+  </app-accept-reserva-modal>
+
+  <app-reject-reserva-modal
+    [isOpen]="showRejectModal"
+    [reservaData]="data"
+    [loading]="loading"
+    (close)="onRejectModalClose()"
+    (confirm)="onRejectConfirm($event)">
+  </app-reject-reserva-modal>
 </section>

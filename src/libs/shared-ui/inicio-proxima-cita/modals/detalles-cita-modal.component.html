@@ -1,0 +1,134 @@
+<!-- Modal para Detalles de Próxima Cita -->
+<div 
+  *ngIf="isOpen" 
+  class="modal-overlay"
+  (click)="onBackdropClick($event)"
+  [class.modal-open]="isOpen">
+  
+  <div class="modal-container modal-enter" [class.modal-enter-active]="isOpen">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <ui-icon name="calendar" class="modal-icon modal-icon--primary"></ui-icon>
+        Detalles de la Cita
+      </h2>
+      <button 
+        class="modal-close-btn"
+        (click)="onClose()"
+        [disabled]="loading">
+        <ui-icon name="x" class="modal-close-icon"></ui-icon>
+      </button>
+    </div>
+
+    <div class="modal-content" *ngIf="citaData">
+      <div class="modal-grid">
+        <!-- Columna Izquierda: Detalles del Servicio -->
+        <div class="modal-section">
+          <div class="info-card">
+            <p class="info-label">Servicio</p>
+            <p class="info-value info-value--large">{{ citaData.service }}</p>
+          </div>
+          
+          <div class="info-card">
+            <p class="info-label">Fecha y Hora</p>
+            <p class="info-value">{{ formatDate(citaData.date) }} - {{ citaData.time }}</p>
+          </div>
+          
+          <div class="info-card">
+            <p class="info-label">Duración Estimada</p>
+            <p class="info-value">{{ citaData.duration }}</p>
+          </div>
+          
+          <div class="info-card info-card--success">
+            <p class="info-label info-label--success">Estado del Pago</p>
+            <div class="payment-status">
+              <span class="payment-status-text">{{ citaData.paymentStatus === 'paid' ? 'Pagado' : 'Pendiente' }}</span>
+              <span class="payment-amount">{{ formatCurrency(citaData.amount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Detalles del Cliente y Ubicación -->
+        <div class="modal-section">
+          <div class="info-card info-card--primary">
+            <p class="info-label info-label--primary">Cliente</p>
+            <div class="client-info">
+              <img 
+                [src]="citaData.client.avatar" 
+                [alt]="citaData.client.name" 
+                class="client-avatar">
+              <p class="client-name">{{ citaData.client.name }}</p>
+            </div>
+          </div>
+          
+          <div class="info-card">
+            <p class="info-label">Ubicación</p>
+            <p class="info-value">{{ citaData.location.address }}</p>
+            <button 
+              *ngIf="citaData.location.mapUrl"
+              class="map-link"
+              (click)="onViewMap()">
+              Ver en mapa
+            </button>
+          </div>
+          
+          <div class="info-card">
+            <p class="info-label">Acciones Rápidas</p>
+            <div class="quick-actions">
+              <button 
+                class="action-btn action-btn--contact"
+                (click)="onContactClient()"
+                [disabled]="loading">
+                <ui-icon name="message" class="action-icon"></ui-icon>
+                Contactar a {{ citaData.client.name }}
+              </button>
+              
+              <button 
+                class="action-btn action-btn--reschedule"
+                (click)="onReschedule()"
+                [disabled]="loading">
+                <ui-icon name="calendar" class="action-icon"></ui-icon>
+                Reprogramar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Cancelación -->
+      <div class="modal-footer">
+        <div class="cancel-section">
+          <button 
+            *ngIf="!showCancelConfirmation"
+            class="cancel-btn"
+            (click)="onShowCancelConfirmation()"
+            [disabled]="loading">
+            Cancelar Cita
+          </button>
+          
+          <div 
+            *ngIf="showCancelConfirmation" 
+            class="cancel-confirmation">
+            <p class="cancel-warning">
+              Para confirmar, escribe "CANCELAR" en el campo de abajo.
+            </p>
+            <div class="cancel-input-group">
+              <input 
+                type="text"
+                [(ngModel)]="cancelConfirmText"
+                (input)="onCancelConfirmTextChange()"
+                placeholder="Escribe CANCELAR"
+                class="cancel-input"
+                [disabled]="loading">
+              <button 
+                class="cancel-confirm-btn"
+                (click)="onFinalCancel()"
+                [disabled]="!isCancelButtonEnabled">
+                {{ loading ? 'Cancelando...' : 'Confirmar Cancelación' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

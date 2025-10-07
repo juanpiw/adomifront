@@ -64,8 +64,13 @@
     cursor: pointer;
     border: none;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: #059669;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 
@@ -80,8 +85,13 @@
     cursor: pointer;
     border: none;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: #cbd5e1;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 }

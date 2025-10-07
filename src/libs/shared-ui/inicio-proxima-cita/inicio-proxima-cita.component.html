@@ -9,6 +9,21 @@
       <p class="inicio-proxima__service">{{ data.service }}</p>
       <p class="inicio-proxima__with">con <span class="font-semibold text-slate-700">{{ data.clientName }}</span></p>
     </div>
-    <button class="inicio-proxima__cta" (click)="onViewDetailsClick()">Ver Detalles</button>
+    <button 
+      class="inicio-proxima__cta" 
+      (click)="onViewDetailsClick()"
+      [disabled]="loading">
+      {{ loading ? 'Cargando...' : 'Ver Detalles' }}
+    </button>
   </div>
 </div>
+
+<!-- Modal de Detalles de Cita -->
+<app-detalles-cita-modal
+  [isOpen]="showDetailsModal"
+  [citaData]="citaDetalleData"
+  [loading]="loading"
+  (close)="onModalClose()"
+  (action)="onCitaAction($event)"
+  (cancel)="onCitaCancel($event)">
+</app-detalles-cita-modal>

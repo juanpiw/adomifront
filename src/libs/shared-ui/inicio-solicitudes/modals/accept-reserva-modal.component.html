@@ -1,0 +1,103 @@
+<!-- Modal para Aceptar Reserva -->
+<div 
+  *ngIf="isOpen" 
+  class="modal-overlay"
+  (click)="onBackdropClick($event)"
+  [class.modal-open]="isOpen">
+  
+  <div class="modal-container modal-enter" [class.modal-enter-active]="isOpen">
+    
+    <!-- Estado: Confirmación -->
+    <div *ngIf="modalState === 'confirm'">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <ui-icon name="check-circle" class="modal-icon modal-icon--success"></ui-icon>
+          ¿Confirmar esta reserva?
+        </h2>
+      </div>
+
+      <div class="modal-content" *ngIf="reservaData">
+        <div class="info-section">
+          <div class="info-item">
+            <p class="info-label">Servicio</p>
+            <p class="info-value">{{ reservaData.service }}</p>
+          </div>
+          
+          <div class="info-item">
+            <p class="info-label">Cliente</p>
+            <p class="info-value">{{ reservaData.clientName }}</p>
+          </div>
+          
+          <div class="info-item">
+            <p class="info-label">Fecha y Hora</p>
+            <p class="info-value">
+              <span *ngIf="reservaData.date">{{ formatDate(reservaData.date) }}</span>
+              <span *ngIf="!reservaData.date">{{ reservaData.when }}</span>
+              - {{ reservaData.time }}
+            </p>
+          </div>
+          
+          <div class="info-item" *ngIf="reservaData.location">
+            <p class="info-label">Ubicación</p>
+            <p class="info-value">{{ reservaData.location }}</p>
+          </div>
+          
+          <div class="info-item info-item--highlight" *ngIf="reservaData.estimatedIncome">
+            <p class="info-label">Ingreso Estimado</p>
+            <p class="info-value info-value--income">{{ formatCurrency(reservaData.estimatedIncome) }}</p>
+          </div>
+        </div>
+
+        <p class="modal-note">
+          *Al confirmar, esta cita se añadirá a tu agenda y se notificará al cliente.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button 
+          type="button"
+          class="btn btn--secondary"
+          (click)="onClose()">
+          Cancelar
+        </button>
+        
+        <button 
+          type="button"
+          class="btn btn--primary"
+          (click)="onConfirm()">
+          Confirmar y Agendar
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado: Loading -->
+    <div *ngIf="modalState === 'loading'" class="modal-loading">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h2 class="loading-title">Estamos agendando tu cita...</h2>
+        <p class="loading-message">Por favor espera mientras procesamos tu solicitud</p>
+      </div>
+    </div>
+
+    <!-- Estado: Éxito -->
+    <div *ngIf="modalState === 'success'" class="modal-success">
+      <div class="success-content">
+        <div class="success-icon">
+          <ui-icon name="check-circle" class="success-icon-large"></ui-icon>
+        </div>
+        <h2 class="success-title">¡Cita agendada!</h2>
+        <p class="success-message">Tu cita ha sido confirmada exitosamente y se ha notificado al cliente.</p>
+        
+        <div class="success-actions">
+          <button 
+            type="button"
+            class="btn btn--primary btn--success"
+            (click)="onSuccessOk()">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,10 +1,22 @@
 ﻿import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
-import { InicioProximaCitaComponent, ProximaCitaData } from '../../../../libs/shared-ui/inicio-proxima-cita/inicio-proxima-cita.component';
+import { 
+  InicioProximaCitaComponent, 
+  ProximaCitaData 
+} from '../../../../libs/shared-ui/inicio-proxima-cita/inicio-proxima-cita.component';
+import { 
+  CitaDetalleResult, 
+  CancelCitaResult 
+} from '../../../../libs/shared-ui/inicio-proxima-cita/modals';
 import { InicioIngresosMesComponent, IngresosData } from '../../../../libs/shared-ui/inicio-ingresos-mes/inicio-ingresos-mes.component';
 import { InicioIngresosDiaComponent, IngresosDiaData } from '../../../../libs/shared-ui/inicio-ingresos-dia/inicio-ingresos-dia.component';
-import { InicioSolicitudesComponent, SolicitudData } from '../../../../libs/shared-ui/inicio-solicitudes/inicio-solicitudes.component';
+import { 
+  InicioSolicitudesComponent, 
+  SolicitudData,
+  AcceptReservaResult,
+  RejectReservaResult
+} from '../../../../libs/shared-ui/inicio-solicitudes';
 import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 
@@ -36,10 +48,17 @@ export class DashHomeComponent {
 
   // Datos para la próxima cita
   proximaCitaData: ProximaCitaData = {
+    id: '1',
     time: '10:00',
     meridiem: 'AM',
     service: 'Corte de Pelo',
-    clientName: 'Carlos Rojas'
+    clientName: 'Carlos Rojas',
+    date: '2025-10-10',
+    duration: '45 minutos',
+    amount: 15000,
+    clientAvatar: 'https://placehold.co/40x40/E0E7FF/4338CA?text=CR',
+    location: 'Av. Providencia 123, Depto 45, Santiago',
+    mapUrl: 'https://maps.google.com/?q=Av.+Providencia+123,+Santiago'
   };
 
   // Datos para ingresos del mes
@@ -65,7 +84,10 @@ export class DashHomeComponent {
     clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=MR',
     service: 'Maquillaje Profesional',
     when: 'Mañana',
-    time: '18:00 PM'
+    time: '18:00 PM',
+    date: '2025-10-11',
+    location: 'Av. Providencia 123, Depto 45, Santiago',
+    estimatedIncome: 45000
   };
 
   // Datos para gestión de disponibilidad
@@ -90,7 +112,28 @@ export class DashHomeComponent {
 
   onViewDetailsClick(data: ProximaCitaData) {
     console.log('Ver detalles de cita:', data);
-    // TODO: Implementar modal de detalles
+    // El modal se maneja automáticamente en el componente
+  }
+
+  onCitaAction(result: CitaDetalleResult) {
+    console.log('Acción en cita:', result);
+    switch (result.action) {
+      case 'contact':
+        console.log('Contactar cliente:', result.data);
+        // TODO: Implementar lógica de contacto (chat, llamada, etc.)
+        break;
+      case 'reschedule':
+        console.log('Reprogramar cita:', result.data);
+        // TODO: Implementar lógica de reprogramación
+        break;
+    }
+  }
+
+  onCitaCancel(result: CancelCitaResult) {
+    console.log('Cancelar cita:', result);
+    // TODO: Implementar lógica de API para cancelar cita
+    // TODO: Mostrar toast de confirmación
+    // TODO: Actualizar lista de citas
   }
 
   onViewReportClick(data: IngresosData) {
@@ -105,12 +148,26 @@ export class DashHomeComponent {
 
   onAcceptClick(data: SolicitudData) {
     console.log('Aceptar solicitud:', data);
-    // TODO: Implementar lógica de aceptación
+    // Los modales se manejan automáticamente en el componente
   }
 
   onDeclineClick(data: SolicitudData) {
     console.log('Rechazar solicitud:', data);
-    // TODO: Implementar lógica de rechazo
+    // Los modales se manejan automáticamente en el componente
+  }
+
+  onReservaAccepted(result: AcceptReservaResult) {
+    console.log('Reserva aceptada:', result);
+    // TODO: Implementar lógica de API para aceptar reserva
+    // TODO: Mostrar toast de éxito
+    // TODO: Actualizar lista de solicitudes
+  }
+
+  onReservaRejected(result: RejectReservaResult) {
+    console.log('Reserva rechazada:', result);
+    // TODO: Implementar lógica de API para rechazar reserva
+    // TODO: Mostrar toast de información
+    // TODO: Actualizar lista de solicitudes
   }
 
   onAddTimeBlock(data: { day: string; startTime: string; endTime: string }) {

@@ -24,14 +24,18 @@
         <app-inicio-solicitudes 
         [data]="solicitudData"
         (acceptClick)="onAcceptClick($event)"
-        (declineClick)="onDeclineClick($event)">
+        (declineClick)="onDeclineClick($event)"
+        (reservaAccepted)="onReservaAccepted($event)"
+        (reservaRejected)="onReservaRejected($event)">
        </app-inicio-solicitudes>
        
        
        
        <app-inicio-proxima-cita 
         [data]="proximaCitaData"
-        (viewDetailsClick)="onViewDetailsClick($event)">
+        (viewDetailsClick)="onViewDetailsClick($event)"
+        (citaAction)="onCitaAction($event)"
+        (citaCancel)="onCitaCancel($event)">
        </app-inicio-proxima-cita>
        
        <app-inicio-gestion-disponibilidad 

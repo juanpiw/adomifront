@@ -1,0 +1,240 @@
+// Modal de Rechazar Reserva
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+
+  &.modal-open {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.modal-container {
+  background: white;
+  width: 100%;
+  max-width: 28rem; // 448px
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+
+  &.modal-enter-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.modal-icon {
+  width: 2rem;
+  height: 2rem;
+  margin-right: 0.75rem;
+
+  &--warning {
+    color: #f59e0b;
+  }
+}
+
+.modal-content {
+  margin-bottom: 1.5rem;
+}
+
+.modal-description {
+  text-align: center;
+  color: #64748b;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+
+  strong {
+    color: #374151;
+  }
+}
+
+.rejection-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.reason-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: white;
+
+  &:hover {
+    background-color: #f8fafc;
+  }
+
+  &--selected {
+    background-color: #eef2ff;
+    border-color: #4338ca;
+  }
+}
+
+.reason-radio {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #4338ca;
+  border-color: #d1d5db;
+  margin: 0;
+  margin-right: 1rem;
+
+  &:focus {
+    ring: 2px;
+    ring-color: #4338ca;
+  }
+}
+
+.reason-label {
+  color: #374151;
+  font-weight: 500;
+  flex: 1;
+}
+
+.custom-reason {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.custom-reason-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.custom-reason-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  background-color: white;
+  resize: vertical;
+  min-height: 4rem;
+
+  &:focus {
+    outline: none;
+    border-color: #4338ca;
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--secondary {
+    background-color: #e2e8f0;
+    color: #1e293b;
+
+    &:hover:not(:disabled) {
+      background-color: #cbd5e1;
+    }
+  }
+
+  &--danger {
+    background-color: #dc2626;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #b91c1c;
+    }
+  }
+}
+
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .modal-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .reason-option {
+    padding: 0.75rem;
+  }
+}

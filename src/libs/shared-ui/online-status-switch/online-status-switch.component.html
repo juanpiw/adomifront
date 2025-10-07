@@ -1,26 +1,22 @@
-<button 
+<div 
   class="online-status-switch" 
   [class.online-status-switch--online]="isOnline"
   [class.online-status-switch--offline]="!isOnline"
   [class.online-status-switch--disabled]="disabled"
   (click)="onToggle()">
   
-  <svg 
-    class="online-status-switch__icon" 
-    fill="none" 
-    stroke="currentColor" 
-    viewBox="0 0 24 24">
-    <path 
-      stroke-linecap="round" 
-      stroke-linejoin="round" 
-      stroke-width="2" 
-      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-    </path>
-  </svg>
+  <div class="online-status-switch__track">
+    <div 
+      class="online-status-switch__thumb"
+      [class.online-status-switch__thumb--online]="isOnline"
+      [class.online-status-switch__thumb--offline]="!isOnline">
+    </div>
+  </div>
   
   <span 
-    class="online-status-switch__dot"
-    [class.online-status-switch__dot--online]="isOnline"
-    [class.online-status-switch__dot--offline]="!isOnline">
+    class="online-status-switch__label"
+    [class.online-status-switch__label--online]="isOnline"
+    [class.online-status-switch__label--offline]="!isOnline">
+    {{ isOnline ? 'Online' : 'Desconectado' }}
   </span>
-</button>
+</div>
