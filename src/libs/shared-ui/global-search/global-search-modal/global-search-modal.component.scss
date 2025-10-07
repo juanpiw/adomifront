@@ -2,17 +2,148 @@
   display: block;
 }
 
+// Estilos para el modal de búsqueda global - Diseño moderno y elegante
 .modal-enter {
-  animation: modalEnter 0.2s ease-out forwards;
+  animation: modalEnter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes modalEnter {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(-20px);
+    transform: scale(0.9) translateY(-30px);
   }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+// Estilos globales para el modal
+:host ::ng-deep {
+  .fixed {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .bg-white {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .rounded-2xl {
+    border-radius: 1.5rem;
+  }
+
+  // Estilos para la barra de búsqueda
+  .relative {
+    .pointer-events-none {
+      .h-6.w-6 {
+        color: #4f46e5;
+        filter: drop-shadow(0 2px 4px rgba(79, 70, 229, 0.2));
+      }
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.8);
+      border: 2px solid transparent;
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+
+      &:focus {
+        background: white;
+        border-color: #4f46e5;
+        box-shadow: 
+          0 0 0 3px rgba(79, 70, 229, 0.1),
+          0 4px 12px rgba(79, 70, 229, 0.15);
+        outline: none;
+      }
+
+      &::placeholder {
+        color: #64748b;
+        font-weight: 400;
+      }
+    }
+  }
+
+  // Estilos para el contenido del modal
+  .p-6 {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+
+  .border-t {
+    border-color: rgba(226, 232, 240, 0.6);
+  }
+
+  .max-h-\[60vh\] {
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.5);
+      border-radius: 3px;
+      
+      &:hover {
+        background: rgba(148, 163, 184, 0.8);
+      }
+    }
+  }
+
+  // Estilos para los títulos de sección
+  h3 {
+    color: #374151;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      left: 0;
+      width: 2rem;
+      height: 2px;
+      background: linear-gradient(90deg, #4f46e5, #7c3aed);
+      border-radius: 1px;
+    }
+  }
+
+  // Estilos para el estado de carga
+  .animate-spin {
+    border-color: #4f46e5;
+    border-top-color: transparent;
+  }
+
+  .text-slate-500 {
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  // Estilos para el estado sin resultados
+  .text-center {
+    .text-4xl {
+      filter: grayscale(0.3);
+      opacity: 0.8;
+    }
+
+    .text-slate-500 {
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .text-slate-400 {
+      color: #94a3b8;
+      font-weight: 400;
+    }
   }
 }
