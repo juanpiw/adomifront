@@ -354,4 +354,21 @@ export class GlobalSearchService {
       }
     }
   }
+
+  /**
+   * Obtiene las búsquedas recientes
+   */
+  getRecentSearches(): string[] {
+    return this.currentContext.recentSearches;
+  }
+
+  /**
+   * Limpia las búsquedas recientes
+   */
+  clearRecentSearches(): void {
+    this.currentContext.recentSearches = [];
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('global-search-recent');
+    }
+  }
 }

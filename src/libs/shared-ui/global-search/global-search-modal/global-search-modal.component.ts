@@ -39,6 +39,7 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
   searchResults: SearchSuggestion[] = [];
   isLoading: boolean = false;
   defaultSuggestions: SearchSuggestion[] = [];
+  recentSearches: string[] = [];
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -47,6 +48,7 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDefaultSuggestions();
+    this.loadRecentSearches();
     this.setupSearchSubscription();
   }
 
@@ -57,6 +59,10 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
 
   private loadDefaultSuggestions(): void {
     this.defaultSuggestions = this.globalSearchService.getDefaultSuggestions();
+  }
+
+  private loadRecentSearches(): void {
+    this.recentSearches = this.globalSearchService.getRecentSearches();
   }
 
   private setupSearchSubscription(): void {
@@ -98,22 +104,27 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
 
   onSuggestionClick(suggestion: SearchSuggestion): void {
     this.suggestionClick.emit(suggestion);
-    this.closeModal();
+    this.closeDropdown();
   }
 
-  onBackdropClick(event: Event): void {
-    if (event.target === event.currentTarget) {
-      this.closeModal();
-    }
+  onRecentSearchClick(query: string): void {
+    this.searchQuery = query;
+    this.searchSubject.next(query);
+    this.focusSearchInput();
   }
 
-  closeModal(): void {
+  clearRecentSearches(): void {
+    this.globalSearchService.clearRecentSearches();
+    this.loadRecentSearches();
+  }
+
+  closeDropdown(): void {
     this.searchQuery = '';
     this.searchResults = [];
     this.close.emit();
   }
 
-  // Método para enfocar el input cuando se abre el modal
+  // Método para enfocar el input cuando se abre el dropdown
   focusSearchInput(): void {
     setTimeout(() => {
       if (this.searchInput) {
@@ -125,7 +136,7 @@ export class GlobalSearchModalComponent implements OnInit, OnDestroy {
   // Manejar teclas especiales
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
-      this.closeModal();
+      this.closeDropdown();
     }
   }
 }

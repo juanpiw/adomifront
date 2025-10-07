@@ -2,44 +2,21 @@
   display: block;
 }
 
-// Estilos para el modal de búsqueda global - Diseño limpio y elegante (inspirado en el original)
-.modal-enter {
-  animation: modalEnter 0.3s ease-out forwards;
-}
-
-@keyframes modalEnter {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-// Estilos globales para el modal - Diseño limpio
+// Estilos para el dropdown de búsqueda global - Diseño limpio como en la imagen
 :host ::ng-deep {
-  .fixed {
-    backdrop-filter: blur(4px);
-    background: rgba(0, 0, 0, 0.6);
-  }
-
-  .bg-white {
+  // Contenedor del dropdown
+  .absolute {
     background: white;
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid #e2e8f0;
   }
 
-  .rounded-2xl {
-    border-radius: 1rem;
-  }
-
-  // Estilos para la barra de búsqueda - Limpio y funcional
+  // Estilos para la barra de búsqueda dentro del dropdown
   .relative {
     .pointer-events-none {
-      .h-6.w-6 {
-        color: #4f46e5;
+      .h-5.w-5 {
+        color: #9ca3af;
       }
     }
 
@@ -49,6 +26,7 @@
       border-radius: 0;
       transition: all 0.2s ease;
       font-weight: 400;
+      font-size: 1rem;
 
       &:focus {
         background: white;
@@ -64,16 +42,12 @@
     }
   }
 
-  // Estilos para el contenido del modal - Limpio
-  .p-6 {
-    background: white;
-  }
-
-  .border-t {
+  // Estilos para el contenido del dropdown
+  .border-b {
     border-color: #e2e8f0;
   }
 
-  .max-h-\[60vh\] {
+  .max-h-\[400px\] {
     &::-webkit-scrollbar {
       width: 6px;
     }
@@ -92,14 +66,33 @@
     }
   }
 
-  // Estilos para los títulos de sección - Limpios
+  // Estilos para los títulos de sección
   h3 {
     color: #64748b;
     font-weight: 600;
+    font-size: 0.875rem;
     letter-spacing: -0.025em;
   }
 
-  // Estilos para el estado de carga - Simple
+  // Estilos para búsquedas recientes
+  .flex {
+    gap: 0.5rem;
+  }
+
+  .px-3 {
+    background: #f1f5f9;
+    color: #334155;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+
+  // Estilos para el estado de carga
   .animate-spin {
     border: 2px solid #e2e8f0;
     border-top: 2px solid #4f46e5;
@@ -109,22 +102,21 @@
   .text-slate-500 {
     color: #64748b;
     font-weight: 500;
+    font-size: 0.875rem;
   }
 
-  // Estilos para el estado sin resultados - Limpio
+  // Estilos para el estado sin resultados
   .text-center {
-    .text-4xl {
-      opacity: 0.8;
-    }
-
     .text-slate-500 {
       color: #64748b;
       font-weight: 600;
+      font-size: 0.875rem;
     }
 
     .text-slate-400 {
       color: #94a3b8;
       font-weight: 400;
+      font-size: 0.75rem;
     }
   }
 }
