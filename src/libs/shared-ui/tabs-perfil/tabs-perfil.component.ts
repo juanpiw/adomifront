@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type TabType = 'perfil-publico' | 'verificacion' | 'configuracion';
+export type TabType = 'perfil-publico' | 'verificacion' | 'configuracion' | 'ver-perfil-publico';
 
 @Component({
   selector: 'app-tabs-perfil',
@@ -17,7 +17,8 @@ export class TabsPerfilComponent {
   tabs = [
     { id: 'perfil-publico', label: 'Perfil Público' },
     { id: 'verificacion', label: 'Verificación' },
-    { id: 'configuracion', label: 'Configuración' }
+    { id: 'configuracion', label: 'Configuración' },
+    { id: 'ver-perfil-publico', label: 'Ver Perfil Público' }
   ] as const;
 
   onTabClick(tabId: TabType) {

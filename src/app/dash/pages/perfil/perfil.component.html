@@ -123,5 +123,81 @@
       </app-excepciones-feriados>
     </div>
 
+    <!-- Tab: Ver Perfil Público -->
+    <div *ngIf="activeTab === 'ver-perfil-publico'" class="perfil-trabajador__tab-content">
+      <div class="ver-perfil-publico">
+        <div class="ver-perfil-publico__header">
+          <h2 class="ver-perfil-publico__title">Vista Previa del Perfil Público</h2>
+          <p class="ver-perfil-publico__subtitle">Así es como los clientes verán tu perfil</p>
+        </div>
+        
+        <div class="ver-perfil-publico__preview">
+          <div class="profile-preview">
+            <!-- Header del perfil -->
+            <div class="profile-preview__header">
+              <div class="profile-preview__avatar">
+                <img [src]="avatar || 'https://placehold.co/120x120/C7D2FE/4338CA?text=ET'" alt="Avatar">
+              </div>
+              <div class="profile-preview__info">
+                <h1 class="profile-preview__name">{{ basicInfo.fullName }}</h1>
+                <p class="profile-preview__title">{{ basicInfo.professionalTitle }}</p>
+                <p class="profile-preview__location">{{ basicInfo.mainCommune }}</p>
+                <div class="profile-preview__rating">
+                  <span class="rating-stars">⭐⭐⭐⭐⭐</span>
+                  <span class="rating-text">4.9 (127 reseñas)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información básica -->
+            <div class="profile-preview__section">
+              <h3>Sobre mí</h3>
+              <p>{{ bio }}</p>
+            </div>
+
+            <!-- Servicios -->
+            <div class="profile-preview__section">
+              <h3>Mis Servicios</h3>
+              <div class="services-preview">
+                <div *ngFor="let service of services" class="service-preview">
+                  <div class="service-preview__info">
+                    <h4>{{ service.name }}</h4>
+                    <p>{{ service.duration }} min</p>
+                  </div>
+                  <div class="service-preview__price">
+                    ${{ service.price | number }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Portafolio -->
+            <div class="profile-preview__section" *ngIf="portfolioImages.length > 0">
+              <h3>Portafolio</h3>
+              <div class="portfolio-preview">
+                <div *ngFor="let image of portfolioImages.slice(0, 3)" class="portfolio-preview__item">
+                  <img [src]="image.url" [alt]="image.alt">
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón de reserva -->
+            <div class="profile-preview__actions">
+              <button class="btn-reserve">Reservar Cita</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ver-perfil-publico__actions">
+          <ui-button variant="primary" (click)="openPublicProfile()">
+            Abrir Perfil Público
+          </ui-button>
+          <ui-button variant="secondary" (click)="shareProfile()">
+            Compartir Perfil
+          </ui-button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

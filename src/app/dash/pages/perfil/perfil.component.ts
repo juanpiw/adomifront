@@ -303,4 +303,29 @@ export class DashPerfilComponent {
       this.savingPublicProfile = false;
     }, 1500);
   }
+
+  // Métodos para el tab "Ver Perfil Público"
+  openPublicProfile() {
+    // Aquí se puede implementar la navegación al perfil público real
+    // Por ejemplo: this.router.navigate(['/client/explorar', 'worker-id']);
+    console.log('Abriendo perfil público...');
+    // Por ahora, abrir en una nueva ventana
+    window.open('/client/explorar/1', '_blank');
+  }
+
+  shareProfile() {
+    // Implementar funcionalidad de compartir perfil
+    console.log('Compartiendo perfil...');
+    if (navigator.share) {
+      navigator.share({
+        title: `${this.basicInfo.fullName} - ${this.basicInfo.professionalTitle}`,
+        text: this.bio,
+        url: '/client/explorar/1'
+      });
+    } else {
+      // Fallback: copiar URL al portapapeles
+      navigator.clipboard.writeText(window.location.origin + '/client/explorar/1');
+      alert('URL del perfil copiada al portapapeles');
+    }
+  }
 }
