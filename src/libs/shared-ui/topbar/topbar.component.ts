@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { IconComponent } from '../icon/icon.component';
 import { NotificationContainerComponent } from '../notifications/notification-container/notification-container.component';
 import { Notification, UserProfile } from '../notifications/models/notification.model';
+import { GlobalSearchModalComponent } from '../global-search/global-search-modal/global-search-modal.component';
+import { SearchSuggestion } from '../global-search/models/search-suggestion.model';
 
 export interface TopbarConfig {
   showSearch?: boolean;
@@ -20,7 +22,7 @@ export interface TopbarConfig {
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, NotificationContainerComponent],
+  imports: [CommonModule, FormsModule, IconComponent, NotificationContainerComponent, GlobalSearchModalComponent],
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss']
 })
@@ -41,8 +43,10 @@ export class TopbarComponent implements OnInit {
   @Output() notificationClick = new EventEmitter<void>();
   @Output() settingsClick = new EventEmitter<void>();
   @Output() notificationAction = new EventEmitter<Notification>();
+  @Output() searchSuggestionClick = new EventEmitter<SearchSuggestion>();
 
   isConversacionesRoute = false;
+  isSearchModalOpen = false;
 
   constructor(private router: Router) {}
 
@@ -57,6 +61,7 @@ export class TopbarComponent implements OnInit {
   }
 
   onHelpClick(): void {
+    this.isSearchModalOpen = true;
     this.helpClick.emit(this.config.helpContext || 'general');
   }
 
@@ -74,5 +79,17 @@ export class TopbarComponent implements OnInit {
 
   onNotificationAction(notification: Notification): void {
     this.notificationAction.emit(notification);
+  }
+
+  onSearchModalClose(): void {
+    this.isSearchModalOpen = false;
+  }
+
+  onSearchSuggestionClick(suggestion: SearchSuggestion): void {
+    this.searchSuggestionClick.emit(suggestion);
+    // Navegar a la sugerencia si tiene un link
+    if (suggestion.link) {
+      this.router.navigateByUrl(suggestion.link);
+    }
   }
 }

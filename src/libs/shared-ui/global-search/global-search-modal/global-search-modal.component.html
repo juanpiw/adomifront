@@ -1,0 +1,63 @@
+<!-- Modal de Búsqueda Global -->
+<div 
+  *ngIf="isOpen"
+  class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-24"
+  (click)="onBackdropClick($event)"
+  [@fadeInOut]>
+  
+  <div 
+    class="bg-white w-full max-w-2xl mx-auto rounded-2xl shadow-2xl transform modal-enter overflow-hidden"
+    (click)="$event.stopPropagation()">
+    
+    <!-- Barra de búsqueda activa dentro del modal -->
+    <div class="relative p-2">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-6">
+        <ui-icon name="search" class="h-6 w-6 text-indigo-500"></ui-icon>
+      </div>
+      <input 
+        #searchInput
+        type="text" 
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput($event)"
+        (keydown)="onKeyDown($event)"
+        placeholder="Busca ayuda (ej. 'cambiar mi foto', 'horarios'...)" 
+        class="block w-full border-0 bg-white py-4 pl-14 pr-4 text-slate-800 placeholder:text-slate-400 focus:ring-0 text-lg">
+    </div>
+
+    <!-- Contenido del modal: Sugerencias -->
+    <div class="p-6 border-t border-slate-200 max-h-[60vh] overflow-y-auto">
+      <!-- Resultados de búsqueda -->
+      <div *ngIf="searchResults.length > 0">
+        <h3 class="font-semibold text-slate-500 mb-4">Resultados de búsqueda</h3>
+        <ui-search-suggestion-item 
+          *ngFor="let result of searchResults" 
+          [suggestion]="result"
+          (click)="onSuggestionClick(result)">
+        </ui-search-suggestion-item>
+      </div>
+      
+      <!-- Sugerencias por defecto -->
+      <div *ngIf="searchResults.length === 0 && !searchQuery">
+        <h3 class="font-semibold text-slate-500 mb-4">Sugerencias para ti</h3>
+        <ui-search-suggestion-item 
+          *ngFor="let suggestion of defaultSuggestions" 
+          [suggestion]="suggestion"
+          (click)="onSuggestionClick(suggestion)">
+        </ui-search-suggestion-item>
+      </div>
+      
+      <!-- Estado de carga -->
+      <div *ngIf="isLoading" class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <span class="ml-2 text-slate-500">Buscando...</span>
+      </div>
+      
+      <!-- Sin resultados -->
+      <div *ngIf="searchQuery && searchResults.length === 0 && !isLoading" class="text-center py-8">
+        <div class="text-4xl mb-2">🔍</div>
+        <p class="text-slate-500 font-medium">No se encontraron resultados para "{{ searchQuery }}"</p>
+        <p class="text-sm text-slate-400 mt-1">Intenta con otros términos de búsqueda</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -28,3 +28,10 @@
     </button>
   </div>
 </div>
+
+<!-- Modal de Búsqueda Global -->
+<ui-global-search-modal
+  [isOpen]="isSearchModalOpen"
+  (close)="onSearchModalClose()"
+  (suggestionClick)="onSearchSuggestionClick($event)">
+</ui-global-search-modal>
