@@ -1,5 +1,6 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
 import { UiButtonComponent } from '../../../../libs/shared-ui/ui-button/ui-button.component';
 import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploader/avatar-uploader.component';
@@ -44,7 +45,18 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
 })
-export class DashPerfilComponent {
+export class DashPerfilComponent implements OnInit {
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    // Leer query parameters para activar tab específico
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'] as TabType;
+      }
+    });
+  }
+
   // Datos básicos del perfil
   name = 'Elena Torres';
   bio = 'Estilista profesional con más de 5 años de experiencia en cortes modernos y coloración. Especializada en técnicas de color y cortes personalizados.';

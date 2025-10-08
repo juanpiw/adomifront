@@ -108,7 +108,10 @@ export class DashHomeComponent {
 
   onPublicProfileClick() {
     console.log('Ver perfil público');
-    // TODO: Navegar al perfil público
+    // Navegar al perfil del trabajador y activar el tab "Ver Perfil Público"
+    this.router.navigate(['/dash/perfil'], {
+      queryParams: { tab: 'ver-perfil-publico' }
+    });
   }
 
 
