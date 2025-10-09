@@ -2,72 +2,92 @@
   display: block;
 }
 
-// Estilos para el item de sugerencia - Diseño limpio y elegante (inspirado en el original)
-:host ::ng-deep {
-  a {
-    background: transparent;
-    border: none;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s ease;
-    padding: 0.75rem;
+// Estilos para el item de sugerencia - Diseño limpio, elegante y minimalista
+a {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.75rem !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
 
-    &:hover {
-      background-color: #f1f5f9;
+  &:hover {
+    background-color: #f8fafc !important;
 
-      .flex-shrink-0 {
-        background-color: #e0e7ff;
+    .icon-container {
+      background-color: #e0e7ff !important;
 
-        ui-icon {
-          color: #4f46e5 !important;
-        }
-      }
-
-      .ml-4 {
-        .text-slate-700 {
-          color: #1e293b;
-        }
-
-        .text-slate-500 {
-          color: #475569;
-        }
+      ui-icon svg {
+        color: #4f46e5 !important;
+        stroke: #4f46e5 !important;
       }
     }
   }
 
-  // Estilos para el icono - Limpio y funcional
-  .flex-shrink-0 {
-    background-color: #f1f5f9;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s ease;
+  // Contenedor del contenido principal
+  .flex-1 {
+    flex: 1 !important;
+    margin-right: 1rem !important;
+    min-width: 0 !important;
 
-    ui-icon {
-      color: #64748b;
-      transition: color 0.2s ease;
+    p {
+      margin: 0 !important;
+      line-height: 1.4 !important;
+
+      &.text-slate-700 {
+        color: #334155 !important;
+        font-weight: 500 !important;
+        font-size: 0.9375rem !important;
+      }
+
+      &.text-slate-500 {
+        color: #64748b !important;
+        font-weight: 400 !important;
+        font-size: 0.8125rem !important;
+        margin-top: 0.25rem !important;
+      }
     }
   }
 
-  // Estilos para el contenido - Limpio
-  .ml-4 {
-    .text-slate-700 {
-      color: #334155;
-      font-weight: 500;
-      transition: color 0.2s ease;
-    }
+  // Badge de categoría
+  .flex-shrink-0:not(.icon-container) {
+    margin-right: 0.75rem !important;
 
-    .text-slate-500 {
-      color: #64748b;
-      font-weight: 400;
-      transition: color 0.2s ease;
-    }
-  }
-
-  // Estilos para el badge de categoría - Limpio
-  .flex-shrink-0:last-child {
     span {
-      font-weight: 500;
-      transition: all 0.2s ease;
+      display: inline-flex !important;
+      align-items: center !important;
+      padding: 0.25rem 0.625rem !important;
+      border-radius: 9999px !important;
+      font-size: 0.75rem !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+      white-space: nowrap !important;
     }
   }
+
+  // Contenedor del icono
+  .icon-container,
+  .flex-shrink-0:last-child {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-radius: 0.5rem !important;
+    background-color: #f1f5f9 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+
+    ui-icon svg {
+      color: #64748b !important;
+      stroke: #64748b !important;
+      transition: all 0.2s ease !important;
+    }
+  }
+}
 
   // Estilos específicos para cada categoría - Limpios
   .bg-blue-100 {
