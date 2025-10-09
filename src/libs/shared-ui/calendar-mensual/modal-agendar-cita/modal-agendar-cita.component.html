@@ -1,0 +1,129 @@
+<!-- Modal para Crear Nueva Cita -->
+<div 
+  *ngIf="isOpen"
+  class="modal-backdrop"
+  (click)="onBackdropClick($event)"
+  [@fadeInOut]="isOpen ? 'in' : 'out'">
+  
+  <div 
+    class="modal-content"
+    [@scaleInOut]="isOpen ? 'in' : 'out'"
+    (click)="$event.stopPropagation()">
+    
+    <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg class="modal-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"></path>
+          </svg>
+          Crear Nueva Cita
+        </h2>
+      </div>
+
+      <div class="modal-body">
+        <!-- Título -->
+        <div class="form-group">
+          <label for="eventTitle" class="form-label">Título</label>
+          <input 
+            type="text" 
+            id="eventTitle"
+            formControlName="title"
+            placeholder="Ej: Corte de Pelo, Reunión personal..."
+            class="form-input"
+            [class.form-input--error]="title?.invalid && title?.touched">
+          <p 
+            *ngIf="title?.invalid && title?.touched" 
+            class="form-error">
+            El título es obligatorio (mínimo 3 caracteres).
+          </p>
+        </div>
+
+        <!-- Cliente -->
+        <div class="form-group">
+          <label for="eventClient" class="form-label">Cliente (Opcional)</label>
+          <input 
+            type="text" 
+            id="eventClient"
+            formControlName="client"
+            placeholder="Buscar o añadir un cliente..."
+            class="form-input">
+        </div>
+
+        <!-- Fecha y Horas -->
+        <div class="form-row">
+          <div class="form-col">
+            <label for="eventDate" class="form-label">Fecha</label>
+            <input 
+              type="date" 
+              id="eventDate"
+              formControlName="date"
+              class="form-input"
+              [class.form-input--error]="date?.invalid && date?.touched">
+          </div>
+          <div class="form-col">
+            <label for="eventStartTime" class="form-label">Desde</label>
+            <input 
+              type="time" 
+              id="eventStartTime"
+              formControlName="startTime"
+              class="form-input"
+              [class.form-input--error]="startTime?.invalid && startTime?.touched">
+          </div>
+          <div class="form-col">
+            <label for="eventEndTime" class="form-label">Hasta</label>
+            <input 
+              type="time" 
+              id="eventEndTime"
+              formControlName="endTime"
+              class="form-input"
+              [class.form-input--error]="endTime?.invalid && endTime?.touched">
+          </div>
+        </div>
+
+        <!-- Notas -->
+        <div class="form-group">
+          <label for="eventNotes" class="form-label">Notas</label>
+          <textarea 
+            id="eventNotes"
+            formControlName="notes"
+            rows="3"
+            placeholder="Añadir detalles importantes..."
+            class="form-textarea"></textarea>
+        </div>
+
+        <!-- Selector de Color -->
+        <div class="form-group">
+          <label class="form-label">Etiqueta de Color</label>
+          <div class="color-picker">
+            <button 
+              *ngFor="let colorOption of availableColors"
+              type="button"
+              [style.background-color]="colorOption.color"
+              [class.color-picker__btn--selected]="isColorSelected(colorOption.color)"
+              [attr.aria-label]="colorOption.label"
+              [title]="colorOption.label"
+              class="color-picker__btn"
+              (click)="selectColor(colorOption.color)">
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          type="button"
+          class="btn btn--secondary"
+          (click)="closeModal()">
+          Cancelar
+        </button>
+        <button 
+          type="submit"
+          class="btn btn--primary">
+          Guardar Cita
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

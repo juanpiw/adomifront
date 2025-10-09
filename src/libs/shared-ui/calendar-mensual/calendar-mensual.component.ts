@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiButtonComponent } from '../ui-button/ui-button.component';
+import { ModalAgendarCitaComponent, NuevaCitaData } from './modal-agendar-cita/modal-agendar-cita.component';
 
 export interface CalendarEvent {
   id: string;
@@ -14,7 +15,7 @@ export interface CalendarEvent {
 @Component({
   selector: 'app-calendar-mensual',
   standalone: true,
-  imports: [CommonModule, UiButtonComponent],
+  imports: [CommonModule, UiButtonComponent, ModalAgendarCitaComponent],
   templateUrl: './calendar-mensual.component.html',
   styleUrls: ['./calendar-mensual.component.scss']
 })
@@ -25,9 +26,12 @@ export class CalendarMensualComponent implements OnInit {
 
   @Output() dateSelected = new EventEmitter<Date>();
   @Output() newAppointment = new EventEmitter<void>();
+  @Output() citaCreated = new EventEmitter<NuevaCitaData>();
   @Output() previousMonth = new EventEmitter<void>();
   @Output() nextMonth = new EventEmitter<void>();
 
+  isModalOpen: boolean = false;
+  selectedDateForModal?: Date;
   currentMonth: Date = new Date();
   calendarDays: Date[] = [];
   weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -120,7 +124,19 @@ export class CalendarMensualComponent implements OnInit {
   }
 
   onNewAppointment() {
+    this.selectedDateForModal = new Date(); // Fecha actual por defecto
+    this.isModalOpen = true;
     this.newAppointment.emit();
+  }
+
+  onCloseModal() {
+    this.isModalOpen = false;
+    this.selectedDateForModal = undefined;
+  }
+
+  onCitaCreated(citaData: NuevaCitaData) {
+    this.citaCreated.emit(citaData);
+    console.log('Nueva cita creada:', citaData);
   }
 
   getEventColor(event: CalendarEvent): string {
