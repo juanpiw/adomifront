@@ -1,3 +1,10 @@
+// Reset box-sizing para todos los elementos del modal
+:host {
+  * {
+    box-sizing: border-box;
+  }
+}
+
 // Modal Backdrop
 .modal-backdrop {
   position: fixed;
@@ -74,6 +81,7 @@
   font-family: inherit;
   font-size: 0.875rem;
   transition: all 0.2s ease;
+  box-sizing: border-box; // Importante para que padding no afecte el width
   
   &:focus {
     outline: none;
