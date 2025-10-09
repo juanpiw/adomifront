@@ -118,6 +118,17 @@ export class DashLayoutComponent implements OnInit {
 
   onSettingsClick(): void {
     console.log('Settings clicked');
-    // TODO: Implementar lógica de configuración
+    
+    // Si estamos en la página de perfil, navegar al tab de configuración
+    if (this.router.url.includes('/dash/perfil')) {
+      this.router.navigate(['/dash/perfil'], {
+        queryParams: { tab: 'configuracion' }
+      });
+    } else {
+      // Para otras páginas, navegar al perfil con el tab de configuración
+      this.router.navigate(['/dash/perfil'], {
+        queryParams: { tab: 'configuracion' }
+      });
+    }
   }
 }
