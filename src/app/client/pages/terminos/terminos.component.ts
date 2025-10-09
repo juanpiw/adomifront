@@ -71,37 +71,50 @@ export class ClientTerminosComponent {
 
     const sections = [
       {
-        title: '1. Aceptación de los Términos',
-        content: 'Al acceder y utilizar la plataforma Adomi, usted acepta estar sujeto a estos Términos y Condiciones, todas las leyes y regulaciones aplicables.'
+        title: '1. Definiciones Clave',
+        content: 'Plataforma: Adomiapp y sus servicios tecnológicos. Cliente: Usuario que busca servicios. Profesional: Proveedor independiente de servicios. Servicio: Actividad prestada por el Profesional.'
       },
       {
-        title: '2. Uso de la Plataforma',
-        content: 'Adomi es una plataforma que conecta clientes con profesionales de servicios a domicilio.',
-        list: ['Debe tener al menos 18 años', 'Debe proporcionar información precisa', 'Es responsable de su cuenta', 'No usar para actividades ilegales']
+        title: '2. Naturaleza y Alcance de la Plataforma',
+        content: 'Adomiapp es una plataforma tecnológica de intermediación. Nuestra función se limita a conectar Clientes con Profesionales independientes.',
+        list: ['NO es parte del contrato entre Cliente y Profesional', 'NO supervisa ni controla el trabajo de Profesionales', 'NO garantiza calidad, seguridad o legalidad de Servicios', 'Puede contener enlaces a recursos de terceros sin responsabilidad']
       },
       {
-        title: '3. Servicios Ofrecidos',
-        content: 'Los profesionales ofrecen diversos servicios a domicilio. Adomi actúa como intermediario.'
+        title: '3. Uso de la Plataforma',
+        content: 'Al usar Adomiapp usted acepta:',
+        list: ['Tener al menos 18 años', 'Proporcionar información precisa y actualizada', 'Ser responsable de la seguridad de su cuenta', 'No usar la plataforma para actividades ilegales']
       },
       {
-        title: '4. Pagos y Facturación',
-        content: 'Los pagos se procesan de forma segura. Los precios incluyen impuestos. Cancelaciones sujetas a política.'
+        title: '4. Verificación y Descargo de Responsabilidad',
+        content: 'Adomiapp puede realizar verificación de Profesionales, pero no garantiza exactitud. El Cliente es responsable de evaluar la idoneidad del Profesional. El sistema de calificaciones es referencia, no garantía.'
       },
       {
-        title: '5. Responsabilidades',
-        content: 'Adomi no se hace responsable por la calidad de los servicios. Mantenemos estándares a través de verificación.'
+        title: '5. Pagos y Facturación',
+        content: 'Los pagos se procesan de forma segura a través de la plataforma. Los precios mostrados incluyen todos los impuestos aplicables. Las cancelaciones están sujetas a la política de cada profesional.'
       },
       {
-        title: '6. Privacidad y Datos',
-        content: 'Nos comprometemos a proteger su privacidad. Consulte nuestra Política de Privacidad.'
+        title: '6. Limitación de Responsabilidad',
+        content: 'Adomiapp NO será responsable por daños directos, indirectos, incidentales o consecuentes resultantes de: uso de la Plataforma, conducta de terceros, Servicios prestados, disputas Cliente-Profesional, pérdida de datos o ganancias.'
       },
       {
-        title: '7. Modificaciones',
-        content: 'Adomi puede modificar estos términos. Los cambios entran en vigor tras su publicación.'
+        title: '7. Indemnización',
+        content: 'Usted acepta defender e indemnizar a Adomiapp de cualquier reclamo por: violación de estos Términos, violación de derechos de terceros, daños causados a terceros por su contenido o acciones.'
       },
       {
-        title: '8. Contacto',
-        content: 'Para preguntas: soporte@adomiapp.com | +56 9 XXXX XXXX'
+        title: '8. Privacidad y Datos',
+        content: 'Nos comprometemos a proteger su privacidad. Consulte nuestra Política de Privacidad para más información sobre manejo de datos personales.'
+      },
+      {
+        title: '9. Modificaciones',
+        content: 'Adomiapp se reserva el derecho de modificar estos términos en cualquier momento. Los cambios entran en vigor inmediatamente tras su publicación.'
+      },
+      {
+        title: '10. Ley Aplicable y Jurisdicción',
+        content: 'Estos Términos se rigen por las leyes de Chile. Cualquier disputa se someterá a los tribunales competentes de Santiago, Chile.'
+      },
+      {
+        title: '11. Contacto',
+        content: 'Para preguntas sobre estos Términos: soporte@adomiapp.com | +56 9 XXXX XXXX'
       }
     ];
 

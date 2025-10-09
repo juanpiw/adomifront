@@ -71,41 +71,55 @@ export class DashTerminosComponent {
 
     const sections = [
       {
-        title: '1. Aceptación de los Términos',
-        content: 'Al registrarse como profesional en Adomi, acepta estos Términos y Condiciones y las leyes aplicables.'
+        title: '1. Definiciones Clave',
+        content: 'Plataforma: Adomiapp. Profesional: Usted, proveedor independiente. Cliente: Usuario que contrata. Servicio: Actividad profesional prestada.'
       },
       {
-        title: '2. Registro como Profesional',
-        content: 'Para ofrecer servicios debe cumplir requisitos de verificación.',
-        list: ['Mayor de 18 años', 'Documentación válida', 'Certificaciones o experiencia', 'Mantener calificación mínima 3.5']
+        title: '2. Naturaleza y Alcance de la Plataforma',
+        content: 'Adomiapp es plataforma de intermediación. Función limitada a conectar Clientes con Profesionales.',
+        list: ['NO es parte del contrato', 'NO supervisa ni controla trabajo', 'NO garantiza calidad o legalidad', 'Enlaces a terceros sin responsabilidad']
       },
       {
-        title: '3. Comisiones y Pagos',
-        content: 'Adomi cobra 15% de comisión. Pagos depositados en 3-5 días hábiles tras completar servicio.'
+        title: '3. Relación Jurídica: Contratista Independiente',
+        content: 'Usted actúa como entidad independiente. Relación comercial, NO laboral.',
+        list: ['Aporta herramientas propias', 'Asume costos y riesgos', 'Sin supervisión directa', 'Sin beneficios laborales', 'Sin exclusividad']
       },
       {
-        title: '4. Responsabilidades',
-        list: ['Proporcionar servicios de calidad', 'Mantener puntualidad', 'Comunicación profesional', 'Cumplir normativas de seguridad']
+        title: '4. Verificación y Descargo',
+        content: 'Adomiapp puede verificar credenciales, pero no garantiza exactitud. Clientes evalúan idoneidad. Calificaciones son opiniones, no garantías.'
       },
       {
-        title: '5. Cancelaciones',
-        content: 'Cancelaciones con +24h sin penalización. Cancelaciones tardías afectan calificación.'
+        title: '5. Seguros',
+        content: 'Usted es responsable de obtener seguro de responsabilidad civil. Adomiapp no proporciona seguros.'
       },
       {
-        title: '6. Planes y Suscripciones',
-        content: 'Diferentes planes con beneficios variables. Plan gratuito tiene limitaciones. Planes de pago se renuevan automáticamente.'
+        title: '6. Comisiones y Tributación',
+        content: 'Comisión 15%. Pagos en 3-5 días. Usted declara ingresos y paga impuestos según ley chilena.'
       },
       {
-        title: '7. Privacidad',
-        content: 'Protegemos su privacidad conforme a Política de Privacidad y leyes de protección de datos.'
+        title: '7. Limitación de Responsabilidad',
+        content: 'Adomiapp NO responsable por daños: uso de Plataforma, conducta terceros, disputas, pérdida ganancias/datos.'
       },
       {
-        title: '8. Suspensión',
-        content: 'Reservamos derecho de suspender cuenta por violación de términos, fraude, quejas o baja calificación.'
+        title: '8. Indemnización',
+        list: ['Defender Adomiapp de reclamos', 'Por uso de Plataforma', 'Por violación Términos', 'Por daños a terceros'],
+        content: 'Obligación sobrevive a estos Términos.'
       },
       {
-        title: '9. Contacto',
-        content: 'Consultas: profesionales@adomiapp.com | +56 9 XXXX XXXX'
+        title: '9. Cancelaciones',
+        content: 'Cancelaciones +24h sin penalización. Tardías afectan calificación.'
+      },
+      {
+        title: '10. Planes',
+        content: 'Planes con beneficios variables. Gratuito con limitaciones. Pago renovación automática.'
+      },
+      {
+        title: '11. Ley y Jurisdicción',
+        content: 'Regido por leyes de Chile. Disputas en tribunales Santiago, Chile.'
+      },
+      {
+        title: '12. Contacto',
+        content: 'Consultas: profesionales@adomiapp.com | +56 9 XXXX XXXX | Lun-Vie 9-18h'
       }
     ];
 
