@@ -3,8 +3,13 @@
     <div class="terminos-header__icon">
       <ui-icon name="clipboard"></ui-icon>
     </div>
-    <h1 class="terminos-header__title">Información Legal</h1>
-    <p class="terminos-header__subtitle">Última actualización: {{ lastUpdated }}</p>
+    <h1 class="terminos-header__title">Términos y Condiciones de Uso de Adomiapp</h1>
+    <p class="terminos-header__subtitle">
+      Última actualización: 3 de octubre de 2025<br>
+      Razón social: [Razón Social de la empresa] – RUT: xx.xxx.xxx-x<br>
+      Domicilio: [comuna, ciudad, Chile]<br>
+      Contacto: profesionales@adomiapp.com | +56 9 XXXX XXXX (Soporte: Lun–Vie, 9:00–18:00)
+    </p>
   </div>
 
   <!-- Tabs de navegación -->
@@ -26,139 +31,324 @@
   <!-- Contenido de Términos y Condiciones -->
   <div class="terminos-content" *ngIf="activeTab === 'terminos'">
     <section class="terminos-section">
-      <h2 class="terminos-section__title">1. Definiciones Clave</h2>
+      <h2 class="terminos-section__title">1. Definiciones</h2>
       <ul class="terminos-section__list">
-        <li><strong>Plataforma:</strong> Adomiapp y sus servicios tecnológicos</li>
-        <li><strong>Cliente:</strong> Usuario que busca y contrata servicios</li>
-        <li><strong>Profesional:</strong> Proveedor independiente de servicios</li>
-        <li><strong>Servicio:</strong> Actividad prestada por el Profesional al Cliente</li>
+        <li><strong>Plataforma:</strong> El sitio web, app móvil y APIs de Adomiapp, operados por [Razón Social].</li>
+        <li><strong>Profesional:</strong> Proveedor/a independiente que ofrece Servicios a través de la Plataforma.</li>
+        <li><strong>Cliente:</strong> Usuario/a que solicita y contrata Servicios de un Profesional.</li>
+        <li><strong>Servicios:</strong> Actividades profesionales ofrecidas por los Profesionales a los Clientes.</li>
+        <li><strong>Cuenta:</strong> Perfil registrado en la Plataforma (Profesional o Cliente).</li>
+        <li><strong>PSP:</strong> Proveedor/a externo de servicios de pago (pasarela, split, escrow).</li>
+        <li><strong>Contenido:</strong> Textos, imágenes, valoraciones, perfiles y demás información cargada por usuarios.</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">2. Naturaleza y Alcance de la Plataforma</h2>
+      <h2 class="terminos-section__title">2. Naturaleza y alcance de Adomiapp (intermediación)</h2>
       <p class="terminos-section__text">
-        Adomiapp es una plataforma tecnológica que funciona como un mercado en línea de intermediación. 
-        Nuestra función se limita exclusivamente a conectar a Clientes con Profesionales independientes.
+        Adomiapp es una plataforma tecnológica de intermediación que conecta a Clientes con Profesionales independientes. 
+        Adomiapp no presta los Servicios, no forma parte del contrato entre Cliente y Profesional, no supervisa ni controla 
+        cómo se ejecutan los Servicios, no garantiza su calidad, seguridad o legalidad y no asume responsabilidad por ellos.
       </p>
       <p class="terminos-section__text">
-        Usted entiende y acepta explícitamente que Adomiapp:
+        Adomiapp puede incluir enlaces o integraciones de terceros; su uso se rige por términos propios de dichos terceros.
       </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">3. Elegibilidad y registro de cuentas</h2>
       <ul class="terminos-section__list">
-        <li>NO es parte del contrato de servicio que se genera entre un Cliente y un Profesional.</li>
-        <li>NO supervisa, dirige, controla ni monitorea el trabajo de los Profesionales.</li>
-        <li>NO garantiza la calidad, seguridad, idoneidad o legalidad de los Servicios prestados.</li>
-        <li>La Plataforma puede contener enlaces a sitios o recursos de terceros. Adomiapp no es responsable de 
-        la disponibilidad ni de la exactitud de dichos recursos, ni del contenido, productos o servicios disponibles en ellos.</li>
+        <li>Debes tener 18 años o más y capacidad legal para contratar.</li>
+        <li>La información de registro debe ser veraz, exacta y actualizada.</li>
+        <li>Adomiapp puede solicitar verificación de identidad/KYC, documentos tributarios o profesionales.</li>
+        <li>Eres responsable de la confidencialidad de tus credenciales y de toda actividad realizada con tu Cuenta.</li>
+        <li>Adomiapp puede suspender o cerrar Cuentas por incumplimientos, fraudes o riesgos para la comunidad.</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">3. Uso de la Plataforma</h2>
-      <p class="terminos-section__text">Al usar Adomiapp, usted acepta:</p>
+      <h2 class="terminos-section__title">4. Verificación, reputación y moderación</h2>
+      <p class="terminos-section__text">
+        Adomiapp puede realizar verificaciones (identidad, antecedentes, credenciales), sin estar obligada a ello 
+        ni garantizar su vigencia o exactitud. La reputación (ratings/comentarios) es una herramienta orientativa 
+        basada en experiencias de usuarios y no equivale a certificación ni recomendación.
+      </p>
+      <p class="terminos-section__text">
+        Adomiapp podrá moderar o remover Contenido que: (i) incumpla estos Términos, (ii) vulnere derechos de terceros, 
+        (iii) afecte la seguridad o (iv) constituya publicidad engañosa, difamación, datos sensibles, o información 
+        personal de terceros sin autorización.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">5. Obligaciones del Cliente</h2>
       <ul class="terminos-section__list">
-        <li>Tener al menos 18 años de edad</li>
-        <li>Proporcionar información precisa y actualizada</li>
-        <li>Ser responsable de la seguridad de su cuenta</li>
-        <li>No usar la plataforma para actividades ilegales</li>
+        <li>Proveer información correcta y condiciones seguras para la ejecución del Servicio.</li>
+        <li>Pagar el precio acordado y cargos aplicables.</li>
+        <li>No solicitar actividades ilegales o que excedan lo contratado.</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">4. Verificación de Usuarios y Descargo de Responsabilidad</h2>
+      <h2 class="terminos-section__title">6. Planes, suscripciones y comisiones</h2>
       <p class="terminos-section__text">
-        Adomiapp podrá, pero no está obligada a, realizar procesos de verificación de antecedentes o 
-        credenciales de los Profesionales al momento de su registro.
+        Adomiapp cobra una comisión del 15% sobre el valor del Servicio efectivamente pagado, salvo otra comisión 
+        vigente indicada en la app/plan.
       </p>
-      <p class="terminos-section__text">Usted entiende que:</p>
+      <p class="terminos-section__text">
+        Los planes de pago se renuevan automáticamente (mensual/anual) hasta su cancelación. Puedes cancelar desde 
+        tu Cuenta (la cancelación evita renovaciones futuras, no reembolsa periodos ya devengados).
+      </p>
+      <p class="terminos-section__text">
+        Adomiapp puede modificar precios y comisiones con aviso previo de 15 días. Cambios rigen para Servicios futuros.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">7. Pagos, facturación y tributación (Chile)</h2>
+      <p class="terminos-section__text">
+        Los pagos se procesan mediante PSP autorizado. El depósito al Profesional se realiza típicamente en 3–5 días 
+        hábiles desde el pago del Cliente, sujeto a conciliación, medidas anti-fraude y plazos del PSP.
+      </p>
+      <p class="terminos-section__text">
+        <strong>Boletas/facturas:</strong> El Profesional es responsable de emitir el documento tributario al Cliente 
+        cuando corresponda, y Adomiapp emite el documento por su comisión al Profesional. Alternativamente, si el modelo 
+        operacional lo requiere, Adomiapp podrá emitir boleta/factura a nombre del Profesional como agente de facturación, 
+        previa autorización expresa (ver Anexo C).
+      </p>
+      <p class="terminos-section__text">
+        El Profesional es responsable de declarar y pagar sus impuestos ante el SII, incluyendo IVA y renta cuando proceda.
+      </p>
+      <p class="terminos-section__text">
+        <strong>Chargebacks/reembolsos:</strong> Los montos devueltos al Cliente (por reversa bancaria o PSP) se deducen 
+        de futuros pagos al Profesional. Adomiapp puede retener fondos ante disputas/contracargos hasta su resolución.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">8. Cancelaciones y reembolsos</h2>
+      <p class="terminos-section__text">
+        <strong>Cliente:</strong> Cancelaciones con +24h respecto a la hora de inicio → sin penalización. Con –24h, 
+        puede aplicar cargo por cancelación (visible antes de confirmar).
+      </p>
+      <p class="terminos-section__text">
+        <strong>Profesional:</strong> Cancelaciones injustificadas o reiteradas afectan su reputación y acceso, 
+        pudiendo generar cargos operativos (si se causan costos directos).
+      </p>
+      <p class="terminos-section__text">
+        Reembolsos completos/parciales se resuelven caso a caso según pruebas objetivas (no presentación, 
+        incumplimiento material, seguridad).
+      </p>
+      <p class="terminos-section__text">
+        La política se muestra en el flujo de reserva y en el correo de confirmación.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">9. Obligaciones del Profesional</h2>
       <ul class="terminos-section__list">
-        <li>Dicha verificación se basa en la información proporcionada por el Profesional y fuentes de terceros, 
-        y Adomiapp no garantiza su exactitud, vigencia o integridad.</li>
-        <li>Adomiapp no tiene la obligación de realizar un seguimiento continuo de los antecedentes de ningún usuario.</li>
-        <li>El Cliente es el único responsable de evaluar la idoneidad y confiabilidad del Profesional que decide contratar.</li>
-        <li>El sistema de calificaciones y comentarios es una herramienta de referencia basada en la opinión de otros 
-        usuarios y no constituye una recomendación o garantía por parte de Adomiapp.</li>
+        <li><strong>Legalidad y licencias:</strong> Cumplir toda normativa aplicable a su rubro, incluyendo sanitarias, municipales, de seguridad y consumo.</li>
+        <li><strong>Calidad y seguridad:</strong> Prestar Servicios con diligencia profesional, buenas prácticas y cuidado razonable.</li>
+        <li><strong>Transparencia de precios:</strong> Publicar precios y condiciones completas (incluyendo cargos adicionales previsibles).</li>
+        <li><strong>No sustitución no autorizada:</strong> No delegar el Servicio a terceros no registrados/validados.</li>
+        <li><strong>Datos personales:</strong> Tratar datos del Cliente solo para ejecutar el Servicio y conforme a la ley y a la Política de Privacidad de Adomiapp.</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">5. Pagos y Facturación</h2>
+      <h2 class="terminos-section__title">10. Relación con Profesionales: contratistas independientes</h2>
       <p class="terminos-section__text">
-        Los pagos se procesan de forma segura a través de la plataforma. Los precios mostrados incluyen 
-        todos los impuestos aplicables. Las cancelaciones están sujetas a la política de cada profesional.
+        El Profesional declara y garantiza actuar como entidad económica independiente (persona natural con inicio de 
+        actividades o empresa). La relación con Adomiapp es comercial y no laboral. En particular, el Profesional:
+      </p>
+      <ul class="terminos-section__list">
+        <li>Usa sus propias herramientas y materiales.</li>
+        <li>Asume sus costos y riesgos (transporte, insumos, seguros, cotizaciones, licencias).</li>
+        <li>No está sujeto a jornadas, metas, supervisión o órdenes de Adomiapp; las calificaciones de usuarios no constituyen subordinación.</li>
+        <li>No recibe beneficios laborales (vacaciones, licencias, gratificaciones, etc.).</li>
+        <li>No tiene exclusividad: puede usar otras plataformas o canales.</li>
+      </ul>
+      <p class="terminos-section__text">
+        Para evitar apariencias de subordinación, Adomiapp no impone horarios obligatorios, uniformes, multas punitivas, 
+        ni sanciones automáticas opacas. Los ajustes de visibilidad o acceso por incumplimientos siguen un proceso 
+        transparente (ver §15).
+      </p>
+    </section>
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">11. Seguros</h2>
+      <p class="terminos-section__text">
+        El Profesional es único responsable de contar con seguro de responsabilidad civil adecuado. Adomiapp no provee 
+        seguros ni responde por daños derivados de la ejecución de los Servicios.
       </p>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">6. Limitación General de Responsabilidad</h2>
+      <h2 class="terminos-section__title">12. Uso aceptable y prohibiciones</h2>
+      <p class="terminos-section__text">Queda prohibido:</p>
+      <ul class="terminos-section__list">
+        <li>(i) Vulnerar la ley</li>
+        <li>(ii) Difamar, discriminar o acosar</li>
+        <li>(iii) Subir malware o interferir con la Plataforma</li>
+        <li>(iv) Eludir tarifas, pagos o procesos de Adomiapp</li>
+        <li>(v) Publicar información falsa/engañosa</li>
+        <li>(vi) Recolectar datos de otros usuarios sin base legal</li>
+        <li>(vii) Compartir credenciales</li>
+      </ul>
+      <p class="terminos-section__text">Detalle en Anexo A (Conductas Prohibidas).</p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">13. Propiedad intelectual y licencias</h2>
       <p class="terminos-section__text">
-        En la máxima medida permitida por la ley aplicable, Adomiapp no será responsable por ningún daño directo, 
-        indirecto, incidental, especial, consecuente o punitivo, incluyendo, entre otros, la pérdida de ganancias, 
-        datos, uso, fondo de comercio u otras pérdidas intangibles, que resulten de:
+        Adomiapp y sus componentes (software, marcas, diseños) son de [Razón Social] o sus licenciantes.
+      </p>
+      <p class="terminos-section__text">
+        El usuario conserva derechos sobre su Contenido y otorga a Adomiapp una licencia no exclusiva, mundial, 
+        gratuita y sublicenciable para alojar, reproducir y mostrar dicho Contenido a efectos de operar la Plataforma.
+      </p>
+      <p class="terminos-section__text">
+        No se concede licencia implícita sobre marcas o software de Adomiapp.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">14. Datos personales y comunicaciones</h2>
+      <p class="terminos-section__text">
+        El tratamiento de datos se rige por la Política de Privacidad (parte integrante de estos Términos) y la Ley 19.628.
+      </p>
+      <p class="terminos-section__text">
+        Adomiapp puede enviarte comunicaciones transaccionales y, con tu consentimiento, comunicaciones comerciales; 
+        podrás revocar dicho consentimiento en cualquier momento.
+      </p>
+      <p class="terminos-section__text">
+        Los permisos de dispositivo (ubicación, cámara, etc.) se solicitan solo cuando son necesarios para la funcionalidad.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">15. Medidas de seguridad, cumplimiento y sanciones</h2>
+      <p class="terminos-section__text">
+        Para proteger a la comunidad, Adomiapp puede adoptar medidas proporcionadas y transparentes:
       </p>
       <ul class="terminos-section__list">
-        <li>Su acceso o uso, o la imposibilidad de acceder o usar la Plataforma.</li>
-        <li>Cualquier conducta o contenido de cualquier tercero en la Plataforma, incluyendo, sin limitación, 
-        cualquier conducta difamatoria, ofensiva o ilegal de otros usuarios o terceros.</li>
-        <li>El Servicio prestado por los Profesionales, incluyendo reclamos por negligencia, mala conducta, 
-        daños a la propiedad, lesiones personales o muerte.</li>
-        <li>Cualquier disputa o conflicto entre el Cliente y el Profesional.</li>
+        <li>Alertas y advertencias</li>
+        <li>Limitación temporal</li>
+        <li>Retiro de Contenido</li>
+        <li>Retención de pagos ante sospecha de fraude o incumplimientos</li>
+        <li>Suspensión/cierre de Cuenta</li>
+      </ul>
+      <p class="terminos-section__text">
+        Antes de medidas severas no urgentes, Adomiapp procurará notificar y ofrecer instancia de descargos. 
+        En casos de riesgo grave/inmediato, podrá actuar sin aviso previo.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">16. Disputas entre Cliente y Profesional</h2>
+      <p class="terminos-section__text">
+        Las disputas por el Servicio deben intentarse resolver directamente entre Cliente y Profesional mediante 
+        el chat de la Plataforma o canal habilitado. Si no hay acuerdo, Adomiapp puede (sin obligación) facilitar 
+        una mediación interna no vinculante basada en la evidencia disponible (mensajes, fotos, geolocalización, etc.).
+      </p>
+      <p class="terminos-section__text">
+        Esto no limita los derechos del consumidor ante SERNAC o tribunales competentes.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">17. Garantías, exenciones y limitación de responsabilidad</h2>
+      <p class="terminos-section__text">
+        La Plataforma se proporciona "tal cual" y "según disponibilidad". Adomiapp no garantiza disponibilidad 
+        ininterrumpida ni ausencia de errores.
+      </p>
+      <p class="terminos-section__text">
+        En la máxima medida permitida por ley, Adomiapp no será responsable por daños indirectos, especiales, 
+        emergentes, lucro cesante o pérdida de datos, ni por actos/omisiones de terceros (incluidos Profesionales y Clientes).
+      </p>
+      <p class="terminos-section__text">
+        <strong>Límite agregado de responsabilidad de Adomiapp:</strong> el menor entre (i) UF 50 y (ii) el total de 
+        comisiones pagadas por el Profesional a Adomiapp en los últimos 6 meses previos al hecho generador.
+      </p>
+      <p class="terminos-section__text">
+        Nada de lo anterior limita responsabilidad por dolo o cuando la ley lo prohíba.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">18. Indemnidad</h2>
+      <p class="terminos-section__text">
+        El usuario defenderá e indemnizará a Adomiapp, sus directores/as, trabajadores/as y agentes frente a reclamos, 
+        daños, costos (incluidos honorarios legales razonables) derivados de:
+      </p>
+      <ul class="terminos-section__list">
+        <li>(i) Incumplimiento de estos Términos</li>
+        <li>(ii) Infracción de derechos de terceros</li>
+        <li>(iii) Contenido o conductas del usuario</li>
+        <li>(iv) Prestación o recepción de Servicios fuera de la Plataforma</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">7. Indemnización</h2>
+      <h2 class="terminos-section__title">19. Fuerza mayor</h2>
       <p class="terminos-section__text">
-        Usted acepta defender, indemnizar y mantener indemne a Adomiapp, sus directores, empleados y agentes, 
-        de y contra cualquier reclamo, demanda, daño, obligación, pérdida, responsabilidad, costo o deuda y 
-        gastos (incluidos, entre otros, los honorarios de abogados) que surjan de:
+        Adomiapp no será responsable por incumplimientos debidos a eventos fuera de su control razonable 
+        (p. ej., desastres naturales, fallas de Internet/PSP, actos de autoridad).
       </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">20. Cambios a los Términos</h2>
+      <p class="terminos-section__text">
+        Adomiapp puede modificar estos Términos con aviso previo de 15 días (o el plazo legal que corresponda). 
+        El uso posterior a dicho plazo implica aceptación. Cambios sustanciales se comunicarán por correo/app.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">21. Terminación</h2>
+      <p class="terminos-section__text">
+        El usuario puede cerrar su Cuenta en cualquier momento. Adomiapp puede terminar o suspender Cuentas por 
+        incumplimiento, fraude o riesgo. Al terminar, subsisten las cláusulas por su naturaleza: propiedad intelectual, 
+        pagos pendientes, responsabilidad, indemnidad, ley aplicable y jurisdicción.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">22. Ley aplicable, consumo y jurisdicción</h2>
+      <p class="terminos-section__text">
+        Se aplican las leyes de la República de Chile. Para consumidores, prevalecen los derechos irrenunciables 
+        de la Ley 19.496.
+      </p>
+      <p class="terminos-section__text">
+        Toda controversia se somete a los tribunales ordinarios de justicia de Santiago de Chile, sin perjuicio 
+        de la competencia del SERNAC u organismos sectoriales cuando corresponda.
+      </p>
+      <p class="terminos-section__text">
+        Si alguna disposición se declara inválida, el resto permanece vigente.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">23. Diversos</h2>
       <ul class="terminos-section__list">
-        <li>Su uso y acceso a la Plataforma.</li>
-        <li>La violación por su parte de cualquier término de estas Condiciones.</li>
-        <li>La violación por su parte de cualquier derecho de un tercero, incluyendo, sin limitación, cualquier 
-        derecho de autor, de propiedad o de privacidad.</li>
-        <li>Cualquier reclamo de que su contenido o sus acciones causaron daño a un tercero.</li>
+        <li><strong>Cesión:</strong> Adomiapp puede ceder su posición contractual. El usuario no puede ceder sin autorización.</li>
+        <li><strong>Notificaciones:</strong> Por app/correo al email registrado.</li>
+        <li><strong>Acuerdo íntegro:</strong> Estos Términos + Política de Privacidad + políticas específicas reemplazan acuerdos previos.</li>
+        <li><strong>Idioma:</strong> En caso de discrepancia entre versiones, prevalece el español (Chile).</li>
       </ul>
-      <p class="terminos-section__text">
-        Esta obligación de defensa e indemnización sobrevivirá a estos Términos y a su uso de la Plataforma.
-      </p>
     </section>
 
+    <!-- Anexos -->
     <section class="terminos-section">
-      <h2 class="terminos-section__title">8. Privacidad y Datos</h2>
-      <p class="terminos-section__text">
-        Nos comprometemos a proteger su privacidad. Consulte nuestra Política de Privacidad para más 
-        información sobre cómo recopilamos, usamos y protegemos sus datos personales.
-      </p>
-    </section>
-
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">9. Modificaciones</h2>
-      <p class="terminos-section__text">
-        Adomiapp se reserva el derecho de modificar estos términos en cualquier momento. Las modificaciones 
-        entrarán en vigor inmediatamente después de su publicación en la plataforma.
-      </p>
-    </section>
-
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">10. Ley Aplicable y Jurisdicción</h2>
-      <p class="terminos-section__text">
-        Estos Términos y Condiciones se regirán e interpretarán de acuerdo con las leyes de la República de Chile. 
-        Cualquier disputa, controversia o reclamo que surja de o en relación con estos Términos, o el incumplimiento, 
-        terminación o invalidez de los mismos, se someterá a la jurisdicción exclusiva de los tribunales ordinarios 
-        de justicia de Santiago, Chile, renunciando expresamente a cualquier otro fuero que pudiere corresponderles.
-      </p>
-    </section>
-
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">11. Contacto</h2>
-      <p class="terminos-section__text">
-        Para preguntas sobre estos Términos y Condiciones:
-      </p>
+      <h2 class="terminos-section__title">Anexo A: Conductas Prohibidas</h2>
       <ul class="terminos-section__list">
-        <li>Email: soporte@adomiapp.com</li>
-        <li>Teléfono: +56 9 XXXX XXXX</li>
+        <li>Suplantar identidades, vulnerar privacidad o publicar datos de terceros sin permiso.</li>
+        <li>Publicidad engañosa, promesas imposibles, comparativas denigratorias.</li>
+        <li>Solicitar/aceptar pagos fuera de la Plataforma para eludir comisiones.</li>
+        <li>Subir malware, hacer scraping, ingeniería inversa o ataques a la seguridad.</li>
+        <li>Discriminación, acoso, violencia o incitación al odio.</li>
+        <li>Publicar o solicitar Servicios ilegales o que requieran licencias no obtenidas.</li>
+        <li>Compartir credenciales o vender Cuentas.</li>
       </ul>
     </section>
 
