@@ -6,6 +6,11 @@ import { IconComponent } from '../icon/icon.component';
 interface LocationOption {
   id: string;
   name: string;
+  region?: string;
+}
+
+interface RegionData {
+  [key: string]: string[];
 }
 
 interface DateTimeSelection {
@@ -82,19 +87,67 @@ interface DateTimeSelection {
            [class.hidden]="!showLocationPopover"
            [class]="locationPopoverClass">
         <div class="popover-content">
+          <!-- Botón usar ubicación actual -->
+          <button
+            type="button"
+            class="use-location-btn"
+            (click)="useCurrentLocation()">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+            </svg>
+            Usar mi ubicación actual
+          </button>
+
+          <!-- Selects de Región y Comuna -->
+          <div class="region-comuna-grid">
+            <div>
+              <label class="select-label">REGIÓN</label>
+              <select
+                [(ngModel)]="selectedRegion"
+                (change)="onRegionChange()"
+                class="location-select">
+                <option value="">Selecciona una región</option>
+                <option *ngFor="let region of regionOptions" [value]="region">
+                  {{ region }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="select-label">COMUNA</label>
+              <select
+                [(ngModel)]="selectedComuna"
+                (change)="onComunaSelectChange()"
+                [disabled]="!selectedRegion"
+                class="location-select">
+                <option value="">Selecciona una comuna</option>
+                <option *ngFor="let comuna of comunaOptions" [value]="comuna">
+                  {{ comuna }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Separador -->
+          <p class="text-center text-xs text-gray-400 my-2">o</p>
+
+          <!-- Búsqueda directa de comuna -->
           <input
             type="text"
-            [placeholder]="locationSearchPlaceholder"
+            placeholder="Busca tu comuna directamente..."
             [class]="locationSearchClass"
             [(ngModel)]="locationSearchTerm"
             (input)="filterLocations()"
           />
-          <ul class="location-list" [class]="locationListClass">
+
+          <!-- Lista de resultados de búsqueda (solo si hay término de búsqueda) -->
+          <ul *ngIf="locationSearchTerm" class="location-list" [class]="locationListClass">
             <li *ngFor="let location of filteredLocations"
                 class="location-item"
                 [class]="locationItemClass"
                 (click)="selectLocation(location)">
               {{ location.name }}
+              <span class="location-region">{{ location.region }}</span>
             </li>
           </ul>
         </div>
@@ -219,40 +272,34 @@ export class SearchInputComponent implements OnInit, OnDestroy, ControlValueAcce
   showDatePopover: boolean = false;
   locationSearchTerm: string = '';
   customDateTime: string = '';
+  selectedRegion: string = '';
+  selectedComuna: string = '';
 
-  // Datos
-  locations: LocationOption[] = [
-    { id: 'santiago', name: 'Santiago' },
-    { id: 'providencia', name: 'Providencia' },
-    { id: 'las-condes', name: 'Las Condes' },
-    { id: 'vitacura', name: 'Vitacura' },
-    { id: 'lo-barnechea', name: 'Lo Barnechea' },
-    { id: 'nunoa', name: 'Ñuñoa' },
-    { id: 'la-reina', name: 'La Reina' },
-    { id: 'macul', name: 'Macul' },
-    { id: 'penalolen', name: 'Peñalolén' },
-    { id: 'la-florida', name: 'La Florida' },
-    { id: 'san-joaquin', name: 'San Joaquín' },
-    { id: 'la-granja', name: 'La Granja' },
-    { id: 'el-bosque', name: 'El Bosque' },
-    { id: 'san-bernardo', name: 'San Bernardo' },
-    { id: 'puente-alto', name: 'Puente Alto' },
-    { id: 'maipu', name: 'Maipú' },
-    { id: 'cerrillos', name: 'Cerrillos' },
-    { id: 'estacion-central', name: 'Estación Central' },
-    { id: 'quinta-normal', name: 'Quinta Normal' },
-    { id: 'lo-prado', name: 'Lo Prado' },
-    { id: 'pudahuel', name: 'Pudahuel' },
-    { id: 'cerro-navia', name: 'Cerro Navia' },
-    { id: 'renca', name: 'Renca' },
-    { id: 'quilicura', name: 'Quilicura' },
-    { id: 'huechuraba', name: 'Huechuraba' },
-    { id: 'conchali', name: 'Conchalí' },
-    { id: 'independencia', name: 'Independencia' },
-    { id: 'recoleta', name: 'Recoleta' }
-  ];
+  // Datos de Regiones y Comunas de Chile
+  regionesYComunas: RegionData = {
+    "Arica y Parinacota": ["Arica", "Camarones", "Putre", "General Lagos"],
+    "Tarapacá": ["Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara", "Pica"],
+    "Antofagasta": ["Antofagasta", "Mejillones", "Sierra Gorda", "Taltal", "Calama", "Ollagüe", "San Pedro de Atacama", "Tocopilla", "María Elena"],
+    "Atacama": ["Copiapó", "Caldera", "Tierra Amarilla", "Chañaral", "Diego de Almagro", "Vallenar", "Alto del Carmen", "Freirina", "Huasco"],
+    "Coquimbo": ["La Serena", "Coquimbo", "Andacollo", "La Higuera", "Paiguano", "Vicuña", "Illapel", "Canela", "Los Vilos", "Salamanca", "Ovalle", "Combarbalá", "Monte Patria", "Punitaqui", "Río Hurtado"],
+    "Valparaíso": ["Valparaíso", "Casablanca", "Concón", "Juan Fernández", "Puchuncaví", "Quintero", "Viña del Mar", "Isla de Pascua", "Los Andes", "Calle Larga", "Rinconada", "San Esteban", "La Ligua", "Cabildo", "Papudo", "Petorca", "Zapallar", "Quillota", "Calera", "Hijuelas", "La Cruz", "Nogales", "San Antonio", "Algarrobo", "Cartagena", "El Quisco", "El Tabo", "Santo Domingo", "San Felipe", "Catemu", "Llaillay", "Panquehue", "Putaendo", "Santa María", "Quilpué", "Limache", "Olmué", "Villa Alemana"],
+    "Metropolitana de Santiago": ["Santiago", "Cerrillos", "Cerro Navia", "Conchalí", "El Bosque", "Estación Central", "Huechuraba", "Independencia", "La Cisterna", "La Florida", "La Granja", "La Pintana", "La Reina", "Las Condes", "Lo Barnechea", "Lo Espejo", "Lo Prado", "Macul", "Maipú", "Ñuñoa", "Pedro Aguirre Cerda", "Peñalolén", "Providencia", "Pudahuel", "Quilicura", "Quinta Normal", "Recoleta", "Renca", "San Joaquín", "San Miguel", "San Ramón", "Vitacura", "Puente Alto", "Pirque", "San José de Maipo", "Colina", "Lampa", "Tiltil", "San Bernardo", "Buin", "Calera de Tango", "Paine", "Melipilla", "Alhué", "Curacaví", "María Pinto", "San Pedro", "Talagante", "El Monte", "Isla de Maipo", "Padre Hurtado", "Peñaflor"],
+    "Libertador General Bernardo O'Higgins": ["Rancagua", "Codegua", "Coinco", "Coltauco", "Doñihue", "Graneros", "Las Cabras", "Machalí", "Malloa", "Mostazal", "Olivar", "Peumo", "Pichidegua", "Quinta de Tilcoco", "Rengo", "Requínoa", "San Vicente", "Pichilemu", "La Estrella", "Litueche", "Marchihue", "Navidad", "Paredones", "San Fernando", "Chépica", "Chimbarongo", "Lolol", "Nancagua", "Palmilla", "Peralillo", "Placilla", "Pumanque", "Santa Cruz"],
+    "Maule": ["Talca", "Constitución", "Curepto", "Empedrado", "Maule", "Pelarco", "Pencahue", "Río Claro", "San Clemente", "San Rafael", "Cauquenes", "Chanco", "Pelluhue", "Curicó", "Hualañé", "Licantén", "Molina", "Rauco", "Romeral", "Sagrada Familia", "Teno", "Vichquén", "Linares", "Colbún", "Longaví", "Parral", "Retiro", "San Javier", "Villa Alegre", "Yerbas Buenas"],
+    "Ñuble": ["Chillán", "Bulnes", "Chillán Viejo", "El Carmen", "Pemuco", "Pinto", "Quillón", "San Ignacio", "Yungay", "Quirihue", "Cobquecura", "Coelemu", "Ninhue", "Portezuelo", "Ránquil", "Treguaco", "San Carlos", "Coihueco", "Ñiquén", "San Fabián", "San Nicolás"],
+    "Biobío": ["Concepción", "Coronel", "Chiguayante", "Florida", "Hualqui", "Lota", "Penco", "San Pedro de la Paz", "Santa Juana", "Talcahuano", "Tomé", "Hualpén", "Lebu", "Arauco", "Cañete", "Contulmo", "Curanilahue", "Los Álamos", "Tirúa", "Los Ángeles", "Antuco", "Cabrero", "Laja", "Mulchén", "Nacimiento", "Negrete", "Quilaco", "Quilleco", "San Rosendo", "Santa Bárbara", "Tucapel", "Yumbel", "Alto Biobío"],
+    "La Araucanía": ["Temuco", "Carahue", "Cunco", "Curarrehue", "Freire", "Galvarino", "Gorbea", "Loncoche", "Melipeuco", "Nueva Imperial", "Padre las Casas", "Perquenco", "Pitrufquén", "Pucón", "Saavedra", "Teodoro Schmidt", "Toltén", "Vilcún", "Villarrica", "Cholchol", "Angol", "Collipulli", "Curacautín", "Ercilla", "Lonquimay", "Los Sauces", "Lumaco", "Purén", "Renaico", "Traiguén", "Victoria"],
+    "Los Ríos": ["Valdivia", "Corral", "Lanco", "Los Lagos", "Máfil", "Mariquina", "Paillaco", "Panguipulli", "La Unión", "Futrono", "Lago Ranco", "Río Bueno"],
+    "Los Lagos": ["Puerto Montt", "Calbuco", "Cochamó", "Fresia", "Frutillar", "Los Muermos", "Llanquihue", "Maullín", "Puerto Varas", "Castro", "Ancud", "Chonchi", "Curaco de Vélez", "Dalcahue", "Puqueldón", "Queilén", "Quellón", "Quemchi", "Quinchao", "Osorno", "Puerto Octay", "Purranque", "Puyehue", "Río Negro", "San Juan de la Costa", "San Pablo", "Chaitén", "Futaleufú", "Hualaihué", "Palena"],
+    "Aysén del General Carlos Ibáñez del Campo": ["Coyhaique", "Lago Verde", "Aysén", "Cisnes", "Guaitecas", "Cochrane", "O'Higgins", "Tortel", "Chile Chico", "Río Ibáñez"],
+    "Magallanes y de la Antártica Chilena": ["Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio", "Cabo de Hornos (Ex Navarino)", "Antártica", "Porvenir", "Primavera", "Timaukel", "Natales", "Torres del Paine"]
+  };
 
+  // Lista plana de todas las comunas para búsqueda y selección
+  locations: LocationOption[] = [];
   filteredLocations: LocationOption[] = [];
+  regionOptions: string[] = [];
+  comunaOptions: string[] = [];
 
   quickDateOptions = [
     { value: 'any', label: 'Cualquier fecha' },
@@ -271,8 +318,34 @@ export class SearchInputComponent implements OnInit, OnDestroy, ControlValueAcce
   private onTouched = () => {};
 
   ngOnInit() {
+    this.initializeLocationsData();
     this.filteredLocations = [...this.locations];
     this.initializeDefaults();
+  }
+
+  private initializeLocationsData() {
+    // Generar lista plana de todas las comunas con su región
+    for (const region in this.regionesYComunas) {
+      this.regionesYComunas[region].forEach(comuna => {
+        this.locations.push({
+          id: this.slugify(comuna),
+          name: comuna,
+          region: region
+        });
+      });
+    }
+
+    // Generar lista de regiones
+    this.regionOptions = Object.keys(this.regionesYComunas);
+  }
+
+  private slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   ngOnDestroy() {
@@ -326,7 +399,29 @@ export class SearchInputComponent implements OnInit, OnDestroy, ControlValueAcce
     this.showLocationPopover = !this.showLocationPopover;
   }
 
+  onRegionChange(): void {
+    // Cuando se selecciona una región, poblar el select de comunas
+    if (this.selectedRegion) {
+      this.comunaOptions = this.regionesYComunas[this.selectedRegion] || [];
+      this.selectedComuna = ''; // Resetear comuna seleccionada
+    } else {
+      this.comunaOptions = [];
+      this.selectedComuna = '';
+    }
+  }
+
+  onComunaSelectChange(): void {
+    // Cuando se selecciona una comuna del select
+    if (this.selectedComuna) {
+      const location = this.locations.find(loc => loc.name === this.selectedComuna);
+      if (location) {
+        this.selectLocation(location);
+      }
+    }
+  }
+
   filterLocations(): void {
+    // Filtrar comunas por búsqueda directa
     if (!this.locationSearchTerm) {
       this.filteredLocations = [...this.locations];
     } else {
@@ -339,7 +434,18 @@ export class SearchInputComponent implements OnInit, OnDestroy, ControlValueAcce
   selectLocation(location: LocationOption): void {
     this.selectedLocation = location;
     this.showLocationPopover = false;
+    this.locationSearchTerm = ''; // Limpiar búsqueda
+    this.selectedRegion = ''; // Resetear selects
+    this.selectedComuna = '';
     this.locationChange.emit(location.id);
+  }
+
+  useCurrentLocation(): void {
+    // Placeholder para usar la ubicación actual del usuario
+    // En producción, aquí se usaría la API de geolocalización
+    console.log('Usando ubicación actual del usuario');
+    // Por ahora, simplemente mostramos un mensaje
+    alert('Función de geolocalización disponible próximamente');
   }
 
   // Funciones de fecha/hora

@@ -150,27 +150,102 @@
 
     // Location popover specific
     &.location-popover {
-      width: 33.333333%;
+      min-width: 420px;
       left: 0;
 
-      input {
+      // Botón usar ubicación actual
+      .use-location-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #4f46e5;
+        background-color: #eef2ff;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        margin-bottom: 1rem;
+
+        &:hover {
+          background-color: #e0e7ff;
+        }
+
+        svg {
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+      }
+
+      // Grid de región y comuna
+      .region-comuna-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+
+        .select-label {
+          display: block;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #4b5563;
+          margin-bottom: 0.25rem;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
+        }
+
+        .location-select {
+          width: 100%;
+          padding: 0.5rem 0.75rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.75rem;
+          font-size: 0.875rem;
+          color: #374151;
+          background-color: white;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+          }
+
+          &:disabled {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+          }
+        }
+
+        @media (max-width: 640px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      // Input de búsqueda directa
+      input[type="text"] {
         width: 100%;
         padding: 0.5rem 1rem;
         border: 1px solid #d1d5db;
         border-radius: 0.75rem;
-        margin-bottom: 1rem;
         font-size: 0.875rem;
 
         &:focus {
           outline: none;
           border-color: #4f46e5;
-          box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
+          box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
         }
       }
 
       .location-list {
         max-height: 15rem;
         overflow-y: auto;
+        margin-top: 0.5rem;
 
         &::-webkit-scrollbar {
           width: 8px;
@@ -196,9 +271,18 @@
           transition: background-color 0.2s ease;
           font-size: 0.875rem;
           color: #374151;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
 
           &:hover {
             background-color: #f1f5f9;
+          }
+
+          .location-region {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 500;
           }
         }
       }
