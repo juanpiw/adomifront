@@ -116,8 +116,8 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   }
 
   onSettingsClick(): void {
-    console.log('Client settings clicked');
-    // TODO: Implementar lógica de configuración para cliente
+    this.router.navigate(['/client/configuracion']);
+    this.onNav();
   }
 
   isMobile(): boolean {
