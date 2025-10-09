@@ -369,105 +369,447 @@
 
   <!-- Contenido de Políticas de Privacidad -->
   <div class="terminos-content" *ngIf="activeTab === 'privacidad'">
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">1. Información que Recopilamos</h2>
+    <!-- Introducción -->
+    <div class="privacy-intro">
       <p class="terminos-section__text">
-        Recopilamos información que usted nos proporciona directamente al registrarse, crear un perfil, 
-        reservar servicios o comunicarse con nosotros.
+        <strong>Vigencia:</strong> 3 de octubre de 2025<br>
+        <strong>Razón social:</strong> [Razón Social] — RUT: [xx.xxx.xxx-x]<br>
+        <strong>Domicilio:</strong> [Dirección, Comuna, Región, Chile]<br>
+        <strong>Correo privacidad:</strong> privacy@adomiapp.com<br>
+        <strong>Soporte general:</strong> soporte@adomiapp.com | +56 9 [XXXX XXXX]
       </p>
+      <p class="terminos-section__text">
+        Esta Política describe cómo Adomiapp ("nosotros") trata datos personales de Clientes y Profesionales que 
+        usan nuestro sitio web, app móvil y APIs (la "Plataforma"). Al usar Adomiapp, aceptas esta Política y 
+        nuestros Términos y Condiciones.
+      </p>
+      <p class="terminos-section__text">
+        <strong>Marco chileno:</strong> Tratamos datos conforme a la Ley N°19.628 sobre Protección de la Vida Privada 
+        (Chile) y principios de licitud, finalidad, proporcionalidad, seguridad y transparencia. Si en el futuro se 
+        dictan normas más exigentes, actualizaremos esta Política.
+      </p>
+    </div>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">1. Responsable del Tratamiento</h2>
       <ul class="terminos-section__list">
-        <li>Información personal: nombre, email, teléfono, dirección</li>
-        <li>Información de pago: datos de tarjetas o métodos de pago</li>
-        <li>Información de perfil: foto, preferencias, historial de servicios</li>
-        <li>Datos de uso: interacciones con la plataforma, búsquedas, reservas</li>
+        <li><strong>Responsable:</strong> [Razón Social] (Adomiapp)</li>
+        <li><strong>Contacto:</strong> privacy@adomiapp.com</li>
+        <li><strong>Representante:</strong> [Nombre y cargo] (Encargado/a de Privacidad)</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">2. Cómo Usamos su Información</h2>
+      <h2 class="terminos-section__title">2. Datos que Tratamos</h2>
       <p class="terminos-section__text">
-        Utilizamos la información recopilada para:
+        Recogemos datos que nos proporcionas, datos que se generan por tu uso y datos de terceros proveedores 
+        (p. ej., PSP, verificación de identidad).
       </p>
+      
+      <h3 class="terminos-subsection__title">2.1. Datos de registro y perfil</h3>
       <ul class="terminos-section__list">
-        <li>Facilitar la conexión entre clientes y profesionales</li>
-        <li>Procesar pagos y transacciones</li>
-        <li>Mejorar nuestros servicios y experiencia de usuario</li>
-        <li>Enviar notificaciones sobre reservas y servicios</li>
-        <li>Prevenir fraudes y garantizar la seguridad</li>
-        <li>Cumplir con obligaciones legales</li>
+        <li><strong>Identificación y contacto:</strong> nombre, RUT, email, teléfono, dirección/comuna/ciudad, idioma.</li>
+        <li><strong>Cuenta:</strong> foto/avatares, biografía profesional, rubro/servicios, tarifas, disponibilidad.</li>
       </ul>
-    </section>
 
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">3. Compartir Información</h2>
-      <p class="terminos-section__text">
-        No vendemos su información personal. Compartimos información solo en los siguientes casos:
-      </p>
+      <h3 class="terminos-subsection__title">2.2. Verificación y cumplimiento</h3>
       <ul class="terminos-section__list">
-        <li>Con profesionales necesarios para completar su servicio</li>
-        <li>Con proveedores de servicios que nos ayudan a operar la plataforma</li>
-        <li>Cuando sea requerido por ley o autoridades competentes</li>
-        <li>Con su consentimiento explícito</li>
+        <li><strong>KYC/Verificación:</strong> imágenes de cédula/pasaporte, selfie de validación, número de inicio 
+        de actividades (si Profesional), licencias/certificaciones.</li>
+        <li>Antecedentes comerciales/profesionales (cuando corresponda).</li>
       </ul>
-    </section>
 
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">4. Seguridad de Datos</h2>
-      <p class="terminos-section__text">
-        Implementamos medidas de seguridad técnicas y organizativas para proteger su información personal 
-        contra acceso no autorizado, pérdida, alteración o divulgación.
-      </p>
-    </section>
-
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">5. Sus Derechos</h2>
-      <p class="terminos-section__text">
-        Usted tiene derecho a:
-      </p>
+      <h3 class="terminos-subsection__title">2.3. Operación del servicio</h3>
       <ul class="terminos-section__list">
-        <li>Acceder a su información personal</li>
-        <li>Corregir datos inexactos</li>
-        <li>Solicitar la eliminación de sus datos</li>
-        <li>Oponerse al procesamiento de sus datos</li>
-        <li>Solicitar portabilidad de datos</li>
-        <li>Retirar su consentimiento en cualquier momento</li>
+        <li><strong>Reservas y transacciones:</strong> historial de servicios, precios, estados, reembolsos, 
+        contracargos, boletas/facturas (metadatos fiscales, no almacenamos números completos de tarjetas).</li>
+        <li><strong>Comunicación in-app:</strong> mensajes, valoraciones, reportes, adjuntos.</li>
+        <li><strong>Atención y soporte:</strong> tickets, llamadas, correos, grabaciones (si avisado).</li>
       </ul>
-    </section>
 
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">6. Cookies y Tecnologías Similares</h2>
+      <h3 class="terminos-subsection__title">2.4. Datos técnicos y uso</h3>
+      <ul class="terminos-section__list">
+        <li><strong>Dispositivo y app:</strong> modelo, sistema operativo, versión, identificadores publicitarios 
+        (IDFA/AAID), tokens push.</li>
+        <li><strong>Red y rendimiento:</strong> IP, timestamps, logs, errores, telemetría.</li>
+        <li><strong>Geolocalización (opcional):</strong> punto/área aproximada para matching y logística 
+        (puedes desactivar permisos).</li>
+      </ul>
+
+      <h3 class="terminos-subsection__title">2.5. Marketing y analítica</h3>
+      <ul class="terminos-section__list">
+        <li><strong>Cookies/SDKs:</strong> páginas visitadas, eventos, embudos, preferencia de idioma, campañas, UTM.</li>
+      </ul>
+
       <p class="terminos-section__text">
-        Utilizamos cookies y tecnologías similares para mejorar su experiencia, analizar el uso de la 
-        plataforma y personalizar contenido. Puede gestionar sus preferencias de cookies en la configuración 
-        de su navegador.
+        <strong>Datos sensibles:</strong> En general no solicitamos datos sensibles. Si para verificación recibimos 
+        imágenes de documentos oficiales, los tratamos con medidas reforzadas y por el tiempo estrictamente necesario.
       </p>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">7. Retención de Datos</h2>
+      <h2 class="terminos-section__title">3. Finalidades y Bases de Licitud</h2>
+      <div class="table-container">
+        <table class="terminos-table">
+          <thead>
+            <tr>
+              <th>Finalidad</th>
+              <th>Ejemplos</th>
+              <th>Base legal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Crear y gestionar tu cuenta</td>
+              <td>Registro, login, seguridad de acceso</td>
+              <td>Ejecución de contrato</td>
+            </tr>
+            <tr>
+              <td>Verificar identidad/KYC (Profesionales)</td>
+              <td>Validar cédula, licencias, selfie</td>
+              <td>Interés legítimo + Consentimiento</td>
+            </tr>
+            <tr>
+              <td>Intermediación y reserva</td>
+              <td>Matching Cliente–Profesional, chat, agenda</td>
+              <td>Ejecución de contrato</td>
+            </tr>
+            <tr>
+              <td>Pagos y conciliación</td>
+              <td>Cobros vía PSP, comisiones, contracargos</td>
+              <td>Ejecución + Obligación legal</td>
+            </tr>
+            <tr>
+              <td>Facturación/tributación</td>
+              <td>Boletas/facturas, reportes SII</td>
+              <td>Obligación legal</td>
+            </tr>
+            <tr>
+              <td>Soporte y seguridad</td>
+              <td>Detección fraude, abuso, spam</td>
+              <td>Interés legítimo</td>
+            </tr>
+            <tr>
+              <td>Reputación/comunidad</td>
+              <td>Ratings, comentarios, moderación</td>
+              <td>Interés legítimo</td>
+            </tr>
+            <tr>
+              <td>Analítica y mejora</td>
+              <td>Métricas de uso, performance</td>
+              <td>Interés legítimo</td>
+            </tr>
+            <tr>
+              <td>Comunicaciones comerciales</td>
+              <td>Newsletters, campañas</td>
+              <td>Consentimiento (opt-in)</td>
+            </tr>
+            <tr>
+              <td>Cumplimientos legales</td>
+              <td>Requerimientos de autoridades</td>
+              <td>Obligación legal</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p class="terminos-section__text">
-        Retenemos su información personal durante el tiempo necesario para cumplir con los fines descritos 
-        en esta política, a menos que la ley requiera o permita un período de retención más largo.
+        Puedes revocar el consentimiento para marketing en cualquier momento (ver §12).
       </p>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">8. Cambios a esta Política</h2>
+      <h2 class="terminos-section__title">4. Cookies y SDKs</h2>
       <p class="terminos-section__text">
-        Podemos actualizar esta Política de Privacidad periódicamente. Le notificaremos sobre cambios 
-        significativos mediante un aviso en la plataforma o por email.
-      </p>
-    </section>
-
-    <section class="terminos-section">
-      <h2 class="terminos-section__title">9. Contacto</h2>
-      <p class="terminos-section__text">
-        Para consultas sobre privacidad y protección de datos:
+        Usamos cookies propias y de terceros (p. ej., métricas y rendimiento) y SDKs móviles para notificaciones y analítica.
       </p>
       <ul class="terminos-section__list">
-        <li>Email: privacidad@adomiapp.com</li>
-        <li>Teléfono: +56 9 XXXX XXXX</li>
-        <li>Dirección: Santiago, Chile</li>
+        <li><strong>Tipos:</strong> esenciales (login/seguridad), funcionales (preferencias), analíticas (uso, funnels), 
+        marketing (solo con consentimiento).</li>
+        <li><strong>Gestión:</strong> banner y Centro de Preferencias para aceptar/rechazar categorías no esenciales.</li>
+        <li><strong>Terceros típicos:</strong> analítica, crash reporting, mensajería push, gestor de formularios.</li>
+      </ul>
+      <p class="terminos-section__text">
+        Detalle ampliado en el Anexo B de Cookies/SDKs (puedes modificar tus preferencias en cualquier momento).
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">5. Fuentes y Destinatarios</h2>
+      <p class="terminos-section__text">
+        <strong>Fuentes:</strong> tú directamente; tu dispositivo; terceros autorizados (PSP, proveedor KYC).
+      </p>
+      <p class="terminos-section__text">
+        <strong>Destinatarios (encargados/subencargados):</strong>
+      </p>
+      <ul class="terminos-section__list">
+        <li><strong>Infraestructura y hosting:</strong> [Microsoft Azure] u otros equivalentes.</li>
+        <li><strong>Pagos (PSP):</strong> [Nombre PSP], para procesar cobros, contracargos.</li>
+        <li><strong>KYC/Verificación:</strong> [Proveedor KYC], para validar identidad.</li>
+        <li><strong>Analítica y mensajería:</strong> [Herramientas analítica], [Email/SMS/push].</li>
+        <li><strong>Soporte/Helpdesk:</strong> [Proveedor mesa de ayuda].</li>
+        <li><strong>Contabilidad/facturación:</strong> ERP/contadores externos (si aplica).</li>
+        <li><strong>Autoridades:</strong> cuando la ley lo exija o para proteger derechos/seguridad.</li>
+      </ul>
+      <p class="terminos-section__text">
+        Celebramos acuerdos de encargo de tratamiento con proveedores, limitando fines y exigiendo medidas de seguridad. 
+        Ver Anexo A para tabla detallada.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">6. Transferencias Internacionales</h2>
+      <p class="terminos-section__text">
+        Podemos almacenar o tratar datos fuera de Chile (según región del proveedor de nube). En esos casos aplicamos 
+        cláusulas contractuales y medidas de seguridad para un nivel de protección adecuado. Puedes consultarnos las 
+        ubicaciones activas de tus datos escribiendo a privacy@adomiapp.com.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">7. Plazos de Conservación</h2>
+      <p class="terminos-section__text">
+        Conservamos datos solo por el tiempo necesario para cumplir las finalidades y obligaciones.
+      </p>
+      <div class="table-container">
+        <table class="terminos-table">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Plazo estándar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cuenta y perfil</td>
+              <td>Mientras la cuenta esté activa y hasta 2 años tras su cierre (defensa de reclamos)</td>
+            </tr>
+            <tr>
+              <td>Verificación KYC (imágenes/documentos)</td>
+              <td>90 días desde verificación, salvo obligaciones legales o fraude (hasta 2 años si existe investigación)</td>
+            </tr>
+            <tr>
+              <td>Transacciones y contabilidad</td>
+              <td>6 años (respaldos tributarios y contables)</td>
+            </tr>
+            <tr>
+              <td>Soporte y tickets</td>
+              <td>2 años desde cierre del caso</td>
+            </tr>
+            <tr>
+              <td>Logs técnicos</td>
+              <td>6–12 meses (seguridad y diagnóstico)</td>
+            </tr>
+            <tr>
+              <td>Marketing</td>
+              <td>Hasta revocación del consentimiento o 2 años de inactividad</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="terminos-section__text">
+        Cuando vence el plazo, eliminamos o anonimizamos de forma segura. Ver Anexo C para criterios de retención.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">8. Seguridad</h2>
+      <p class="terminos-section__text">
+        Aplicamos medidas técnicas y organizativas proporcionales al riesgo:
+      </p>
+      <ul class="terminos-section__list">
+        <li>Cifrado en tránsito (TLS) y en reposo en nuestros sistemas.</li>
+        <li>Gestión de accesos, MFA para personal, registros y auditorías.</li>
+        <li>Pruebas de seguridad y hardening de infraestructura.</li>
+        <li>Políticas de retención y eliminación.</li>
+      </ul>
+      <p class="terminos-section__text">
+        Si detectamos un incidente de seguridad con riesgo para ti, te notificaremos oportunamente por los canales 
+        registrados y adoptaremos medidas de contención.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">9. Menores de Edad</h2>
+      <p class="terminos-section__text">
+        La Plataforma no está dirigida a menores de 18 años. No registramos intencionalmente datos de menores. 
+        Si crees que un menor nos proporcionó datos, escríbenos a privacy@adomiapp.com para eliminarlos.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">10. Decisiones Automatizadas y Perfilado</h2>
+      <p class="terminos-section__text">
+        Podemos usar señales de comportamiento (p. ej., ubicación aproximada, historial y ratings) para ordenar 
+        resultados, mejorar el matching y prevenir fraude.
+      </p>
+      <p class="terminos-section__text">
+        No tomamos decisiones que produzcan efectos jurídicos o te afecten significativamente solo por medios automatizados.
+      </p>
+      <p class="terminos-section__text">
+        Puedes solicitar revisión humana, explicación y oposición al perfilado en privacy@adomiapp.com.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">11. Tus Derechos (ARCO y otros)</h2>
+      <p class="terminos-section__text">Puedes ejercer ante Adomiapp:</p>
+      <ul class="terminos-section__list">
+        <li><strong>Acceso:</strong> saber qué datos tratamos y obtener copia.</li>
+        <li><strong>Rectificación/Actualización.</strong></li>
+        <li><strong>Cancelación/Eliminación:</strong> cuando proceda legalmente.</li>
+        <li><strong>Oposición:</strong> al tratamiento para ciertos fines (p. ej., marketing).</li>
+        <li><strong>Limitación/Portabilidad:</strong> cuando sea aplicable.</li>
+      </ul>
+      <p class="terminos-section__text">
+        <strong>Cómo ejercer:</strong> envía un correo a privacy@adomiapp.com con asunto "Derechos de Datos" indicando 
+        tu solicitud y un medio de verificación de identidad.
+      </p>
+      <p class="terminos-section__text">
+        <strong>Plazo de respuesta:</strong> hasta 15 días hábiles (o el que establezca la ley vigente). Si la solicitud 
+        es compleja, te avisaremos la ampliación del plazo.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">12. Marketing y Preferencias</h2>
+      <p class="terminos-section__text">
+        Solo enviamos comunicaciones comerciales con tu consentimiento.
+      </p>
+      <p class="terminos-section__text">
+        Puedes retirar tu consentimiento desde el enlace "dar de baja" del email, en Ajustes de la app o escribiendo 
+        a privacy@adomiapp.com.
+      </p>
+      <p class="terminos-section__text">
+        La baja de marketing no afecta comunicaciones transaccionales (p. ej., confirmaciones de reserva, boletas).
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">13. Terceros y Enlaces</h2>
+      <p class="terminos-section__text">
+        Sitios o servicios de terceros tienen sus propias políticas. No somos responsables por sus prácticas. 
+        Revisa sus términos y privacidad.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">14. Cambios a esta Política</h2>
+      <p class="terminos-section__text">
+        Podemos actualizar esta Política. Si el cambio es sustancial, daremos aviso previo de 15 días por correo/app. 
+        El uso posterior a la fecha de vigencia implica tu aceptación de la versión actualizada. Conservamos un 
+        historial de versiones.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">15. Reclamos y Resolución</h2>
+      <p class="terminos-section__text">
+        Si no quedas conforme con nuestra respuesta, puedes acudir a las vías judiciales que correspondan en Chile. 
+        También puedes contactar a organismos de consumo por materias de su competencia (p. ej., SERNAC para temas de 
+        información/compras), sin perjuicio de lo dispuesto en la Ley 19.628 para datos personales.
+      </p>
+    </section>
+
+    <!-- Anexos de Privacidad -->
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">Anexo A — Tabla de Terceros</h2>
+      <div class="table-container">
+        <table class="terminos-table">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Proveedor</th>
+              <th>Rol</th>
+              <th>Dato compartido</th>
+              <th>Ubicación probable</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hosting/nube</td>
+              <td>Microsoft Azure</td>
+              <td>Encargado</td>
+              <td>Datos de cuenta, reservas, logs</td>
+              <td>Región Brasil South/otra</td>
+            </tr>
+            <tr>
+              <td>Pagos (PSP)</td>
+              <td>[PSP]</td>
+              <td>Encargado</td>
+              <td>Montos, estado de pago, tokens</td>
+              <td>EE.UU./LatAm</td>
+            </tr>
+            <tr>
+              <td>KYC/ID</td>
+              <td>[Proveedor KYC]</td>
+              <td>Encargado</td>
+              <td>Imagen documento/selfie, metadatos</td>
+              <td>UE/EE.UU./LatAm</td>
+            </tr>
+            <tr>
+              <td>Analítica</td>
+              <td>[Analytics]</td>
+              <td>Encargado</td>
+              <td>Eventos, ID dispositivo, cookies</td>
+              <td>Global</td>
+            </tr>
+            <tr>
+              <td>Email/SMS</td>
+              <td>[Email/SMS]</td>
+              <td>Encargado</td>
+              <td>Email/teléfono, templates</td>
+              <td>Global</td>
+            </tr>
+            <tr>
+              <td>Helpdesk</td>
+              <td>[Helpdesk]</td>
+              <td>Encargado</td>
+              <td>Tickets, adjuntos</td>
+              <td>Global</td>
+            </tr>
+            <tr>
+              <td>Facturación</td>
+              <td>[ERP/Contador]</td>
+              <td>Encargado</td>
+              <td>Datos tributarios</td>
+              <td>Chile/Global</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="terminos-section__text">
+        Compartimos el mínimo necesario y bajo contratos que limitan fines y protegen confidencialidad.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">Anexo B — Política de Cookies y SDKs</h2>
+      <p class="terminos-section__text">
+        <strong>Qué son:</strong> Pequeños archivos/SDKs que permiten que el sitio/app funcionen, midan rendimiento 
+        y (si autorizas) personalicen contenido/marketing.
+      </p>
+      <p class="terminos-section__text"><strong>Cómo los usamos:</strong></p>
+      <ul class="terminos-section__list">
+        <li><strong>Esenciales:</strong> login, carrito/reservas, seguridad, preferencias básicas.</li>
+        <li><strong>Analíticas:</strong> páginas vistas, clics, funnels (p. ej., crash/telemetría en app).</li>
+        <li><strong>Marketing (opt-in):</strong> medición de campañas y audiencias.</li>
+      </ul>
+      <p class="terminos-section__text">
+        <strong>Control:</strong> banner de consentimiento + panel para activar/desactivar categorías no esenciales. 
+        Navegar con cookies mínimas puede afectar la experiencia.
+      </p>
+      <p class="terminos-section__text">
+        <strong>Retención:</strong> según tipo; tokens publicitarios se conservan por los plazos del proveedor o hasta 
+        que los elimines desde tu dispositivo/navegador.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">Anexo C — Retención y Eliminación</h2>
+      <ul class="terminos-section__list">
+        <li><strong>Eliminación segura:</strong> sobreescritura/borrado programático al vencer plazos.</li>
+        <li><strong>Anonimización:</strong> métricas agregadas sin identificación directa.</li>
+        <li><strong>Congelamiento legal:</strong> si hay disputa/investigación, retenemos el tiempo necesario.</li>
       </ul>
     </section>
 
