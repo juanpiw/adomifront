@@ -98,6 +98,14 @@
         <li>Teléfono: +56 9 XXXX XXXX</li>
       </ul>
     </section>
+
+    <!-- Botón de descarga PDF -->
+    <div class="download-section">
+      <button class="download-btn" (click)="downloadPDF('terminos')">
+        <ui-icon name="save"></ui-icon>
+        Descargar PDF
+      </button>
+    </div>
   </div>
 
   <div class="terminos-footer" *ngIf="activeTab === 'terminos'">
@@ -209,6 +217,14 @@
         <li>Dirección: Santiago, Chile</li>
       </ul>
     </section>
+
+    <!-- Botón de descarga PDF -->
+    <div class="download-section">
+      <button class="download-btn" (click)="downloadPDF('privacidad')">
+        <ui-icon name="save"></ui-icon>
+        Descargar PDF
+      </button>
+    </div>
   </div>
 
   <div class="terminos-footer" *ngIf="activeTab === 'privacidad'">

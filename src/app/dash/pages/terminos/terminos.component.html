@@ -114,6 +114,14 @@
         <li>Soporte: Lunes a Viernes, 9:00 - 18:00 hrs</li>
       </ul>
     </section>
+
+    <!-- Botón de descarga PDF -->
+    <div class="download-section">
+      <button class="download-btn" (click)="downloadPDF('terminos')">
+        <ui-icon name="save"></ui-icon>
+        Descargar PDF
+      </button>
+    </div>
   </div>
 
   <div class="terminos-footer" *ngIf="activeTab === 'terminos'">
@@ -215,6 +223,14 @@
         <li>Horario: Lunes a Viernes, 9:00 - 18:00 hrs</li>
       </ul>
     </section>
+
+    <!-- Botón de descarga PDF -->
+    <div class="download-section">
+      <button class="download-btn" (click)="downloadPDF('privacidad')">
+        <ui-icon name="save"></ui-icon>
+        Descargar PDF
+      </button>
+    </div>
   </div>
 
   <div class="terminos-footer" *ngIf="activeTab === 'privacidad'">

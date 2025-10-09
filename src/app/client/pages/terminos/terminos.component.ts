@@ -18,5 +18,20 @@ export class ClientTerminosComponent {
   onTabChange(tab: TabType) {
     this.activeTab = tab;
   }
+
+  downloadPDF(type: TabType) {
+    const content = this.getPDFContent(type);
+    const filename = type === 'terminos' ? 'Terminos_Condiciones_Adomi.pdf' : 'Politicas_Privacidad_Adomi.pdf';
+    
+    // Por ahora, solo mostramos un mensaje
+    // En producción, aquí se generaría el PDF usando una librería como jsPDF o pdfmake
+    console.log(`Descargando ${filename}...`);
+    alert(`Función de descarga de PDF disponible próximamente.\n\nSe descargará: ${filename}`);
+  }
+
+  private getPDFContent(type: TabType): string {
+    // Aquí se prepararía el contenido para el PDF
+    return type === 'terminos' ? 'Contenido de Términos y Condiciones' : 'Contenido de Políticas de Privacidad';
+  }
 }
 
