@@ -33,6 +33,8 @@ import { GoogleCallbackComponent } from './auth/google-callback/google-callback.
 import { GoogleSuccessComponent } from './auth/google-success/google-success.component';
 import { QuickPaymentComponent } from './auth/quick-payment/quick-payment.component';
 import { TermsComponent } from './auth/terms/terms.component';
+import { ClientTerminosComponent } from './client/pages/terminos/terminos.component';
+import { DashTerminosComponent } from './dash/pages/terminos/terminos.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -48,6 +50,7 @@ export const routes: Routes = [
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },
       { path: 'configuracion', component: ClientConfiguracionComponent },
+      { path: 'terminos', component: ClientTerminosComponent },
       { path: 'validacion-datos-trabajador', component: ValidacionDatosTrabajadorComponent }
     ] },
       { path: 'auth', children: [
@@ -75,6 +78,7 @@ export const routes: Routes = [
       ,{ path: 'mensajes', component: DashMensajesComponent }
       ,{ path: 'servicios', component: DashServiciosComponent }
       ,{ path: 'perfil', component: DashPerfilComponent }
+      ,{ path: 'terminos', component: DashTerminosComponent }
     ] },
   { path: '**', redirectTo: '' }
 ];
