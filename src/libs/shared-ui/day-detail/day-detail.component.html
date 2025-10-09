@@ -67,3 +67,11 @@
     </div>
   </div>
 </aside>
+
+<!-- Modal para Agendar Cita -->
+<app-modal-agendar-cita
+  [isOpen]="isModalOpen"
+  [selectedDate]="selectedDate || undefined"
+  (close)="onCloseModal()"
+  (citaCreated)="onCitaCreated($event)">
+</app-modal-agendar-cita>

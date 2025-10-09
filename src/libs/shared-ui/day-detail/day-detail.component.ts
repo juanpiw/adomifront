@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ModalAgendarCitaComponent, NuevaCitaData } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
 
 export interface DayAppointment {
   id: string;
@@ -16,7 +17,7 @@ export interface DayAppointment {
 @Component({
   selector: 'app-day-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ModalAgendarCitaComponent],
   templateUrl: './day-detail.component.html',
   styleUrls: ['./day-detail.component.scss']
 })
@@ -28,6 +29,9 @@ export class DayDetailComponent {
 
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
   @Output() newAppointment = new EventEmitter<Date>();
+  @Output() citaCreated = new EventEmitter<NuevaCitaData>();
+
+  isModalOpen: boolean = false;
 
   get hasAppointments(): boolean {
     return this.appointments.length > 0;
@@ -79,9 +83,19 @@ export class DayDetailComponent {
   }
 
   onNewAppointment() {
+    this.isModalOpen = true;
     if (this.selectedDate) {
       this.newAppointment.emit(this.selectedDate);
     }
+  }
+
+  onCloseModal() {
+    this.isModalOpen = false;
+  }
+
+  onCitaCreated(citaData: NuevaCitaData) {
+    this.citaCreated.emit(citaData);
+    console.log('Nueva cita creada desde day-detail:', citaData);
   }
 
   getStatusColor(status: string): string {
