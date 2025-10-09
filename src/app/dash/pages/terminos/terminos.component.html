@@ -3,11 +3,28 @@
     <div class="terminos-header__icon">
       <ui-icon name="clipboard"></ui-icon>
     </div>
-    <h1 class="terminos-header__title">Términos y Condiciones</h1>
+    <h1 class="terminos-header__title">Información Legal</h1>
     <p class="terminos-header__subtitle">Última actualización: {{ lastUpdated }}</p>
   </div>
 
-  <div class="terminos-content">
+  <!-- Tabs de navegación -->
+  <div class="terminos-tabs">
+    <button 
+      class="terminos-tabs__button"
+      [class.terminos-tabs__button--active]="activeTab === 'terminos'"
+      (click)="onTabChange('terminos')">
+      Términos y Condiciones
+    </button>
+    <button 
+      class="terminos-tabs__button"
+      [class.terminos-tabs__button--active]="activeTab === 'privacidad'"
+      (click)="onTabChange('privacidad')">
+      Políticas de Privacidad
+    </button>
+  </div>
+
+  <!-- Contenido de Términos y Condiciones -->
+  <div class="terminos-content" *ngIf="activeTab === 'terminos'">
     <section class="terminos-section">
       <h2 class="terminos-section__title">1. Aceptación de los Términos</h2>
       <p class="terminos-section__text">
@@ -99,9 +116,110 @@
     </section>
   </div>
 
-  <div class="terminos-footer">
+  <div class="terminos-footer" *ngIf="activeTab === 'terminos'">
     <p class="terminos-footer__text">
       Al ofrecer servicios en Adomi, usted acepta estos términos y condiciones.
+    </p>
+  </div>
+
+  <!-- Contenido de Políticas de Privacidad -->
+  <div class="terminos-content" *ngIf="activeTab === 'privacidad'">
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">1. Información que Recopilamos</h2>
+      <p class="terminos-section__text">
+        Como profesional en Adomi, recopilamos información que usted proporciona al registrarse y al ofrecer servicios.
+      </p>
+      <ul class="terminos-section__list">
+        <li>Información personal: nombre, RUT, email, teléfono, dirección</li>
+        <li>Información profesional: certificaciones, experiencia, especialidades</li>
+        <li>Información bancaria: datos para transferencias de pagos</li>
+        <li>Datos de servicios: historial, calificaciones, comentarios</li>
+        <li>Documentos: verificación de identidad, certificados profesionales</li>
+      </ul>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">2. Cómo Usamos su Información</h2>
+      <p class="terminos-section__text">
+        Utilizamos su información para:
+      </p>
+      <ul class="terminos-section__list">
+        <li>Verificar su identidad y credenciales profesionales</li>
+        <li>Facilitar la conexión con clientes potenciales</li>
+        <li>Procesar pagos y transferencias</li>
+        <li>Mostrar su perfil a clientes</li>
+        <li>Mejorar la calidad de nuestra plataforma</li>
+        <li>Cumplir con obligaciones legales y fiscales</li>
+      </ul>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">3. Compartir Información con Clientes</h2>
+      <p class="terminos-section__text">
+        Su información de perfil profesional (nombre, foto, servicios, calificaciones) es visible para los 
+        clientes en la plataforma. Su información de contacto se comparte solo con clientes que reservan sus servicios.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">4. Protección de Datos de Clientes</h2>
+      <p class="terminos-section__text">
+        Como profesional, usted se compromete a:
+      </p>
+      <ul class="terminos-section__list">
+        <li>Mantener la confidencialidad de los datos de clientes</li>
+        <li>Usar la información solo para prestar servicios</li>
+        <li>No compartir datos de clientes con terceros</li>
+        <li>Eliminar datos de clientes después de completar servicios</li>
+      </ul>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">5. Seguridad de su Cuenta</h2>
+      <p class="terminos-section__text">
+        Es su responsabilidad mantener segura su cuenta y credenciales. Implementamos medidas de seguridad 
+        para proteger sus datos, pero usted debe tomar precauciones adicionales.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">6. Sus Derechos sobre sus Datos</h2>
+      <p class="terminos-section__text">
+        Usted tiene derecho a:
+      </p>
+      <ul class="terminos-section__list">
+        <li>Acceder y descargar sus datos personales</li>
+        <li>Actualizar información de perfil en cualquier momento</li>
+        <li>Solicitar eliminación de cuenta y datos</li>
+        <li>Exportar su historial de servicios y pagos</li>
+        <li>Oponerse al procesamiento de ciertos datos</li>
+      </ul>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">7. Retención de Información</h2>
+      <p class="terminos-section__text">
+        Mantenemos su información mientras su cuenta esté activa y durante 5 años adicionales después de su 
+        desactivación, según requerimientos legales y fiscales.
+      </p>
+    </section>
+
+    <section class="terminos-section">
+      <h2 class="terminos-section__title">8. Contacto - Privacidad</h2>
+      <p class="terminos-section__text">
+        Para consultas sobre privacidad:
+      </p>
+      <ul class="terminos-section__list">
+        <li>Email: privacidad@adomiapp.com</li>
+        <li>Teléfono: +56 9 XXXX XXXX</li>
+        <li>Horario: Lunes a Viernes, 9:00 - 18:00 hrs</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="terminos-footer" *ngIf="activeTab === 'privacidad'">
+    <p class="terminos-footer__text">
+      Al ofrecer servicios en Adomi, usted acepta esta Política de Privacidad.
     </p>
   </div>
 </div>

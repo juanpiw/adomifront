@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 
+type TabType = 'terminos' | 'privacidad';
+
 @Component({
   selector: 'app-client-terminos',
   standalone: true,
@@ -11,5 +13,10 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 })
 export class ClientTerminosComponent {
   lastUpdated = 'Octubre 2025';
+  activeTab: TabType = 'terminos';
+
+  onTabChange(tab: TabType) {
+    this.activeTab = tab;
+  }
 }
 
