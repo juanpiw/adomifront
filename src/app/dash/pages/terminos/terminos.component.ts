@@ -80,30 +80,53 @@ export class DashTerminosComponent {
         list: ['NO es parte del contrato', 'NO supervisa ni controla trabajo', 'NO garantiza calidad o legalidad', 'Enlaces a terceros sin responsabilidad']
       },
       {
-        title: '3. Relación Jurídica: Contratista Independiente',
-        content: 'Usted actúa como entidad independiente. Relación comercial, NO laboral.',
-        list: ['Aporta herramientas propias', 'Asume costos y riesgos', 'Sin supervisión directa', 'Sin beneficios laborales', 'Sin exclusividad']
+        title: '3. Relación Jurídica: Contratistas Independientes',
+        content: 'Usted reconoce que actúa como entidad económica independiente (persona natural con inicio de actividades o empresa). Relación estrictamente comercial, NO laboral.',
+        list: [
+          'Aporta herramientas: Usa herramientas, equipos, materiales propios',
+          'Asume costos y riesgos: Responsable de transporte, materiales, seguros, cotizaciones',
+          'Sin supervisión directa: Adomiapp no controla métodos o técnicas. Calificaciones NO son supervisión laboral',
+          'Sin beneficios laborales: No vacaciones, licencias, gratificaciones, seguro cesantía',
+          'Sin exclusividad: Libre de trabajar con otras plataformas o clientes propios'
+        ]
       },
       {
-        title: '4. Verificación y Descargo',
-        content: 'Adomiapp puede verificar credenciales, pero no garantiza exactitud. Clientes evalúan idoneidad. Calificaciones son opiniones, no garantías.'
+        title: '4. Verificación de Usuarios y Descargo',
+        content: 'Adomiapp podrá, pero no está obligada a, verificar antecedentes o credenciales al registro.',
+        list: [
+          'Verificación basada en información proporcionada, sin garantía de exactitud o vigencia',
+          'Sin obligación de seguimiento continuo de antecedentes',
+          'Cliente responsable de evaluar idoneidad y confiabilidad',
+          'Sistema de calificaciones es referencia de opiniones, NO garantía de Adomiapp'
+        ]
       },
       {
         title: '5. Seguros',
-        content: 'Usted es responsable de obtener seguro de responsabilidad civil. Adomiapp no proporciona seguros.'
+        content: 'El Profesional es el único y exclusivo responsable de obtener y mantener seguro de responsabilidad civil adecuado para cubrir daño, perjuicio o siniestro durante prestación de Servicios. Adomiapp no proporciona ni se hace responsable de seguros.'
       },
       {
         title: '6. Comisiones y Tributación',
         content: 'Comisión 15%. Pagos en 3-5 días. Usted declara ingresos y paga impuestos según ley chilena.'
       },
       {
-        title: '7. Limitación de Responsabilidad',
-        content: 'Adomiapp NO responsable por daños: uso de Plataforma, conducta terceros, disputas, pérdida ganancias/datos.'
+        title: '7. Limitación General de Responsabilidad',
+        content: 'En la máxima medida permitida por ley, Adomiapp NO responsable por daño directo, indirecto, incidental, especial, consecuente o punitivo, incluyendo pérdida de ganancias, datos, uso, fondo de comercio, que resulte de:',
+        list: [
+          'Acceso o uso, o imposibilidad de usar la Plataforma',
+          'Conducta o contenido de terceros (difamatoria, ofensiva, ilegal)',
+          'Servicio prestado por Profesionales (negligencia, mala conducta, daños, lesiones, muerte)',
+          'Disputa o conflicto entre Cliente y Profesional'
+        ]
       },
       {
         title: '8. Indemnización',
-        list: ['Defender Adomiapp de reclamos', 'Por uso de Plataforma', 'Por violación Términos', 'Por daños a terceros'],
-        content: 'Obligación sobrevive a estos Términos.'
+        content: 'Usted acepta defender, indemnizar y mantener indemne a Adomiapp, directores, empleados y agentes, contra reclamo, demanda, daño, pérdida, costo, deuda y gastos (incluidos honorarios de abogados) que surjan de:',
+        list: [
+          'Su uso y acceso a la Plataforma',
+          'Violación de cualquier término de estas Condiciones',
+          'Violación de derechos de tercero (autor, propiedad, privacidad)',
+          'Reclamo de que su contenido o acciones causaron daño a tercero'
+        ]
       },
       {
         title: '9. Cancelaciones',
