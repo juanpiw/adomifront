@@ -76,8 +76,13 @@ export class ClientTerminosComponent {
       },
       {
         title: '2. Naturaleza y Alcance de la Plataforma',
-        content: 'Adomiapp es una plataforma tecnológica de intermediación. Nuestra función se limita a conectar Clientes con Profesionales independientes.',
-        list: ['NO es parte del contrato entre Cliente y Profesional', 'NO supervisa ni controla el trabajo de Profesionales', 'NO garantiza calidad, seguridad o legalidad de Servicios', 'Puede contener enlaces a recursos de terceros sin responsabilidad']
+        content: 'Adomiapp es plataforma tecnológica de mercado en línea de intermediación. Función exclusiva: conectar Clientes con Profesionales independientes.',
+        list: [
+          'NO es parte del contrato de servicio entre Cliente y Profesional',
+          'NO supervisa, dirige, controla ni monitorea trabajo de Profesionales',
+          'NO garantiza calidad, seguridad, idoneidad o legalidad de Servicios',
+          'Plataforma puede contener enlaces a terceros sin responsabilidad sobre disponibilidad, exactitud o contenido'
+        ]
       },
       {
         title: '3. Uso de la Plataforma',
@@ -85,20 +90,38 @@ export class ClientTerminosComponent {
         list: ['Tener al menos 18 años', 'Proporcionar información precisa y actualizada', 'Ser responsable de la seguridad de su cuenta', 'No usar la plataforma para actividades ilegales']
       },
       {
-        title: '4. Verificación y Descargo de Responsabilidad',
-        content: 'Adomiapp puede realizar verificación de Profesionales, pero no garantiza exactitud. El Cliente es responsable de evaluar la idoneidad del Profesional. El sistema de calificaciones es referencia, no garantía.'
+        title: '4. Verificación de Usuarios y Descargo',
+        content: 'Adomiapp podrá, pero no está obligada a, verificar antecedentes o credenciales de Profesionales al registro.',
+        list: [
+          'Verificación basada en información proporcionada, sin garantía de exactitud, vigencia o integridad',
+          'Sin obligación de seguimiento continuo de antecedentes',
+          'Cliente único responsable de evaluar idoneidad y confiabilidad',
+          'Sistema calificaciones: referencia de opiniones, NO recomendación ni garantía Adomiapp'
+        ]
       },
       {
         title: '5. Pagos y Facturación',
         content: 'Los pagos se procesan de forma segura a través de la plataforma. Los precios mostrados incluyen todos los impuestos aplicables. Las cancelaciones están sujetas a la política de cada profesional.'
       },
       {
-        title: '6. Limitación de Responsabilidad',
-        content: 'Adomiapp NO será responsable por daños directos, indirectos, incidentales o consecuentes resultantes de: uso de la Plataforma, conducta de terceros, Servicios prestados, disputas Cliente-Profesional, pérdida de datos o ganancias.'
+        title: '6. Limitación General de Responsabilidad',
+        content: 'En máxima medida por ley, Adomiapp NO responsable por daño directo, indirecto, incidental, especial, consecuente o punitivo, incluyendo pérdida ganancias, datos, uso, fondo comercio u otras pérdidas intangibles, de:',
+        list: [
+          'Acceso/uso o imposibilidad de usar Plataforma',
+          'Conducta/contenido terceros (difamatoria, ofensiva, ilegal)',
+          'Servicio por Profesionales (negligencia, mala conducta, daños propiedad, lesiones, muerte)',
+          'Disputa o conflicto Cliente-Profesional'
+        ]
       },
       {
         title: '7. Indemnización',
-        content: 'Usted acepta defender e indemnizar a Adomiapp de cualquier reclamo por: violación de estos Términos, violación de derechos de terceros, daños causados a terceros por su contenido o acciones.'
+        content: 'Usted acepta defender, indemnizar y mantener indemne a Adomiapp, directores, empleados y agentes, contra reclamo, demanda, daño, pérdida, costo, deuda y gastos (honorarios abogados) de:',
+        list: [
+          'Uso y acceso a Plataforma',
+          'Violación de términos de Condiciones',
+          'Violación derechos tercero (autor, propiedad, privacidad)',
+          'Reclamo que contenido/acciones causaron daño a tercero'
+        ]
       },
       {
         title: '8. Privacidad y Datos',
@@ -110,7 +133,7 @@ export class ClientTerminosComponent {
       },
       {
         title: '10. Ley Aplicable y Jurisdicción',
-        content: 'Estos Términos se rigen por las leyes de Chile. Cualquier disputa se someterá a los tribunales competentes de Santiago, Chile.'
+        content: 'Estos Términos se regirán por leyes de República de Chile. Disputa, controversia o reclamo se someterá a jurisdicción exclusiva de tribunales ordinarios de Santiago, Chile, renunciando a cualquier otro fuero.'
       },
       {
         title: '11. Contacto',
