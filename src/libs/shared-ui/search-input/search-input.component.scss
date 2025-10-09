@@ -139,6 +139,11 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 50;
     padding: 1rem;
+    box-sizing: border-box;
+
+    * {
+      box-sizing: border-box;
+    }
 
     &.hidden {
       display: none;
@@ -146,6 +151,7 @@
 
     .popover-content {
       width: 100%;
+      box-sizing: border-box;
     }
 
     // Location popover specific
@@ -208,6 +214,7 @@
           background-color: white;
           cursor: pointer;
           transition: all 0.2s ease;
+          box-sizing: border-box;
 
           &:focus {
             outline: none;
@@ -234,6 +241,7 @@
         border: 1px solid #d1d5db;
         border-radius: 0.75rem;
         font-size: 0.875rem;
+        box-sizing: border-box;
 
         &:focus {
           outline: none;
