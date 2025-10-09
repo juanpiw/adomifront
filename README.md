@@ -845,7 +845,268 @@ Para crear nuevos modales siguiendo el patrón establecido:
 console.log('Debug info:', data);
 ```
 
+## 📜 **Sistema Legal Completo**
+
+### **Términos y Condiciones**
+Página legal completa ubicada en `/client/terminos` y `/dash/terminos` con:
+
+#### **23 Secciones Principales:**
+1. **Definiciones** (7 términos: Plataforma, Profesional, Cliente, Servicios, Cuenta, PSP, Contenido)
+2. **Naturaleza y alcance** (intermediación - NO presta, NO supervisa, NO garantiza)
+3. **Elegibilidad y registro** (18+, KYC, documentos tributarios)
+4. **Verificación, reputación y moderación** (ratings orientativos, moderación de contenido)
+5. **Obligaciones del Cliente** (información correcta, pagar, no actividades ilegales)
+6. **Planes y comisiones** (15%, renovación automática, 15 días aviso cambios)
+7. **Pagos y tributación Chile** (PSP, 3-5 días, SII, IVA, chargebacks)
+8. **Cancelaciones y reembolsos** (+24h sin penalización, -24h con cargo)
+9. **Obligaciones del Profesional** (legalidad, calidad, transparencia, no sustitución)
+10. **Contratistas independientes** (comercial NO laboral, sin beneficios, sin subordinación)
+11. **Seguros** (responsabilidad civil obligatoria)
+12. **Uso aceptable y prohibiciones** (7 prohibiciones)
+13. **Propiedad intelectual** (licencia no exclusiva sobre Contenido)
+14. **Datos personales** (Ley 19.628, comunicaciones, permisos dispositivo)
+15. **Medidas de seguridad** (alertas, limitación, retención, suspensión)
+16. **Disputas Cliente-Profesional** (mediación interna, SERNAC)
+17. **Garantías y limitación** ("tal cual", UF 50 o comisiones 6 meses)
+18. **Indemnidad** (defender, indemnizar, honorarios legales)
+19. **Fuerza mayor** (eventos fuera de control)
+20. **Cambios a Términos** (15 días aviso previo)
+21. **Terminación** (cláusulas que subsisten)
+22. **Ley aplicable** (Ley 19.496 consumidores, SERNAC, tribunales Santiago)
+23. **Diversos** (cesión, notificaciones, acuerdo íntegro, idioma español Chile)
+
+#### **Anexo A: Conductas Prohibidas**
+7 prohibiciones detalladas (suplantación, fraude, malware, discriminación, etc.)
+
+### **Política de Privacidad**
+Política completa conforme a **Ley N°19.628** ubicada en `/client/terminos` y `/dash/terminos`:
+
+#### **15 Secciones Principales:**
+1. **Responsable del Tratamiento** (encargado de privacidad)
+2. **Datos que Tratamos** (5 subsecciones detalladas):
+   - 2.1 Registro y perfil (RUT, email, teléfono, avatar, servicios)
+   - 2.2 Verificación KYC (cédula, selfie, inicio actividades)
+   - 2.3 Operación (reservas, chat, soporte, boletas)
+   - 2.4 Técnicos (IP, logs, IDFA/AAID, geolocalización)
+   - 2.5 Marketing (cookies, SDKs, UTM, campañas)
+3. **Finalidades y Bases de Licitud** (tabla con 10 finalidades y bases legales)
+4. **Cookies y SDKs** (esenciales, funcionales, analíticas, marketing opt-in)
+5. **Fuentes y Destinatarios** (Azure, PSP, KYC, Analytics, Email/SMS, Helpdesk, ERP)
+6. **Transferencias Internacionales** (cláusulas contractuales, protección adecuada)
+7. **Plazos de Conservación** (tabla detallada con 6 categorías):
+   - KYC: 90 días (2 años si fraude)
+   - Transacciones: 6 años (tributario SII)
+   - Cuenta: 2 años tras cierre
+   - Logs: 6-12 meses
+   - Marketing: hasta revocación
+8. **Seguridad** (TLS, MFA, auditorías, notificación de incidentes)
+9. **Menores de Edad** (prohibido < 18 años)
+10. **Decisiones Automatizadas y Perfilado** (matching, fraude, NO efectos jurídicos)
+11. **Derechos ARCO** (Acceso, Rectificación, Cancelación, Oposición, Portabilidad):
+    - Plazo respuesta: 15 días hábiles
+    - Contacto: privacy@adomiapp.com con asunto "Derechos de Datos"
+12. **Marketing y Preferencias** (opt-in, dar de baja, transaccionales no afectadas)
+13. **Terceros y Enlaces** (responsabilidad limitada)
+14. **Cambios a la Política** (15 días aviso previo, historial de versiones)
+15. **Reclamos y Resolución** (Ley 19.628, SERNAC, vías judiciales Chile)
+
+#### **3 Anexos Detallados:**
+- **Anexo A:** Tabla de Terceros (7 proveedores con ubicaciones)
+- **Anexo B:** Política de Cookies y SDKs (esenciales, analíticas, marketing)
+- **Anexo C:** Retención y Eliminación (eliminación segura, anonimización)
+
+### **Características del Sistema Legal:**
+- ✅ **Tablas interactivas** con hover effects
+- ✅ **Diseño responsivo** para móvil y desktop
+- ✅ **Descarga PDF** integrada
+- ✅ **Tabs de navegación** entre Términos y Privacidad
+- ✅ **Gradientes morados** en headers de tablas
+- ✅ **Subsecciones** con borde lateral
+- ✅ **Badges de verificación** (✓) en listas
+- ✅ **Footer informativo** con aceptación implícita
+
+## 🔍 **Sistema de Búsqueda Global**
+
+### **Búsqueda Contextual**
+Sistema inteligente de búsqueda y ayuda integrado en el topbar:
+
+#### **Componentes:**
+- **GlobalSearchModalComponent** - Modal centrado con búsqueda en tiempo real
+- **SearchSuggestionItemComponent** - Items de sugerencias con iconos y categorías
+- **GlobalSearchService** - Lógica de búsqueda con relevancia y contexto
+- **SearchSuggestionModel** - Modelos tipados para sugerencias
+
+#### **Características:**
+- ✅ **Búsqueda en tiempo real** con debounce
+- ✅ **Sugerencias contextuales** según la página actual
+- ✅ **Relevancia inteligente** basada en título, descripción, keywords y prioridad
+- ✅ **Historial de búsquedas** almacenado en localStorage
+- ✅ **Categorización** por tipo (ayuda, acción, página, configuración)
+- ✅ **Navegación automática** al seleccionar sugerencia
+- ✅ **Animaciones suaves** de entrada/salida
+- ✅ **Diseño minimalista** con estilos limpios
+
+#### **Categorías de Sugerencias:**
+- `help` - Ayuda y soporte
+- `action` - Acciones rápidas
+- `page` - Navegación a páginas
+- `setting` - Configuraciones
+
+#### **Integración:**
+```typescript
+// En TopbarComponent
+<button (click)="onHelpClick()">¿Necesitas ayuda?</button>
+
+// Modal se abre automáticamente
+<ui-global-search-modal 
+  [isOpen]="isSearchModalOpen"
+  (close)="onSearchModalClose()"
+  (suggestionClick)="onSearchSuggestionClick($event)">
+</ui-global-search-modal>
+```
+
+## 📅 **Sistema de Agenda Avanzado**
+
+### **Modal de Nueva Cita**
+Modal completo para agendar citas ubicado en `shared-ui/calendar-mensual/modal-agendar-cita`:
+
+#### **Características:**
+- ✅ **Reactive Forms** con validaciones
+- ✅ **Selector de cliente** con búsqueda
+- ✅ **Selector de fecha** con calendario
+- ✅ **Horario inicio/fin** con validación de solapamiento
+- ✅ **Selector de color** para categorización visual
+- ✅ **Campo de notas** opcional
+- ✅ **Animaciones** de entrada/salida (fadeInOut, scaleInOut)
+- ✅ **Responsive** para móvil y desktop
+- ✅ **Box-sizing** optimizado para evitar overflow
+
+#### **Integración:**
+- Botón "Nueva Cita" en `CalendarMensualComponent`
+- Click en día del calendario pre-selecciona fecha
+- Botón "+ Nueva Cita" en `DayDetailComponent`
+
+### **Modales de Gestión de Reservas**
+Sistema completo de modales para solicitudes de reserva en `/dash/home`:
+
+#### **AcceptReservaModalComponent:**
+- **Confirmación visual** con icono de check verde
+- **Información del cliente** (nombre, servicio, fecha, hora)
+- **Botón de confirmación** con loading state
+- **Mensaje de éxito** ("Estamos agendando tu cita..." → "¡Cita agendada!")
+- **Animaciones suaves** de transición
+
+#### **RejectReservaModalComponent:**
+- **Confirmación de rechazo** con icono de X rojo
+- **Campo de motivo** opcional pero recomendado
+- **Botones de confirmación/cancelación** claramente diferenciados
+- **Loading state** durante el proceso
+
+#### **DetallesCitaModalComponent:**
+- **Vista completa** de información de cita
+- **Foto y nombre** del cliente
+- **Servicio, fecha, hora y duración**
+- **Precio y estado** de la cita
+- **Notas adicionales** si existen
+- **Botón de contacto** para mensajería
+- **Diseño elegante** con glassmorphism
+
+#### **Integración en Dashboard:**
+```typescript
+// En InicioSolicitudesComponent
+<button (click)="openAcceptModal(solicitud)">Aceptar</button>
+<button (click)="openRejectModal(solicitud)">Rechazar</button>
+
+// En InicioProximaCitaComponent
+<button (click)="openDetailsModal()">Ver Detalles</button>
+```
+
+### **Búsqueda de Ubicación (Chile)**
+Sistema completo de búsqueda geográfica en `SearchInputComponent`:
+
+#### **Características:**
+- ✅ **Todas las regiones de Chile** (16 regiones)
+- ✅ **Todas las comunas** organizadas por región
+- ✅ **Búsqueda directa** por nombre de comuna
+- ✅ **Selector de región + comuna** con dropdowns
+- ✅ **Botón "Usar mi ubicación actual"** (placeholder)
+- ✅ **Filtrado en tiempo real** con búsqueda
+- ✅ **Formato "Comuna, Región"** en resultados
+- ✅ **Box-sizing optimizado** para evitar overflow
+
+#### **Regiones Incluidas:**
+- Arica y Parinacota, Tarapacá, Antofagasta
+- Atacama, Coquimbo, Valparaíso
+- Metropolitana, O'Higgins, Maule
+- Ñuble, Biobío, Araucanía
+- Los Ríos, Los Lagos, Aysén
+- Magallanes
+
+## ⏱️ **Filtro de Tiempo Elegante**
+
+### **TimeFilterComponent**
+Filtro de períodos temporales ubicado en `shared-ui/time-filter`:
+
+#### **Características:**
+- ✅ **6 períodos predefinidos**: Día, Semana, Mes, Trimestre, Año, Personalizado
+- ✅ **Iconos elegantes** específicos por período:
+  - Día: `clock` (reloj)
+  - Semana: `calendar` (calendario)
+  - Mes: `calendar` (calendario)
+  - Trimestre: `chart` (gráfico)
+  - Año: `chart` (gráfico)
+  - Personalizado: `filter` (filtro)
+- ✅ **Selector de rango** personalizado con fecha inicio/fin
+- ✅ **Botón "Aplicar"** para filtros personalizados
+- ✅ **Emisión de eventos** con fechas calculadas
+- ✅ **Diseño moderno** con gradientes y hover effects
+- ✅ **Responsive** para móvil
+
+#### **Integración:**
+```typescript
+// En cualquier página
+<app-time-filter (filterChange)="onFilterChange($event)"></app-time-filter>
+
+// Recibir rango de fechas
+onFilterChange(range: { startDate: Date, endDate: Date, type: string }) {
+  console.log('Filtrar datos desde', range.startDate, 'hasta', range.endDate);
+}
+```
+
+#### **Navegación desde Dashboard:**
+Enlaces en `InicioIngresosMesComponent` e `InicioIngresosDiaComponent` que navegan a `/dash/ingresos` con el filtro automáticamente seleccionado (mes o día).
+
+## ⚙️ **Topbar Configuración**
+
+### **Botón de Configuración del Cliente**
+El icono de configuración (⚙️) en el topbar del cliente ahora navega correctamente:
+
+#### **Comportamiento:**
+- **Cliente:** `/client/configuracion` ✅
+- **Trabajador:** `/dash/perfil?tab=configuracion` ✅
+
+#### **Características:**
+- ✅ **Navegación automática** al hacer click
+- ✅ **Cierre de menú** en móvil
+- ✅ **Contexto apropiado** según perfil de usuario
+
 ## 📝 **Changelog**
+
+### **v2.5.0 - Sistema Legal y Búsqueda Global**
+- ✅ **Términos y Condiciones completos** - 23 secciones + 1 anexo con Ley 19.496 Chile
+- ✅ **Política de Privacidad completa** - 15 secciones + 3 anexos con Ley 19.628 Chile
+- ✅ **Sistema de búsqueda global** - Modal contextual con sugerencias inteligentes
+- ✅ **Modales de agenda** - Nueva Cita, Aceptar/Rechazar Reserva, Detalles de Cita
+- ✅ **Búsqueda de ubicación Chile** - 16 regiones y todas las comunas
+- ✅ **Filtro de tiempo elegante** - 6 períodos con iconos específicos
+- ✅ **Topbar configuración** - Navegación correcta para cliente y trabajador
+- ✅ **Tablas legales** con gradientes y hover effects
+- ✅ **Descarga PDF** integrada en páginas legales
+- ✅ **GlobalSearchService** con relevancia y contexto
+- ✅ **TimeFilterComponent** con selector de rango personalizado
+- ✅ **Reactive Forms** en modal de agendar cita
+- ✅ **Box-sizing optimizado** en todos los nuevos componentes
+- ✅ **Animaciones suaves** (fadeInOut, scaleInOut) en modales
 
 ### **v2.4.0 - Migración de Estadísticas**
 - ✅ **Migración completa de estadísticas** - Componentes HTML/CSS a Angular standalone
