@@ -108,6 +108,9 @@ export class CalendarMensualComponent implements OnInit {
   onDateClick(date: Date) {
     if (this.isCurrentMonth(date)) {
       this.dateSelected.emit(date);
+      // Abrir modal con la fecha seleccionada
+      this.selectedDateForModal = date;
+      this.isModalOpen = true;
     }
   }
 
