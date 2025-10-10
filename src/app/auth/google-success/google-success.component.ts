@@ -154,7 +154,7 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
         clearInterval(this.countdownInterval);
         // Obtener el rol del usuario desde localStorage
         const user = JSON.parse(localStorage.getItem('adomi_user') || '{}');
-        this.redirectToDashboard(user.role);
+        this.redirectAfterGoogle(user);
       }
     }, 1000);
   }
@@ -163,16 +163,27 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     clearInterval(this.countdownInterval);
     // Obtener el rol del usuario desde localStorage
     const user = JSON.parse(localStorage.getItem('adomi_user') || '{}');
-    this.redirectToDashboard(user.role);
+    this.redirectAfterGoogle(user);
   }
 
-  private redirectToDashboard(role: string) {
-    if (isPlatformBrowser(this.platformId)) {
-      if (role === 'provider') {
-        this.router.navigate(['/dash/home']);
-      } else {
-        this.router.navigate(['/client/reservas']);
-      }
+  private redirectAfterGoogle(user: any) {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const role = user?.role;
+    if (role === 'provider') {
+      // Seed tempUserData para el flujo de planes/checkout
+      try {
+        const temp = {
+          email: user?.email || '',
+          name: user?.name || '',
+          role: 'provider'
+        };
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('tempUserData', JSON.stringify(temp));
+        }
+      } catch {}
+      this.router.navigate(['/auth/select-plan']);
+    } else {
+      this.router.navigate(['/client/reservas']);
     }
   }
 

@@ -55,7 +55,22 @@ export class PaymentSuccessComponent implements OnInit {
       const userData = JSON.parse(tempData);
       const plan = JSON.parse(planData);
 
-      // Registrar usuario en la base de datos
+      // Si ya hay sesión (Google), no volver a registrar: solo limpiar y continuar
+      const hasToken = !!this.auth.getAccessToken();
+      if (hasToken) {
+        if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem('tempUserData');
+          sessionStorage.removeItem('selectedPlan');
+        }
+        this.success = true;
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigateByUrl('/onboarding');
+        }, 2000);
+        return;
+      }
+
+      // Caso legacy: registro con email/contraseña
       this.auth.register({
         email: userData.email,
         password: userData.password,
@@ -64,19 +79,13 @@ export class PaymentSuccessComponent implements OnInit {
       }).subscribe({
         next: (response: AuthResponse) => {
           if (response.success) {
-            // Limpiar datos temporales
             if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
               sessionStorage.removeItem('tempUserData');
               sessionStorage.removeItem('selectedPlan');
             }
-            
-            // Guardar usuario en sesión
             this.session.setUser(response.user);
-            
             this.success = true;
             this.loading = false;
-            
-            // Redirigir al onboarding después de 3 segundos
             setTimeout(() => {
               this.router.navigateByUrl('/onboarding');
             }, 3000);
@@ -87,8 +96,6 @@ export class PaymentSuccessComponent implements OnInit {
         },
         error: (error) => {
           console.error('Registration error:', error);
-          
-          // Manejar diferentes tipos de errores
           if (error.status === 409) {
             this.error = 'El email ya está registrado. Inicia sesión en su lugar.';
           } else if (error.status === 400) {
@@ -98,7 +105,6 @@ export class PaymentSuccessComponent implements OnInit {
           } else {
             this.error = error.error?.error || 'Error al crear la cuenta. Contacta al soporte.';
           }
-          
           this.loading = false;
         }
       });
