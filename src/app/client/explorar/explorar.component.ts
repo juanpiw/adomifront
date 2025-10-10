@@ -10,6 +10,7 @@ import { MapCardComponent, ProfessionalCard, MapCardMarker } from '../../../libs
 import { IconName } from '../../../libs/shared-ui/icon/icon.component';
 import { ProfileRequiredModalComponent } from '../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../services/profile-validation.service';
+import { AuthService } from '../../auth/services/auth.service';
 
 interface Provider {
   id: number;
@@ -190,6 +191,7 @@ export class ExplorarComponent implements OnInit {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private profileValidation = inject(ProfileValidationService);
+  private auth = inject(AuthService);
 
   // User data
   user: any = null;
@@ -232,6 +234,19 @@ export class ExplorarComponent implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.loadUserData();
+      // Si no hay nombre todavía, pedirlo al backend
+      if (!this.user?.name) {
+        this.auth.getCurrentUserInfo().subscribe({
+          next: () => {
+            const u = this.auth.getCurrentUser();
+            if (u) this.user = u;
+          },
+          error: () => {}
+        });
+        this.auth.authState$.subscribe(u => {
+          if (u) this.user = u;
+        });
+      }
       this.validateProfile(); // Validar perfil primero
       this.loadProviders();
       this.loadServices();
@@ -289,7 +304,7 @@ export class ExplorarComponent implements OnInit {
 
   private loadUserData() {
     // Load user data from localStorage or service
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem('adomi_user');
     if (userData) {
       this.user = JSON.parse(userData);
     }
