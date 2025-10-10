@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 })
 export class ProfileRequiredModalComponent implements OnInit {
   @Input() missingFields: string[] = [];
-  @Input() userType: 'client' | 'provider' = 'client';
+  @Input() userType: 'client' | 'provider' | 'admin' = 'client';
   
   private router = inject(Router);
   

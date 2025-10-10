@@ -8,7 +8,7 @@ export interface ProfileValidationResponse {
   success: boolean;
   isComplete: boolean;
   missingFields: string[];
-  userType: 'client' | 'provider' | 'admin';
+  userType: 'client' | 'provider';
   message: string;
   error?: string;
 }
