@@ -156,6 +156,7 @@ export class AuthService {
     this.clearTokens();
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.removeItem('adomi_user');
+      localStorage.removeItem('adomi_user_avatar');
     }
     this.authStateSubject.next(null);
   }

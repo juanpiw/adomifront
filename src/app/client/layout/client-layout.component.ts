@@ -1,4 +1,5 @@
-﻿import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -35,6 +36,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   menuService = inject(MenuService);
   private clientProfile = inject(ClientProfileService);
+  private platformId = inject(PLATFORM_ID);
 
   userName: string | null = null;
   userAvatarUrl: string | null = null;
@@ -45,8 +47,8 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       this.isCollapsed = true;
     }
 
-    // Listen for window resize events
-    if (typeof window !== 'undefined') {
+    // Listen for window resize events (solo en navegador)
+    if (isPlatformBrowser(this.platformId)) {
       window.addEventListener('resize', () => {
         if (window.matchMedia('(max-width: 900px)').matches) {
           this.isCollapsed = true;
@@ -61,31 +63,40 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       this.isCollapsed = !isOpen;
     });
 
-    // Cargar nombre y avatar
-    const stored = typeof window !== 'undefined' && typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
-    if (stored) {
-      try { const u = JSON.parse(stored); this.userName = u?.name || null; } catch {}
+    // Cargar nombre y avatar desde backend (sin persistencia local)
+    if (isPlatformBrowser(this.platformId)) {
+      const stored = localStorage.getItem('adomi_user');
+      if (stored && stored !== 'undefined') {
+        try { const u = JSON.parse(stored); this.userName = u?.name || null; } catch {}
+      }
+      this.auth.getCurrentUserInfo().subscribe({
+        next: (res) => {
+          this.userName = res?.user?.name || this.userName;
+          const avatar = (res as any)?.user?.profile_photo_url;
+          if (avatar) {
+            this.userAvatarUrl = avatar.startsWith('http') ? avatar : `${environment.apiBaseUrl}${avatar}`;
+          }
+        },
+        error: () => {}
+      });
+      // Cargar foto desde perfil como respaldo
+      this.clientProfile.getProfile().subscribe({
+        next: (res) => {
+          const url = res?.profile?.profile_photo_url;
+          if (url) {
+            const full = url.startsWith('http') ? url : `${environment.apiBaseUrl}${url}`;
+            this.userAvatarUrl = full;
+          }
+        },
+        error: () => {}
+      });
     }
-    this.auth.getCurrentUserInfo().subscribe({
-      next: (res) => { this.userName = res?.user?.name || this.userName; },
-      error: () => {}
-    });
-
-    // Cargar foto de perfil para mostrar en el menú
-    this.clientProfile.getProfile().subscribe({
-      next: (res) => {
-        const url = res?.profile?.profile_photo_url;
-        if (url) {
-          this.userAvatarUrl = url.startsWith('http') ? url : `${environment.apiBaseUrl}${url}`;
-        }
-      },
-      error: () => {}
-    });
 
     // Escuchar cambios de foto de perfil (subida/eliminación) y refrescar avatar
     this.clientProfile.profilePhoto$.subscribe((photoUrl) => {
       if (photoUrl) {
-        this.userAvatarUrl = photoUrl.startsWith('http') ? photoUrl : `${environment.apiBaseUrl}${photoUrl}`;
+        const full = photoUrl.startsWith('http') ? photoUrl : `${environment.apiBaseUrl}${photoUrl}`;
+        this.userAvatarUrl = full;
       } else {
         this.userAvatarUrl = null;
       }
