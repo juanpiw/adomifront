@@ -24,7 +24,13 @@
       <a class="rail-item" (click)="logout()" title="Salir" style="cursor: pointer;"><ui-icon name="logout" [size]="20"></ui-icon></a>
     </div>
     <div class="panel elevated">
-      <div class="brand">Adomi</div>
+      <div class="user-summary">
+        <img class="avatar" [src]="providerAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" (error)="onAvatarError($event)" />
+        <div class="user-info">
+          <div class="user-name">{{ providerName || 'Usuario' }}</div>
+          <div class="user-sub">Cuenta de profesional</div>
+        </div>
+      </div>
       <nav class="menu">
         <a routerLink="/dash/home" routerLinkActive="active" (click)="onNav()"><ui-icon name="home"></ui-icon><span>Inicio</span></a>
         <a routerLink="/dash/agenda" routerLinkActive="active" (click)="onNav()"><ui-icon name="calendar"></ui-icon><span>Agenda</span></a>

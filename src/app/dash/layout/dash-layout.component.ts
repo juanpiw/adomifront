@@ -19,6 +19,8 @@ export class DashLayoutComponent implements OnInit {
   isCollapsed = false;
   planInfo: PlanInfo | null = null;
   showPlanAlert = false;
+  providerName: string | null = null;
+  providerAvatarUrl: string | null = null;
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {
@@ -38,11 +40,26 @@ export class DashLayoutComponent implements OnInit {
 
   ngOnInit() {
     this.loadPlanInfo();
+    // Cargar nombre básico desde sesión/localStorage
+    const u = this.sessionService.getUser();
+    this.providerName = u?.name || null;
+    // Refrescar datos desde backend si hay sesión
+    this.auth.getCurrentUserInfo().subscribe({
+      next: (res) => { this.providerName = res?.user?.name || this.providerName; },
+      error: () => {}
+    });
   }
 
   onNav() {
     if (window && window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
       this.isCollapsed = true;
+    }
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src.indexOf('/assets/default-avatar.png') === -1) {
+      img.src = '/assets/default-avatar.png';
     }
   }
 
