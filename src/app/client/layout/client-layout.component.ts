@@ -33,6 +33,9 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   menuService = inject(MenuService);
 
+  userName: string | null = null;
+  userAvatarUrl: string | null = null;
+
   ngOnInit() {
     // Initialize collapsed state based on screen size
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches) {
@@ -53,6 +56,16 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     // Suscribirse al servicio de menú para controlar el sidebar desde el chat
     this.menuSubscription = this.menuService.isMenuOpen$.subscribe(isOpen => {
       this.isCollapsed = !isOpen;
+    });
+
+    // Cargar nombre y avatar
+    const stored = typeof window !== 'undefined' && typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+    if (stored) {
+      try { const u = JSON.parse(stored); this.userName = u?.name || null; } catch {}
+    }
+    this.auth.getCurrentUserInfo().subscribe({
+      next: (res) => { this.userName = res?.user?.name || this.userName; },
+      error: () => {}
     });
   }
 

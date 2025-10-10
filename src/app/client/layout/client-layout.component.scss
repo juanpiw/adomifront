@@ -151,13 +151,37 @@
   box-shadow: 2px 0 12px rgba(0,0,0,0.05);
 }
 
-.panel .brand { 
-  font-weight: 800; 
-  font-size: 18px; 
-  margin-bottom: 8px; 
-  color: #1e293b;
-  text-align: center;
+.user-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+
+.user-summary .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.user-summary .user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-summary .user-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.user-summary .user-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+
 
 .menu { 
   display: flex; 

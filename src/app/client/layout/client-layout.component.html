@@ -34,7 +34,13 @@
     
     <!-- Panel (solo visible cuando no está colapsado) -->
     <div class="panel" *ngIf="!isCollapsed">
-      <div class="brand">Adomi Cliente</div>
+      <div class="user-summary">
+        <img class="avatar" [src]="userAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" />
+        <div class="user-info">
+          <div class="user-name">{{ userName || 'Usuario' }}</div>
+          <div class="user-sub">Cuenta de cliente</div>
+        </div>
+      </div>
       <nav class="menu">
         <a routerLink="/client/explorar" routerLinkActive="active" (click)="onNav()">
           <ui-icon name="search" [size]="16"></ui-icon><span>Explorar</span>
