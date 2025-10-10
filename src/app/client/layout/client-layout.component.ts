@@ -96,6 +96,13 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src.indexOf('/assets/default-avatar.png') === -1) {
+      img.src = '/assets/default-avatar.png';
+    }
+  }
+
   logout(): void {
     this.auth.logout().subscribe({
       next: () => {

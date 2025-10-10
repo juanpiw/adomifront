@@ -35,7 +35,7 @@
     <!-- Panel (solo visible cuando no está colapsado) -->
     <div class="panel" *ngIf="!isCollapsed">
       <div class="user-summary">
-        <img class="avatar" [src]="userAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" />
+        <img class="avatar" [src]="userAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" (error)="onAvatarError($event)" />
         <div class="user-info">
           <div class="user-name">{{ userName || 'Usuario' }}</div>
           <div class="user-sub">Cuenta de cliente</div>
