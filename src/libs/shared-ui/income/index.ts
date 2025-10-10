@@ -9,3 +9,6 @@ export * from './transactions-table/transactions-table.component';
 export * from './transaction-row/transaction-row.component';
 export * from './payment-settings-form/payment-settings-form.component';
 export * from './income-goals/income-goals.component';
+
+
+

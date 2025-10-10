@@ -34,3 +34,6 @@ export class PaymentsBillingSectionComponent {
     this.linkClicked.emit(link);
   }
 }
+
+
+

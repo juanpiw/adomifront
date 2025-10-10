@@ -122,3 +122,6 @@ export class DetallesCitaModalComponent implements OnInit, OnDestroy {
     return this.cancelConfirmText === 'CANCELAR' && !this.loading;
   }
 }
+
+
+

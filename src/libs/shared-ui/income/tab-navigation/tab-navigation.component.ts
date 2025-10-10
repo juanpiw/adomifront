@@ -29,3 +29,6 @@ export class TabNavigationComponent {
     this.tabChanged.emit(tabId);
   }
 }
+
+
+

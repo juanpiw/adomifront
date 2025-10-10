@@ -31,3 +31,6 @@ export interface SearchResult {
   searchTime: number;
   hasMore: boolean;
 }
+
+
+

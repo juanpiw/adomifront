@@ -63,3 +63,6 @@ export class RecommendedSectionComponent {
     this.bookClick.emit(professional);
   }
 }
+
+
+

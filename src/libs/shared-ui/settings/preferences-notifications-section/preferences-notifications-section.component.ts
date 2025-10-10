@@ -41,3 +41,6 @@ export class PreferencesNotificationsSectionComponent {
     this.preferenceChanged.emit({ setting, value });
   }
 }
+
+
+

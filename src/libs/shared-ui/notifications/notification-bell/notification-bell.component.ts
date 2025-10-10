@@ -45,3 +45,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     this.notificationClick.emit(notification);
   }
 }
+
+
+

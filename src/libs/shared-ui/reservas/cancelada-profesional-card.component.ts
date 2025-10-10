@@ -20,3 +20,6 @@ export class CanceladaProfesionalCardComponent {
   @Output() findSimilar = new EventEmitter<void>();
 }
 
+
+
+

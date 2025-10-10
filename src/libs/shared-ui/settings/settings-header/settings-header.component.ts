@@ -11,3 +11,6 @@ import { CommonModule } from '@angular/common';
 export class SettingsHeaderComponent {
   // Componente simple de presentación
 }
+
+
+

@@ -23,3 +23,6 @@ export class ProximaCitaCardComponent {
   @Output() cancelar = new EventEmitter<void>();
 }
 
+
+
+

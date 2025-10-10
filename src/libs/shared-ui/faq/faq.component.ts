@@ -38,3 +38,6 @@ export class FaqComponent {
     this.itemToggle.emit(item);
   }
 }
+
+
+

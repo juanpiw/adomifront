@@ -70,3 +70,6 @@ export class FavoritesSectionComponent {
     this.favoriteClick.emit(favorite);
   }
 }
+
+
+

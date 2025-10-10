@@ -75,3 +75,6 @@ export class ReviewsTableComponent {
     return stars;
   }
 }
+
+
+

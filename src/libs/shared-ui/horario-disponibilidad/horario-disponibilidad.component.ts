@@ -147,3 +147,6 @@ export class HorarioDisponibilidadComponent {
     this.scheduleChange.emit(updatedSchedule);
   }
 }
+
+
+

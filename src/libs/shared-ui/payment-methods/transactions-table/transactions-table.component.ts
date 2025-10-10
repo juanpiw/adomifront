@@ -88,3 +88,6 @@ export class TransactionsTableComponent {
     return commission > 0 ? 'commission-positive' : 'commission-negative';
   }
 }
+
+
+

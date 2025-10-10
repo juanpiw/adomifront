@@ -46,3 +46,6 @@ export class ReviewsComponent {
     return Array.from({ length: 5 }, (_, index) => index < rating);
   }
 }
+
+
+

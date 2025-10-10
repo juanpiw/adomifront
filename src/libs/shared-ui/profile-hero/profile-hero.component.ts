@@ -36,3 +36,6 @@ export class ProfileHeroComponent {
     this.avatarClick.emit();
   }
 }
+
+
+

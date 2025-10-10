@@ -24,3 +24,6 @@ export class EmptyCanceladasComponent {
   @Input() subtitle: string = 'Aquí aparecerán las reservas que hayas cancelado.';
 }
 
+
+
+

@@ -38,3 +38,6 @@ export class TrustStatsComponent {
     return `(${count} reseñas)`;
   }
 }
+
+
+

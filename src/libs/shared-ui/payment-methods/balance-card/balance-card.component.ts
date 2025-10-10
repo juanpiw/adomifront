@@ -52,3 +52,6 @@ export class BalanceCardComponent {
     this.withdrawalRequested.emit();
   }
 }
+
+
+

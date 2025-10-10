@@ -20,3 +20,6 @@ export class CanceladaClienteCardComponent {
   @Output() rebook = new EventEmitter<void>();
 }
 
+
+
+

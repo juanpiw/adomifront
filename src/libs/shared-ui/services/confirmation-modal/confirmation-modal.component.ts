@@ -23,3 +23,6 @@ export class ConfirmationModalComponent {
     this.cancelled.emit();
   }
 }
+
+
+

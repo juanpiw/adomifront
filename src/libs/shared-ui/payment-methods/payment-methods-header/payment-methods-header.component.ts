@@ -12,3 +12,6 @@ export class PaymentMethodsHeaderComponent {
   title = 'Métodos de Pago';
   subtitle = 'Administra tus tarjetas y monederos digitales para agendar más rápido.';
 }
+
+
+

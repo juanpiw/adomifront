@@ -251,3 +251,6 @@ this.notificationService.createNotification({
 
 **Estado**: ✅ **Completado** - Sistema básico implementado y funcionando
 **Próximo**: Implementar notificaciones en tiempo real con WebSocket
+
+
+

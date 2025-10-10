@@ -12,3 +12,6 @@ import { IconComponent } from '../../icon/icon.component';
 export class FinancesHeaderComponent {
   // Componente simple de presentación
 }
+
+
+

@@ -75,3 +75,6 @@ export class CategoriesSectionComponent {
     this.categoryClick.emit(category);
   }
 }
+
+
+

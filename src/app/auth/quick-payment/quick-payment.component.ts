@@ -226,3 +226,6 @@ export class QuickPaymentComponent implements OnInit {
   }
 }
 
+
+
+

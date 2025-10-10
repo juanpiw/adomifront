@@ -18,3 +18,6 @@ export class PendienteCardComponent {
   @Input() data!: PendienteData;
 }
 
+
+
+

@@ -53,3 +53,6 @@ export class ProfessionalCardComponent {
       .substring(0, 2);
   }
 }
+
+
+

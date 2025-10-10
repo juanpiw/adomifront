@@ -18,3 +18,6 @@ export class SobreMiComponent {
     this.bioChange.emit(this.bio);
   }
 }
+
+
+

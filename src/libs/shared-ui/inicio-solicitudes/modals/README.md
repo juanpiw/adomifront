@@ -237,3 +237,6 @@ $desktop: 1024px;
 - [ ] Modo oscuro
 - [ ] Internacionalización
 - [ ] Tests E2E automatizados
+
+
+

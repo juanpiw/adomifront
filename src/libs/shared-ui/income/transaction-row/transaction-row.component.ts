@@ -37,3 +37,6 @@ export class TransactionRowComponent {
     return date.toLocaleDateString('es-CL');
   }
 }
+
+
+

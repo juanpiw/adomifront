@@ -116,3 +116,6 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     return colors[priority as keyof typeof colors] || colors.low;
   }
 }
+
+
+

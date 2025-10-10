@@ -131,3 +131,6 @@ export class VerificacionPerfilComponent implements OnInit {
     return this.verificationStatus === 'rejected';
   }
 }
+
+
+

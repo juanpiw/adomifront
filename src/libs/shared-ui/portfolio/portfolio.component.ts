@@ -32,3 +32,6 @@ export class PortfolioComponent {
     this.itemClick.emit(item);
   }
 }
+
+
+

@@ -41,3 +41,6 @@ export class SupportLegalSectionComponent {
     this.linkClicked.emit(link);
   }
 }
+
+
+

@@ -66,3 +66,6 @@ export const REJECTION_REASONS: RejectionReason[] = [
     description: 'Especifica el motivo en los comentarios'
   }
 ];
+
+
+
