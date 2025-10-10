@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { 
@@ -10,6 +10,8 @@ import {
   Category,
   FavoriteProfessional
 } from '../../../../libs/shared-ui/favorites';
+import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
+import { ProfileValidationService } from '../../../services/profile-validation.service';
 
 @Component({
   selector: 'app-favoritos',
@@ -19,21 +21,42 @@ import {
     HeroSectionComponent,
     CategoriesSectionComponent,
     FavoritesSectionComponent,
-    RecommendedSectionComponent
+    RecommendedSectionComponent,
+    ProfileRequiredModalComponent
   ],
   templateUrl: './favoritos.component.html',
   styleUrls: ['./favoritos.component.scss']
 })
 export class FavoritosComponent implements OnInit {
+  private router = inject(Router);
+  private profileValidation = inject(ProfileValidationService);
+
   searchValue = '';
   favorites: FavoriteProfessional[] = [];
   recommendedProfessionals: Professional[] = [];
 
-  constructor(private router: Router) {}
+  // Profile validation
+  showProfileModal: boolean = false;
+  missingFields: string[] = [];
+  userType: 'client' | 'provider' = 'client';
 
   ngOnInit(): void {
+    this.validateProfile();
     this.loadFavorites();
     this.loadRecommendedProfessionals();
+  }
+
+  private validateProfile() {
+    this.profileValidation.validateProfile().subscribe({
+      next: (response) => {
+        if (!response.isComplete) {
+          this.showProfileModal = true;
+          this.missingFields = response.missingFields;
+          this.userType = response.userType;
+        }
+      },
+      error: (error) => console.error('Error validando perfil:', error)
+    });
   }
 
   private loadFavorites(): void {

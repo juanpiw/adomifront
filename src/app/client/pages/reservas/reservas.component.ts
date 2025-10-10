@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReservasTabsComponent } from '../../../../libs/shared-ui/reservas/reservas-tabs.component';
 import { ProximaCitaCardComponent, ProximaCitaData } from '../../../../libs/shared-ui/reservas/proxima-cita-card.component';
@@ -7,12 +7,21 @@ import { ReservaPasadaCardComponent, ReservaPasadaData } from '../../../../libs/
 import { CanceladaClienteCardComponent, CanceladaClienteData } from '../../../../libs/shared-ui/reservas/cancelada-cliente-card.component';
 import { CanceladaProfesionalCardComponent, CanceladaProfesionalData } from '../../../../libs/shared-ui/reservas/cancelada-profesional-card.component';
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
+import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
+import { ProfileValidationService } from '../../../services/profile-validation.service';
 
 @Component({ 
   selector:'app-c-reservas', 
   standalone:true, 
-  imports:[CommonModule, ReservasTabsComponent, ProximaCitaCardComponent, PendienteCardComponent, ReservaPasadaCardComponent, CanceladaClienteCardComponent, CanceladaProfesionalCardComponent, ReviewModalComponent],
+  imports:[CommonModule, ReservasTabsComponent, ProximaCitaCardComponent, PendienteCardComponent, ReservaPasadaCardComponent, CanceladaClienteCardComponent, CanceladaProfesionalCardComponent, ReviewModalComponent, ProfileRequiredModalComponent],
   template:`
+  <!-- Modal de Perfil Requerido -->
+  <app-profile-required-modal 
+    *ngIf="showProfileModal"
+    [missingFields]="missingFields"
+    [userType]="userType"
+  ></app-profile-required-modal>
+
   <section class="reservas-page">
     <h2 class="title">Mis Reservas</h2>
 
@@ -50,8 +59,15 @@ import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/rev
     .content{margin-top:16px}
   `]
 })
-export class ClientReservasComponent {
+export class ClientReservasComponent implements OnInit {
+  private profileValidation = inject(ProfileValidationService);
+
   activeTab = 0;
+  
+  // Profile validation
+  showProfileModal: boolean = false;
+  missingFields: string[] = [];
+  userType: 'client' | 'provider' = 'client';
   
   // Datos de las reservas
   proxima: ProximaCitaData = { titulo: 'Corte de Pelo con Elena Torres', subtitulo: 'Confirmada', fecha: 'Jueves, 25 de Octubre', hora: '10:00 AM', diasRestantes: 2 };
@@ -66,6 +82,23 @@ export class ClientReservasComponent {
   reviewWorkerName = '';
   reviewServiceName = '';
   reviewAppointmentId = '';
+
+  ngOnInit(): void {
+    this.validateProfile();
+  }
+
+  private validateProfile() {
+    this.profileValidation.validateProfile().subscribe({
+      next: (response) => {
+        if (!response.isComplete) {
+          this.showProfileModal = true;
+          this.missingFields = response.missingFields;
+          this.userType = response.userType;
+        }
+      },
+      error: (error) => console.error('Error validando perfil:', error)
+    });
+  }
 
   // Métodos del modal de reseñas
   openReviewModal(workerName: string, serviceName: string, appointmentId: string): void {

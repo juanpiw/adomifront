@@ -8,6 +8,8 @@ import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { SearchInputComponent } from '../../../libs/shared-ui/search-input/search-input.component';
 import { MapCardComponent, ProfessionalCard, MapCardMarker } from '../../../libs/shared-ui/map-card/map-card.component';
 import { IconName } from '../../../libs/shared-ui/icon/icon.component';
+import { ProfileRequiredModalComponent } from '../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
+import { ProfileValidationService } from '../../services/profile-validation.service';
 
 interface Provider {
   id: number;
@@ -39,8 +41,15 @@ interface Service {
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent, ProfileRequiredModalComponent],
   template: `
+    <!-- Modal de Perfil Requerido -->
+    <app-profile-required-modal 
+      *ngIf="showProfileModal"
+      [missingFields]="missingFields"
+      [userType]="userType"
+    ></app-profile-required-modal>
+
     <div class="explorar-container">
       <!-- Hero Banner (ahora arriba del header) -->
       <section class="mb-6">
@@ -180,9 +189,15 @@ export class ExplorarComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private profileValidation = inject(ProfileValidationService);
 
   // User data
   user: any = null;
+
+  // Profile validation
+  showProfileModal: boolean = false;
+  missingFields: string[] = [];
+  userType: 'client' | 'provider' = 'client';
 
   // Search and filters
   searchTerm: string = '';
@@ -217,12 +232,41 @@ export class ExplorarComponent implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.loadUserData();
+      this.validateProfile(); // Validar perfil primero
       this.loadProviders();
       this.loadServices();
       this.generateMapMarkers();
       this.generateProfessionalCards();
       this.generateMapCardMarkers();
     }
+  }
+
+  /**
+   * Valida si el perfil del usuario está completo
+   */
+  private validateProfile() {
+    console.log('[EXPLORAR] Validando perfil del usuario...');
+    
+    this.profileValidation.validateProfile().subscribe({
+      next: (response) => {
+        console.log('[EXPLORAR] Resultado de validación:', response);
+        
+        if (!response.isComplete) {
+          console.log('[EXPLORAR] Perfil incompleto - mostrando modal');
+          this.showProfileModal = true;
+          this.missingFields = response.missingFields;
+          this.userType = response.userType;
+        } else {
+          console.log('[EXPLORAR] Perfil completo - continuando');
+          this.showProfileModal = false;
+        }
+      },
+      error: (error) => {
+        console.error('[EXPLORAR] Error al validar perfil:', error);
+        // En caso de error, permitir continuar (no bloquear la UX)
+        this.showProfileModal = false;
+      }
+    });
   }
 
   private loadUserData() {

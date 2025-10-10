@@ -1,3 +1,10 @@
+<!-- Modal de Perfil Requerido -->
+<app-profile-required-modal 
+  *ngIf="showProfileModal"
+  [missingFields]="missingFields"
+  [userType]="userType"
+></app-profile-required-modal>
+
 <div class="favoritos-container">
   <div class="favoritos-wrapper">
     <!-- Hero Section with Search -->

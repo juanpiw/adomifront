@@ -1,0 +1,90 @@
+<!-- Modal Overlay Bloqueante -->
+<div class="profile-required-overlay">
+  <div class="profile-required-modal">
+    
+    <!-- Icono de Alerta -->
+    <div class="icon-container">
+      <svg class="warning-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+    </div>
+
+    <!-- Contenido -->
+    <div class="content">
+      <h2 class="title">¡Completa tu perfil!</h2>
+      
+      <p class="subtitle">
+        Para usar Adomi necesitas completar tu información personal.
+      </p>
+
+      <!-- Lista de campos faltantes -->
+      <div class="missing-fields-section" *ngIf="missingFields.length > 0">
+        <p class="missing-fields-title">Campos requeridos:</p>
+        <ul class="missing-fields-list">
+          <li *ngFor="let field of missingFields">
+            <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            {{ field }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Beneficios de completar el perfil -->
+      <div class="benefits-section">
+        <p class="benefits-title">Al completar tu perfil podrás:</p>
+        <ul class="benefits-list">
+          <li *ngIf="userType === 'client'">
+            <svg class="benefit-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Agendar servicios a domicilio
+          </li>
+          <li *ngIf="userType === 'client'">
+            <svg class="benefit-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Guardar tus profesionales favoritos
+          </li>
+          <li *ngIf="userType === 'client'">
+            <svg class="benefit-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Recibir notificaciones de tus citas
+          </li>
+          <li *ngIf="userType === 'provider'">
+            <svg class="benefit-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Recibir solicitudes de clientes
+          </li>
+          <li *ngIf="userType === 'provider'">
+            <svg class="benefit-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Aparecer en búsquedas
+          </li>
+          <li *ngIf="userType === 'provider'">
+            <svg class="benefit-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Empezar a generar ingresos
+          </li>
+        </ul>
+      </div>
+
+      <!-- Botón de acción -->
+      <button class="btn-complete-profile" (click)="goToProfile()">
+        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+        Completar mi Perfil
+      </button>
+
+      <p class="disclaimer">
+        Este paso es obligatorio para usar la plataforma
+      </p>
+    </div>
+  </div>
+</div>
+
