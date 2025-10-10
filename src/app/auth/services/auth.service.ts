@@ -129,14 +129,25 @@ export class AuthService {
     }
     
     const userStr = localStorage.getItem('adomi_user');
-    if (userStr) {
+    if (userStr && userStr !== 'undefined') {
       try {
         const user = JSON.parse(userStr);
         this.authStateSubject.next(user);
+        return;
       } catch (error) {
         console.error('Error parsing user from localStorage:', error);
-        this.clearUserData();
+        // No eliminar tokens; solo limpiar el usuario y rehidratar desde /auth/me si hay token
+        localStorage.removeItem('adomi_user');
       }
+    }
+
+    // Si no hay usuario pero sí token, intentar rehidratar desde el backend
+    const token = this.getAccessToken();
+    if (token) {
+      this.getCurrentUserInfo().subscribe({
+        next: () => {},
+        error: () => {}
+      });
     }
   }
 
