@@ -17,13 +17,53 @@
       <!-- SECCIÓN DE FOTO Y REPUTACIÓN -->
       <div class="perfil-hero">
         <div class="perfil-avatar-container">
-          <div class="perfil-avatar">
-            <svg xmlns="http://www.w3.org/2000/svg" class="perfil-avatar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Input file oculto -->
+          <input 
+            type="file" 
+            id="photoInput" 
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            (change)="onPhotoChange($event)"
+            style="display: none;">
+
+          <!-- Avatar con foto o icono por defecto -->
+          <div class="perfil-avatar" [class.perfil-avatar--loading]="isUploadingPhoto">
+            <!-- Mostrar spinner mientras sube -->
+            <div *ngIf="isUploadingPhoto" class="perfil-avatar-spinner">
+              <svg class="perfil-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+
+            <!-- Preview de nueva foto o foto actual o icono por defecto -->
+            <img 
+              *ngIf="!isUploadingPhoto && (photoPreview || fullPhotoUrl)" 
+              [src]="photoPreview || fullPhotoUrl" 
+              alt="Foto de perfil"
+              class="perfil-avatar-img">
+            
+            <svg 
+              *ngIf="!isUploadingPhoto && !photoPreview && !profilePhotoUrl"
+              xmlns="http://www.w3.org/2000/svg" 
+              class="perfil-avatar-icon" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              stroke-width="1.5" 
+              stroke-linecap="round" 
+              stroke-linejoin="round">
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
           </div>
-          <button class="perfil-avatar-edit">
+
+          <!-- Botón para cambiar foto -->
+          <button 
+            type="button"
+            class="perfil-avatar-edit" 
+            (click)="triggerPhotoUpload()"
+            [disabled]="isUploadingPhoto"
+            title="Cambiar foto de perfil">
             <svg xmlns="http://www.w3.org/2000/svg" class="perfil-avatar-edit-icon" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
             </svg>
@@ -152,23 +192,78 @@
             </svg>
             Ubicación Principal
           </h3>
-          <div class="perfil-field">
-            <label for="address" class="perfil-label">
-              Dirección Principal <span class="perfil-required">*</span>
-            </label>
-            <div class="perfil-input-wrapper">
-              <input 
-                type="text" 
-                id="address" 
-                [(ngModel)]="address" 
-                name="address"
-                required 
-                class="perfil-input">
-              <svg class="perfil-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-              </svg>
+          
+          <div class="perfil-form-grid">
+            <div class="perfil-field">
+              <label for="region" class="perfil-label">
+                Región <span class="perfil-required">*</span>
+              </label>
+              <div class="perfil-input-wrapper">
+                <select 
+                  id="region" 
+                  [(ngModel)]="region" 
+                  name="region"
+                  required 
+                  class="perfil-input">
+                  <option value="">Selecciona una región</option>
+                  <option value="Arica y Parinacota">Arica y Parinacota</option>
+                  <option value="Tarapacá">Tarapacá</option>
+                  <option value="Antofagasta">Antofagasta</option>
+                  <option value="Atacama">Atacama</option>
+                  <option value="Coquimbo">Coquimbo</option>
+                  <option value="Valparaíso">Valparaíso</option>
+                  <option value="Metropolitana">Región Metropolitana</option>
+                  <option value="O'Higgins">Libertador Gral. Bernardo O'Higgins</option>
+                  <option value="Maule">Maule</option>
+                  <option value="Ñuble">Ñuble</option>
+                  <option value="Biobío">Biobío</option>
+                  <option value="La Araucanía">La Araucanía</option>
+                  <option value="Los Ríos">Los Ríos</option>
+                  <option value="Los Lagos">Los Lagos</option>
+                  <option value="Aysén">Aysén</option>
+                  <option value="Magallanes">Magallanes y Antártica Chilena</option>
+                </select>
+              </div>
             </div>
-            <p class="perfil-field-help">Usada como referencia inicial para todos tus servicios a domicilio.</p>
+
+            <div class="perfil-field">
+              <label for="commune" class="perfil-label">
+                Comuna <span class="perfil-required">*</span>
+              </label>
+              <div class="perfil-input-wrapper">
+                <input 
+                  type="text" 
+                  id="commune" 
+                  [(ngModel)]="commune" 
+                  name="commune"
+                  required 
+                  placeholder="Ej: Santiago, Providencia, Las Condes..."
+                  class="perfil-input">
+                <svg class="perfil-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                </svg>
+              </div>
+            </div>
+
+            <div class="perfil-field" style="grid-column: 1 / -1;">
+              <label for="address" class="perfil-label">
+                Dirección Principal <span class="perfil-required">*</span>
+              </label>
+              <div class="perfil-input-wrapper">
+                <input 
+                  type="text" 
+                  id="address" 
+                  [(ngModel)]="address" 
+                  name="address"
+                  required 
+                  placeholder="Ej: Av. Libertador 1234, Depto 501"
+                  class="perfil-input">
+                <svg class="perfil-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                </svg>
+              </div>
+              <p class="perfil-field-help">Usada como referencia inicial para todos tus servicios a domicilio.</p>
+            </div>
           </div>
         </div>
 
