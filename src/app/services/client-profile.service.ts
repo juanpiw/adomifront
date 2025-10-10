@@ -49,13 +49,11 @@ export class ClientProfileService {
    */
   getProfile(): Observable<ClientProfileResponse> {
     const token = this.getAccessToken();
-    
-    return this.http.get<ClientProfileResponse>(`${this.apiUrl}/client/profile`, {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      })
+    const headers = new HttpHeaders({
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
     });
+    
+    return this.http.get<ClientProfileResponse>(`${this.apiUrl}/client/profile`, { headers });
   }
 
   /**
@@ -68,8 +66,8 @@ export class ClientProfileService {
     
     return this.http.post<ClientProfileResponse>(`${this.apiUrl}/client/profile`, payload, {
       headers: new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
       })
     }).pipe(
       tap(response => {
@@ -98,7 +96,7 @@ export class ClientProfileService {
       formData,
       {
         headers: new HttpHeaders({
-          'Authorization': `Bearer ${token}`
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
           // No incluir Content-Type para que Angular lo establezca automáticamente con boundary
         })
       }
@@ -125,8 +123,8 @@ export class ClientProfileService {
       `${this.apiUrl}/client/profile/photo`,
       {
         headers: new HttpHeaders({
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         })
       }
     );

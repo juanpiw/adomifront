@@ -305,8 +305,8 @@ export class ExplorarComponent implements OnInit {
   private loadUserData() {
     // Load user data from localStorage or service
     const userData = localStorage.getItem('adomi_user');
-    if (userData) {
-      this.user = JSON.parse(userData);
+    if (userData && userData !== 'undefined') {
+      try { this.user = JSON.parse(userData); } catch { this.user = null; }
     }
   }
 

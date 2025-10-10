@@ -60,7 +60,7 @@ export class ClientPerfilComponent implements OnInit {
 
     // Cargar email del usuario desde localStorage
     const userStr = localStorage.getItem('adomi_user');
-    if (userStr) {
+    if (userStr && userStr !== 'undefined') {
       try {
         const user = JSON.parse(userStr);
         this.email = user.email || '';
