@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ProfileValidationService } from './profile-validation.service';
@@ -43,6 +43,10 @@ export class ClientProfileService {
   private http = inject(HttpClient);
   private profileValidation = inject(ProfileValidationService);
   private apiUrl = environment.apiBaseUrl;
+
+  // Emisor para cambios en la foto de perfil
+  private profilePhotoSubject = new BehaviorSubject<string | null>(null);
+  public profilePhoto$ = this.profilePhotoSubject.asObservable();
 
   /**
    * Obtener perfil del cliente
@@ -106,6 +110,8 @@ export class ClientProfileService {
           console.log('[CLIENT_PROFILE_SERVICE] ✅ Foto subida exitosamente:', response.photoUrl);
           // Re-validar el perfil
           this.profileValidation.validateProfile().subscribe();
+          // Notificar cambio de foto
+          this.profilePhotoSubject.next(response.photoUrl || null);
         }
       })
     );
@@ -127,6 +133,12 @@ export class ClientProfileService {
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         })
       }
+    ).pipe(
+      tap(res => {
+        if (res.success) {
+          this.profilePhotoSubject.next(null);
+        }
+      })
     );
   }
 

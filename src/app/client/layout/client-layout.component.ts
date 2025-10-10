@@ -81,6 +81,15 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       },
       error: () => {}
     });
+
+    // Escuchar cambios de foto de perfil (subida/eliminación) y refrescar avatar
+    this.clientProfile.profilePhoto$.subscribe((photoUrl) => {
+      if (photoUrl) {
+        this.userAvatarUrl = photoUrl.startsWith('http') ? photoUrl : `${environment.apiBaseUrl}${photoUrl}`;
+      } else {
+        this.userAvatarUrl = null;
+      }
+    });
   }
 
   ngOnDestroy() {
