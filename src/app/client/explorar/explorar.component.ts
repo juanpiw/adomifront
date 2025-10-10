@@ -245,26 +245,44 @@ export class ExplorarComponent implements OnInit {
    * Valida si el perfil del usuario está completo
    */
   private validateProfile() {
-    console.log('[EXPLORAR] Validando perfil del usuario...');
+    console.log('[EXPLORAR] 🔍 Validando perfil del usuario...');
+    console.log('[EXPLORAR] 🔐 Token disponible:', !!localStorage.getItem('adomi_access_token'));
     
     this.profileValidation.validateProfile().subscribe({
       next: (response) => {
-        console.log('[EXPLORAR] Resultado de validación:', response);
+        console.log('[EXPLORAR] ✅ Resultado de validación:', response);
         
         if (!response.isComplete) {
-          console.log('[EXPLORAR] Perfil incompleto - mostrando modal');
+          console.log('[EXPLORAR] ⚠️ Perfil incompleto - mostrando modal');
+          console.log('[EXPLORAR] 📋 Campos faltantes:', response.missingFields);
           this.showProfileModal = true;
           this.missingFields = response.missingFields;
           this.userType = response.userType;
         } else {
-          console.log('[EXPLORAR] Perfil completo - continuando');
+          console.log('[EXPLORAR] ✅ Perfil completo - continuando');
           this.showProfileModal = false;
         }
       },
       error: (error) => {
-        console.error('[EXPLORAR] Error al validar perfil:', error);
-        // En caso de error, permitir continuar (no bloquear la UX)
-        this.showProfileModal = false;
+        console.error('[EXPLORAR] ❌ Error al validar perfil:', error);
+        console.error('[EXPLORAR] 🔍 Detalles del error:', {
+          status: error.status,
+          message: error.message,
+          error: error.error
+        });
+        
+        // TEMPORAL: Para pruebas, mostrar el modal si hay error
+        // Esto te permitirá ver el componente aunque falle el endpoint
+        console.log('[EXPLORAR] ⚠️ MODO DEBUG: Mostrando modal para pruebas');
+        this.showProfileModal = true;
+        this.missingFields = [
+          'Nombre completo',
+          'Teléfono de contacto',
+          'Dirección principal',
+          'Comuna',
+          'Región'
+        ];
+        this.userType = 'client';
       }
     });
   }
