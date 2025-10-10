@@ -283,8 +283,8 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    // Usar el rol seleccionado para el registro con Google
-    this.googleAuth.signInWithGoogle(this.selectedRole);
+    // Usar el rol seleccionado y modo 'register' para CREAR cuenta
+    this.googleAuth.signInWithGoogle(this.selectedRole, 'register');
   }
 
   goToTerms() {

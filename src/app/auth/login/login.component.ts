@@ -1,6 +1,6 @@
 ﻿import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { UiInputComponent } from '../../../libs/shared-ui/ui-input/ui-input.component';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
@@ -26,6 +26,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private auth = inject(AuthService);
   private session = inject(SessionService);
   private errorHandler = inject(ErrorHandlerService);
@@ -36,6 +37,13 @@ export class LoginComponent implements OnInit {
     if (this.session.isLoggedIn()) {
       this.redirectToDashboard();
     }
+
+    // Verificar si hay error de Google Auth
+    this.route.queryParams.subscribe(params => {
+      if (params['error'] === 'no_account' && params['message']) {
+        this.errorMessage = decodeURIComponent(params['message']);
+      }
+    });
   }
 
   submit() {
@@ -173,8 +181,7 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // Por defecto, usar rol 'client' para login
-    // El usuario puede cambiar su rol después si es necesario
-    this.googleAuth.signInWithGoogle('client');
+    // Usar modo 'login' - NO crear cuenta si no existe
+    this.googleAuth.signInWithGoogle('client', 'login');
   }
 }

@@ -38,22 +38,24 @@ export class GoogleAuthService {
   /**
    * Inicializar autenticación con Google
    * @param role Rol del usuario (client o provider)
+   * @param mode Modo de autenticación (login o register)
    * @returns Observable con la URL de autorización
    */
-  initializeGoogleAuth(role: 'client' | 'provider' = 'client'): Observable<GoogleAuthResponse> {
-    console.log('[GOOGLE_AUTH] Inicializando autenticación con Google para rol:', role);
+  initializeGoogleAuth(role: 'client' | 'provider' = 'client', mode: 'login' | 'register' = 'login'): Observable<GoogleAuthResponse> {
+    console.log('[GOOGLE_AUTH] Inicializando autenticación con Google para rol:', role, 'modo:', mode);
     
-    return this.http.post<GoogleAuthResponse>(`${this.apiUrl}/auth/google`, { role });
+    return this.http.post<GoogleAuthResponse>(`${this.apiUrl}/auth/google`, { role, mode });
   }
 
   /**
    * Redirigir a Google para autenticación
    * @param role Rol del usuario
+   * @param mode Modo de autenticación (login o register)
    */
-  signInWithGoogle(role: 'client' | 'provider' = 'client'): void {
-    console.log('[GOOGLE_AUTH] Iniciando proceso de login con Google');
+  signInWithGoogle(role: 'client' | 'provider' = 'client', mode: 'login' | 'register' = 'login'): void {
+    console.log('[GOOGLE_AUTH] Iniciando proceso con Google - Modo:', mode);
     
-    this.initializeGoogleAuth(role).subscribe({
+    this.initializeGoogleAuth(role, mode).subscribe({
       next: (response) => {
         if (response.success && response.authUrl) {
           console.log('[GOOGLE_AUTH] Redirigiendo a Google:', response.authUrl);
