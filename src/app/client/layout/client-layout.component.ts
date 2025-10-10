@@ -6,6 +6,8 @@ import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { TopbarComponent, TopbarConfig } from '../../../libs/shared-ui/topbar/topbar.component';
 import { AuthService } from '../../auth/services/auth.service';
+import { ClientProfileService } from '../../services/client-profile.service';
+import { environment } from '../../../environments/environment';
 import { MenuService } from '../services/menu.service';
 
 @Component({
@@ -32,6 +34,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private router = inject(Router);
   menuService = inject(MenuService);
+  private clientProfile = inject(ClientProfileService);
 
   userName: string | null = null;
   userAvatarUrl: string | null = null;
@@ -65,6 +68,17 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     }
     this.auth.getCurrentUserInfo().subscribe({
       next: (res) => { this.userName = res?.user?.name || this.userName; },
+      error: () => {}
+    });
+
+    // Cargar foto de perfil para mostrar en el menú
+    this.clientProfile.getProfile().subscribe({
+      next: (res) => {
+        const url = res?.profile?.profile_photo_url;
+        if (url) {
+          this.userAvatarUrl = url.startsWith('http') ? url : `${environment.apiBaseUrl}${url}`;
+        }
+      },
       error: () => {}
     });
   }
