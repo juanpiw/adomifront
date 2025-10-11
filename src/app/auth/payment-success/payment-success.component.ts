@@ -39,23 +39,8 @@ export class PaymentSuccessComponent implements OnInit {
   }
 
   processPaymentSuccess() {
-    // Obtener datos temporales del usuario
-    const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
-      ? sessionStorage.getItem('tempUserData') : null;
-    const planData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
-      ? sessionStorage.getItem('selectedPlan') : null;
-    
-    if (!tempData || !planData) {
-      this.error = 'No se encontraron los datos del usuario. Por favor, regístrate nuevamente.';
-      this.loading = false;
-      return;
-    }
-
     try {
-      const userData = JSON.parse(tempData);
-      const plan = JSON.parse(planData);
-
-      // Si ya hay sesión (Google), no volver a registrar: solo limpiar y continuar
+      // Si ya hay sesión (Google), no exigir datos temporales ni registrar de nuevo
       const hasToken = !!this.auth.getAccessToken();
       if (hasToken) {
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
@@ -69,6 +54,21 @@ export class PaymentSuccessComponent implements OnInit {
         }, 2000);
         return;
       }
+
+      // Flujo legacy: obtener datos temporales para registro por email/contraseña
+      const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
+        ? sessionStorage.getItem('tempUserData') : null;
+      const planData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
+        ? sessionStorage.getItem('selectedPlan') : null;
+      
+      if (!tempData || !planData) {
+        this.error = 'No se encontraron los datos del usuario. Por favor, regístrate nuevamente.';
+        this.loading = false;
+        return;
+      }
+
+      const userData = JSON.parse(tempData);
+      const plan = JSON.parse(planData);
 
       // Caso legacy: registro con email/contraseña
       this.auth.register({
