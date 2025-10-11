@@ -24,6 +24,7 @@ export interface AuthUser {
   role: 'client' | 'provider';
   name: string | null;
   active_plan_id?: number;
+  profile_photo_url?: string | null;
 }
 
 export interface AuthResponse {
