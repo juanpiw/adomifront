@@ -308,10 +308,26 @@ export class ExplorarComponent implements OnInit {
   }
 
   private loadUserData() {
-    // Load user data from localStorage or service
+    console.log('[EXPLORAR] loadUserData iniciado');
+    // Primero desde localStorage (rápido)
     const userData = localStorage.getItem('adomi_user');
-    if (userData && userData !== 'undefined') {
-      try { this.user = JSON.parse(userData); } catch { this.user = null; }
+    if (userData && userData !== 'undefined' && userData !== 'null') {
+      try { 
+        this.user = JSON.parse(userData);
+        console.log('[EXPLORAR] Usuario desde localStorage:', this.user);
+      } catch (e) {
+        console.error('[EXPLORAR] Error parseando usuario:', e);
+        this.user = null;
+      }
+    } else {
+      console.log('[EXPLORAR] No hay usuario en localStorage');
+    }
+    
+    // Luego actualizar desde authService (sincronizado con backend)
+    const currentUser = this.auth.getCurrentUser();
+    if (currentUser) {
+      this.user = currentUser;
+      console.log('[EXPLORAR] Usuario desde authService:', this.user);
     }
   }
 

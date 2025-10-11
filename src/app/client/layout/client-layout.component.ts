@@ -63,33 +63,9 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       this.isCollapsed = !isOpen;
     });
 
-    // Cargar nombre y avatar desde backend (sin persistencia local)
+    // Cargar datos del cliente
     if (isPlatformBrowser(this.platformId)) {
-      const stored = localStorage.getItem('adomi_user');
-      if (stored && stored !== 'undefined') {
-        try { const u = JSON.parse(stored); this.userName = u?.name || null; } catch {}
-      }
-      this.auth.getCurrentUserInfo().subscribe({
-        next: (res) => {
-          this.userName = res?.user?.name || this.userName;
-          const avatar = (res as any)?.user?.profile_photo_url;
-          if (avatar) {
-            this.userAvatarUrl = avatar.startsWith('http') ? avatar : `${environment.apiBaseUrl}${avatar}`;
-          }
-        },
-        error: () => {}
-      });
-      // Cargar foto desde perfil como respaldo
-      this.clientProfile.getProfile().subscribe({
-        next: (res) => {
-          const url = res?.profile?.profile_photo_url;
-          if (url) {
-            const full = url.startsWith('http') ? url : `${environment.apiBaseUrl}${url}`;
-            this.userAvatarUrl = full;
-          }
-        },
-        error: () => {}
-      });
+      this.loadClientData();
     }
 
     // Escuchar cambios de foto de perfil (subida/eliminación) y refrescar avatar
@@ -121,6 +97,62 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     if (img && img.src.indexOf('/assets/default-avatar.png') === -1) {
       img.src = '/assets/default-avatar.png';
     }
+  }
+
+  private loadClientData() {
+    console.log('[CLIENT_LAYOUT] Cargando datos del cliente...');
+    
+    // Primero desde localStorage (rápido)
+    const stored = localStorage.getItem('adomi_user');
+    if (stored && stored !== 'undefined' && stored !== 'null') {
+      try {
+        const u = JSON.parse(stored);
+        this.userName = u?.name || null;
+        console.log('[CLIENT_LAYOUT] Nombre desde localStorage:', this.userName);
+      } catch (e) {
+        console.error('[CLIENT_LAYOUT] Error parseando usuario:', e);
+      }
+    }
+    
+    // Luego desde el perfil completo del cliente (datos frescos)
+    this.clientProfile.getProfile().subscribe({
+      next: (response) => {
+        console.log('[CLIENT_LAYOUT] Perfil obtenido:', response);
+        if (response.success && response.profile) {
+          this.userName = response.profile.full_name || this.userName;
+          
+          const url = response.profile.profile_photo_url;
+          if (url) {
+            this.userAvatarUrl = url.startsWith('http') ? url : `${environment.apiBaseUrl}${url}`;
+          }
+          console.log('[CLIENT_LAYOUT] Datos actualizados:', { 
+            name: this.userName, 
+            avatar: this.userAvatarUrl 
+          });
+        }
+      },
+      error: (error) => {
+        console.error('[CLIENT_LAYOUT] Error obteniendo perfil, usando fallback:', error);
+        // Fallback: Usar getCurrentUserInfo
+        this.auth.getCurrentUserInfo().subscribe({
+          next: (res) => {
+            const user = (res as any).data?.user || (res as any).user || res.user;
+            if (user) {
+              this.userName = user.name || this.userName;
+              const avatar = user.profile_photo_url;
+              if (avatar) {
+                this.userAvatarUrl = avatar.startsWith('http') ? avatar : `${environment.apiBaseUrl}${avatar}`;
+              }
+              console.log('[CLIENT_LAYOUT] Datos desde fallback:', { 
+                name: this.userName, 
+                avatar: this.userAvatarUrl 
+              });
+            }
+          },
+          error: (err) => console.error('[CLIENT_LAYOUT] Error en fallback:', err)
+        });
+      }
+    });
   }
 
   logout(): void {
