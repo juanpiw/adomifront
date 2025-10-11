@@ -136,9 +136,20 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
         // Guardar tokens y usuario
         if (typeof localStorage !== 'undefined') {
           console.log('[GOOGLE_SUCCESS] Guardando tokens decodificados en storage');
+          console.log('[GOOGLE_SUCCESS] User object que se guarda:', user);
           localStorage.setItem('adomi_access_token', accessToken);
           localStorage.setItem('adomi_refresh_token', refreshToken);
           localStorage.setItem('adomi_user', JSON.stringify(user));
+          
+          // Verificar que se guardó correctamente
+          const savedUser = localStorage.getItem('adomi_user');
+          console.log('[GOOGLE_SUCCESS] User guardado en localStorage:', savedUser);
+          try {
+            const parsedSavedUser = JSON.parse(savedUser || '{}');
+            console.log('[GOOGLE_SUCCESS] User parseado desde localStorage:', parsedSavedUser);
+          } catch (e) {
+            console.error('[GOOGLE_SUCCESS] Error parseando user guardado:', e);
+          }
         }
 
         this.success = true;
@@ -169,8 +180,11 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
         // Obtener el rol del usuario desde localStorage (parseo seguro)
         try {
           const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
-          const user = raw && raw !== 'undefined' ? JSON.parse(raw) : {};
+          console.log('[GOOGLE_SUCCESS] Raw localStorage value:', raw);
+          console.log('[GOOGLE_SUCCESS] Raw type:', typeof raw, 'is undefined string?', raw === 'undefined');
+          const user = raw && raw !== 'undefined' && raw !== 'null' ? JSON.parse(raw) : {};
           console.log('[GOOGLE_SUCCESS] Countdown redirect con user:', user);
+          console.log('[GOOGLE_SUCCESS] User role:', user?.role);
           this.redirectAfterGoogle(user);
         } catch (e) {
           console.warn('[GOOGLE_SUCCESS] Error parseando adomi_user en countdown:', e);
@@ -195,13 +209,17 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
   private redirectAfterGoogle(user: any) {
     if (!isPlatformBrowser(this.platformId)) return;
     const role = user?.role;
+    console.log('[GOOGLE_SUCCESS] redirectAfterGoogle - user:', user, 'role:', role);
+    
     // Determinar si venimos de registro o login (opcional)
     const mode = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('googleAuthMode') : null;
+    console.log('[GOOGLE_SUCCESS] googleAuthMode from sessionStorage:', mode);
     if (typeof sessionStorage !== 'undefined') {
       sessionStorage.removeItem('googleAuthMode');
     }
 
     if (role === 'provider') {
+      console.log('[GOOGLE_SUCCESS] Redirigiendo provider, mode:', mode);
       if (mode === 'register') {
         // Sembrar datos mínimos para el flujo de plan/checkout
         try {
@@ -209,16 +227,19 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
           if (typeof sessionStorage !== 'undefined') {
             sessionStorage.setItem('tempUserData', JSON.stringify(temp));
           }
+          console.log('[GOOGLE_SUCCESS] Navegando a select-plan con temp data:', temp);
         } catch {}
         this.router.navigate(['/auth/select-plan']);
         return;
       }
       // Provider existente → ir al dashboard
+      console.log('[GOOGLE_SUCCESS] Navegando a dash para provider existente');
       this.router.navigate(['/dash']);
       return;
     }
 
     // Clientes → a su área
+    console.log('[GOOGLE_SUCCESS] Navegando a client/reservas para cliente');
     this.router.navigate(['/client/reservas']);
   }
 

@@ -43,6 +43,7 @@ export class GoogleAuthService {
    */
   initializeGoogleAuth(role: 'client' | 'provider' = 'client', mode: 'login' | 'register' = 'login'): Observable<GoogleAuthResponse> {
     console.log('[GOOGLE_AUTH] Inicializando autenticación con Google para rol:', role, 'modo:', mode);
+    console.log('[GOOGLE_AUTH] Enviando POST a:', `${this.apiUrl}/auth/google`, 'con payload:', { role, mode });
     
     return this.http.post<GoogleAuthResponse>(`${this.apiUrl}/auth/google`, { role, mode });
   }
@@ -53,7 +54,7 @@ export class GoogleAuthService {
    * @param mode Modo de autenticación (login o register)
    */
   signInWithGoogle(role: 'client' | 'provider' = 'client', mode: 'login' | 'register' = 'login'): void {
-    console.log('[GOOGLE_AUTH] Iniciando proceso con Google - Modo:', mode);
+    console.log('[GOOGLE_AUTH] Iniciando proceso con Google - Rol:', role, 'Modo:', mode);
     
     this.initializeGoogleAuth(role, mode).subscribe({
       next: (response) => {
