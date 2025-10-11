@@ -124,11 +124,18 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
       if (tokenParam && refreshParam && userParam) {
         const accessToken = decodeURIComponent(tokenParam);
         const refreshToken = decodeURIComponent(refreshParam);
-        const user = JSON.parse(decodeURIComponent(userParam));
+        let user: any = {};
+        try {
+          user = JSON.parse(decodeURIComponent(userParam));
+        } catch (e) {
+          console.warn('[GOOGLE_SUCCESS] No se pudo parsear userParam:', e);
+          user = {};
+        }
         console.log('[GOOGLE_SUCCESS] Usuario autenticado:', user);
 
         // Guardar tokens y usuario
         if (typeof localStorage !== 'undefined') {
+          console.log('[GOOGLE_SUCCESS] Guardando tokens decodificados en storage');
           localStorage.setItem('adomi_access_token', accessToken);
           localStorage.setItem('adomi_refresh_token', refreshToken);
           localStorage.setItem('adomi_user', JSON.stringify(user));
@@ -159,9 +166,16 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
       this.countdown--;
       if (this.countdown <= 0) {
         clearInterval(this.countdownInterval);
-        // Obtener el rol del usuario desde localStorage
-        const user = JSON.parse(localStorage.getItem('adomi_user') || '{}');
-        this.redirectAfterGoogle(user);
+        // Obtener el rol del usuario desde localStorage (parseo seguro)
+        try {
+          const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+          const user = raw && raw !== 'undefined' ? JSON.parse(raw) : {};
+          console.log('[GOOGLE_SUCCESS] Countdown redirect con user:', user);
+          this.redirectAfterGoogle(user);
+        } catch (e) {
+          console.warn('[GOOGLE_SUCCESS] Error parseando adomi_user en countdown:', e);
+          this.redirectAfterGoogle({});
+        }
       }
     }, 1000);
   }
