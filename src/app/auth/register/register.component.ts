@@ -61,15 +61,27 @@ export class RegisterComponent implements OnInit {
     console.log('[REGISTER] Error de Google OAuth:', params);
     
     switch(params['error']) {
-      case 'email_exists_with_different_role':
+      case 'email_already_exists':
         const existingRole = params['existing_role'];
         const attemptedRole = params['attempted_role'];
         const email = params['email'];
         
+        // Mensaje unificado: ya tienes cuenta, inicia sesión
         this.serverError = `Ya tienes una cuenta como ${existingRole === 'client' ? 'Cliente' : 'Profesional'}. ` +
           `¿Deseas iniciar sesión en su lugar?`;
         
         // Mostrar botón de login
+        this.showLoginLink = true;
+        break;
+        
+      case 'email_exists_with_different_role':
+        // Mantener compatibilidad con el error anterior
+        const existingRoleOld = params['existing_role'];
+        const attemptedRoleOld = params['attempted_role'];
+        
+        this.serverError = `Ya tienes una cuenta como ${existingRoleOld === 'client' ? 'Cliente' : 'Profesional'}. ` +
+          `¿Deseas iniciar sesión en su lugar?`;
+        
         this.showLoginLink = true;
         break;
         
@@ -253,6 +265,11 @@ export class RegisterComponent implements OnInit {
     } else {
       // Mostrar error general
       this.serverError = this.errorHandler.getFriendlyMessage(errorDetails);
+      
+      // ✅ Si es error 409 (email ya existe), mostrar botón de login
+      if (err.status === 409) {
+        this.showLoginLink = true;
+      }
     }
 
     // Si el error requiere reautenticación, limpiar sesión
