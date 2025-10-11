@@ -43,10 +43,25 @@ export class DashLayoutComponent implements OnInit {
     // Cargar nombre básico desde sesión/localStorage
     const u = this.sessionService.getUser();
     this.providerName = u?.name || null;
+    this.providerAvatarUrl = u?.profile_photo_url || null;
+    console.log('[DASH_LAYOUT] Usuario desde sesión:', u);
+    
     // Refrescar datos desde backend si hay sesión
     this.auth.getCurrentUserInfo().subscribe({
-      next: (res) => { this.providerName = res?.user?.name || this.providerName; },
-      error: () => {}
+      next: (res) => {
+        console.log('[DASH_LAYOUT] Respuesta de getCurrentUserInfo:', res);
+        // Extraer usuario de la respuesta (puede venir como data.user o user)
+        const user = (res as any).data?.user || (res as any).user || res.user;
+        console.log('[DASH_LAYOUT] Usuario extraído:', user);
+        if (user) {
+          this.providerName = user.name || this.providerName;
+          this.providerAvatarUrl = user.profile_photo_url || this.providerAvatarUrl;
+          console.log('[DASH_LAYOUT] Datos actualizados:', { name: this.providerName, avatar: this.providerAvatarUrl });
+        }
+      },
+      error: (error) => {
+        console.error('[DASH_LAYOUT] Error obteniendo usuario:', error);
+      }
     });
   }
 

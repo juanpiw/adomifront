@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
@@ -20,6 +20,7 @@ import {
 } from '../../../../libs/shared-ui/inicio-solicitudes';
 import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-d-home',
@@ -37,16 +38,51 @@ import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-s
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class DashHomeComponent {
+export class DashHomeComponent implements OnInit {
+  private auth = inject(AuthService);
+  
   constructor(private router: Router) {}
+  
   // Estado online/offline
   isOnline: boolean = true;
 
   // Datos para el header
   headerData: HeaderData = {
-    userName: 'Elena',
+    userName: 'Usuario',
     hasNotifications: true
   };
+
+  ngOnInit() {
+    // Cargar el nombre del usuario desde el servicio de autenticación
+    const currentUser = this.auth.getCurrentUser();
+    console.log('[DASH_HOME] Usuario actual:', currentUser);
+    
+    if (currentUser && currentUser.name) {
+      this.headerData = {
+        ...this.headerData,
+        userName: currentUser.name
+      };
+      console.log('[DASH_HOME] Nombre actualizado:', currentUser.name);
+    } else {
+      // Si no hay usuario en memoria, intentar obtenerlo del backend
+      this.auth.getCurrentUserInfo().subscribe({
+        next: (response) => {
+          console.log('[DASH_HOME] Respuesta getCurrentUserInfo:', response);
+          const user = (response as any).data?.user || (response as any).user || response.user;
+          if (user && user.name) {
+            this.headerData = {
+              ...this.headerData,
+              userName: user.name
+            };
+            console.log('[DASH_HOME] Nombre actualizado desde backend:', user.name);
+          }
+        },
+        error: (error) => {
+          console.error('[DASH_HOME] Error obteniendo usuario:', error);
+        }
+      });
+    }
+  }
 
   // Datos para la próxima cita
   proximaCitaData: ProximaCitaData = {
