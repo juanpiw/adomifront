@@ -232,12 +232,16 @@ export class ExplorarComponent implements OnInit {
   loading: boolean = false;
 
   ngOnInit() {
+    console.log('[EXPLORAR] ngOnInit iniciado');
     if (isPlatformBrowser(this.platformId)) {
+      console.log('[EXPLORAR] Cargando datos de usuario...');
       this.loadUserData();
       // Si no hay nombre todavía, pedirlo al backend
       if (!this.user?.name) {
+        console.log('[EXPLORAR] No hay nombre, obteniendo del backend...');
         this.auth.getCurrentUserInfo().subscribe({
           next: () => {
+            console.log('[EXPLORAR] Usuario obtenido del backend');
             const u = this.auth.getCurrentUser();
             if (u) this.user = u;
           },
@@ -247,6 +251,7 @@ export class ExplorarComponent implements OnInit {
           if (u) this.user = u;
         });
       }
+      console.log('[EXPLORAR] Validando perfil...');
       this.validateProfile(); // Validar perfil primero
       this.loadProviders();
       this.loadServices();

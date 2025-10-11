@@ -159,6 +159,24 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
         this.auth.getCurrentUserInfo().subscribe({
           next: (userInfo) => {
             console.log('[GOOGLE_SUCCESS] Usuario hidratado desde backend:', userInfo);
+            // Verificar que el usuario del backend coincida con el de la URL
+            if (userInfo.success && userInfo.user) {
+              console.log('[GOOGLE_SUCCESS] Verificando consistencia de usuario...');
+              console.log('[GOOGLE_SUCCESS] Usuario URL:', user);
+              console.log('[GOOGLE_SUCCESS] Usuario Backend:', userInfo.user);
+              
+              // Si los roles no coinciden, usar el de la URL (más confiable para registro)
+              if (user.role && user.role !== userInfo.user.role) {
+                console.log('[GOOGLE_SUCCESS] ⚠️ Conflicto de roles detectado!');
+                console.log('[GOOGLE_SUCCESS] URL role:', user.role, 'Backend role:', userInfo.user.role);
+                console.log('[GOOGLE_SUCCESS] Usando rol de URL para registro:', user.role);
+                
+                // Crear usuario híbrido con rol de URL pero datos frescos del backend
+                const hybridUser = { ...userInfo.user, role: user.role };
+                localStorage.setItem('adomi_user', JSON.stringify(hybridUser));
+                console.log('[GOOGLE_SUCCESS] Usuario híbrido guardado:', hybridUser);
+              }
+            }
             this.startCountdown();
           },
           error: (error) => {
