@@ -298,9 +298,15 @@ export class AuthService {
       tap(response => {
         console.log('[AUTH] Respuesta de /auth/me:', response);
         if (response.success) {
-          console.log('[AUTH] Usuario hidratado:', response.user);
-          this.authStateSubject.next(response.user);
-          localStorage.setItem('adomi_user', JSON.stringify(response.user));
+          // El backend retorna {success: true, data: {user: {...}}}
+          const user = (response as any).data?.user || (response as any).user || response.user;
+          console.log('[AUTH] Usuario hidratado:', user);
+          if (user) {
+            this.authStateSubject.next(user);
+            localStorage.setItem('adomi_user', JSON.stringify(user));
+          } else {
+            console.error('[AUTH] No se pudo extraer usuario de la respuesta');
+          }
         }
       }),
       catchError(error => {

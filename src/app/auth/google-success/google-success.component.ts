@@ -160,22 +160,41 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
           next: (userInfo) => {
             console.log('[GOOGLE_SUCCESS] Usuario hidratado desde backend:', userInfo);
             // Verificar que el usuario del backend coincida con el de la URL
-            if (userInfo.success && userInfo.user) {
+            console.log('[GOOGLE_SUCCESS] Respuesta completa de getCurrentUserInfo:', userInfo);
+            
+            // Extraer usuario de la respuesta (puede venir como data.user o user)
+            const backendUser = (userInfo as any).data?.user || (userInfo as any).user || userInfo.user;
+            console.log('[GOOGLE_SUCCESS] Usuario extraído del backend:', backendUser);
+            
+            if (backendUser) {
               console.log('[GOOGLE_SUCCESS] Verificando consistencia de usuario...');
               console.log('[GOOGLE_SUCCESS] Usuario URL:', user);
-              console.log('[GOOGLE_SUCCESS] Usuario Backend:', userInfo.user);
+              console.log('[GOOGLE_SUCCESS] Usuario Backend:', backendUser);
               
-              // Si los roles no coinciden, usar el de la URL (más confiable para registro)
-              if (user.role && user.role !== userInfo.user.role) {
-                console.log('[GOOGLE_SUCCESS] ⚠️ Conflicto de roles detectado!');
-                console.log('[GOOGLE_SUCCESS] URL role:', user.role, 'Backend role:', userInfo.user.role);
-                console.log('[GOOGLE_SUCCESS] Usando rol de URL para registro:', user.role);
-                
-                // Crear usuario híbrido con rol de URL pero datos frescos del backend
-                const hybridUser = { ...userInfo.user, role: user.role };
-                localStorage.setItem('adomi_user', JSON.stringify(hybridUser));
-                console.log('[GOOGLE_SUCCESS] Usuario híbrido guardado:', hybridUser);
+              // Verificar si tenemos un usuario válido de la URL
+              if (user && user.id) {
+                // Si los roles no coinciden, usar el de la URL (más confiable para registro)
+                if (user.role && user.role !== backendUser.role) {
+                  console.log('[GOOGLE_SUCCESS] ⚠️ Conflicto de roles detectado!');
+                  console.log('[GOOGLE_SUCCESS] URL role:', user.role, 'Backend role:', backendUser.role);
+                  console.log('[GOOGLE_SUCCESS] Usando rol de URL para registro:', user.role);
+                  
+                  // Crear usuario híbrido con rol de URL pero datos frescos del backend
+                  const hybridUser = { ...backendUser, role: user.role };
+                  localStorage.setItem('adomi_user', JSON.stringify(hybridUser));
+                  console.log('[GOOGLE_SUCCESS] Usuario híbrido guardado:', hybridUser);
+                } else {
+                  // Los roles coinciden, actualizar localStorage con datos frescos del backend
+                  localStorage.setItem('adomi_user', JSON.stringify(backendUser));
+                  console.log('[GOOGLE_SUCCESS] Usuario actualizado desde backend:', backendUser);
+                }
+              } else {
+                // No tenemos usuario de URL, usar el del backend
+                localStorage.setItem('adomi_user', JSON.stringify(backendUser));
+                console.log('[GOOGLE_SUCCESS] Usuario guardado desde backend (sin URL):', backendUser);
               }
+            } else {
+              console.warn('[GOOGLE_SUCCESS] No se pudo extraer usuario del backend, manteniendo usuario de URL');
             }
             this.startCountdown();
           },
