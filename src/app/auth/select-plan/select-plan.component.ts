@@ -57,6 +57,20 @@ export class SelectPlanComponent implements OnInit {
     }
 
     this.tempUserData = JSON.parse(tempData);
+    
+    // ✅ VALIDACIÓN CRÍTICA: Solo proveedores pueden acceder a planes
+    if (this.tempUserData?.role !== 'provider') {
+      console.log('[SELECT_PLAN] Acceso denegado - rol no es provider:', this.tempUserData?.role);
+      this.error = 'Los planes de pago están disponibles solo para profesionales.';
+      this.loading = false;
+      
+      // Redirigir a registro después de 3 segundos
+      setTimeout(() => {
+        this.router.navigateByUrl('/auth/register');
+      }, 3000);
+      return;
+    }
+    
     this.loadPlans();
   }
 

@@ -1,6 +1,6 @@
 ﻿import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService, AuthResponse, RegisterPayload } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
@@ -31,9 +31,11 @@ export class RegisterComponent implements OnInit {
   showPassword = false;
   showConfirmPassword = false;
   termsAccepted = false;
+  showLoginLink = false;
   
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private session = inject(SessionService);
   private errorHandler = inject(ErrorHandlerService);
   private googleAuth = inject(GoogleAuthService);
@@ -46,6 +48,38 @@ export class RegisterComponent implements OnInit {
     
     // Verificar si los términos ya fueron aceptados
     this.checkTermsAccepted();
+    
+    // ✅ Verificar query parameters para errores de Google OAuth
+    this.route.queryParams.subscribe(params => {
+      if (params['error']) {
+        this.handleGoogleOAuthError(params);
+      }
+    });
+  }
+
+  private handleGoogleOAuthError(params: any) {
+    console.log('[REGISTER] Error de Google OAuth:', params);
+    
+    switch(params['error']) {
+      case 'email_exists_with_different_role':
+        const existingRole = params['existing_role'];
+        const attemptedRole = params['attempted_role'];
+        const email = params['email'];
+        
+        this.serverError = `Ya tienes una cuenta como ${existingRole === 'client' ? 'Cliente' : 'Profesional'}. ` +
+          `¿Deseas iniciar sesión en su lugar?`;
+        
+        // Mostrar botón de login
+        this.showLoginLink = true;
+        break;
+        
+      case 'google_auth_failed':
+        this.serverError = 'Error al autenticar con Google. Inténtalo nuevamente.';
+        break;
+        
+      default:
+        this.serverError = 'Error durante el registro con Google. Inténtalo nuevamente.';
+    }
   }
 
   checkTermsAccepted() {
@@ -144,6 +178,7 @@ export class RegisterComponent implements OnInit {
     this.nameError = null;
     this.serverError = null;
     this.serverSuccess = null;
+    this.showLoginLink = false;
   }
 
   private registerClient() {
