@@ -76,10 +76,9 @@ export class StripeService {
         return { success: false, error: { type: 'api_error', message: 'Stripe no está disponible' } };
       }
 
+      // Con sessionId no se deben pasar otros parámetros (Stripe IntegrationError)
       const { error } = await stripe.redirectToCheckout({
-        sessionId: options.sessionId,
-        successUrl: options.successUrl || `${window.location.origin}/auth/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: options.cancelUrl || `${window.location.origin}/auth/payment-error`
+        sessionId: options.sessionId
       });
 
       if (error) {
