@@ -87,6 +87,16 @@ export class SelectPlanComponent implements OnInit {
         interval: 'month' as const
       }));
     }
+
+    // Si no hay planes anuales, derivarlos multiplicando por 12 los mensuales
+    if (this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
+      this.annualPlans = this.monthlyPlans.map(plan => ({
+        ...plan,
+        id: plan.id + 200, // IDs diferentes para evitar conflictos
+        price: Math.round(plan.price * 12),
+        interval: 'year' as const
+      }));
+    }
   }
 
   selectPlan(plan: Plan) {
