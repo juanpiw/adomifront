@@ -21,6 +21,7 @@ import {
 import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ProviderProfileService } from '../../../services/provider-profile.service';
 
 @Component({
   selector: 'app-d-home',
@@ -40,6 +41,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 })
 export class DashHomeComponent implements OnInit {
   private auth = inject(AuthService);
+  private providerProfile = inject(ProviderProfileService);
   
   constructor(private router: Router) {}
   
@@ -53,35 +55,53 @@ export class DashHomeComponent implements OnInit {
   };
 
   ngOnInit() {
-    // Cargar el nombre del usuario desde el servicio de autenticación
-    const currentUser = this.auth.getCurrentUser();
-    console.log('[DASH_HOME] Usuario actual:', currentUser);
+    this.loadProviderName();
+  }
+
+  private loadProviderName() {
+    console.log('[DASH_HOME] Cargando nombre del provider...');
     
+    // Primero intentar desde el AuthService (localStorage)
+    const currentUser = this.auth.getCurrentUser();
     if (currentUser && currentUser.name) {
       this.headerData = {
         ...this.headerData,
         userName: currentUser.name
       };
-      console.log('[DASH_HOME] Nombre actualizado:', currentUser.name);
-    } else {
-      // Si no hay usuario en memoria, intentar obtenerlo del backend
-      this.auth.getCurrentUserInfo().subscribe({
-        next: (response) => {
-          console.log('[DASH_HOME] Respuesta getCurrentUserInfo:', response);
-          const user = (response as any).data?.user || (response as any).user || response.user;
-          if (user && user.name) {
-            this.headerData = {
-              ...this.headerData,
-              userName: user.name
-            };
-            console.log('[DASH_HOME] Nombre actualizado desde backend:', user.name);
-          }
-        },
-        error: (error) => {
-          console.error('[DASH_HOME] Error obteniendo usuario:', error);
-        }
-      });
+      console.log('[DASH_HOME] Nombre desde caché:', currentUser.name);
     }
+    
+    // Luego obtener desde el backend (datos frescos)
+    this.providerProfile.getProfile().subscribe({
+      next: (response) => {
+        console.log('[DASH_HOME] Perfil obtenido:', response);
+        if (response.success && response.profile) {
+          const name = response.profile.full_name || response.profile.name || 'Usuario';
+          this.headerData = {
+            ...this.headerData,
+            userName: name
+          };
+          console.log('[DASH_HOME] Nombre actualizado desde backend:', name);
+        }
+      },
+      error: (error) => {
+        console.error('[DASH_HOME] Error obteniendo perfil:', error);
+        // Fallback con getCurrentUserInfo si falla el endpoint de perfil
+        this.auth.getCurrentUserInfo().subscribe({
+          next: (res) => {
+            const user = (res as any).data?.user || (res as any).user || res.user;
+            if (user && user.name) {
+              this.headerData = {
+                ...this.headerData,
+                userName: user.name
+              };
+              console.log('[DASH_HOME] Nombre desde fallback:', user.name);
+            }
+          },
+          error: (err) => console.error('[DASH_HOME] Error en fallback:', err)
+        });
+      }
+    });
   }
 
   // Datos para la próxima cita

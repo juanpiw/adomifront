@@ -7,6 +7,7 @@ import { TopbarComponent, TopbarConfig } from '../../../libs/shared-ui/topbar/to
 import { PlanService } from '../../services/plan.service';
 import { SessionService } from '../../auth/services/session.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { ProviderProfileService } from '../../services/provider-profile.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -36,31 +37,52 @@ export class DashLayoutComponent implements OnInit {
   private planService = inject(PlanService);
   private sessionService = inject(SessionService);
   private auth = inject(AuthService);
+  private providerProfile = inject(ProviderProfileService);
   private router = inject(Router);
 
   ngOnInit() {
     this.loadPlanInfo();
-    // Cargar nombre básico desde sesión/localStorage
-    const u = this.sessionService.getUser();
-    this.providerName = u?.name || null;
-    this.providerAvatarUrl = u?.profile_photo_url || null;
-    console.log('[DASH_LAYOUT] Usuario desde sesión:', u);
+    this.loadProviderProfile();
+  }
+
+  private loadProviderProfile() {
+    console.log('[DASH_LAYOUT] Cargando perfil de provider...');
     
-    // Refrescar datos desde backend si hay sesión
-    this.auth.getCurrentUserInfo().subscribe({
-      next: (res) => {
-        console.log('[DASH_LAYOUT] Respuesta de getCurrentUserInfo:', res);
-        // Extraer usuario de la respuesta (puede venir como data.user o user)
-        const user = (res as any).data?.user || (res as any).user || res.user;
-        console.log('[DASH_LAYOUT] Usuario extraído:', user);
-        if (user) {
-          this.providerName = user.name || this.providerName;
-          this.providerAvatarUrl = user.profile_photo_url || this.providerAvatarUrl;
-          console.log('[DASH_LAYOUT] Datos actualizados:', { name: this.providerName, avatar: this.providerAvatarUrl });
+    // Primero intentar desde localStorage
+    const u = this.sessionService.getUser();
+    if (u) {
+      this.providerName = u.name || null;
+      this.providerAvatarUrl = u.profile_photo_url || null;
+      console.log('[DASH_LAYOUT] Datos desde sesión:', { name: this.providerName, avatar: this.providerAvatarUrl });
+    }
+    
+    // Luego obtener desde el backend (datos frescos y completos)
+    this.providerProfile.getProfile().subscribe({
+      next: (response) => {
+        console.log('[DASH_LAYOUT] Perfil obtenido del backend:', response);
+        if (response.success && response.profile) {
+          this.providerName = response.profile.full_name || response.profile.name || 'Provider';
+          this.providerAvatarUrl = response.profile.profile_photo_url || null;
+          console.log('[DASH_LAYOUT] Datos actualizados desde backend:', { 
+            name: this.providerName, 
+            avatar: this.providerAvatarUrl 
+          });
         }
       },
       error: (error) => {
-        console.error('[DASH_LAYOUT] Error obteniendo usuario:', error);
+        console.error('[DASH_LAYOUT] Error obteniendo perfil:', error);
+        // Si falla, intentar con getCurrentUserInfo como fallback
+        this.auth.getCurrentUserInfo().subscribe({
+          next: (res) => {
+            const user = (res as any).data?.user || (res as any).user || res.user;
+            if (user) {
+              this.providerName = user.name || this.providerName;
+              this.providerAvatarUrl = user.profile_photo_url || this.providerAvatarUrl;
+              console.log('[DASH_LAYOUT] Datos desde fallback:', { name: this.providerName, avatar: this.providerAvatarUrl });
+            }
+          },
+          error: (err) => console.error('[DASH_LAYOUT] Error en fallback:', err)
+        });
       }
     });
   }

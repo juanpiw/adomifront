@@ -124,30 +124,44 @@ export class AuthService {
 
   // Cargar usuario desde localStorage
   private loadUserFromStorage(): void {
+    console.log('[AUTH] 🔄 loadUserFromStorage iniciado');
     // Verificar si estamos en el navegador
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      console.log('[AUTH] ⚠️ No estamos en el navegador, saltando carga');
       return;
     }
     
     const userStr = localStorage.getItem('adomi_user');
-    if (userStr && userStr !== 'undefined') {
+    console.log('[AUTH] 📦 Usuario en localStorage:', userStr);
+    
+    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
       try {
         const user = JSON.parse(userStr);
+        console.log('[AUTH] ✅ Usuario parseado correctamente:', user);
         this.authStateSubject.next(user);
+        console.log('[AUTH] ✅ Estado de autenticación actualizado');
         return;
       } catch (error) {
-        console.error('Error parsing user from localStorage:', error);
+        console.error('[AUTH] ❌ Error parsing user from localStorage:', error);
         // No eliminar tokens; solo limpiar el usuario y rehidratar desde /auth/me si hay token
         localStorage.removeItem('adomi_user');
       }
+    } else {
+      console.log('[AUTH] ⚠️ No hay usuario válido en localStorage');
     }
 
     // Si no hay usuario pero sí token, intentar rehidratar desde el backend
     const token = this.getAccessToken();
+    console.log('[AUTH] 🔑 Token disponible para rehidratación:', token ? 'sí' : 'no');
     if (token) {
+      console.log('[AUTH] 🔄 Rehidratando usuario desde backend...');
       this.getCurrentUserInfo().subscribe({
-        next: () => {},
-        error: () => {}
+        next: (response) => {
+          console.log('[AUTH] ✅ Usuario rehidratado desde backend:', response);
+        },
+        error: (error) => {
+          console.error('[AUTH] ❌ Error rehidratando usuario:', error);
+        }
       });
     }
   }
@@ -171,7 +185,9 @@ export class AuthService {
 
   // Obtener usuario actual
   getCurrentUser(): AuthUser | null {
-    return this.authStateSubject.value;
+    const user = this.authStateSubject.value;
+    console.log('[AUTH] 👤 getCurrentUser llamado, usuario actual:', user);
+    return user;
   }
 
   // Registro de usuario
