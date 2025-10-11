@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { GoogleAuthService } from '../services/google-auth.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-google-success',
@@ -103,6 +104,7 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private googleAuth = inject(GoogleAuthService);
   private platformId = inject(PLATFORM_ID);
+  private auth = inject(AuthService);
 
   ngOnInit() {
     // Solo ejecutar en el navegador
@@ -115,26 +117,31 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
   private processSuccessCallback() {
     try {
       // Obtener parámetros de la URL
-      const token = this.route.snapshot.queryParams['token'];
-      const refresh = this.route.snapshot.queryParams['refresh'];
+      const tokenParam = this.route.snapshot.queryParams['token'];
+      const refreshParam = this.route.snapshot.queryParams['refresh'];
       const userParam = this.route.snapshot.queryParams['user'];
 
-      if (token && refresh && userParam) {
+      if (tokenParam && refreshParam && userParam) {
+        const accessToken = decodeURIComponent(tokenParam);
+        const refreshToken = decodeURIComponent(refreshParam);
         const user = JSON.parse(decodeURIComponent(userParam));
         console.log('[GOOGLE_SUCCESS] Usuario autenticado:', user);
 
         // Guardar tokens y usuario
         if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('adomi_access_token', token);
-          localStorage.setItem('adomi_refresh_token', refresh);
+          localStorage.setItem('adomi_access_token', accessToken);
+          localStorage.setItem('adomi_refresh_token', refreshToken);
           localStorage.setItem('adomi_user', JSON.stringify(user));
         }
 
         this.success = true;
         this.loading = false;
 
-        // Iniciar countdown
-        this.startCountdown();
+        // Hidratar usuario desde backend para confirmar sesión válida
+        this.auth.getCurrentUserInfo().subscribe({
+          next: () => this.startCountdown(),
+          error: () => this.startCountdown()
+        });
 
       } else {
         throw new Error('Parámetros de autenticación incompletos');
@@ -169,22 +176,31 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
   private redirectAfterGoogle(user: any) {
     if (!isPlatformBrowser(this.platformId)) return;
     const role = user?.role;
-    if (role === 'provider') {
-      // Seed tempUserData para el flujo de planes/checkout
-      try {
-        const temp = {
-          email: user?.email || '',
-          name: user?.name || '',
-          role: 'provider'
-        };
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem('tempUserData', JSON.stringify(temp));
-        }
-      } catch {}
-      this.router.navigate(['/auth/select-plan']);
-    } else {
-      this.router.navigate(['/client/reservas']);
+    // Determinar si venimos de registro o login (opcional)
+    const mode = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('googleAuthMode') : null;
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('googleAuthMode');
     }
+
+    if (role === 'provider') {
+      if (mode === 'register') {
+        // Sembrar datos mínimos para el flujo de plan/checkout
+        try {
+          const temp = { email: user?.email || '', name: user?.name || '', role: 'provider' };
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('tempUserData', JSON.stringify(temp));
+          }
+        } catch {}
+        this.router.navigate(['/auth/select-plan']);
+        return;
+      }
+      // Provider existente → ir al dashboard
+      this.router.navigate(['/dash']);
+      return;
+    }
+
+    // Clientes → a su área
+    this.router.navigate(['/client/reservas']);
   }
 
   goToLogin() {
