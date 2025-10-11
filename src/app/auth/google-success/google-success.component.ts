@@ -157,8 +157,14 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
 
         // Hidratar usuario desde backend para confirmar sesión válida
         this.auth.getCurrentUserInfo().subscribe({
-          next: () => this.startCountdown(),
-          error: () => this.startCountdown()
+          next: (userInfo) => {
+            console.log('[GOOGLE_SUCCESS] Usuario hidratado desde backend:', userInfo);
+            this.startCountdown();
+          },
+          error: (error) => {
+            console.warn('[GOOGLE_SUCCESS] Error hidratando usuario, continuando con datos locales:', error);
+            this.startCountdown();
+          }
         });
 
       } else {
@@ -199,9 +205,12 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     // Obtener el rol del usuario desde localStorage (parseo seguro)
     try {
       const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+      console.log('[GOOGLE_SUCCESS] goToDashboard - Raw localStorage value:', raw);
       const user = raw && raw !== 'undefined' ? JSON.parse(raw) : {};
+      console.log('[GOOGLE_SUCCESS] goToDashboard - User parsed:', user);
       this.redirectAfterGoogle(user);
-    } catch {
+    } catch (e) {
+      console.error('[GOOGLE_SUCCESS] goToDashboard - Error parsing user:', e);
       this.redirectAfterGoogle({});
     }
   }
@@ -214,11 +223,29 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     // Determinar si venimos de registro o login (opcional)
     const mode = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('googleAuthMode') : null;
     console.log('[GOOGLE_SUCCESS] googleAuthMode from sessionStorage:', mode);
+    
+    // FIX TEMPORAL: Si el usuario está vacío pero tenemos datos en localStorage, usarlos
+    if (!user || Object.keys(user).length === 0) {
+      console.log('[GOOGLE_SUCCESS] Usuario vacío, intentando recuperar desde localStorage');
+      try {
+        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+        if (raw && raw !== 'undefined' && raw !== 'null') {
+          user = JSON.parse(raw);
+          console.log('[GOOGLE_SUCCESS] Usuario recuperado desde localStorage:', user);
+        }
+      } catch (e) {
+        console.error('[GOOGLE_SUCCESS] Error recuperando usuario desde localStorage:', e);
+      }
+    }
+    
     if (typeof sessionStorage !== 'undefined') {
       sessionStorage.removeItem('googleAuthMode');
     }
 
-    if (role === 'provider') {
+    const finalRole = user?.role;
+    console.log('[GOOGLE_SUCCESS] Rol final para redirección:', finalRole, 'mode:', mode);
+
+    if (finalRole === 'provider') {
       console.log('[GOOGLE_SUCCESS] Redirigiendo provider, mode:', mode);
       if (mode === 'register') {
         // Sembrar datos mínimos para el flujo de plan/checkout

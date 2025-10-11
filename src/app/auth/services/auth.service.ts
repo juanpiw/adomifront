@@ -289,16 +289,22 @@ export class AuthService {
 
   // Obtener información del usuario actual
   getCurrentUserInfo(): Observable<{ success: boolean; user: AuthUser }> {
+    console.log('[AUTH] getCurrentUserInfo llamado');
+    const token = this.getAccessToken();
+    console.log('[AUTH] Token disponible:', token ? 'sí' : 'no');
     return this.http.get<{ success: boolean; user: AuthUser }>(`${this.baseUrl}/auth/me`, {
       headers: this.getAuthHeaders()
     }).pipe(
       tap(response => {
+        console.log('[AUTH] Respuesta de /auth/me:', response);
         if (response.success) {
+          console.log('[AUTH] Usuario hidratado:', response.user);
           this.authStateSubject.next(response.user);
           localStorage.setItem('adomi_user', JSON.stringify(response.user));
         }
       }),
       catchError(error => {
+        console.error('[AUTH] Error en getCurrentUserInfo:', error);
         return this.handleError(error);
       })
     );

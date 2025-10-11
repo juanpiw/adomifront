@@ -55,12 +55,16 @@ export class RegisterComponent implements OnInit {
   }
 
   setRole(role: 'client'|'provider') {
+    console.log('[REGISTER] setRole llamado con:', role);
+    console.log('[REGISTER] currentStep antes:', this.currentStep);
     this.selectedRole = role;
     this.clearErrors();
     
     // Avanzar al siguiente paso después de seleccionar rol
     setTimeout(() => {
       this.currentStep = 2;
+      console.log('[REGISTER] currentStep después:', this.currentStep);
+      console.log('[REGISTER] selectedRole final:', this.selectedRole);
     }, 300); // Pequeño delay para que se vea la selección
   }
 
@@ -296,6 +300,26 @@ export class RegisterComponent implements OnInit {
 
     // Usar el rol seleccionado y modo 'register' para CREAR cuenta
     this.googleAuth.signInWithGoogle(this.selectedRole, 'register');
+  }
+
+  // Método para registro con Google directamente desde selección de rol
+  signUpWithGoogleFromRoleSelection(role: 'client'|'provider') {
+    console.log('[REGISTER] Registro con Google desde selección de rol:', role);
+    this.selectedRole = role;
+    
+    if (!this.googleAuth.isGoogleAuthAvailable()) {
+      this.serverError = 'Autenticación con Google no está disponible en este momento.';
+      return;
+    }
+
+    // Guardar el modo de autenticación en sessionStorage para el callback
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('googleAuthMode', 'register');
+      console.log('[REGISTER] Guardado googleAuthMode = register en sessionStorage');
+    }
+
+    // Usar el rol seleccionado y modo 'register' para CREAR cuenta
+    this.googleAuth.signInWithGoogle(role, 'register');
   }
 
   goToTerms() {

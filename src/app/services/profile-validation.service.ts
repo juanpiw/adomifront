@@ -28,8 +28,11 @@ export class ProfileValidationService {
    * Valida si el perfil del usuario está completo
    */
   validateProfile(): Observable<ProfileValidationResponse> {
+    console.log('[PROFILE_VALIDATION] validateProfile llamado');
     const token = this.getAccessToken();
+    console.log('[PROFILE_VALIDATION] Token disponible:', token ? 'sí' : 'no');
     
+    console.log('[PROFILE_VALIDATION] Haciendo GET a /profile/validate...');
     return this.http.get<ProfileValidationResponse>(`${this.apiUrl}/profile/validate`, {
       headers: new HttpHeaders({
         'Authorization': `Bearer ${token}`,
