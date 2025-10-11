@@ -168,9 +168,14 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
 
   goToDashboard() {
     clearInterval(this.countdownInterval);
-    // Obtener el rol del usuario desde localStorage
-    const user = JSON.parse(localStorage.getItem('adomi_user') || '{}');
-    this.redirectAfterGoogle(user);
+    // Obtener el rol del usuario desde localStorage (parseo seguro)
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+      const user = raw && raw !== 'undefined' ? JSON.parse(raw) : {};
+      this.redirectAfterGoogle(user);
+    } catch {
+      this.redirectAfterGoogle({});
+    }
   }
 
   private redirectAfterGoogle(user: any) {
