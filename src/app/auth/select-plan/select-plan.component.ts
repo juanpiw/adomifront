@@ -14,6 +14,8 @@ interface Plan {
   features: string[];
   max_services: number;
   max_bookings: number;
+  // id de origen cuando derivamos (mensual <-> anual)
+  sourceId?: number;
 }
 
 interface TempUserData {
@@ -82,7 +84,8 @@ export class SelectPlanComponent implements OnInit {
     if (this.monthlyPlans.length === 0 && this.annualPlans.length > 0) {
       this.monthlyPlans = this.annualPlans.map(plan => ({
         ...plan,
-        id: plan.id + 100, // IDs diferentes para evitar conflictos
+        id: plan.id, // mantener mismo id para que el backend encuentre el plan
+        sourceId: plan.id,
         price: Math.round(plan.price / 12), // Precio mensual aproximado
         interval: 'month' as const
       }));
@@ -92,7 +95,8 @@ export class SelectPlanComponent implements OnInit {
     if (this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
       this.annualPlans = this.monthlyPlans.map(plan => ({
         ...plan,
-        id: plan.id + 200, // IDs diferentes para evitar conflictos
+        id: plan.id, // mantener mismo id para que el backend encuentre el plan
+        sourceId: plan.id,
         price: Math.round(plan.price * 12),
         interval: 'year' as const
       }));
