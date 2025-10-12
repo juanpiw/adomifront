@@ -51,3 +51,42 @@
 }
 .rail-toggle { width:48px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; background: transparent; border:1px solid rgba(255,255,255,0.12); cursor:pointer; }
 .rail-toggle:hover { background: rgba(255,255,255,0.08); color:#fff; }
+
+/* User summary and avatar styles */
+.user-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-sub {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 2px 0 0 0;
+}
