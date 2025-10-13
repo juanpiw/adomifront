@@ -1,1 +1,13 @@
 <router-outlet />
+
+<!-- Modal global de sesión expirada -->
+<app-modal-confirmacion 
+  [isOpen]="sessionExpired.isOpen()"
+  [title]="'Sesión expirada'"
+  [message]="sessionExpired.message()"
+  [confirmText]="'Volver a entrar'"
+  [cancelText]="'Cerrar'"
+  [type]="'warning'"
+  (confirm)="sessionExpired.confirmReLogin()"
+  (cancel)="sessionExpired.close()"
+></app-modal-confirmacion>
