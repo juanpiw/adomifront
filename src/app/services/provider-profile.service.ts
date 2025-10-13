@@ -167,11 +167,34 @@ export class ProviderProfileService {
     });
 
     return this.http.post(
-      `${this.apiUrl}/provider/profile/upload-photo`,
+      `${this.apiUrl}/provider/upload/photo`,
       formData,
       { headers }
     ).pipe(
       tap(() => this.getProfile().subscribe())
+    );
+  }
+
+  /**
+   * Subir archivo al portafolio (imagen o video)
+   */
+  uploadPortfolioFile(file: File, title?: string, description?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (title) formData.append('title', title);
+    if (description) formData.append('description', description);
+
+    const token = localStorage.getItem('adomi_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.post(
+      `${this.apiUrl}/provider/upload/portfolio`,
+      formData,
+      { headers }
+    ).pipe(
+      tap(() => this.getPortfolio().subscribe())
     );
   }
 

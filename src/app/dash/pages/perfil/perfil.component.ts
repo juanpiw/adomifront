@@ -319,12 +319,45 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onAddPortfolioImage() {
-    console.log('Agregar imagen al portafolio');
-    // TODO: Implementar uploader de imágenes
+    console.log('[PERFIL] Agregar imagen al portafolio');
+    
+    // Crear input file dinámicamente
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/jpg,image/png,image/webp';
+    
+    input.onchange = (event: any) => {
+      const file = event.target?.files?.[0];
+      if (!file) return;
+
+      // Validar tamaño (máx 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('❌ El archivo es muy grande. Máximo 5MB');
+        return;
+      }
+
+      // Subir al backend
+      console.log('[PERFIL] Subiendo imagen...', file.name);
+      this.providerProfileService.uploadPortfolioFile(file).subscribe({
+        next: (response) => {
+          console.log('[PERFIL] Imagen subida correctamente:', response);
+          alert('✅ Imagen agregada al portafolio');
+          // Recargar portafolio
+          this.providerProfileService.getPortfolio().subscribe();
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al subir imagen:', err);
+          alert('❌ Error al subir imagen');
+        }
+      });
+    };
+    
+    input.click();
   }
 
   onAddPortfolioVideo() {
-    console.log('Agregar video al portafolio');
+    console.log('[PERFIL] Agregar video al portafolio');
+    alert('📹 Función de subida de videos próximamente. Por ahora solo imágenes.');
     // TODO: Implementar uploader de videos
   }
 

@@ -139,6 +139,11 @@
     border-radius: 0.75rem;
     padding: 1.5rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+
+    * {
+      box-sizing: border-box;
+    }
   }
 
   &__selector-grid {
@@ -160,6 +165,8 @@
 
   &__select {
     width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
     padding: 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
@@ -194,6 +201,8 @@
 
   &__search-input {
     width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
     padding: 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
