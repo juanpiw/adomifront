@@ -474,20 +474,27 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onAddService() {
-    console.log('[PERFIL] Agregar nuevo servicio');
+    console.log('[PERFIL] 🟢 Abriendo modal para agregar nuevo servicio');
+    console.log('[PERFIL] 🟢 showServiceModal antes:', this.showServiceModal);
     this.editingService = null;
     this.showServiceModal = true;
+    console.log('[PERFIL] 🟢 showServiceModal después:', this.showServiceModal);
+    console.log('[PERFIL] 🟢 editingService:', this.editingService);
   }
 
   onCloseServiceModal() {
-    console.log('[PERFIL] Cerrando modal de servicio');
+    console.log('[PERFIL] 🔴 Cerrando modal de servicio');
+    console.log('[PERFIL] 🔴 showServiceModal antes:', this.showServiceModal);
     this.showServiceModal = false;
     this.editingService = null;
     this.savingService = false;
+    console.log('[PERFIL] 🔴 showServiceModal después:', this.showServiceModal);
   }
 
   onSaveService(serviceData: ServiceFormData) {
     console.log('[PERFIL] ===== INICIANDO onSaveService =====');
+    console.log('[PERFIL] 🎯 MÉTODO onSaveService EJECUTÁNDOSE');
+    console.log('[PERFIL] 🎯 showServiceModal estado:', this.showServiceModal);
     console.log('[PERFIL] serviceData recibido:', serviceData);
     console.log('[PERFIL] editingService:', this.editingService);
     console.log('[PERFIL] savingService antes:', this.savingService);
@@ -495,6 +502,7 @@ export class DashPerfilComponent implements OnInit {
     
     this.savingService = true;
     console.log('[PERFIL] savingService después:', this.savingService);
+    console.log('[PERFIL] 🎯 INICIANDO PETICIÓN HTTP AL BACKEND');
     
     if (this.editingService) {
       console.log('[PERFIL] Modo: ACTUALIZAR servicio existente');
@@ -520,14 +528,16 @@ export class DashPerfilComponent implements OnInit {
           this.savingService = false;
         }
       });
-    } else {
-      console.log('[PERFIL] Modo: CREAR nuevo servicio');
-      console.log('[PERFIL] Llamando a providerProfileService.addService...');
-      
-      // Crear nuevo servicio
-      this.providerProfileService.addService(serviceData).subscribe({
+          } else {
+            console.log('[PERFIL] Modo: CREAR nuevo servicio');
+            console.log('[PERFIL] Llamando a providerProfileService.addService...');
+            console.log('[PERFIL] 🚀 EJECUTANDO HTTP POST AL BACKEND');
+            
+            // Crear nuevo servicio
+            this.providerProfileService.addService(serviceData).subscribe({
         next: (response: any) => {
           console.log('[PERFIL] ✅ Servicio creado exitosamente:', response);
+          console.log('[PERFIL] ✅ Respuesta completa del backend:', response);
           
           // Agregar el nuevo servicio a la lista local
           if (response.service) {
@@ -544,6 +554,9 @@ export class DashPerfilComponent implements OnInit {
         },
         error: (err: any) => {
           console.error('[PERFIL] ❌ Error al crear servicio:', err);
+          console.error('[PERFIL] ❌ Error completo:', err);
+          console.error('[PERFIL] ❌ Error status:', err.status);
+          console.error('[PERFIL] ❌ Error message:', err.message);
           alert('❌ Error al crear servicio');
           this.savingService = false;
         }
@@ -551,6 +564,7 @@ export class DashPerfilComponent implements OnInit {
     }
     
     console.log('[PERFIL] ===== FINALIZANDO onSaveService =====');
+    console.log('[PERFIL] 🏁 onSaveService COMPLETADO');
   }
 
   /**
