@@ -1,17 +1,17 @@
 <section class="info-basica">
   <div class="info-basica__header">
     <h3 class="info-basica__title">Información Básica</h3>
-    <div class="info-basica__save-status">
-      <div *ngIf="saving" class="info-basica__saving">
-        <div class="info-basica__spinner"></div>
-        <span>Guardando...</span>
-      </div>
-      <div *ngIf="!saving" class="info-basica__saved">
-        <svg class="info-basica__check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    <div class="info-basica__actions">
+      <ui-button 
+        variant="primary" 
+        size="sm"
+        [disabled]="saving || !hasChanges"
+        (click)="onSave()">
+        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
         </svg>
-        <span>Guardado</span>
-      </div>
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </ui-button>
     </div>
   </div>
   <div class="info-basica__content">

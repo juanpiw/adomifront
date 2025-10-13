@@ -248,12 +248,17 @@ export class DashPerfilComponent implements OnInit {
   // Estado del modal de servicios
   showServiceModal = false;
   editingService: ProviderService | null = null;
+  savingService = false;
 
   // Estado del carrusel del portafolio
   currentSlide = 0;
 
   // Estados de carga
   savingPublicProfile = false;
+  savingBasicInfo = false;
+  
+  // Estados de cambios por sección
+  basicInfoHasChanges = false;
 
   // Datos para ubicación y disponibilidad
   locationSettings: LocationSettings = {
@@ -329,11 +334,13 @@ export class DashPerfilComponent implements OnInit {
   // Event handlers para los componentes
   onBasicInfoChange(info: BasicInfo) {
     this.basicInfo = info;
+    this.basicInfoHasChanges = true;
     this.updateProgress();
   }
 
   onSaveBasicInfo(info: BasicInfo) {
-    console.log('[PERFIL] Guardando información básica automáticamente:', info);
+    console.log('[PERFIL] Guardando información básica manualmente:', info);
+    this.savingBasicInfo = true;
     
     // Actualizar información básica
     const profileData: ServiceBasicInfo = {
@@ -347,9 +354,14 @@ export class DashPerfilComponent implements OnInit {
       next: (response) => {
         console.log('[PERFIL] Información básica guardada:', response);
         this.updateProgress();
+        this.basicInfoHasChanges = false;
+        this.savingBasicInfo = false;
+        alert('✅ Información básica guardada correctamente');
       },
       error: (err) => {
         console.error('[PERFIL] Error al guardar información básica:', err);
+        this.savingBasicInfo = false;
+        alert('❌ Error al guardar información básica');
       }
     });
   }
@@ -390,10 +402,12 @@ export class DashPerfilComponent implements OnInit {
     console.log('[PERFIL] Cerrando modal de servicio');
     this.showServiceModal = false;
     this.editingService = null;
+    this.savingService = false;
   }
 
   onSaveService(serviceData: ServiceFormData) {
     console.log('[PERFIL] Guardando servicio:', serviceData);
+    this.savingService = true;
     
     if (this.editingService) {
       // Actualizar servicio existente
@@ -409,11 +423,13 @@ export class DashPerfilComponent implements OnInit {
           
           this.updateProgress();
           alert('✅ Servicio actualizado correctamente');
+          this.savingService = false;
           this.onCloseServiceModal();
         },
         error: (err: any) => {
           console.error('[PERFIL] Error al actualizar servicio:', err);
           alert('❌ Error al actualizar servicio');
+          this.savingService = false;
         }
       });
     } else {
@@ -429,11 +445,13 @@ export class DashPerfilComponent implements OnInit {
           
           this.updateProgress();
           alert('✅ Servicio creado correctamente');
+          this.savingService = false;
           this.onCloseServiceModal();
         },
         error: (err: any) => {
           console.error('[PERFIL] Error al crear servicio:', err);
           alert('❌ Error al crear servicio');
+          this.savingService = false;
         }
       });
     }

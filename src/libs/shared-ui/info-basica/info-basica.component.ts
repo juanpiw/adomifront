@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiInputComponent } from '../ui-input/ui-input.component';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { UiButtonComponent } from '../ui-button/ui-button.component';
 
 export interface BasicInfo {
   fullName: string;
@@ -14,7 +13,7 @@ export interface BasicInfo {
 @Component({
   selector: 'app-info-basica',
   standalone: true,
-  imports: [CommonModule, UiInputComponent],
+  imports: [CommonModule, UiInputComponent, UiButtonComponent],
   templateUrl: './info-basica.component.html',
   styleUrls: ['./info-basica.component.scss']
 })
@@ -28,19 +27,10 @@ export class InfoBasicaComponent {
 
   @Output() infoChange = new EventEmitter<BasicInfo>();
   @Output() saveInfo = new EventEmitter<BasicInfo>();
+  @Input() saving = false;
+  @Input() hasChanges = false;
 
-  private saveSubject = new Subject<BasicInfo>();
-  saving = false;
-
-  constructor() {
-    // Configurar guardado automático con debounce
-    this.saveSubject.pipe(
-      debounceTime(1000), // Esperar 1 segundo después del último cambio
-      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
-    ).subscribe(info => {
-      this.saveInfo.emit(info);
-    });
-  }
+  constructor() {}
 
   onFieldChange(field: keyof BasicInfo, value: string | number | File | null) {
     let processedValue: string | number;
@@ -55,16 +45,9 @@ export class InfoBasicaComponent {
     
     this.info = { ...this.info, [field]: processedValue };
     this.infoChange.emit(this.info);
-    
-    // Programar guardado automático
-    this.saveSubject.next(this.info);
   }
 
-  onSaveStart() {
-    this.saving = true;
-  }
-
-  onSaveComplete() {
-    this.saving = false;
+  onSave() {
+    this.saveInfo.emit(this.info);
   }
 }

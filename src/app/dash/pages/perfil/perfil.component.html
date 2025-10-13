@@ -17,6 +17,8 @@
       <!-- Información básica -->
       <app-info-basica 
         [info]="basicInfo"
+        [saving]="savingBasicInfo"
+        [hasChanges]="basicInfoHasChanges"
         (infoChange)="onBasicInfoChange($event)"
         (saveInfo)="onSaveBasicInfo($event)">
       </app-info-basica>
@@ -239,6 +241,7 @@
   <app-modal-crear-servicio
     [isOpen]="showServiceModal"
     [editingService]="editingService"
+    [saving]="savingService"
     (close)="onCloseServiceModal()"
     (save)="onSaveService($event)">
   </app-modal-crear-servicio>

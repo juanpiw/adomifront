@@ -35,6 +35,7 @@ export interface ServiceSubcategory {
 export class ModalCrearServicioComponent implements OnInit, OnDestroy {
   @Input() isOpen = false;
   @Input() editingService: any = null; // Servicio para editar
+  @Input() saving = false; // Para controlar el estado de guardado desde el padre
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<ServiceFormData>();
 
@@ -226,6 +227,7 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+    console.log('[MODAL_SERVICIO] Emitiendo evento save con datos:', { ...this.formData });
 
     // Emitir evento de guardado
     this.save.emit({ ...this.formData });
