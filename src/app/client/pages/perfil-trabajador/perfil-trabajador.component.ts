@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { ProviderPublicService, ProviderDetailResponse } from '../../services/provider-public.service';
 import { ProfileHeroComponent, ProfileHeroData } from '../../../../libs/shared-ui/profile-hero/profile-hero.component';
 import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
 import { PortfolioComponent, PortfolioData, PortfolioItem } from '../../../../libs/shared-ui/portfolio/portfolio.component';
@@ -72,11 +73,10 @@ export class PerfilTrabajadorComponent implements OnInit {
     items: []
   };
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private location: Location
-  ) {}
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private locationSvc = inject(Location);
+  private providerService = inject(ProviderPublicService);
 
   ngOnInit(): void {
     this.workerId = this.route.snapshot.paramMap.get('workerId');
@@ -90,39 +90,37 @@ export class PerfilTrabajadorComponent implements OnInit {
 
   private loadWorkerData(): void {
     this.loading = true;
-    
-    // TODO: Implementar servicio para obtener datos del trabajador
-    // Por ahora datos de ejemplo
-    setTimeout(() => {
-      this.workerData = {
-        id: this.workerId,
-        name: 'Elena Torres',
-        title: 'Estilista Profesional en Providencia',
-        rating: 4.9,
-        reviews: 85,
-        location: 'Providencia, Santiago',
-        experience: '5 años',
-        services: [
-          { name: 'Corte de Pelo', price: '$25.000', duration: '60 min' },
-          { name: 'Manicura', price: '$15.000', duration: '45 min' },
-          { name: 'Maquillaje Profesional', price: '$30.000', duration: '75 min' }
-        ],
-        photos: [
-          'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1',
-          'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n',
-          'https://placehold.co/400x300/ddd6fe/4338ca?text=Peinado'
-        ],
-        bio: 'Estilista con más de 5 años de experiencia especializado en cortes modernos y barbas. Me apasiona crear looks únicos para cada cliente.',
-        verified: true,
-        responseTime: 'Respuesta en menos de 1 hora',
-        availability: 'Disponible ahora',
-        coverImage: 'https://placehold.co/1200x400/C7D2FE/4338CA?text=Sal%C3%B3n+de+Elena',
-        avatar: 'https://placehold.co/128x128/C7D2FE/4338CA?text=ET'
-      };
-      
-      this.initializeComponentData();
-      this.loading = false;
-    }, 1000);
+    const id = Number(this.workerId);
+    this.providerService.getProviderDetail(id).subscribe({
+      next: (resp: ProviderDetailResponse) => {
+        if (!resp.success) {
+          this.loading = false;
+          return;
+        }
+        const d = resp.data;
+        this.workerData = {
+          id: d.profile.id,
+          name: d.profile.name,
+          title: d.profile.title,
+          rating: d.profile.rating,
+          reviews: d.profile.reviews_count,
+          location: d.profile.location,
+          experience: d.profile.years_experience,
+          services: d.services.map(s => ({ name: s.name, price: `$${s.price.toLocaleString('es-CL')}`, duration: `${s.duration_minutes} min`, image: s.image_url })),
+          photos: d.portfolio.map(p => p.image_url).filter(Boolean),
+          bio: d.profile.bio,
+          verified: d.profile.is_verified,
+          coverImage: d.profile.cover_url,
+          avatar: d.profile.avatar_url
+        };
+        this.initializeComponentData();
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.router.navigate(['/client/explorar']);
+      }
+    });
   }
 
   private initializeComponentData(): void {
@@ -215,7 +213,7 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   goBack(): void {
-    this.location.back();
+    this.locationSvc.back();
   }
 
   // Event handlers for components
