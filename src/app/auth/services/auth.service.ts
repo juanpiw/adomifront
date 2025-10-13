@@ -417,8 +417,13 @@ export class AuthService {
     });
   }
 
-  // Redirigir al login
-  redirectToLogin(): void {
-    this.router.navigateByUrl('/auth/login');
+  // Redirigir al login con motivo opcional
+  redirectToLogin(reason?: 'expired' | 'forbidden' | 'other'): void {
+    const query = reason === 'expired' ? { expired: '1' } : reason ? { reason } : undefined;
+    if (query) {
+      this.router.navigate(['/auth/login'], { queryParams: query });
+    } else {
+      this.router.navigateByUrl('/auth/login');
+    }
   }
 }

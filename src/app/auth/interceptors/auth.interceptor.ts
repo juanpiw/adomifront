@@ -17,15 +17,21 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Si es un error 401 (no autorizado) y tenemos un refresh token
-      if (error.status === 401 && sessionService.getRefreshToken()) {
-        return handle401Error(authReq, next, authService, sessionService);
+      // Si es un error 401 (no autorizado)
+      if (error.status === 401) {
+        const hasRefresh = !!sessionService.getRefreshToken();
+        if (hasRefresh) {
+          return handle401Error(authReq, next, authService, sessionService);
+        }
+        // Sin refresh: limpiar y redirigir con motivo 'expired'
+        sessionService.clearSession();
+        authService.redirectToLogin('expired');
       }
 
       // Si es un error 403 (prohibido), limpiar sesión
       if (error.status === 403) {
         sessionService.clearSession();
-        authService.redirectToLogin();
+        authService.redirectToLogin('forbidden');
       }
 
       return throwError(() => error);
@@ -56,7 +62,7 @@ function handle401Error(req: any, next: any, authService: AuthService, sessionSe
     
     if (!refreshToken) {
       sessionService.clearSession();
-      authService.redirectToLogin();
+      authService.redirectToLogin('expired');
       return throwError(() => new Error('No refresh token available'));
     }
 
@@ -74,14 +80,14 @@ function handle401Error(req: any, next: any, authService: AuthService, sessionSe
         } else {
           // Si el refresh falla, limpiar sesión
           sessionService.clearSession();
-          authService.redirectToLogin();
+          authService.redirectToLogin('expired');
           return throwError(() => new Error('Token refresh failed'));
         }
       }),
       catchError((error) => {
         isRefreshing = false;
         sessionService.clearSession();
-        authService.redirectToLogin();
+        authService.redirectToLogin('expired');
         return throwError(() => error);
       })
     );

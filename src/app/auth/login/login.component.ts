@@ -38,10 +38,13 @@ export class LoginComponent implements OnInit {
       this.redirectToDashboard();
     }
 
-    // Verificar si hay error de Google Auth
+    // Verificar si hay mensajes por query params (Google Auth o sesión expirada)
     this.route.queryParams.subscribe(params => {
       if (params['error'] === 'no_account' && params['message']) {
         this.errorMessage = decodeURIComponent(params['message']);
+      }
+      if (params['expired'] === '1') {
+        this.errorMessage = 'Tu sesión expiró. Por favor, vuelve a iniciar sesión.';
       }
     });
   }
