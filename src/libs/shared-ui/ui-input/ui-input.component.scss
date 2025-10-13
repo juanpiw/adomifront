@@ -15,10 +15,15 @@
   transition: all 0.3s ease;
 }
 
-.ui-input-wrapper { display: flex; flex-direction: column; gap: 8px; }
+.ui-input-wrapper { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px;
+  width: 100%;
+}
 
 .ui-input {
- 
+  width: 100%;
   padding: 18px 24px;
   border: 1.5px solid var(--color-border);
   border-radius: 14px;
@@ -62,3 +67,32 @@
 
 .ui-input-error { color: #dc2626; font-size: 12px; }
 .ui-input-hint { color: var(--color-muted); font-size: 12px; }
+
+/* Password toggle button */
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text);
+  }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
