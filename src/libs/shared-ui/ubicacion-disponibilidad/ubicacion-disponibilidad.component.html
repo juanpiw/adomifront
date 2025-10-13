@@ -35,14 +35,93 @@
       <label class="ubicacion-disponibilidad__zones-label">Zonas de Cobertura (a domicilio)</label>
       <p class="ubicacion-disponibilidad__zones-description">Añade las comunas en las que ofreces tus servicios.</p>
       
-      <div class="ubicacion-disponibilidad__zones-input-container">
-        <input 
-          type="text" 
-          class="ubicacion-disponibilidad__zones-input"
-          placeholder="Buscar o agregar comuna..."
-          (keyup.enter)="onAddZone()">
+      <!-- Botón para abrir selector -->
+      <button 
+        type="button"
+        class="ubicacion-disponibilidad__add-button"
+        (click)="toggleLocationSelector()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Agregar comuna
+      </button>
+
+      <!-- Selector de región y comuna (popover) -->
+      <div *ngIf="showLocationSelector" class="ubicacion-disponibilidad__selector">
+        <div class="ubicacion-disponibilidad__selector-content">
+          <!-- Selectores de región y comuna -->
+          <div class="ubicacion-disponibilidad__selector-grid">
+            <div>
+              <label class="ubicacion-disponibilidad__selector-label">REGIÓN</label>
+              <select 
+                [(ngModel)]="selectedRegion"
+                (change)="onRegionChange()"
+                class="ubicacion-disponibilidad__select">
+                <option value="">Selecciona una región</option>
+                <option *ngFor="let region of regions" [value]="region.name">
+                  {{ region.name }}
+                </option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="ubicacion-disponibilidad__selector-label">COMUNA</label>
+              <select 
+                [(ngModel)]="selectedComuna"
+                [disabled]="!selectedRegion"
+                class="ubicacion-disponibilidad__select">
+                <option value="">Selecciona una comuna</option>
+                <option *ngFor="let comuna of comunasOfSelectedRegion" [value]="comuna">
+                  {{ comuna }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <p class="ubicacion-disponibilidad__selector-divider">o</p>
+
+          <!-- Búsqueda rápida -->
+          <div class="ubicacion-disponibilidad__search-container">
+            <input 
+              type="text"
+              [(ngModel)]="searchText"
+              (input)="onSearchTextChange()"
+              placeholder="Busca tu comuna directamente..."
+              class="ubicacion-disponibilidad__search-input">
+            
+            <!-- Resultados de búsqueda -->
+            <div *ngIf="searchResults.length > 0" class="ubicacion-disponibilidad__search-results">
+              <button 
+                *ngFor="let result of searchResults"
+                type="button"
+                class="ubicacion-disponibilidad__search-result"
+                (click)="selectSearchResult(result)">
+                <span class="ubicacion-disponibilidad__search-result-comuna">{{ result.comuna }}</span>
+                <span class="ubicacion-disponibilidad__search-result-region">{{ result.region }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="ubicacion-disponibilidad__selector-actions">
+            <button 
+              type="button"
+              class="ubicacion-disponibilidad__selector-btn ubicacion-disponibilidad__selector-btn--cancel"
+              (click)="toggleLocationSelector()">
+              Cancelar
+            </button>
+            <button 
+              type="button"
+              class="ubicacion-disponibilidad__selector-btn ubicacion-disponibilidad__selector-btn--add"
+              [disabled]="!selectedComuna"
+              (click)="onAddZoneFromSelector()">
+              Agregar
+            </button>
+          </div>
+        </div>
       </div>
       
+      <!-- Tags de zonas agregadas -->
       <div class="ubicacion-disponibilidad__zones-tags">
         <span 
           *ngFor="let zone of settings.coverageZones"

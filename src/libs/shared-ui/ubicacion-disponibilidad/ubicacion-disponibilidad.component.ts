@@ -1,5 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ChileLocationsService, Region } from '../../../app/services/chile-locations.service';
 
 export interface CoverageZone {
   id: string;
@@ -15,24 +17,37 @@ export interface LocationSettings {
 @Component({
   selector: 'app-ubicacion-disponibilidad',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './ubicacion-disponibilidad.component.html',
   styleUrls: ['./ubicacion-disponibilidad.component.scss']
 })
 export class UbicacionDisponibilidadComponent {
+  private locationsService = inject(ChileLocationsService);
+
   @Input() settings: LocationSettings = {
     availableForNewBookings: true,
     shareRealTimeLocation: false,
-    coverageZones: [
-      { id: '1', name: 'Providencia' },
-      { id: '2', name: 'Las Condes' },
-      { id: '3', name: 'Ñuñoa' }
-    ]
+    coverageZones: []
   };
 
   @Output() settingsChange = new EventEmitter<LocationSettings>();
   @Output() addCoverageZone = new EventEmitter<string>();
   @Output() removeCoverageZone = new EventEmitter<string>();
+
+  // Estado del selector
+  selectedRegion: string = '';
+  selectedComuna: string = '';
+  searchText: string = '';
+  showLocationSelector: boolean = false;
+
+  // Datos de regiones y comunas
+  regions: Region[] = [];
+  comunasOfSelectedRegion: string[] = [];
+  searchResults: {region: string, comuna: string}[] = [];
+
+  ngOnInit() {
+    this.regions = this.locationsService.getRegions();
+  }
 
   onToggleNewBookings() {
     this.settings = {
@@ -54,11 +69,46 @@ export class UbicacionDisponibilidadComponent {
     this.removeCoverageZone.emit(zoneId);
   }
 
-  onAddZone() {
-    const zoneName = prompt('Ingresa el nombre de la nueva zona:');
-    if (zoneName && zoneName.trim()) {
-      this.addCoverageZone.emit(zoneName.trim());
+  toggleLocationSelector() {
+    this.showLocationSelector = !this.showLocationSelector;
+    if (!this.showLocationSelector) {
+      this.resetSelector();
     }
+  }
+
+  onRegionChange() {
+    this.comunasOfSelectedRegion = this.locationsService.getComunasByRegion(this.selectedRegion);
+    this.selectedComuna = '';
+  }
+
+  onAddZoneFromSelector() {
+    if (this.selectedComuna && this.selectedComuna.trim()) {
+      this.addCoverageZone.emit(this.selectedComuna.trim());
+      this.resetSelector();
+      this.showLocationSelector = false;
+    }
+  }
+
+  onSearchTextChange() {
+    if (this.searchText.length >= 2) {
+      this.searchResults = this.locationsService.searchComunas(this.searchText);
+    } else {
+      this.searchResults = [];
+    }
+  }
+
+  selectSearchResult(result: {region: string, comuna: string}) {
+    this.addCoverageZone.emit(result.comuna);
+    this.searchText = '';
+    this.searchResults = [];
+  }
+
+  private resetSelector() {
+    this.selectedRegion = '';
+    this.selectedComuna = '';
+    this.comunasOfSelectedRegion = [];
+    this.searchText = '';
+    this.searchResults = [];
   }
 }
 
