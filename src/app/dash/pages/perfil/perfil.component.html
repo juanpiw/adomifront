@@ -235,4 +235,12 @@
     </div>
 
   </div>
+
+  <!-- Modal de crear/editar servicio -->
+  <app-modal-crear-servicio
+    [isOpen]="showServiceModal"
+    [editingService]="editingService"
+    (close)="onCloseServiceModal()"
+    (save)="onSaveService($event)">
+  </app-modal-crear-servicio>
 </div>

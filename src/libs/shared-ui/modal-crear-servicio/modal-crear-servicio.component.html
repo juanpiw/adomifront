@@ -1,0 +1,185 @@
+<!-- Modal de Crear/Editar Servicio -->
+<div 
+  *ngIf="isOpen" 
+  class="modal-overlay"
+  (click)="onBackdropClick($event)">
+  
+  <div class="modal-content">
+    <!-- Header del Modal -->
+    <div class="modal-header">
+      <h3 class="modal-title">{{ modalTitle }}</h3>
+      <button 
+        class="modal-close-btn"
+        (click)="onClose()"
+        type="button" 
+        aria-label="Cerrar modal">
+        <svg class="modal-close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Formulario del Modal -->
+    <form 
+      class="service-form"
+      (ngSubmit)="onSubmit()"
+      novalidate>
+      
+      <!-- Mensaje de Error -->
+      <div *ngIf="errorMessage" class="form-error">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Sección de Categorización -->
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="service-category" class="form-label">
+            Categoría Principal 
+            <span class="form-required">*</span>
+          </label>
+          <select 
+            id="service-category"
+            class="form-select"
+            (change)="onCategoryChange($event)">
+            <option value="">Selecciona una Categoría...</option>
+            <option 
+              *ngFor="let category of categories" 
+              [value]="category.id"
+              [selected]="selectedCategory?.id === category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-field">
+          <label for="service-type" class="form-label">
+            Servicio Específico 
+            <span class="form-required">*</span>
+          </label>
+          <select 
+            id="service-type"
+            class="form-select"
+            [disabled]="!selectedCategory"
+            (change)="onSubcategoryChange($event)">
+            <option value="">
+              {{ selectedCategory ? 'Selecciona un servicio...' : 'Primero selecciona una Categoría' }}
+            </option>
+            <option 
+              *ngFor="let subcategory of availableSubcategories" 
+              [value]="subcategory.id"
+              [selected]="selectedSubcategory?.id === subcategory.id">
+              {{ subcategory.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Categoría Personalizada -->
+      <div class="form-field" *ngIf="!selectedCategory">
+        <label for="custom-category" class="form-label">
+          Categoría Personalizada 
+          <span class="form-required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="custom-category"
+          class="form-input" 
+          [(ngModel)]="formData.custom_category"
+          name="custom_category"
+          placeholder="Ej: Reparación de Bicicletas"
+          maxlength="50">
+      </div>
+
+      <!-- Nombre del Servicio -->
+      <div class="form-field">
+        <label for="service-name" class="form-label">
+          Nombre Comercial del Servicio 
+          <span class="form-required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="service-name"
+          class="form-input" 
+          [(ngModel)]="formData.name"
+          name="name"
+          placeholder="Ej: Corte de Pelo Estilo Moderno"
+          maxlength="100">
+      </div>
+      
+      <!-- Descripción del Servicio -->
+      <div class="form-field">
+        <label for="service-description" class="form-label">
+          Descripción Detallada 
+          <span class="form-required">*</span>
+        </label>
+        <textarea 
+          id="service-description"
+          class="form-textarea" 
+          [(ngModel)]="formData.description"
+          name="description"
+          rows="4"
+          placeholder="Describe exactamente lo que el cliente recibirá..."
+          maxlength="500"></textarea>
+      </div>
+
+      <!-- Precio y Duración -->
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="service-duration" class="form-label">
+            Duración Estimada (min) 
+            <span class="form-required">*</span>
+          </label>
+          <input 
+            type="number" 
+            id="service-duration"
+            class="form-input" 
+            [(ngModel)]="formData.duration_minutes"
+            name="duration_minutes"
+            min="10" 
+            max="480"
+            step="5" 
+            placeholder="Ej: 45">
+        </div>
+        
+        <div class="form-field">
+          <label for="service-price" class="form-label">
+            Precio Base ($) 
+            <span class="form-required">*</span>
+          </label>
+          <input 
+            type="number" 
+            id="service-price"
+            class="form-input" 
+            [(ngModel)]="formData.price"
+            name="price"
+            min="0" 
+            max="999999"
+            step="100" 
+            placeholder="Ej: 15000">
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="form-actions">
+        <ui-button 
+          type="button"
+          variant="secondary"
+          (click)="onClose()"
+          [disabled]="loading">
+          Cancelar
+        </ui-button>
+        <ui-button 
+          type="submit"
+          variant="primary"
+          [disabled]="!isFormValid || loading">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17,21 17,13 7,13 7,21"></polyline>
+            <polyline points="7,3 7,8 15,8"></polyline>
+          </svg>
+          {{ loading ? 'Guardando...' : (editingService ? 'Actualizar Servicio' : 'Crear Servicio') }}
+        </ui-button>
+      </div>
+    </form>
+  </div>
+</div>

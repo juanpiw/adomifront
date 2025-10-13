@@ -8,7 +8,8 @@ import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploa
 import { LanguageSelectComponent } from '../../../../libs/shared-ui/language-select/language-select.component';
 import { NotificationToggleComponent } from '../../../../libs/shared-ui/notification-toggle/notification-toggle.component';
 import { InfoBasicaComponent, BasicInfo } from '../../../../libs/shared-ui/info-basica/info-basica.component';
-import { MisServiciosComponent, Service } from '../../../../libs/shared-ui/mis-servicios/mis-servicios.component';
+import { MisServiciosComponent, Service, ProviderService } from '../../../../libs/shared-ui/mis-servicios/mis-servicios.component';
+import { ModalCrearServicioComponent, ServiceFormData } from '../../../../libs/shared-ui/modal-crear-servicio/modal-crear-servicio.component';
 import { SobreMiComponent } from '../../../../libs/shared-ui/sobre-mi/sobre-mi.component';
 import { ProgressPerfilComponent } from '../../../../libs/shared-ui/progress-perfil/progress-perfil.component';
 import { SeccionFotosComponent } from '../../../../libs/shared-ui/seccion-fotos/seccion-fotos.component';
@@ -32,6 +33,7 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
     NotificationToggleComponent,
     InfoBasicaComponent,
     MisServiciosComponent,
+    ModalCrearServicioComponent,
     SobreMiComponent,
     ProgressPerfilComponent,
     SeccionFotosComponent,
@@ -189,6 +191,10 @@ export class DashPerfilComponent implements OnInit {
   // Estado de las tabs
   activeTab: TabType = 'perfil-publico';
 
+  // Estado del modal de servicios
+  showServiceModal = false;
+  editingService: ProviderService | null = null;
+
   // Estado del carrusel del portafolio
   currentSlide = 0;
 
@@ -271,11 +277,10 @@ export class DashPerfilComponent implements OnInit {
     this.basicInfo = info;
   }
 
-  onEditService(service: Service) {
+  onEditService(service: ProviderService) {
     console.log('[PERFIL] Editar servicio:', service);
-    // TODO: Implementar modal de edición
-    // Por ahora, mostrar alerta
-    alert('Modal de edición de servicio: ' + service.name);
+    this.editingService = service;
+    this.showServiceModal = true;
   }
 
   onDeleteService(serviceId: string) {
@@ -300,8 +305,59 @@ export class DashPerfilComponent implements OnInit {
 
   onAddService() {
     console.log('[PERFIL] Agregar nuevo servicio');
-    // TODO: Implementar modal de agregar servicio
-    alert('Modal de agregar servicio (próximamente)');
+    this.editingService = null;
+    this.showServiceModal = true;
+  }
+
+  onCloseServiceModal() {
+    console.log('[PERFIL] Cerrando modal de servicio');
+    this.showServiceModal = false;
+    this.editingService = null;
+  }
+
+  onSaveService(serviceData: ServiceFormData) {
+    console.log('[PERFIL] Guardando servicio:', serviceData);
+    
+    if (this.editingService) {
+      // Actualizar servicio existente
+      this.providerProfileService.updateService(this.editingService.id, serviceData).subscribe({
+        next: (response) => {
+          console.log('[PERFIL] Servicio actualizado:', response);
+          
+          // Actualizar el servicio en la lista local
+          const index = this.services.findIndex(s => s.id === this.editingService!.id);
+          if (index !== -1) {
+            this.services[index] = { ...this.services[index], ...serviceData };
+          }
+          
+          alert('✅ Servicio actualizado correctamente');
+          this.onCloseServiceModal();
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al actualizar servicio:', err);
+          alert('❌ Error al actualizar servicio');
+        }
+      });
+    } else {
+      // Crear nuevo servicio
+      this.providerProfileService.addService(serviceData).subscribe({
+        next: (response) => {
+          console.log('[PERFIL] Servicio creado:', response);
+          
+          // Agregar el nuevo servicio a la lista local
+          if (response.service) {
+            this.services.push(response.service);
+          }
+          
+          alert('✅ Servicio creado correctamente');
+          this.onCloseServiceModal();
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al crear servicio:', err);
+          alert('❌ Error al crear servicio');
+        }
+      });
+    }
   }
 
   onBioChange(bio: string) {
