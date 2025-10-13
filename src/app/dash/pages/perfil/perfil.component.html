@@ -11,15 +11,14 @@
     <!-- Tab: Perfil Público -->
     <div *ngIf="activeTab === 'perfil-publico'" class="perfil-trabajador__tab-content">
       <!-- Progreso del perfil -->
-      <app-progress-perfil 
-        [progress]="profileProgress"
-        suggestion="Sugerencia: Añade fotos a tu portafolio para llegar al 100%.">
+      <app-progress-perfil>
       </app-progress-perfil>
 
       <!-- Información básica -->
       <app-info-basica 
         [info]="basicInfo"
-        (infoChange)="onBasicInfoChange($event)">
+        (infoChange)="onBasicInfoChange($event)"
+        (saveInfo)="onSaveBasicInfo($event)">
       </app-info-basica>
 
       <!-- Fotos de perfil -->

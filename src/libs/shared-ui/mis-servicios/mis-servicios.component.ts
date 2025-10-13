@@ -149,4 +149,8 @@ export class MisServiciosComponent implements OnInit {
     
     return subcategoryMap[service.category_id || 0] || 'Servicio';
   }
+
+  trackByServiceId(index: number, service: ProviderService): number {
+    return service.id;
+  }
 }

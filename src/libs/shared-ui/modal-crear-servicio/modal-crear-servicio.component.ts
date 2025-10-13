@@ -8,7 +8,7 @@ export interface ServiceFormData {
   description: string;
   price: number;
   duration_minutes: number;
-  category_id?: number;
+  category_id?: number | null;
   custom_category?: string;
   service_image_url?: string;
 }

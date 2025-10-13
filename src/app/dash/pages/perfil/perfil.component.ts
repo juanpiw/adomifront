@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ProviderProfileService, BasicInfo as ServiceBasicInfo } from '../../../services/provider-profile.service';
+import { ProfileProgressService } from '../../../services/profile-progress.service';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
 import { UiButtonComponent } from '../../../../libs/shared-ui/ui-button/ui-button.component';
 import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploader/avatar-uploader.component';
@@ -51,6 +52,7 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 export class DashPerfilComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private providerProfileService = inject(ProviderProfileService);
+  private progressService = inject(ProfileProgressService);
 
   ngOnInit() {
     // Leer query parameters para activar tab específico
@@ -75,6 +77,7 @@ export class DashPerfilComponent implements OnInit {
       next: (profile) => {
         console.log('[PERFIL] Perfil cargado:', profile);
         this.updateLocalDataFromProfile(profile);
+        this.updateProgress();
       },
       error: (err) => {
         console.error('[PERFIL] Error al cargar perfil:', err);
@@ -275,6 +278,29 @@ export class DashPerfilComponent implements OnInit {
   // Event handlers para los componentes
   onBasicInfoChange(info: BasicInfo) {
     this.basicInfo = info;
+    this.updateProgress();
+  }
+
+  onSaveBasicInfo(info: BasicInfo) {
+    console.log('[PERFIL] Guardando información básica automáticamente:', info);
+    
+    // Actualizar información básica
+    const profileData: ServiceBasicInfo = {
+      fullName: info.fullName,
+      professionalTitle: info.professionalTitle,
+      mainCommune: info.mainCommune,
+      yearsExperience: info.yearsExperience
+    };
+
+    this.providerProfileService.updateBasicInfo(profileData).subscribe({
+      next: (response) => {
+        console.log('[PERFIL] Información básica guardada:', response);
+        this.updateProgress();
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al guardar información básica:', err);
+      }
+    });
   }
 
   onEditService(service: ProviderService) {
@@ -321,7 +347,7 @@ export class DashPerfilComponent implements OnInit {
     if (this.editingService) {
       // Actualizar servicio existente
       this.providerProfileService.updateService(this.editingService.id, serviceData).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('[PERFIL] Servicio actualizado:', response);
           
           // Actualizar el servicio en la lista local
@@ -330,10 +356,11 @@ export class DashPerfilComponent implements OnInit {
             this.services[index] = { ...this.services[index], ...serviceData };
           }
           
+          this.updateProgress();
           alert('✅ Servicio actualizado correctamente');
           this.onCloseServiceModal();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('[PERFIL] Error al actualizar servicio:', err);
           alert('❌ Error al actualizar servicio');
         }
@@ -341,7 +368,7 @@ export class DashPerfilComponent implements OnInit {
     } else {
       // Crear nuevo servicio
       this.providerProfileService.addService(serviceData).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('[PERFIL] Servicio creado:', response);
           
           // Agregar el nuevo servicio a la lista local
@@ -349,15 +376,39 @@ export class DashPerfilComponent implements OnInit {
             this.services.push(response.service);
           }
           
+          this.updateProgress();
           alert('✅ Servicio creado correctamente');
           this.onCloseServiceModal();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('[PERFIL] Error al crear servicio:', err);
           alert('❌ Error al crear servicio');
         }
       });
     }
+  }
+
+  /**
+   * Actualizar el progreso del perfil
+   */
+  private updateProgress() {
+    const progressData = {
+      basicInfo: {
+        fullName: !!this.basicInfo.fullName?.trim(),
+        professionalTitle: !!this.basicInfo.professionalTitle?.trim(),
+        mainCommune: !!this.basicInfo.mainCommune?.trim(),
+        yearsExperience: !!this.basicInfo.yearsExperience && this.basicInfo.yearsExperience > 0
+      },
+      bio: !!this.bio?.trim(),
+      profilePhoto: !!this.avatar,
+      coverPhoto: !!this.coverPhoto,
+      services: this.services.length,
+      portfolio: this.portfolioImages.length,
+      coverageZones: this.locationSettings.coverageZones.length,
+      schedule: this.weeklySchedule.some(day => day.isAvailable)
+    };
+
+    this.progressService.updateProgress(progressData);
   }
 
   onBioChange(bio: string) {
