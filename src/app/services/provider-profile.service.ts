@@ -241,12 +241,20 @@ export class ProviderProfileService {
    * Crear nuevo servicio
    */
   addService(service: any): Observable<{success: boolean, service: Service}> {
+    console.log('[ProviderProfileService] ===== INICIANDO addService =====');
+    console.log('[ProviderProfileService] Datos del servicio:', service);
+    console.log('[ProviderProfileService] URL:', `${this.apiUrl}/provider/services`);
+    console.log('[ProviderProfileService] Headers:', this.getHeaders());
+    
     return this.http.post<{success: boolean, service: Service}>(
       `${this.apiUrl}/provider/services`,
       service,
       { headers: this.getHeaders() }
     ).pipe(
-      tap(() => this.getServices().subscribe())
+      tap((response) => {
+        console.log('[ProviderProfileService] ✅ Respuesta del POST /provider/services:', response);
+        this.getServices().subscribe();
+      })
     );
   }
 

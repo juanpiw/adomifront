@@ -1,6 +1,23 @@
 <section class="seccion-fotos">
-  <h3 class="seccion-fotos__title">Fotos de Perfil</h3>
-  <p class="seccion-fotos__subtitle">Sube una foto de perfil clara y una foto de portada que represente tu trabajo.</p>
+  <div class="seccion-fotos__header">
+    <div class="seccion-fotos__title-section">
+      <h3 class="seccion-fotos__title">Fotos de Perfil</h3>
+      <p class="seccion-fotos__subtitle">Sube una foto de perfil clara y una foto de portada que represente tu trabajo.</p>
+    </div>
+    <div class="seccion-fotos__actions">
+      <ui-button 
+        variant="primary" 
+        size="sm"
+        [disabled]="saving || !hasChanges"
+        (click)="onSave()"
+        class="seccion-fotos__save-btn">
+        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+        </svg>
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </ui-button>
+    </div>
+  </div>
   
   <!-- Inputs ocultos para seleccionar archivos -->
   <input 
@@ -22,7 +39,7 @@
       <label class="seccion-fotos__photo-label">Foto de Perfil</label>
       <div class="seccion-fotos__photo-controls">
         <img 
-          [src]="profilePhoto" 
+          [src]="profilePhoto || 'https://placehold.co/96x96/C7D2FE/4338CA?text=ET'" 
           alt="Foto de perfil"
           class="seccion-fotos__profile-image">
         <ui-button 
@@ -37,7 +54,7 @@
       <label class="seccion-fotos__photo-label">Foto de Portada</label>
       <div class="seccion-fotos__photo-controls">
         <img 
-          [src]="coverPhoto" 
+          [src]="coverPhoto || 'https://placehold.co/256x96/C7D2FE/4338CA?text=Portada'" 
           alt="Foto de portada"
           class="seccion-fotos__cover-image">
         <ui-button 

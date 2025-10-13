@@ -174,6 +174,7 @@ export class DashPerfilComponent implements OnInit {
   bio = 'Estilista profesional con más de 5 años de experiencia en cortes modernos y coloración. Especializada en técnicas de color y cortes personalizados.';
   phone = '+56 9 1234 5678';
   avatar: string | null = 'https://placehold.co/96x96/C7D2FE/4338CA?text=ET';
+  profilePhoto: string | null = null;
   coverPhoto: string | null = null;
   lang = 'es';
   emailNoti = true;
@@ -249,6 +250,10 @@ export class DashPerfilComponent implements OnInit {
   showServiceModal = false;
   editingService: ProviderService | null = null;
   savingService = false;
+
+  // Estado de las fotos
+  savingPhotos = false;
+  photosHasChanges = false;
 
   // Estado del carrusel del portafolio
   currentSlide = 0;
@@ -369,6 +374,62 @@ export class DashPerfilComponent implements OnInit {
     });
   }
 
+  // Métodos para manejar las fotos
+  onPhotosChange() {
+    this.photosHasChanges = true;
+    this.updateProgress();
+  }
+
+  onSavePhotos(files: {profilePhoto?: File, coverPhoto?: File}) {
+    console.log('[PERFIL] Guardando fotos:', files);
+    this.savingPhotos = true;
+    
+    // Subir foto de perfil si existe
+    if (files.profilePhoto) {
+      this.providerProfileService.uploadPhoto(files.profilePhoto, 'profile').subscribe({
+        next: (response) => {
+          console.log('[PERFIL] Foto de perfil subida:', response);
+          // Actualizar la URL de la foto de perfil
+          if (response.profile_photo_url) {
+            this.profilePhoto = response.profile_photo_url;
+          }
+          this.updateProgress();
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al subir foto de perfil:', err);
+        }
+      });
+    }
+    
+    // Subir foto de portada si existe
+    if (files.coverPhoto) {
+      this.providerProfileService.uploadPhoto(files.coverPhoto, 'cover').subscribe({
+        next: (response) => {
+          console.log('[PERFIL] Foto de portada subida:', response);
+          // Actualizar la URL de la foto de portada
+          if (response.cover_photo_url) {
+            this.coverPhoto = response.cover_photo_url;
+          }
+          this.updateProgress();
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al subir foto de portada:', err);
+        },
+        complete: () => {
+          // Finalizar el proceso cuando ambas fotos se hayan subido
+          this.savingPhotos = false;
+          this.photosHasChanges = false;
+          alert('✅ Fotos guardadas correctamente');
+        }
+      });
+    } else {
+      // Si solo se subió la foto de perfil
+      this.savingPhotos = false;
+      this.photosHasChanges = false;
+      alert('✅ Fotos guardadas correctamente');
+    }
+  }
+
   onEditService(service: ProviderService) {
     console.log('[PERFIL] Editar servicio:', service);
     this.editingService = service;
@@ -422,14 +483,20 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onSaveService(serviceData: ServiceFormData) {
-    console.log('[PERFIL] Guardando servicio:', serviceData);
+    console.log('[PERFIL] ===== INICIANDO onSaveService =====');
+    console.log('[PERFIL] serviceData recibido:', serviceData);
+    console.log('[PERFIL] editingService:', this.editingService);
+    console.log('[PERFIL] savingService antes:', this.savingService);
+    
     this.savingService = true;
+    console.log('[PERFIL] savingService después:', this.savingService);
     
     if (this.editingService) {
+      console.log('[PERFIL] Modo: ACTUALIZAR servicio existente');
       // Actualizar servicio existente
       this.providerProfileService.updateService(this.editingService.id, serviceData).subscribe({
         next: (response: any) => {
-          console.log('[PERFIL] Servicio actualizado:', response);
+          console.log('[PERFIL] ✅ Servicio actualizado exitosamente:', response);
           
           // Actualizar el servicio en la lista local
           const index = this.services.findIndex(s => s.id === this.editingService!.id);
@@ -443,20 +510,26 @@ export class DashPerfilComponent implements OnInit {
           this.onCloseServiceModal();
         },
         error: (err: any) => {
-          console.error('[PERFIL] Error al actualizar servicio:', err);
+          console.error('[PERFIL] ❌ Error al actualizar servicio:', err);
           alert('❌ Error al actualizar servicio');
           this.savingService = false;
         }
       });
     } else {
+      console.log('[PERFIL] Modo: CREAR nuevo servicio');
+      console.log('[PERFIL] Llamando a providerProfileService.addService...');
+      
       // Crear nuevo servicio
       this.providerProfileService.addService(serviceData).subscribe({
         next: (response: any) => {
-          console.log('[PERFIL] Servicio creado:', response);
+          console.log('[PERFIL] ✅ Servicio creado exitosamente:', response);
           
           // Agregar el nuevo servicio a la lista local
           if (response.service) {
+            console.log('[PERFIL] Agregando servicio a lista local:', response.service);
             this.services.push(response.service);
+          } else {
+            console.log('[PERFIL] ⚠️ response.service es undefined/null');
           }
           
           this.updateProgress();
@@ -465,12 +538,14 @@ export class DashPerfilComponent implements OnInit {
           this.onCloseServiceModal();
         },
         error: (err: any) => {
-          console.error('[PERFIL] Error al crear servicio:', err);
+          console.error('[PERFIL] ❌ Error al crear servicio:', err);
           alert('❌ Error al crear servicio');
           this.savingService = false;
         }
       });
     }
+    
+    console.log('[PERFIL] ===== FINALIZANDO onSaveService =====');
   }
 
   /**

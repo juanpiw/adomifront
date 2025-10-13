@@ -31,7 +31,7 @@ export interface ProviderService {
 export class MisServiciosComponent implements OnInit {
   @Input() services: ProviderService[] = [];
   @Input() loading = false;
-  @Output() addService = new EventEmitter<void>();
+  @Output() addService = new EventEmitter<ServiceFormData>();
   @Output() editService = new EventEmitter<ProviderService>();
   @Output() deleteService = new EventEmitter<number>();
 
@@ -99,6 +99,11 @@ export class MisServiciosComponent implements OnInit {
     
     if (this.editingService) {
       // Editar servicio existente
+      console.log('[MIS-SERVICIOS] Emitiendo editService con datos:', {
+        ...this.editingService,
+        ...serviceData,
+        category_id: serviceData.category_id || undefined
+      });
       this.editService.emit({
         ...this.editingService,
         ...serviceData,
@@ -106,7 +111,8 @@ export class MisServiciosComponent implements OnInit {
       } as ProviderService);
     } else {
       // Crear nuevo servicio
-      this.addService.emit();
+      console.log('[MIS-SERVICIOS] Emitiendo addService con datos:', serviceData);
+      this.addService.emit(serviceData);
     }
     
     // Cerrar modal después de guardar

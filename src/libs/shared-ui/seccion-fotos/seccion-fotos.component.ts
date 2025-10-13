@@ -10,11 +10,18 @@ import { UiButtonComponent } from '../ui-button/ui-button.component';
   styleUrls: ['./seccion-fotos.component.scss']
 })
 export class SeccionFotosComponent {
-  @Input() profilePhoto: string = 'https://placehold.co/96x96/C7D2FE/4338CA?text=ET';
-  @Input() coverPhoto: string = 'https://placehold.co/256x96/C7D2FE/4338CA?text=Portada';
+  @Input() profilePhoto: string | null = 'https://placehold.co/96x96/C7D2FE/4338CA?text=ET';
+  @Input() coverPhoto: string | null = 'https://placehold.co/256x96/C7D2FE/4338CA?text=Portada';
+  @Input() saving = false;
+  @Input() hasChanges = false;
 
   @Output() changeProfilePhoto = new EventEmitter<string>();
   @Output() changeCoverPhoto = new EventEmitter<string>();
+  @Output() savePhotos = new EventEmitter<{profilePhoto?: File, coverPhoto?: File}>();
+
+  // Archivos seleccionados para subir
+  selectedProfileFile: File | null = null;
+  selectedCoverFile: File | null = null;
 
   onProfilePhotoChange(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -45,6 +52,13 @@ export class SeccionFotosComponent {
       return;
     }
 
+    // Guardar el archivo seleccionado
+    if (type === 'profile') {
+      this.selectedProfileFile = file;
+    } else {
+      this.selectedCoverFile = file;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
@@ -57,6 +71,24 @@ export class SeccionFotosComponent {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  onSave() {
+    console.log('[SECCION_FOTOS] Guardando fotos...');
+    console.log('[SECCION_FOTOS] Profile file:', this.selectedProfileFile);
+    console.log('[SECCION_FOTOS] Cover file:', this.selectedCoverFile);
+    
+    const filesToSave: {profilePhoto?: File, coverPhoto?: File} = {};
+    
+    if (this.selectedProfileFile) {
+      filesToSave.profilePhoto = this.selectedProfileFile;
+    }
+    
+    if (this.selectedCoverFile) {
+      filesToSave.coverPhoto = this.selectedCoverFile;
+    }
+    
+    this.savePhotos.emit(filesToSave);
   }
 
   triggerProfilePhotoUpload() {

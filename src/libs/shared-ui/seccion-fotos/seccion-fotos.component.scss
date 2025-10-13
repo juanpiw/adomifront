@@ -5,6 +5,23 @@
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
 
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &__title-section {
+    flex: 1;
+  }
+
   &__title {
     font-size: 1.5rem;
     font-weight: bold;
@@ -15,6 +32,23 @@
   &__subtitle {
     color: #64748b;
     margin: 0.25rem 0 0 0;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__save-btn {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.75rem !important;
+    min-width: auto !important;
+    
+    .btn-icon {
+      width: 0.875rem !important;
+      height: 0.875rem !important;
+    }
   }
 
   &__content {
