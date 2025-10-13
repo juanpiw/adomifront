@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 // Interfaces
@@ -253,7 +253,16 @@ export class ProviderProfileService {
     ).pipe(
       tap((response) => {
         console.log('[ProviderProfileService] ✅ Respuesta del POST /provider/services:', response);
+        console.log('[ProviderProfileService] Tipo de respuesta:', typeof response);
+        console.log('[ProviderProfileService] response.success:', response?.success);
+        console.log('[ProviderProfileService] response.service:', response?.service);
         this.getServices().subscribe();
+      }),
+      catchError((error) => {
+        console.error('[ProviderProfileService] ❌ ERROR en POST /provider/services:', error);
+        console.error('[ProviderProfileService] Error status:', error.status);
+        console.error('[ProviderProfileService] Error message:', error.message);
+        return throwError(() => error);
       })
     );
   }

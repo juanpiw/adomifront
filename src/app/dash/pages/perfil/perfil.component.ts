@@ -491,6 +491,7 @@ export class DashPerfilComponent implements OnInit {
     console.log('[PERFIL] serviceData recibido:', serviceData);
     console.log('[PERFIL] editingService:', this.editingService);
     console.log('[PERFIL] savingService antes:', this.savingService);
+    console.log('[PERFIL] providerProfileService disponible:', !!this.providerProfileService);
     
     this.savingService = true;
     console.log('[PERFIL] savingService después:', this.savingService);
