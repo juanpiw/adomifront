@@ -1,6 +1,7 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { ProviderProfileService, BasicInfo as ServiceBasicInfo } from '../../../services/provider-profile.service';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
 import { UiButtonComponent } from '../../../../libs/shared-ui/ui-button/ui-button.component';
 import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploader/avatar-uploader.component';
@@ -46,7 +47,8 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
   styleUrls: ['./perfil.component.scss']
 })
 export class DashPerfilComponent implements OnInit {
-  constructor(private route: ActivatedRoute) {}
+  private route = inject(ActivatedRoute);
+  private providerProfileService = inject(ProviderProfileService);
 
   ngOnInit() {
     // Leer query parameters para activar tab específico
@@ -55,6 +57,100 @@ export class DashPerfilComponent implements OnInit {
         this.activeTab = params['tab'] as TabType;
       }
     });
+
+    // Cargar datos del perfil desde el backend
+    this.loadProfileData();
+  }
+
+  /**
+   * Cargar todos los datos del perfil
+   */
+  private loadProfileData() {
+    console.log('[PERFIL] Cargando datos del perfil...');
+    
+    // Cargar perfil básico
+    this.providerProfileService.getProfile().subscribe({
+      next: (profile) => {
+        console.log('[PERFIL] Perfil cargado:', profile);
+        this.updateLocalDataFromProfile(profile);
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar perfil:', err);
+      }
+    });
+
+    // Cargar servicios
+    this.providerProfileService.getServices().subscribe({
+      next: (services) => {
+        console.log('[PERFIL] Servicios cargados:', services);
+        this.services = services.map(s => ({
+          id: String(s.id),
+          name: s.name,
+          duration: s.duration_minutes,
+          price: s.price
+        }));
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar servicios:', err);
+      }
+    });
+
+    // Cargar portafolio
+    this.providerProfileService.getPortfolio().subscribe({
+      next: (portfolio) => {
+        console.log('[PERFIL] Portafolio cargado:', portfolio);
+        this.portfolioImages = portfolio.map(p => ({
+          id: String(p.id),
+          url: p.file_url,
+          alt: p.title || 'Portfolio image',
+          type: p.file_type
+        }));
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar portafolio:', err);
+      }
+    });
+
+    // Cargar zonas de cobertura
+    this.providerProfileService.getCoverageZones().subscribe({
+      next: (zones) => {
+        console.log('[PERFIL] Zonas cargadas:', zones);
+        this.locationSettings = {
+          ...this.locationSettings,
+          coverageZones: zones.map(z => ({
+            id: String(z.id),
+            name: z.commune
+          }))
+        };
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar zonas:', err);
+      }
+    });
+  }
+
+  /**
+   * Actualizar datos locales desde el perfil del backend
+   */
+  private updateLocalDataFromProfile(profile: any) {
+    this.name = profile.full_name;
+    this.bio = profile.bio || '';
+    this.avatar = profile.profile_photo_url;
+    
+    this.basicInfo = {
+      fullName: profile.full_name,
+      professionalTitle: profile.professional_title || '',
+      mainCommune: profile.main_commune || '',
+      yearsExperience: profile.years_experience || 0
+    };
+
+    this.profileProgress = profile.profile_completion || 0;
+    
+    this.locationSettings = {
+      ...this.locationSettings,
+      availableForNewBookings: profile.available_for_bookings !== false,
+      shareRealTimeLocation: profile.share_real_time_location || false
+    };
   }
 
   // Datos básicos del perfil
@@ -176,17 +272,36 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onEditService(service: Service) {
-    console.log('Editar servicio:', service);
+    console.log('[PERFIL] Editar servicio:', service);
     // TODO: Implementar modal de edición
+    // Por ahora, mostrar alerta
+    alert('Modal de edición de servicio: ' + service.name);
   }
 
   onDeleteService(serviceId: string) {
-    this.services = this.services.filter(s => s.id !== serviceId);
+    console.log('[PERFIL] Eliminar servicio:', serviceId);
+    
+    if (!confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
+      return;
+    }
+
+    this.providerProfileService.deleteService(Number(serviceId)).subscribe({
+      next: () => {
+        console.log('[PERFIL] Servicio eliminado');
+        this.services = this.services.filter(s => s.id !== serviceId);
+        alert('✅ Servicio eliminado correctamente');
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al eliminar servicio:', err);
+        alert('❌ Error al eliminar servicio');
+      }
+    });
   }
 
   onAddService() {
-    console.log('Agregar nuevo servicio');
+    console.log('[PERFIL] Agregar nuevo servicio');
     // TODO: Implementar modal de agregar servicio
+    alert('Modal de agregar servicio (próximamente)');
   }
 
   onBioChange(bio: string) {
@@ -214,7 +329,23 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onDeletePortfolioImage(imageId: string) {
-    this.portfolioImages = this.portfolioImages.filter(img => img.id !== imageId);
+    console.log('[PERFIL] Eliminar imagen del portafolio:', imageId);
+    
+    if (!confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+      return;
+    }
+
+    this.providerProfileService.deletePortfolioItem(Number(imageId)).subscribe({
+      next: () => {
+        console.log('[PERFIL] Imagen eliminada del portafolio');
+        this.portfolioImages = this.portfolioImages.filter(img => img.id !== imageId);
+        alert('✅ Imagen eliminada correctamente');
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al eliminar imagen:', err);
+        alert('❌ Error al eliminar imagen');
+      }
+    });
   }
 
   // Event handlers para tabs
@@ -228,21 +359,55 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onAddCoverageZone(zoneName: string) {
-    const newZone: CoverageZone = {
-      id: Date.now().toString(),
-      name: zoneName
-    };
-    this.locationSettings = {
-      ...this.locationSettings,
-      coverageZones: [...this.locationSettings.coverageZones, newZone]
-    };
+    console.log('[PERFIL] Agregar zona de cobertura:', zoneName);
+    
+    // TODO: Obtener región desde un servicio de comunas
+    const region = 'Región Metropolitana';
+
+    this.providerProfileService.addCoverageZone({
+      commune: zoneName,
+      region: region
+    }).subscribe({
+      next: (zone) => {
+        console.log('[PERFIL] Zona agregada:', zone);
+        const newZone: CoverageZone = {
+          id: String(zone.id),
+          name: zoneName
+        };
+        this.locationSettings = {
+          ...this.locationSettings,
+          coverageZones: [...this.locationSettings.coverageZones, newZone]
+        };
+        alert('✅ Zona agregada correctamente');
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al agregar zona:', err);
+        alert('❌ Error al agregar zona');
+      }
+    });
   }
 
   onRemoveCoverageZone(zoneId: string) {
-    this.locationSettings = {
-      ...this.locationSettings,
-      coverageZones: this.locationSettings.coverageZones.filter(zone => zone.id !== zoneId)
-    };
+    console.log('[PERFIL] Eliminar zona de cobertura:', zoneId);
+    
+    if (!confirm('¿Estás seguro de que deseas eliminar esta zona?')) {
+      return;
+    }
+
+    this.providerProfileService.deleteCoverageZone(Number(zoneId)).subscribe({
+      next: () => {
+        console.log('[PERFIL] Zona eliminada');
+        this.locationSettings = {
+          ...this.locationSettings,
+          coverageZones: this.locationSettings.coverageZones.filter(zone => zone.id !== zoneId)
+        };
+        alert('✅ Zona eliminada correctamente');
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al eliminar zona:', err);
+        alert('❌ Error al eliminar zona');
+      }
+    });
   }
 
   // Event handlers para horario
@@ -295,33 +460,78 @@ export class DashPerfilComponent implements OnInit {
 
   savePublicProfile() {
     this.savingPublicProfile = true;
-    
-    // Simular llamada al backend
-    setTimeout(() => {
-      console.log('Guardando perfil público...', {
-        basicInfo: this.basicInfo,
-        bio: this.bio,
-        services: this.services,
-        portfolioImages: this.portfolioImages,
-        locationSettings: this.locationSettings
-      });
-      
-      // TODO: Implementar llamada real al backend
-      // this.profileService.updatePublicProfile(profileData).subscribe({
-      //   next: (response) => {
-      //     console.log('Perfil público guardado:', response);
-      //     this.savingPublicProfile = false;
-      //     // Mostrar mensaje de éxito
-      //   },
-      //   error: (error) => {
-      //     console.error('Error al guardar perfil público:', error);
-      //     this.savingPublicProfile = false;
-      //     // Mostrar mensaje de error
-      //   }
-      // });
-      
-      this.savingPublicProfile = false;
-    }, 1500);
+    console.log('[PERFIL] Guardando perfil público...', {
+      basicInfo: this.basicInfo,
+      bio: this.bio,
+      locationSettings: this.locationSettings
+    });
+
+    // Actualizar información básica y bio
+    const profileData: ServiceBasicInfo & { bio?: string } = {
+      fullName: this.basicInfo.fullName,
+      professionalTitle: this.basicInfo.professionalTitle,
+      mainCommune: this.basicInfo.mainCommune,
+      yearsExperience: this.basicInfo.yearsExperience
+    };
+
+    this.providerProfileService.updateBasicInfo(profileData).subscribe({
+      next: () => {
+        console.log('[PERFIL] Información básica actualizada');
+        
+        // Actualizar bio
+        if (this.bio) {
+          this.providerProfileService.updateBio(this.bio).subscribe({
+            next: () => {
+              console.log('[PERFIL] Bio actualizada');
+              
+              // Actualizar disponibilidad
+              this.providerProfileService.updateAvailability({
+                available_for_bookings: this.locationSettings.availableForNewBookings,
+                share_real_time_location: this.locationSettings.shareRealTimeLocation
+              }).subscribe({
+                next: () => {
+                  console.log('[PERFIL] Disponibilidad actualizada');
+                  this.savingPublicProfile = false;
+                  alert('✅ Perfil guardado exitosamente');
+                },
+                error: (err) => {
+                  console.error('[PERFIL] Error al actualizar disponibilidad:', err);
+                  this.savingPublicProfile = false;
+                  alert('❌ Error al guardar disponibilidad');
+                }
+              });
+            },
+            error: (err) => {
+              console.error('[PERFIL] Error al actualizar bio:', err);
+              this.savingPublicProfile = false;
+              alert('❌ Error al guardar biografía');
+            }
+          });
+        } else {
+          // Si no hay bio, solo actualizar disponibilidad
+          this.providerProfileService.updateAvailability({
+            available_for_bookings: this.locationSettings.availableForNewBookings,
+            share_real_time_location: this.locationSettings.shareRealTimeLocation
+          }).subscribe({
+            next: () => {
+              console.log('[PERFIL] Disponibilidad actualizada');
+              this.savingPublicProfile = false;
+              alert('✅ Perfil guardado exitosamente');
+            },
+            error: (err) => {
+              console.error('[PERFIL] Error al actualizar disponibilidad:', err);
+              this.savingPublicProfile = false;
+              alert('❌ Error al guardar disponibilidad');
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al actualizar información básica:', err);
+        this.savingPublicProfile = false;
+        alert('❌ Error al guardar perfil');
+      }
+    });
   }
 
   // Métodos para el tab "Ver Perfil Público"

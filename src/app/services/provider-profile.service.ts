@@ -1,48 +1,75 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+
+// Interfaces
+export interface BasicInfo {
+  fullName: string;
+  professionalTitle: string;
+  mainCommune: string;
+  mainRegion?: string;
+  yearsExperience: number;
+}
+
+export interface Service {
+  id?: number;
+  name: string;
+  description?: string;
+  price: number;
+  duration_minutes: number;
+  category_id?: number;
+  custom_category?: string;
+  service_image_url?: string;
+  is_active?: boolean;
+  is_featured?: boolean;
+  booking_count?: number;
+  average_rating?: number;
+}
+
+export interface PortfolioItem {
+  id?: number;
+  file_url: string;
+  file_type: 'image' | 'video';
+  title?: string;
+  description?: string;
+  order_index?: number;
+  thumbnail_url?: string;
+}
+
+export interface CoverageZone {
+  id?: number;
+  commune: string;
+  region: string;
+  is_primary?: boolean;
+}
+
+export interface Availability {
+  available_for_bookings: boolean;
+  share_real_time_location: boolean;
+}
 
 export interface ProviderProfile {
   id: number;
-  name: string;
-  email: string;
-  role: string;
   provider_id: number;
   full_name: string;
   professional_title?: string;
   main_commune?: string;
   main_region?: string;
-  years_experience?: number;
+  years_experience: number;
   bio?: string;
-  profile_photo_url?: string | null;
-  cover_photo_url?: string | null;
-  profile_completion?: number;
-  is_verified?: boolean;
-  verification_status?: string;
-  profile_views?: number;
-  rating_average?: number;
-  review_count?: number;
-  completed_appointments?: number;
-  is_online?: boolean;
-  last_seen?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface ProviderProfileResponse {
-  success: boolean;
-  profile: ProviderProfile;
-}
-
-export interface UpdateProfilePayload {
-  full_name?: string;
-  professional_title?: string;
-  main_commune?: string;
-  main_region?: string;
-  years_experience?: number;
-  bio?: string;
+  profile_photo_url?: string;
+  cover_photo_url?: string;
+  profile_completion: number;
+  available_for_bookings?: boolean;
+  share_real_time_location?: boolean;
+  is_verified: boolean;
+  verification_status: string;
+  rating_average: string;
+  review_count: number;
+  created_at: string;
+  updated_at: string;
 }
 
 @Injectable({
@@ -50,62 +77,333 @@ export interface UpdateProfilePayload {
 })
 export class ProviderProfileService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiBaseUrl;
+  private apiUrl = environment.apiUrl;
+
+  // Subjects para estado reactivo
+  private profileSubject = new BehaviorSubject<ProviderProfile | null>(null);
+  private servicesSubject = new BehaviorSubject<Service[]>([]);
+  private portfolioSubject = new BehaviorSubject<PortfolioItem[]>([]);
+  private coverageZonesSubject = new BehaviorSubject<CoverageZone[]>([]);
+
+  // Observables públicos
+  public profile$ = this.profileSubject.asObservable();
+  public services$ = this.servicesSubject.asObservable();
+  public portfolio$ = this.portfolioSubject.asObservable();
+  public coverageZones$ = this.coverageZonesSubject.asObservable();
+
+  constructor() {}
+
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('adomi_token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  // ============================================
+  // PERFIL BÁSICO
+  // ============================================
 
   /**
-   * Obtener perfil del provider autenticado
+   * Obtener perfil del profesional
    */
-  getProfile(): Observable<ProviderProfileResponse> {
-    console.log('[PROVIDER_PROFILE] Obteniendo perfil...');
-    const token = this.getAccessToken();
-    
-    return this.http.get<ProviderProfileResponse>(`${this.apiUrl}/provider/profile`, {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      })
-    }).pipe(
-      tap(response => {
-        console.log('[PROVIDER_PROFILE] Perfil obtenido:', response);
-      }),
-      catchError(error => {
-        console.error('[PROVIDER_PROFILE] Error obteniendo perfil:', error);
-        throw error;
-      })
+  getProfile(): Observable<ProviderProfile> {
+    return this.http.get<{success: boolean, profile: ProviderProfile}>(
+      `${this.apiUrl}/provider/profile`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.profile),
+      tap(profile => this.profileSubject.next(profile))
     );
   }
 
   /**
-   * Actualizar perfil del provider
+   * Actualizar información básica del perfil
    */
-  updateProfile(data: UpdateProfilePayload): Observable<ProviderProfileResponse> {
-    console.log('[PROVIDER_PROFILE] Actualizando perfil:', data);
-    const token = this.getAccessToken();
-    
-    return this.http.put<ProviderProfileResponse>(`${this.apiUrl}/provider/profile`, data, {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      })
-    }).pipe(
-      tap(response => {
-        console.log('[PROVIDER_PROFILE] Perfil actualizado:', response);
-      }),
-      catchError(error => {
-        console.error('[PROVIDER_PROFILE] Error actualizando perfil:', error);
-        throw error;
-      })
+  updateBasicInfo(info: Partial<BasicInfo>): Observable<any> {
+    const payload = {
+      full_name: info.fullName,
+      professional_title: info.professionalTitle,
+      main_commune: info.mainCommune,
+      main_region: info.mainRegion,
+      years_experience: info.yearsExperience
+    };
+
+    return this.http.put(
+      `${this.apiUrl}/provider/profile`,
+      payload,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getProfile().subscribe()) // Refrescar perfil
     );
   }
 
   /**
-   * Obtiene el token de acceso
+   * Actualizar biografía
    */
-  private getAccessToken(): string | null {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return null;
+  updateBio(bio: string): Observable<any> {
+    return this.http.put(
+      `${this.apiUrl}/provider/profile`,
+      { bio },
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getProfile().subscribe())
+    );
+  }
+
+  /**
+   * Subir foto de perfil o portada
+   */
+  uploadPhoto(file: File, type: 'profile' | 'cover'): Observable<any> {
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('type', type);
+
+    const token = localStorage.getItem('adomi_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+      // NO incluir Content-Type para FormData
+    });
+
+    return this.http.post(
+      `${this.apiUrl}/provider/profile/upload-photo`,
+      formData,
+      { headers }
+    ).pipe(
+      tap(() => this.getProfile().subscribe())
+    );
+  }
+
+  // ============================================
+  // SERVICIOS
+  // ============================================
+
+  /**
+   * Obtener servicios del profesional
+   */
+  getServices(): Observable<Service[]> {
+    return this.http.get<{success: boolean, services: Service[]}>(
+      `${this.apiUrl}/provider/services`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.services),
+      tap(services => this.servicesSubject.next(services))
+    );
+  }
+
+  /**
+   * Crear nuevo servicio
+   */
+  createService(service: Service): Observable<Service> {
+    return this.http.post<{success: boolean, service: Service}>(
+      `${this.apiUrl}/provider/services`,
+      service,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.service),
+      tap(() => this.getServices().subscribe())
+    );
+  }
+
+  /**
+   * Actualizar servicio
+   */
+  updateService(id: number, service: Partial<Service>): Observable<Service> {
+    return this.http.put<{success: boolean, service: Service}>(
+      `${this.apiUrl}/provider/services/${id}`,
+      service,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.service),
+      tap(() => this.getServices().subscribe())
+    );
+  }
+
+  /**
+   * Eliminar servicio
+   */
+  deleteService(id: number): Observable<any> {
+    return this.http.delete(
+      `${this.apiUrl}/provider/services/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getServices().subscribe())
+    );
+  }
+
+  // ============================================
+  // PORTAFOLIO
+  // ============================================
+
+  /**
+   * Obtener items del portafolio
+   */
+  getPortfolio(): Observable<PortfolioItem[]> {
+    return this.http.get<{success: boolean, portfolio: PortfolioItem[]}>(
+      `${this.apiUrl}/provider/portfolio`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.portfolio),
+      tap(portfolio => this.portfolioSubject.next(portfolio))
+    );
+  }
+
+  /**
+   * Agregar item al portafolio
+   */
+  addPortfolioItem(item: PortfolioItem): Observable<PortfolioItem> {
+    return this.http.post<{success: boolean, item: PortfolioItem}>(
+      `${this.apiUrl}/provider/portfolio`,
+      item,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.item),
+      tap(() => this.getPortfolio().subscribe())
+    );
+  }
+
+  /**
+   * Eliminar item del portafolio
+   */
+  deletePortfolioItem(id: number): Observable<any> {
+    return this.http.delete(
+      `${this.apiUrl}/provider/portfolio/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getPortfolio().subscribe())
+    );
+  }
+
+  /**
+   * Reordenar items del portafolio
+   */
+  reorderPortfolio(items: {id: number, order_index: number}[]): Observable<any> {
+    return this.http.put(
+      `${this.apiUrl}/provider/portfolio/reorder`,
+      { items },
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getPortfolio().subscribe())
+    );
+  }
+
+  // ============================================
+  // UBICACIONES Y COBERTURA
+  // ============================================
+
+  /**
+   * Obtener zonas de cobertura
+   */
+  getCoverageZones(): Observable<CoverageZone[]> {
+    return this.http.get<{success: boolean, zones: CoverageZone[]}>(
+      `${this.apiUrl}/provider/coverage-zones`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.zones),
+      tap(zones => this.coverageZonesSubject.next(zones))
+    );
+  }
+
+  /**
+   * Agregar zona de cobertura
+   */
+  addCoverageZone(zone: CoverageZone): Observable<CoverageZone> {
+    return this.http.post<{success: boolean, zone: CoverageZone}>(
+      `${this.apiUrl}/provider/coverage-zones`,
+      zone,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.zone),
+      tap(() => this.getCoverageZones().subscribe())
+    );
+  }
+
+  /**
+   * Eliminar zona de cobertura
+   */
+  deleteCoverageZone(id: number): Observable<any> {
+    return this.http.delete(
+      `${this.apiUrl}/provider/coverage-zones/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getCoverageZones().subscribe())
+    );
+  }
+
+  /**
+   * Actualizar disponibilidad
+   */
+  updateAvailability(availability: Partial<Availability>): Observable<Availability> {
+    return this.http.put<{success: boolean, availability: Availability}>(
+      `${this.apiUrl}/provider/availability`,
+      availability,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.availability),
+      tap(() => this.getProfile().subscribe())
+    );
+  }
+
+  // ============================================
+  // UTILIDADES
+  // ============================================
+
+  /**
+   * Calcular progreso del perfil
+   */
+  calculateProfileCompletion(profile: ProviderProfile, servicesCount: number, portfolioCount: number): number {
+    let score = 0;
+
+    if (profile.full_name) score += 10;
+    if (profile.professional_title) score += 10;
+    if (profile.main_commune) score += 10;
+    if (profile.years_experience > 0) score += 5;
+    if (profile.bio && profile.bio.length > 50) score += 15;
+    if (profile.profile_photo_url) score += 15;
+    if (profile.cover_photo_url) score += 10;
+    if (servicesCount > 0) score += 15;
+    if (portfolioCount >= 2) score += 10;
+
+    return Math.min(100, score);
+  }
+
+  /**
+   * Obtener sugerencia de completitud
+   */
+  getCompletionSuggestion(profile: ProviderProfile, servicesCount: number, portfolioCount: number): string {
+    if (!profile.profile_photo_url) {
+      return 'Sugerencia: Agrega una foto de perfil profesional.';
     }
-    return localStorage.getItem('adomi_access_token');
+    if (!profile.cover_photo_url) {
+      return 'Sugerencia: Agrega una foto de portada que represente tu trabajo.';
+    }
+    if (!profile.bio || profile.bio.length < 50) {
+      return 'Sugerencia: Escribe una biografía más detallada (al menos 50 caracteres).';
+    }
+    if (servicesCount === 0) {
+      return 'Sugerencia: Agrega al menos un servicio que ofrezcas.';
+    }
+    if (portfolioCount < 2) {
+      return 'Sugerencia: Añade fotos a tu portafolio para llegar al 100%.';
+    }
+    if (!profile.professional_title) {
+      return 'Sugerencia: Agrega tu título profesional.';
+    }
+    if (!profile.main_commune) {
+      return 'Sugerencia: Indica tu comuna principal de trabajo.';
+    }
+
+    return '¡Felicidades! Tu perfil está completo al 100%.';
+  }
+
+  /**
+   * Limpiar estado del servicio
+   */
+  clearState() {
+    this.profileSubject.next(null);
+    this.servicesSubject.next([]);
+    this.portfolioSubject.next([]);
+    this.coverageZonesSubject.next([]);
   }
 }
-
