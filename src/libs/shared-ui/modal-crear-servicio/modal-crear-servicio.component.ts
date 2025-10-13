@@ -146,7 +146,7 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
 
     // Cargar categoría seleccionada
     if (this.editingService.category_id) {
-      this.selectedCategory = this.categories.find(c => c.id === this.editingService.category_id);
+      this.selectedCategory = this.categories.find(c => c.id === this.editingService.category_id) || null;
       if (this.selectedCategory) {
         this.availableSubcategories = this.selectedCategory.subcategories;
       }

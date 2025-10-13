@@ -9,7 +9,7 @@ import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploa
 import { LanguageSelectComponent } from '../../../../libs/shared-ui/language-select/language-select.component';
 import { NotificationToggleComponent } from '../../../../libs/shared-ui/notification-toggle/notification-toggle.component';
 import { InfoBasicaComponent, BasicInfo } from '../../../../libs/shared-ui/info-basica/info-basica.component';
-import { MisServiciosComponent, Service, ProviderService } from '../../../../libs/shared-ui/mis-servicios/mis-servicios.component';
+import { MisServiciosComponent, ProviderService } from '../../../../libs/shared-ui/mis-servicios/mis-servicios.component';
 import { ModalCrearServicioComponent, ServiceFormData } from '../../../../libs/shared-ui/modal-crear-servicio/modal-crear-servicio.component';
 import { SobreMiComponent } from '../../../../libs/shared-ui/sobre-mi/sobre-mi.component';
 import { ProgressPerfilComponent } from '../../../../libs/shared-ui/progress-perfil/progress-perfil.component';
@@ -89,10 +89,21 @@ export class DashPerfilComponent implements OnInit {
       next: (services) => {
         console.log('[PERFIL] Servicios cargados:', services);
         this.services = services.map(s => ({
-          id: String(s.id),
+          id: s.id || 0,
           name: s.name,
-          duration: s.duration_minutes,
-          price: s.price
+          description: s.description || '',
+          duration_minutes: s.duration_minutes,
+          price: s.price,
+          category_id: s.category_id,
+          custom_category: s.custom_category,
+          service_image_url: s.service_image_url,
+          is_active: s.is_active || true,
+          is_featured: s.is_featured || false,
+          order_index: 0, // Valor por defecto
+          booking_count: 0, // Valor por defecto
+          average_rating: undefined,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }));
       },
       error: (err) => {
@@ -163,6 +174,7 @@ export class DashPerfilComponent implements OnInit {
   bio = 'Estilista profesional con más de 5 años de experiencia en cortes modernos y coloración. Especializada en técnicas de color y cortes personalizados.';
   phone = '+56 9 1234 5678';
   avatar: string | null = 'https://placehold.co/96x96/C7D2FE/4338CA?text=ET';
+  coverPhoto: string | null = null;
   lang = 'es';
   emailNoti = true;
   pushNoti = true;
@@ -175,10 +187,49 @@ export class DashPerfilComponent implements OnInit {
     yearsExperience: 5
   };
 
-  services: Service[] = [
-    { id: '1', name: 'Corte de Pelo', duration: 60, price: 25000 },
-    { id: '2', name: 'Manicura', duration: 45, price: 15000 },
-    { id: '3', name: 'Maquillaje Profesional', duration: 75, price: 30000 }
+  services: ProviderService[] = [
+    { 
+      id: 1, 
+      name: 'Corte de Pelo', 
+      description: 'Corte de pelo profesional con lavado incluido',
+      duration_minutes: 60, 
+      price: 25000,
+      is_active: true,
+      is_featured: true,
+      order_index: 0,
+      booking_count: 15,
+      average_rating: 4.8,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z'
+    },
+    { 
+      id: 2, 
+      name: 'Manicura', 
+      description: 'Manicura completa con esmaltado',
+      duration_minutes: 45, 
+      price: 15000,
+      is_active: true,
+      is_featured: false,
+      order_index: 1,
+      booking_count: 8,
+      average_rating: 4.5,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z'
+    },
+    { 
+      id: 3, 
+      name: 'Maquillaje Profesional', 
+      description: 'Maquillaje para eventos especiales',
+      duration_minutes: 75, 
+      price: 30000,
+      is_active: true,
+      is_featured: false,
+      order_index: 2,
+      booking_count: 5,
+      average_rating: 4.9,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z'
+    }
   ];
 
   portfolioImages: PortfolioImage[] = [
@@ -309,14 +360,14 @@ export class DashPerfilComponent implements OnInit {
     this.showServiceModal = true;
   }
 
-  onDeleteService(serviceId: string) {
+  onDeleteService(serviceId: number) {
     console.log('[PERFIL] Eliminar servicio:', serviceId);
     
     if (!confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
       return;
     }
 
-    this.providerProfileService.deleteService(Number(serviceId)).subscribe({
+    this.providerProfileService.deleteService(serviceId).subscribe({
       next: () => {
         console.log('[PERFIL] Servicio eliminado');
         this.services = this.services.filter(s => s.id !== serviceId);
@@ -405,7 +456,7 @@ export class DashPerfilComponent implements OnInit {
       services: this.services.length,
       portfolio: this.portfolioImages.length,
       coverageZones: this.locationSettings.coverageZones.length,
-      schedule: this.weeklySchedule.some(day => day.isAvailable)
+      schedule: this.weeklySchedule.days.some((day: any) => day.isAvailable)
     };
 
     this.progressService.updateProgress(progressData);

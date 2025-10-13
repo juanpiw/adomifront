@@ -8,7 +8,7 @@ export interface ProviderService {
   description: string;
   price: number;
   duration_minutes: number;
-  category_id?: number;
+  category_id?: number | null;
   custom_category?: string;
   service_image_url?: string;
   is_active: boolean;
@@ -75,8 +75,9 @@ export class MisServiciosComponent implements OnInit {
       // Editar servicio existente
       this.editService.emit({
         ...this.editingService,
-        ...serviceData
-      });
+        ...serviceData,
+        category_id: serviceData.category_id || undefined
+      } as ProviderService);
     } else {
       // Crear nuevo servicio
       this.addService.emit();

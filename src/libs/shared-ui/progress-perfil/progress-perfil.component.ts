@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { ProfileProgressService } from '../../../services/profile-progress.service';
+import { ProfileProgressService } from '../../../app/services/profile-progress.service';
 
 @Component({
   selector: 'app-progress-perfil',
@@ -24,13 +24,13 @@ export class ProgressPerfilComponent implements OnInit, OnDestroy {
     // Si no se pasa progreso desde el input, usar el servicio
     if (this.progress === 0) {
       this.subscription.add(
-        this.progressService.progress$.subscribe(progress => {
+        this.progressService.progress$.subscribe((progress: number) => {
           this.currentProgress = progress;
         })
       );
 
       this.subscription.add(
-        this.progressService.progressData$.subscribe(data => {
+        this.progressService.progressData$.subscribe((data: any) => {
           const suggestions = this.progressService.getSuggestions(data);
           this.currentSuggestion = suggestions.length > 0 
             ? `Sugerencia: ${suggestions[0]}.`

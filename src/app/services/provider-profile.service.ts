@@ -230,15 +230,27 @@ export class ProviderProfileService {
   }
 
   /**
+   * Crear nuevo servicio
+   */
+  addService(service: any): Observable<{success: boolean, service: Service}> {
+    return this.http.post<{success: boolean, service: Service}>(
+      `${this.apiUrl}/provider/services`,
+      service,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getServices().subscribe())
+    );
+  }
+
+  /**
    * Actualizar servicio
    */
-  updateService(id: number, service: Partial<Service>): Observable<Service> {
+  updateService(id: number, service: any): Observable<{success: boolean, service: Service}> {
     return this.http.put<{success: boolean, service: Service}>(
       `${this.apiUrl}/provider/services/${id}`,
       service,
       { headers: this.getHeaders() }
     ).pipe(
-      map(response => response.service),
       tap(() => this.getServices().subscribe())
     );
   }
