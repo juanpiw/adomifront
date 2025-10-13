@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalCrearServicioComponent, ServiceFormData } from '../modal-crear-servicio/modal-crear-servicio.component';
+import { ModalConfirmacionComponent } from '../modal-confirmacion';
 
 export interface ProviderService {
   id: number;
@@ -23,7 +24,7 @@ export interface ProviderService {
 @Component({
   selector: 'app-mis-servicios',
   standalone: true,
-  imports: [CommonModule, ModalCrearServicioComponent],
+  imports: [CommonModule, ModalCrearServicioComponent, ModalConfirmacionComponent],
   templateUrl: './mis-servicios.component.html',
   styleUrls: ['./mis-servicios.component.scss']
 })
@@ -37,6 +38,11 @@ export class MisServiciosComponent implements OnInit {
   // Estado del modal
   showCreateModal = false;
   editingService: ProviderService | null = null;
+  
+  // Estado del modal de confirmación
+  showDeleteModal = false;
+  serviceToDelete: ProviderService | null = null;
+  deletingService = false;
 
   constructor() {}
 
@@ -55,11 +61,31 @@ export class MisServiciosComponent implements OnInit {
   }
 
   onDeleteService(serviceId: number) {
-    console.log('[MIS-SERVICIOS] Eliminando servicio:', serviceId);
+    console.log('[MIS-SERVICIOS] Mostrando modal de confirmación para servicio:', serviceId);
+    this.serviceToDelete = this.services.find(s => s.id === serviceId) || null;
+    this.showDeleteModal = true;
+  }
+
+  onConfirmDelete() {
+    if (!this.serviceToDelete) return;
     
-    if (confirm('¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.')) {
-      this.deleteService.emit(serviceId);
-    }
+    console.log('[MIS-SERVICIOS] Confirmando eliminación del servicio:', this.serviceToDelete.id);
+    this.deletingService = true;
+    this.deleteService.emit(this.serviceToDelete.id);
+  }
+
+  onCancelDelete() {
+    console.log('[MIS-SERVICIOS] Cancelando eliminación');
+    this.showDeleteModal = false;
+    this.serviceToDelete = null;
+    this.deletingService = false;
+  }
+
+  onDeleteComplete() {
+    console.log('[MIS-SERVICIOS] Eliminación completada');
+    this.showDeleteModal = false;
+    this.serviceToDelete = null;
+    this.deletingService = false;
   }
 
   onCloseModal() {

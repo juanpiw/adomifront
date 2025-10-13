@@ -130,4 +130,17 @@
     (close)="onCloseModal()"
     (save)="onSaveService($event)">
   </app-modal-crear-servicio>
+
+  <!-- Modal de confirmación para eliminar servicio -->
+  <app-modal-confirmacion
+    [isOpen]="showDeleteModal"
+    [loading]="deletingService"
+    type="danger"
+    title="Eliminar Servicio"
+    [message]="'¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.'"
+    confirmText="Eliminar"
+    cancelText="Cancelar"
+    (confirm)="onConfirmDelete()"
+    (cancel)="onCancelDelete()">
+  </app-modal-confirmacion>
 </section>

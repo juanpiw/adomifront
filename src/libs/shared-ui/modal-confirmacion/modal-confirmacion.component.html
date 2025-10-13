@@ -1,0 +1,47 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <svg *ngIf="type === 'danger'" class="modal-icon modal-icon--danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        <svg *ngIf="type === 'warning'" class="modal-icon modal-icon--warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <svg *ngIf="type === 'info'" class="modal-icon modal-icon--info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        {{ title }}
+      </h3>
+      <button type="button" aria-label="Cerrar modal" class="modal-close-btn" (click)="onCancel()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="modal-close-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-message">{{ message }}</p>
+    </div>
+
+    <div class="modal-actions">
+      <ui-button 
+        type="button"
+        variant="secondary"
+        (click)="onCancel()"
+        [disabled]="loading">
+        {{ cancelText }}
+      </ui-button>
+      <ui-button 
+        type="button"
+        [variant]="type === 'danger' ? 'danger' : 'primary'"
+        (click)="onConfirm()"
+        [disabled]="loading">
+        <svg *ngIf="loading" class="btn-icon btn-icon--spinning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        {{ loading ? 'Procesando...' : confirmText }}
+      </ui-button>
+    </div>
+  </div>
+</div>

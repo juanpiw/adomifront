@@ -25,6 +25,17 @@
     gap: 0.75rem;
   }
 
+  &__save-btn {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.75rem !important;
+    min-width: auto !important;
+    
+    .btn-icon {
+      width: 0.875rem !important;
+      height: 0.875rem !important;
+    }
+  }
+
   &__content {
     margin-top: 1.5rem;
     display: grid;

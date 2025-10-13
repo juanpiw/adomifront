@@ -37,6 +37,7 @@
 
       <!-- Mis servicios -->
       <app-mis-servicios 
+        #misServiciosComponent
         [services]="services"
         (editService)="onEditService($event)"
         (deleteService)="onDeleteService($event)"

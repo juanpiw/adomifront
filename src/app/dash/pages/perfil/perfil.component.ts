@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ProviderProfileService, BasicInfo as ServiceBasicInfo } from '../../../services/provider-profile.service';
@@ -259,6 +259,9 @@ export class DashPerfilComponent implements OnInit {
   
   // Estados de cambios por sección
   basicInfoHasChanges = false;
+  
+  // Referencia al componente mis-servicios
+  @ViewChild('misServiciosComponent') misServiciosComponent: any;
 
   // Datos para ubicación y disponibilidad
   locationSettings: LocationSettings = {
@@ -374,22 +377,35 @@ export class DashPerfilComponent implements OnInit {
 
   onDeleteService(serviceId: number) {
     console.log('[PERFIL] Eliminar servicio:', serviceId);
-    
-    if (!confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
-      return;
-    }
 
     this.providerProfileService.deleteService(serviceId).subscribe({
       next: () => {
         console.log('[PERFIL] Servicio eliminado');
         this.services = this.services.filter(s => s.id !== serviceId);
-        alert('✅ Servicio eliminado correctamente');
+        this.updateProgress();
+        // Notificar al componente hijo que la eliminación se completó
+        this.notifyDeleteComplete();
       },
       error: (err) => {
         console.error('[PERFIL] Error al eliminar servicio:', err);
-        alert('❌ Error al eliminar servicio');
+        // Notificar al componente hijo que hubo un error
+        this.notifyDeleteError();
       }
     });
+  }
+
+  private notifyDeleteComplete() {
+    // Notificar al componente mis-servicios que la eliminación se completó
+    if (this.misServiciosComponent) {
+      this.misServiciosComponent.onDeleteComplete();
+    }
+  }
+
+  private notifyDeleteError() {
+    // Notificar al componente mis-servicios que hubo un error
+    if (this.misServiciosComponent) {
+      this.misServiciosComponent.onCancelDelete();
+    }
   }
 
   onAddService() {
