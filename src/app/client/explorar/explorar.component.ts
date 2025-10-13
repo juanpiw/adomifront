@@ -11,33 +11,9 @@ import { IconName } from '../../../libs/shared-ui/icon/icon.component';
 import { ProfileRequiredModalComponent } from '../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../services/profile-validation.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { SearchService, SearchFilters, Provider, Service, Category, Location } from '../../services/search.service';
 
-interface Provider {
-  id: number;
-  name: string;
-  email: string;
-  profession: string;
-  description: string;
-  rating: number;
-  review_count: number;
-  avatar_url?: string;
-  location: string;
-  services_count: number;
-  experience_years: number;
-  is_favorite?: boolean;
-}
-
-interface Service {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  duration_minutes: number;
-  provider_id: number;
-  provider_name: string;
-  category: string;
-  is_favorite?: boolean;
-}
+// Interfaces moved to search.service.ts
 
 @Component({
   selector: 'app-explorar',
@@ -90,17 +66,16 @@ interface Service {
         <div class="flex flex-wrap gap-4 justify-center">
           <select [(ngModel)]="selectedCategory" (change)="applyFilters()" class="filter-select">
             <option value="">Todas las Categorías</option>
-            <option value="belleza">Belleza</option>
-            <option value="salud">Salud</option>
-            <option value="hogar">Hogar</option>
-            <option value="educacion">Educación</option>
+            <option *ngFor="let category of categories" [value]="category.name">
+              {{ category.name }} ({{ category.count }})
+            </option>
           </select>
           
           <select [(ngModel)]="selectedLocation" (change)="applyFilters()" class="filter-select">
             <option value="">Todas las Ubicaciones</option>
-            <option value="santiago">Santiago</option>
-            <option value="valparaiso">Valparaíso</option>
-            <option value="concepcion">Concepción</option>
+            <option *ngFor="let location of locations" [value]="location.commune">
+              {{ location.commune }}, {{ location.region }} ({{ location.count }})
+            </option>
           </select>
           
           <select [(ngModel)]="selectedPriceRange" (change)="applyFilters()" class="filter-select">
@@ -122,6 +97,14 @@ interface Service {
       <div *ngIf="loading" class="loading-state">
         <div class="spinner"></div>
         <p class="text-gray-600 mt-4">Cargando servicios...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="searchError" class="error-state bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+          <ui-icon name="alert-triangle" class="w-5 h-5 text-red-500 mr-2"></ui-icon>
+          <p class="text-red-700">{{ searchError }}</p>
+        </div>
       </div>
 
       <!-- Providers Section -->
@@ -192,6 +175,7 @@ export class ExplorarComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private profileValidation = inject(ProfileValidationService);
   private auth = inject(AuthService);
+  private searchService = inject(SearchService);
 
   // User data
   user: any = null;
@@ -227,9 +211,12 @@ export class ExplorarComponent implements OnInit {
   services: Service[] = [];
   filteredProviders: Provider[] = [];
   filteredServices: Service[] = [];
+  categories: Category[] = [];
+  locations: Location[] = [];
 
   // State
   loading: boolean = false;
+  searchError: string = '';
 
   ngOnInit() {
     console.log('[EXPLORAR] ngOnInit iniciado');
@@ -253,11 +240,9 @@ export class ExplorarComponent implements OnInit {
       }
       console.log('[EXPLORAR] Validando perfil...');
       this.validateProfile(); // Validar perfil primero
-      this.loadProviders();
-      this.loadServices();
-      this.generateMapMarkers();
-      this.generateProfessionalCards();
-      this.generateMapCardMarkers();
+      this.loadCategories();
+      this.loadLocations();
+      this.loadData(); // Cargar datos reales
     }
   }
 
@@ -331,89 +316,80 @@ export class ExplorarComponent implements OnInit {
     }
   }
 
-  private loadProviders() {
+  private loadData() {
+    console.log('[EXPLORAR] Cargando datos reales...');
     this.loading = true;
-    // Mock data - replace with actual API call
-    this.providers = [
-      {
-        id: 1,
-        name: 'Elena Torres',
-        email: 'elena@example.com',
-        profession: 'Estilista Profesional',
-        description: 'Con más de 10 años de experiencia en color y cortes de vanguardia.',
-        rating: 4.9,
-        review_count: 85,
-        avatar_url: 'https://placehold.co/64x64/C7D2FE/4338CA?text=ET',
-        location: 'Santiago',
-        services_count: 5,
-        experience_years: 10
+    this.searchError = '';
+
+    const filters: SearchFilters = {
+      limit: 20,
+      offset: 0
+    };
+
+    this.searchService.searchAll(filters).subscribe({
+      next: (results) => {
+        console.log('[EXPLORAR] ✅ Datos cargados:', {
+          providers: results.providers.data.length,
+          services: results.services.data.length
+        });
+
+        this.providers = results.providers.data;
+        this.services = results.services.data;
+        this.filteredProviders = [...this.providers];
+        this.filteredServices = [...this.services];
+
+        // Actualizar componentes del mapa
+        this.generateMapMarkers();
+        this.generateProfessionalCards();
+        this.generateMapCardMarkers();
+
+        this.loading = false;
       },
-      {
-        id: 2,
-        name: 'Mario Rojas',
-        email: 'mario@example.com',
-        profession: 'Chef a Domicilio',
-        description: 'Especialista en cocina mediterránea para eventos privados y cenas.',
-        rating: 5.0,
-        review_count: 89,
-        avatar_url: 'https://placehold.co/64x64/C7D2FE/4338CA?text=MR',
-        location: 'Valparaíso',
-        services_count: 3,
-        experience_years: 8
-      },
-      {
-        id: 3,
-        name: 'Luis Gómez',
-        email: 'luis@example.com',
-        profession: 'Armador de Muebles',
-        description: 'Montaje rápido y profesional de todo tipo de muebles. Experiencia garantizada.',
-        rating: 4.8,
-        review_count: 204,
-        avatar_url: 'https://placehold.co/64x64/C7D2FE/4338CA?text=LG',
-        location: 'Concepción',
-        services_count: 4,
-        experience_years: 6
+      error: (error) => {
+        console.error('[EXPLORAR] ❌ Error cargando datos:', error);
+        this.searchError = 'Error al cargar los datos. Intenta nuevamente.';
+        this.loading = false;
       }
-    ];
-    this.filteredProviders = [...this.providers];
-    this.loading = false;
+    });
   }
 
-  private loadServices() {
-    // Mock data - replace with actual API call
-    this.services = [
-      {
-        id: 1,
-        name: 'Corte de Cabello',
-        description: 'Corte profesional para caballeros y damas.',
-        price: 15000,
-        duration_minutes: 45,
-        provider_id: 1,
-        provider_name: 'Ana Pérez',
-        category: 'belleza'
+  private loadCategories() {
+    console.log('[EXPLORAR] Cargando categorías...');
+    this.searchService.getCategories().subscribe({
+      next: (response) => {
+        console.log('[EXPLORAR] ✅ Categorías cargadas:', response.data.length);
+        this.categories = response.data;
       },
-      {
-        id: 2,
-        name: 'Cena Gourmet',
-        description: 'Cena completa con chef privado en tu hogar.',
-        price: 45000,
-        duration_minutes: 120,
-        provider_id: 2,
-        provider_name: 'Mario Rojas',
-        category: 'hogar'
-      },
-      {
-        id: 3,
-        name: 'Montaje de Muebles',
-        description: 'Ensamblaje profesional de muebles.',
-        price: 25000,
-        duration_minutes: 90,
-        provider_id: 3,
-        provider_name: 'Luis Gómez',
-        category: 'hogar'
+      error: (error) => {
+        console.error('[EXPLORAR] ❌ Error cargando categorías:', error);
+        // Usar categorías por defecto si falla
+        this.categories = [
+          { name: 'Belleza', count: 0 },
+          { name: 'Salud', count: 0 },
+          { name: 'Hogar', count: 0 },
+          { name: 'Educación', count: 0 }
+        ];
       }
-    ];
-    this.filteredServices = [...this.services];
+    });
+  }
+
+  private loadLocations() {
+    console.log('[EXPLORAR] Cargando ubicaciones...');
+    this.searchService.getLocations().subscribe({
+      next: (response) => {
+        console.log('[EXPLORAR] ✅ Ubicaciones cargadas:', response.data.length);
+        this.locations = response.data;
+      },
+      error: (error) => {
+        console.error('[EXPLORAR] ❌ Error cargando ubicaciones:', error);
+        // Usar ubicaciones por defecto si falla
+        this.locations = [
+          { region: 'Metropolitana de Santiago', commune: 'Santiago', count: 0 },
+          { region: 'Valparaíso', commune: 'Valparaíso', count: 0 },
+          { region: 'Biobío', commune: 'Concepción', count: 0 }
+        ];
+      }
+    });
   }
 
   onSearch(searchValue: string) {
@@ -451,57 +427,100 @@ export class ExplorarComponent implements OnInit {
   }
 
   applyAdvancedFilters() {
-    this.filteredProviders = this.providers.filter(provider => {
-      const matchesService = !this.selectedService || 
-        provider.name.toLowerCase().includes(this.selectedService.toLowerCase()) ||
-        provider.profession.toLowerCase().includes(this.selectedService.toLowerCase()) ||
-        provider.description.toLowerCase().includes(this.selectedService.toLowerCase());
+    console.log('[EXPLORAR] Aplicando filtros avanzados...');
+    this.loading = true;
+    this.searchError = '';
 
-      const matchesLocation = !this.selectedLocationId || 
-        provider.location.toLowerCase().includes(this.selectedLocationId.toLowerCase());
+    const filters: SearchFilters = {
+      search: this.selectedService,
+      location: this.selectedLocationId,
+      limit: 20,
+      offset: 0
+    };
 
-      return matchesService && matchesLocation;
+    this.searchService.searchAll(filters).subscribe({
+      next: (results) => {
+        console.log('[EXPLORAR] ✅ Filtros aplicados:', {
+          providers: results.providers.data.length,
+          services: results.services.data.length
+        });
+
+        this.filteredProviders = results.providers.data;
+        this.filteredServices = results.services.data;
+
+        // Update map markers based on filtered results
+        this.generateMapMarkers();
+        this.generateProfessionalCards();
+        this.generateMapCardMarkers();
+
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('[EXPLORAR] ❌ Error aplicando filtros:', error);
+        this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
+        this.loading = false;
+      }
     });
-
-    this.filteredServices = this.services.filter(service => {
-      const matchesService = !this.selectedService || 
-        service.name.toLowerCase().includes(this.selectedService.toLowerCase()) ||
-        service.description.toLowerCase().includes(this.selectedService.toLowerCase()) ||
-        service.provider_name.toLowerCase().includes(this.selectedService.toLowerCase());
-
-      return matchesService;
-    });
-
-    // Update map markers based on filtered results
-    this.generateMapMarkers();
-    this.generateProfessionalCards();
-    this.generateMapCardMarkers();
   }
 
   applyFilters() {
-    this.filteredProviders = this.providers.filter(provider => {
-      const matchesSearch = !this.searchTerm || 
-        provider.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        provider.profession.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        provider.description.toLowerCase().includes(this.searchTerm.toLowerCase());
+    console.log('[EXPLORAR] Aplicando filtros básicos...');
+    this.loading = true;
+    this.searchError = '';
 
-      const matchesLocation = !this.selectedLocation || provider.location.toLowerCase() === this.selectedLocation.toLowerCase();
+    const filters: SearchFilters = {
+      search: this.searchTerm,
+      category: this.selectedCategory,
+      location: this.selectedLocation,
+      limit: 20,
+      offset: 0
+    };
 
-      return matchesSearch && matchesLocation;
+    // Agregar filtros de precio si están definidos
+    if (this.selectedPriceRange) {
+      const priceRange = this.parsePriceRange(this.selectedPriceRange);
+      if (priceRange.min !== undefined) filters.price_min = priceRange.min;
+      if (priceRange.max !== undefined) filters.price_max = priceRange.max;
+    }
+
+    this.searchService.searchAll(filters).subscribe({
+      next: (results) => {
+        console.log('[EXPLORAR] ✅ Filtros básicos aplicados:', {
+          providers: results.providers.data.length,
+          services: results.services.data.length
+        });
+
+        this.filteredProviders = results.providers.data;
+        this.filteredServices = results.services.data;
+
+        // Update map markers based on filtered results
+        this.generateMapMarkers();
+        this.generateProfessionalCards();
+        this.generateMapCardMarkers();
+
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('[EXPLORAR] ❌ Error aplicando filtros básicos:', error);
+        this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
+        this.loading = false;
+      }
     });
+  }
 
-    this.filteredServices = this.services.filter(service => {
-      const matchesSearch = !this.searchTerm || 
-        service.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        service.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        service.provider_name.toLowerCase().includes(this.searchTerm.toLowerCase());
-
-      const matchesCategory = !this.selectedCategory || service.category === this.selectedCategory;
-
-      const matchesPrice = !this.selectedPriceRange || this.isInPriceRange(service.price, this.selectedPriceRange);
-
-      return matchesSearch && matchesCategory && matchesPrice;
-    });
+  private parsePriceRange(range: string): { min?: number; max?: number } {
+    switch (range) {
+      case '0-10000':
+        return { min: 0, max: 10000 };
+      case '10001-25000':
+        return { min: 10001, max: 25000 };
+      case '25001-50000':
+        return { min: 25001, max: 50000 };
+      case '50001+':
+        return { min: 50001 };
+      default:
+        return {};
+    }
   }
 
   private isInPriceRange(price: number, range: string): boolean {
@@ -520,11 +539,18 @@ export class ExplorarComponent implements OnInit {
   }
 
   clearFilters() {
+    console.log('[EXPLORAR] Limpiando filtros...');
     this.searchTerm = '';
     this.selectedCategory = '';
     this.selectedLocation = '';
     this.selectedPriceRange = '';
-    this.applyFilters();
+    this.selectedService = '';
+    this.selectedLocationId = '';
+    this.selectedDateTime = null;
+    this.searchError = '';
+    
+    // Recargar datos sin filtros
+    this.loadData();
   }
 
   formatPrice(price: number): string {
@@ -550,6 +576,7 @@ export class ExplorarComponent implements OnInit {
     if (provider) {
       provider.is_favorite = !provider.is_favorite;
     }
+    // TODO: Implementar API call para guardar favorito
   }
 
   bookService(serviceId: number) {
@@ -562,6 +589,7 @@ export class ExplorarComponent implements OnInit {
     if (service) {
       service.is_favorite = !service.is_favorite;
     }
+    // TODO: Implementar API call para guardar favorito
   }
 
   showCategories() {
@@ -617,7 +645,7 @@ export class ExplorarComponent implements OnInit {
       reviews: provider.review_count,
       description: provider.description,
       location: provider.location,
-      price: this.services.find(s => s.provider_id === provider.id)?.price?.toString() || 'Consultar',
+      price: this.services.find(s => s.provider?.id === provider.id || s.provider_id === provider.id)?.price?.toString() || 'Consultar',
       isHighlighted: provider.id === 1 // Highlight first provider
     }));
 

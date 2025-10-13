@@ -8,6 +8,7 @@ import { PlanService } from '../../services/plan.service';
 import { SessionService } from '../../auth/services/session.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { ProviderProfileService } from '../../services/provider-profile.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-dash-layout',
@@ -52,7 +53,8 @@ export class DashLayoutComponent implements OnInit {
     const u = this.sessionService.getUser();
     if (u) {
       this.providerName = u.name || null;
-      this.providerAvatarUrl = u.profile_photo_url || null;
+      this.providerAvatarUrl = u.profile_photo_url ? 
+        `${environment.apiBaseUrl}${u.profile_photo_url}` : null;
       console.log('[DASH_LAYOUT] Datos desde sesión:', { name: this.providerName, avatar: this.providerAvatarUrl });
     }
     
@@ -62,7 +64,8 @@ export class DashLayoutComponent implements OnInit {
         console.log('[DASH_LAYOUT] Perfil obtenido del backend:', profile);
         if (profile) {
           this.providerName = profile.full_name || 'Provider';
-          this.providerAvatarUrl = profile.profile_photo_url || null;
+          this.providerAvatarUrl = profile.profile_photo_url ? 
+            `${environment.apiBaseUrl}${profile.profile_photo_url}` : null;
           console.log('[DASH_LAYOUT] Datos actualizados desde backend:', { 
             name: this.providerName, 
             avatar: this.providerAvatarUrl 
@@ -77,7 +80,8 @@ export class DashLayoutComponent implements OnInit {
             const user = (res as any).data?.user || (res as any).user || res.user;
             if (user) {
               this.providerName = user.name || this.providerName;
-              this.providerAvatarUrl = user.profile_photo_url || this.providerAvatarUrl;
+              this.providerAvatarUrl = user.profile_photo_url ? 
+                `${environment.apiBaseUrl}${user.profile_photo_url}` : this.providerAvatarUrl;
               console.log('[DASH_LAYOUT] Datos desde fallback:', { name: this.providerName, avatar: this.providerAvatarUrl });
             }
           },

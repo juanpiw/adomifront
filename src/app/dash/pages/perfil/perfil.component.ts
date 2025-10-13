@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ProviderProfileService, BasicInfo as ServiceBasicInfo } from '../../../services/provider-profile.service';
 import { ProfileProgressService } from '../../../services/profile-progress.service';
+import { environment } from '../../../../environments/environment';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
 import { UiButtonComponent } from '../../../../libs/shared-ui/ui-button/ui-button.component';
 import { AvatarUploaderComponent } from '../../../../libs/shared-ui/avatar-uploader/avatar-uploader.component';
@@ -153,9 +154,11 @@ export class DashPerfilComponent implements OnInit {
     this.bio = profile.bio || '';
     this.avatar = profile.profile_photo_url;
     
-    // Actualizar fotos del perfil
-    this.profilePhoto = profile.profile_photo_url;
-    this.coverPhoto = profile.cover_photo_url;
+    // Actualizar fotos del perfil - construir URLs completas
+    this.profilePhoto = profile.profile_photo_url ? 
+      `${environment.apiBaseUrl}${profile.profile_photo_url}` : null;
+    this.coverPhoto = profile.cover_photo_url ? 
+      `${environment.apiBaseUrl}${profile.cover_photo_url}` : null;
     
     this.basicInfo = {
       fullName: profile.full_name,
