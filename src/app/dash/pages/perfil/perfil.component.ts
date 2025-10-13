@@ -153,6 +153,10 @@ export class DashPerfilComponent implements OnInit {
     this.bio = profile.bio || '';
     this.avatar = profile.profile_photo_url;
     
+    // Actualizar fotos del perfil
+    this.profilePhoto = profile.profile_photo_url;
+    this.coverPhoto = profile.cover_photo_url;
+    
     this.basicInfo = {
       fullName: profile.full_name,
       professionalTitle: profile.professional_title || '',
@@ -651,6 +655,66 @@ export class DashPerfilComponent implements OnInit {
   // Event handlers para tabs
   onTabChange(tab: TabType) {
     this.activeTab = tab;
+    console.log('[PERFIL] Tab cambiado a:', tab);
+    
+    // Cargar datos específicos cuando se cambie al perfil público
+    if (tab === 'perfil-publico') {
+      this.loadPublicProfileData();
+    }
+  }
+
+  private loadPublicProfileData() {
+    console.log('[PERFIL] Cargando datos del perfil público...');
+    
+    // Los datos básicos ya están cargados en loadProfileData()
+    // Solo necesitamos asegurarnos de que los servicios y portafolio estén actualizados
+    
+    // Recargar servicios si no están cargados
+    if (this.services.length === 0) {
+      this.providerProfileService.getServices().subscribe({
+        next: (services) => {
+          console.log('[PERFIL] Servicios cargados para perfil público:', services);
+          this.services = services.map(s => ({
+            id: s.id || 0,
+            name: s.name,
+            description: s.description || '',
+            duration_minutes: s.duration_minutes,
+            price: s.price,
+            category_id: s.category_id,
+            custom_category: s.custom_category,
+            service_image_url: s.service_image_url,
+            is_active: s.is_active ?? true,
+            is_featured: s.is_featured ?? false,
+            order_index: s.order_index ?? 0,
+            booking_count: s.booking_count ?? 0,
+            average_rating: s.average_rating,
+            created_at: s.created_at || new Date().toISOString(),
+            updated_at: s.updated_at || new Date().toISOString()
+          }));
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al cargar servicios para perfil público:', err);
+        }
+      });
+    }
+    
+    // Recargar portafolio si no está cargado
+    if (this.portfolioImages.length === 0) {
+      this.providerProfileService.getPortfolio().subscribe({
+        next: (portfolio) => {
+          console.log('[PERFIL] Portafolio cargado para perfil público:', portfolio);
+          this.portfolioImages = portfolio.map(item => ({
+            id: item.id?.toString() || '0',
+            url: item.file_url,
+            alt: item.title || 'Portfolio image',
+            type: item.file_type
+          }));
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error al cargar portafolio para perfil público:', err);
+        }
+      });
+    }
   }
 
   // Event handlers para ubicación y disponibilidad
