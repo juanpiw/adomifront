@@ -670,7 +670,10 @@ export class ExplorarComponent implements OnInit {
 
   onProfessionalClick(professional: ProfessionalCard) {
     console.log('Professional clicked:', professional);
-    // Handle professional click - could show details, navigate, etc.
+    const id = Number(professional.id);
+    if (!Number.isNaN(id)) {
+      this.viewProviderProfile(id);
+    }
   }
 
   onProfessionalBook(professional: ProfessionalCard) {
@@ -680,12 +683,28 @@ export class ExplorarComponent implements OnInit {
 
   onMapCardMarkerClick(marker: MapCardMarker) {
     console.log('Map card marker clicked:', marker);
-    // Handle marker click
+    if (marker.type === 'provider' && (marker as any).data?.id) {
+      this.viewProviderProfile(Number((marker as any).data.id));
+    }
   }
 
   onMapCardMarkerAction(event: { marker: MapCardMarker; action: string }) {
     console.log('Map card marker action:', event);
-    // Handle marker action
+    const { marker, action } = event;
+    if (action === 'view') {
+      if (marker.type === 'provider' && (marker as any).data?.id) {
+        this.viewProviderProfile(Number((marker as any).data.id));
+        return;
+      }
+      if (marker.type === 'service') {
+        const data: any = (marker as any).data;
+        const providerId = data?.provider?.id || data?.provider_id;
+        if (providerId) {
+          this.viewProviderProfile(Number(providerId));
+          return;
+        }
+      }
+    }
   }
 
   onMapCardViewModeChange(mode: 'map' | 'list') {
