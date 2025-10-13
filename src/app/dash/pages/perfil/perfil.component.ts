@@ -97,13 +97,13 @@ export class DashPerfilComponent implements OnInit {
           category_id: s.category_id,
           custom_category: s.custom_category,
           service_image_url: s.service_image_url,
-          is_active: s.is_active || true,
-          is_featured: s.is_featured || false,
-          order_index: 0, // Valor por defecto
-          booking_count: 0, // Valor por defecto
-          average_rating: undefined,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          is_active: s.is_active ?? true,
+          is_featured: s.is_featured ?? false,
+          order_index: s.order_index ?? 0,
+          booking_count: s.booking_count ?? 0,
+          average_rating: s.average_rating,
+          created_at: s.created_at || new Date().toISOString(),
+          updated_at: s.updated_at || new Date().toISOString()
         }));
       },
       error: (err) => {

@@ -24,8 +24,11 @@ export interface Service {
   service_image_url?: string;
   is_active?: boolean;
   is_featured?: boolean;
+  order_index?: number;
   booking_count?: number;
   average_rating?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PortfolioItem {
@@ -126,16 +129,21 @@ export class ProviderProfileService {
       full_name: info.fullName,
       professional_title: info.professionalTitle,
       main_commune: info.mainCommune,
-      main_region: info.mainRegion,
+      main_region: info.mainRegion || null, // Permitir null si no se proporciona
       years_experience: info.yearsExperience
     };
+
+    console.log('[ProviderProfileService] Enviando datos básicos:', payload);
 
     return this.http.put(
       `${this.apiUrl}/provider/profile`,
       payload,
       { headers: this.getHeaders() }
     ).pipe(
-      tap(() => this.getProfile().subscribe()) // Refrescar perfil
+      tap((response) => {
+        console.log('[ProviderProfileService] Respuesta del servidor:', response);
+        this.getProfile().subscribe(); // Refrescar perfil
+      })
     );
   }
 
