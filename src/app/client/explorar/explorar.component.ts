@@ -431,22 +431,41 @@ export class ExplorarComponent implements OnInit {
     this.loading = true;
     this.searchError = '';
 
-    const filters: SearchFilters = {
+    const baseFilters: SearchFilters = {
       search: this.selectedService,
       location: this.selectedLocationId,
       limit: 20,
       offset: 0
     };
 
-    this.searchService.searchAll(filters).subscribe({
-      next: (results) => {
-        console.log('[EXPLORAR] ✅ Filtros aplicados:', {
-          providers: results.providers.data.length,
-          services: results.services.data.length
-        });
+    const hasDateTime = !!(this.selectedDateTime && (this.selectedDateTime.value || this.selectedDateTime.type));
 
-        this.filteredProviders = results.providers.data;
-        this.filteredServices = results.services.data;
+    const sub$ = hasDateTime
+      ? this.searchService.searchAvailableProviders({
+          date: this.getDateISO(this.selectedDateTime),
+          start: this.getStartTime(this.selectedDateTime),
+          end: this.getEndTime(this.selectedDateTime),
+          location: this.selectedLocationId || '',
+          category: this.selectedService || '',
+          limit: 20,
+          offset: 0
+        })
+      : (this.searchService.searchAll(baseFilters) as any);
+
+    (sub$ as any).subscribe({
+      next: (results: any) => {
+        if (hasDateTime) {
+          console.log('[EXPLORAR] ✅ Filtros aplicados (disponibilidad):', { providers: results.data.length });
+          this.filteredProviders = results.data;
+          this.filteredServices = [];
+        } else {
+          console.log('[EXPLORAR] ✅ Filtros aplicados:', {
+            providers: results.providers.data.length,
+            services: results.services.data.length
+          });
+          this.filteredProviders = results.providers.data;
+          this.filteredServices = results.services.data;
+        }
 
         // Update map markers based on filtered results
         this.generateMapMarkers();
@@ -455,12 +474,46 @@ export class ExplorarComponent implements OnInit {
 
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('[EXPLORAR] ❌ Error aplicando filtros:', error);
         this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
         this.loading = false;
       }
     });
+  }
+
+  private getDateISO(datetime: any): string {
+    if (datetime?.value?.startsWith?.('Hoy') || datetime?.type === 'quick') {
+      const d = new Date();
+      if (String(datetime.value).toLowerCase().includes('mañana')) d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0, 10);
+    }
+    if (typeof datetime === 'string' && datetime.length >= 10) return datetime.slice(0, 10);
+    if (datetime instanceof Date) return datetime.toISOString().slice(0, 10);
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  private getStartTime(datetime: any): string {
+    const v = String(datetime?.value || '').toLowerCase();
+    if (v.includes('mañana')) return '09:00';
+    if (v.includes('tarde')) return '13:00';
+    if (v.includes('noche')) return '19:00';
+    if (typeof datetime === 'string' && datetime.includes('T')) return datetime.split('T')[1].slice(0,5);
+    return '09:00';
+  }
+
+  private getEndTime(datetime: any): string {
+    const v = String(datetime?.value || '').toLowerCase();
+    if (v.includes('mañana')) return '12:00';
+    if (v.includes('tarde')) return '18:00';
+    if (v.includes('noche')) return '22:00';
+    if (typeof datetime === 'string' && datetime.includes('T')) {
+      const hhmm = datetime.split('T')[1].slice(0,5);
+      const [h, m] = hhmm.split(':').map(Number);
+      const d = new Date(); d.setHours(h+1, m, 0, 0);
+      return d.toTimeString().slice(0,5);
+    }
+    return '12:00';
   }
 
   applyFilters() {

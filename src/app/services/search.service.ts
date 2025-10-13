@@ -7,6 +7,9 @@ export interface SearchFilters {
   search?: string;
   category?: string;
   location?: string;
+  date?: string; // YYYY-MM-DD
+  start?: string; // HH:mm
+  end?: string;   // HH:mm
   price_min?: number;
   price_max?: number;
   rating_min?: number;
@@ -213,6 +216,20 @@ export class SearchService {
           }
         }
       });
+    });
+  }
+
+  /**
+   * Buscar proveedores disponibles por fecha/hora
+   */
+  searchAvailableProviders(filters: Pick<SearchFilters, 'date'|'start'|'end'|'location'|'category'|'limit'|'offset'>): Observable<SearchResponse<Provider>> {
+    let params = new HttpParams();
+    Object.entries(filters).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
+    });
+    return this.http.get<SearchResponse<Provider>>(`${this.apiUrl}/client/search/available-providers`, {
+      params,
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
     });
   }
 }
