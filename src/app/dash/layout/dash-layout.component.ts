@@ -58,11 +58,11 @@ export class DashLayoutComponent implements OnInit {
     
     // Luego obtener desde el backend (datos frescos y completos)
     this.providerProfile.getProfile().subscribe({
-      next: (response) => {
-        console.log('[DASH_LAYOUT] Perfil obtenido del backend:', response);
-        if (response.success && response.profile) {
-          this.providerName = response.profile.full_name || response.profile.name || 'Provider';
-          this.providerAvatarUrl = response.profile.profile_photo_url || null;
+      next: (profile) => {
+        console.log('[DASH_LAYOUT] Perfil obtenido del backend:', profile);
+        if (profile) {
+          this.providerName = profile.full_name || 'Provider';
+          this.providerAvatarUrl = profile.profile_photo_url || null;
           console.log('[DASH_LAYOUT] Datos actualizados desde backend:', { 
             name: this.providerName, 
             avatar: this.providerAvatarUrl 
