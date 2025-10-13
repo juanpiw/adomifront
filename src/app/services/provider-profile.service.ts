@@ -77,7 +77,7 @@ export interface ProviderProfile {
 })
 export class ProviderProfileService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiBaseUrl;
 
   // Subjects para estado reactivo
   private profileSubject = new BehaviorSubject<ProviderProfile | null>(null);

@@ -73,10 +73,10 @@ export class DashHomeComponent implements OnInit {
     
     // Luego obtener desde el backend (datos frescos)
     this.providerProfile.getProfile().subscribe({
-      next: (response) => {
-        console.log('[DASH_HOME] Perfil obtenido:', response);
-        if (response.success && response.profile) {
-          const name = response.profile.full_name || response.profile.name || 'Usuario';
+      next: (profile) => {
+        console.log('[DASH_HOME] Perfil obtenido:', profile);
+        if (profile) {
+          const name = profile.full_name || 'Usuario';
           this.headerData = {
             ...this.headerData,
             userName: name
