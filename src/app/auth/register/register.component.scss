@@ -306,11 +306,48 @@ form {
   }
 }
 
+/* Botón de Google - Diseño elegante y minimalista */
+.btn-google-role {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 12px;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+}
+
 /* Estados deshabilitados */
 .btn-primary:disabled,
-.btn-google:disabled {
+.btn-google:disabled,
+.btn-google-role:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+  transform: none !important;
 }
 
 /* Responsive */
