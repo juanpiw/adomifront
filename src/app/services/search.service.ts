@@ -27,7 +27,7 @@ export interface Provider {
   location: string;
   services_count: number;
   experience_years: number;
-  available_for_bookings: boolean;
+  is_online: boolean;
   is_favorite?: boolean;
   services: Service[];
 }

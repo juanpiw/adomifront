@@ -49,7 +49,7 @@ export interface CoverageZone {
 }
 
 export interface Availability {
-  available_for_bookings: boolean;
+  is_online: boolean;
   share_real_time_location: boolean;
 }
 
@@ -65,7 +65,7 @@ export interface ProviderProfile {
   profile_photo_url?: string;
   cover_photo_url?: string;
   profile_completion: number;
-  available_for_bookings?: boolean;
+  is_online?: boolean;
   share_real_time_location?: boolean;
   is_verified: boolean;
   verification_status: string;

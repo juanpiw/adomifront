@@ -171,7 +171,7 @@ export class DashPerfilComponent implements OnInit {
     
     this.locationSettings = {
       ...this.locationSettings,
-      availableForNewBookings: profile.available_for_bookings !== false,
+      availableForNewBookings: profile.is_online !== false,
       shareRealTimeLocation: profile.share_real_time_location || false
     };
   }
@@ -868,7 +868,7 @@ export class DashPerfilComponent implements OnInit {
               
               // Actualizar disponibilidad
               this.providerProfileService.updateAvailability({
-                available_for_bookings: this.locationSettings.availableForNewBookings,
+                is_online: this.locationSettings.availableForNewBookings,
                 share_real_time_location: this.locationSettings.shareRealTimeLocation
               }).subscribe({
                 next: () => {
@@ -892,7 +892,7 @@ export class DashPerfilComponent implements OnInit {
         } else {
           // Si no hay bio, solo actualizar disponibilidad
           this.providerProfileService.updateAvailability({
-            available_for_bookings: this.locationSettings.availableForNewBookings,
+            is_online: this.locationSettings.availableForNewBookings,
             share_real_time_location: this.locationSettings.shareRealTimeLocation
           }).subscribe({
             next: () => {
