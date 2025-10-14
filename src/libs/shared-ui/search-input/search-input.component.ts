@@ -259,6 +259,7 @@ export class SearchInputComponent implements OnInit, OnDestroy, ControlValueAcce
   @Output() serviceChange = new EventEmitter<string>();
   @Output() locationChange = new EventEmitter<string>();
   @Output() datetimeChange = new EventEmitter<DateTimeSelection>();
+  @Output() currentLocation = new EventEmitter<{ lat: number; lng: number }>();
   @Output() focus = new EventEmitter<FocusEvent>();
   @Output() blur = new EventEmitter<FocusEvent>();
   @Output() enter = new EventEmitter<string>();
@@ -441,11 +442,28 @@ export class SearchInputComponent implements OnInit, OnDestroy, ControlValueAcce
   }
 
   useCurrentLocation(): void {
-    // Placeholder para usar la ubicación actual del usuario
-    // En producción, aquí se usaría la API de geolocalización
-    console.log('Usando ubicación actual del usuario');
-    // Por ahora, simplemente mostramos un mensaje
-    alert('Función de geolocalización disponible próximamente');
+    try {
+      if (typeof window === 'undefined' || !('navigator' in window) || !('geolocation' in navigator)) {
+        alert('Geolocalización no disponible en este dispositivo/navegador');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          this.currentLocation.emit({ lat, lng });
+          this.showLocationPopover = false;
+        },
+        (err) => {
+          console.error('Geolocation error:', err);
+          alert('No pudimos obtener tu ubicación. Verifica permisos de ubicación.');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
+    } catch (e) {
+      console.error('Geolocation exception:', e);
+      alert('Ocurrió un problema al obtener tu ubicación.');
+    }
   }
 
   // Funciones de fecha/hora

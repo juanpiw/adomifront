@@ -57,6 +57,7 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
           (serviceChange)="onServiceChange($event)"
           (locationChange)="onLocationChange($event)"
           (datetimeChange)="onDateTimeChange($event)"
+          (currentLocation)="onUseCurrentLocation($event)"
           ariaLabel="Búsqueda avanzada de servicios"
         ></ui-search-input>
       </header>
@@ -201,6 +202,8 @@ export class ExplorarComponent implements OnInit {
   mapMarkers: any[] = [];
   mapCenter: { lat: number; lng: number } = { lat: -33.4489, lng: -70.6693 };
   mapZoom: number = 12;
+  mapRadiusKm: number = 10; // radio activo para búsquedas cercanas
+  nearbyActive: boolean = false; // indicador de que la última acción fue de mapa
   
   // Map Card data
   professionalCards: ProfessionalCard[] = [];
@@ -409,7 +412,12 @@ export class ExplorarComponent implements OnInit {
     this.selectedService = searchData.service;
     this.selectedLocationId = searchData.location;
     this.selectedDateTime = searchData.datetime;
-    this.applyAdvancedFilters();
+    // Si la búsqueda por mapa está activa, reutilizar centro/radio
+    if (this.nearbyActive && this.mapCenter) {
+      this.onMapCardSearchHere({ center: this.mapCenter, radiusKm: this.mapRadiusKm || 10 });
+    } else {
+      this.applyAdvancedFilters();
+    }
   }
 
   onServiceChange(service: string) {
@@ -803,6 +811,10 @@ export class ExplorarComponent implements OnInit {
     this.loading = true;
     this.searchError = '';
 
+    // marcar búsqueda por mapa activa y guardar radio
+    this.nearbyActive = true;
+    this.mapRadiusKm = evt.radiusKm;
+
     this.searchService.searchNearbyProviders({
       lat: evt.center.lat,
       lng: evt.center.lng,
@@ -854,6 +866,13 @@ export class ExplorarComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  onUseCurrentLocation(coords: { lat: number; lng: number }) {
+    console.log('[EXPLORAR] Usar ubicación actual:', coords);
+    this.mapCenter = { lat: coords.lat, lng: coords.lng };
+    // Disparar nearby con radio por defecto (10km)
+    this.onMapCardSearchHere({ center: this.mapCenter, radiusKm: this.mapRadiusKm || 10 });
   }
 
   onMarkerClick(marker: any) {
