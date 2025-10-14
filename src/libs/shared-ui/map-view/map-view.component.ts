@@ -98,7 +98,7 @@ interface MapBounds {
             <!-- Radio -->
             <div class="flex items-center gap-2 text-xs text-slate-600">
               <span>Radio</span>
-              <input type="range" min="1" max="50" [value]="radiusKm" (input)="radiusKm = +($event.target as HTMLInputElement).value" />
+              <input type="range" min="1" max="50" [value]="radiusKm" (input)="radiusKm = +$any($event.target).value" />
               <span>{{ radiusKm }} km</span>
             </div>
           </div>
