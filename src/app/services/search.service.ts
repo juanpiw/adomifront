@@ -222,7 +222,7 @@ export class SearchService {
   /**
    * Buscar proveedores disponibles por fecha/hora
    */
-  searchAvailableProviders(filters: Pick<SearchFilters, 'date'|'start'|'end'|'location'|'category'|'limit'|'offset'>): Observable<SearchResponse<Provider>> {
+  searchAvailableProviders(filters: Pick<SearchFilters, 'date'|'start'|'end'|'location'|'category'|'limit'|'offset'> & { is_now?: boolean }): Observable<SearchResponse<Provider>> {
     let params = new HttpParams();
     Object.entries(filters).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));

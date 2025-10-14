@@ -5,6 +5,7 @@ import { CalendarMensualComponent, CalendarEvent } from '../../../../libs/shared
 import { DayDetailComponent, DayAppointment } from '../../../../libs/shared-ui/day-detail/day-detail.component';
 import { DashboardGraficoComponent } from '../../../../libs/shared-ui/dashboard-grafico/dashboard-grafico.component';
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
+import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 
 @Component({
   selector: 'app-d-agenda',
@@ -124,6 +125,8 @@ export class DashAgendaComponent implements OnInit {
   loading = false;
   currentView: 'dashboard' | 'calendar' | 'config' = 'dashboard';
 
+  constructor(private availabilityService: ProviderAvailabilityService) {}
+
   ngOnInit() {
     this.loadDashboardData();
   }
@@ -184,6 +187,52 @@ export class DashAgendaComponent implements OnInit {
       this.timeBlocks[index] = updatedBlock;
       console.log('Bloque de tiempo actualizado:', updatedBlock);
     }
+  }
+
+  onSaveSchedule() {
+    this.loading = true;
+    // 1) Cargar bloques actuales desde backend para saber ids reales
+    this.availabilityService.getWeekly().subscribe({
+      next: (resp) => {
+        const existing = resp.blocks || [];
+        const dayNameToEnum: Record<string, any> = {
+          'Lunes': 'monday', 'Martes': 'tuesday', 'Miércoles': 'wednesday', 'Jueves': 'thursday', 'Viernes': 'friday', 'Sábado': 'saturday', 'Domingo': 'sunday'
+        };
+
+        // 2) Sincronizar: por cada bloque en UI, crear/actualizar; eliminar los que ya no existan y sí existen en backend
+        const tasks: Array<Promise<any>> = [];
+
+        // Mapear existentes por (day,start,end)
+        const key = (d: any) => `${d.day_of_week}|${String(d.start_time).slice(0,5)}|${String(d.end_time).slice(0,5)}`;
+        const existingMap = new Map(existing.map(b => [key(b), b]));
+
+        // Crear/actualizar
+        this.timeBlocks.forEach(tb => {
+          const dayEnum = dayNameToEnum[tb.day];
+          const k = `${dayEnum}|${tb.startTime}|${tb.endTime}`;
+          const found = existingMap.get(k);
+          if (found) {
+            tasks.push(this.availabilityService.updateWeekly(found.id, { is_active: tb.enabled }).toPromise());
+            existingMap.delete(k);
+          } else {
+            tasks.push(this.availabilityService.createWeekly(dayEnum, tb.startTime, tb.endTime, tb.enabled).toPromise());
+          }
+        });
+
+        // Eliminar los restantes en existingMap (ya no están en UI)
+        existingMap.forEach((b) => {
+          tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise());
+        });
+
+        return Promise.allSettled(tasks).then(() => {
+          this.loading = false;
+          console.log('Horario guardado');
+        });
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 
   // Navegación

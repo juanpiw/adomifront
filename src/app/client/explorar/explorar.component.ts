@@ -448,7 +448,8 @@ export class ExplorarComponent implements OnInit {
           location: this.selectedLocationId || '',
           category: this.selectedService || '',
           limit: 20,
-          offset: 0
+          offset: 0,
+          is_now: this.isNowFilter(this.selectedDateTime)
         })
       : (this.searchService.searchAll(baseFilters) as any);
 
@@ -483,9 +484,10 @@ export class ExplorarComponent implements OnInit {
   }
 
   private getDateISO(datetime: any): string {
-    if (datetime?.value?.startsWith?.('Hoy') || datetime?.type === 'quick') {
+    const val = String(datetime?.value || '').toLowerCase();
+    if (val.includes('ahora') || val.startsWith('hoy') || datetime?.type === 'quick') {
       const d = new Date();
-      if (String(datetime.value).toLowerCase().includes('mañana')) d.setDate(d.getDate() + 1);
+      if (val.includes('mañana')) d.setDate(d.getDate() + 1);
       return d.toISOString().slice(0, 10);
     }
     if (typeof datetime === 'string' && datetime.length >= 10) return datetime.slice(0, 10);
@@ -495,6 +497,14 @@ export class ExplorarComponent implements OnInit {
 
   private getStartTime(datetime: any): string {
     const v = String(datetime?.value || '').toLowerCase();
+    if (v.includes('ahora')) {
+      const now = new Date();
+      // redondear a siguiente media hora
+      const minutes = now.getMinutes();
+      const toAdd = minutes === 0 ? 0 : (minutes <= 30 ? (30 - minutes) : (60 - minutes));
+      now.setMinutes(minutes + toAdd, 0, 0);
+      return now.toTimeString().slice(0,5);
+    }
     if (v.includes('mañana')) return '09:00';
     if (v.includes('tarde')) return '13:00';
     if (v.includes('noche')) return '19:00';
@@ -504,6 +514,12 @@ export class ExplorarComponent implements OnInit {
 
   private getEndTime(datetime: any): string {
     const v = String(datetime?.value || '').toLowerCase();
+    if (v.includes('ahora')) {
+      const now = new Date();
+      // ventana por defecto de 2 horas
+      now.setHours(now.getHours() + 2);
+      return now.toTimeString().slice(0,5);
+    }
     if (v.includes('mañana')) return '12:00';
     if (v.includes('tarde')) return '18:00';
     if (v.includes('noche')) return '22:00';
@@ -514,6 +530,22 @@ export class ExplorarComponent implements OnInit {
       return d.toTimeString().slice(0,5);
     }
     return '12:00';
+  }
+
+  private isNowFilter(datetime: any): boolean {
+    const v = String(datetime?.value || '').toLowerCase();
+    if (v.includes('ahora') || v.startsWith('hoy')) return true;
+    // Si es un datetime-string igual a hoy +/- 2h, considerar "ahora"
+    if (typeof datetime === 'string' && datetime.includes('T')) {
+      const datePart = datetime.slice(0,10);
+      const today = new Date().toISOString().slice(0,10);
+      return datePart === today;
+    }
+    if (datetime instanceof Date) {
+      const today = new Date().toISOString().slice(0,10);
+      return datetime.toISOString().slice(0,10) === today;
+    }
+    return false;
   }
 
   applyFilters() {
