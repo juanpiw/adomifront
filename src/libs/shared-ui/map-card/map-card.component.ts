@@ -15,6 +15,7 @@ export interface ProfessionalCard {
   location?: string;
   price?: string;
   isHighlighted?: boolean;
+  isOnline?: boolean;
 }
 
 export interface MapCardMarker {
@@ -125,7 +126,8 @@ export class MapCardComponent implements OnInit {
       reviews: professional.reviews,
       description: professional.description,
       location: professional.location,
-      isHighlighted: professional.isHighlighted
+      isHighlighted: professional.isHighlighted,
+      isOnline: professional.isOnline
     };
   }
 }

@@ -11,6 +11,7 @@ export interface UserCardData {
   description?: string;
   location?: string; // optional for compatibility with callers
   isHighlighted?: boolean;
+  isOnline?: boolean; // online indicator
 }
 
 @Component({

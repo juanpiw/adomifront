@@ -4,7 +4,7 @@
       <div style="position: relative; display: inline-block;">
         <img class="avatar" [src]="user.avatar" [alt]="'Foto de ' + user.name">
         <!-- Punto de estado en esquina inferior derecha -->
-        <span *ngIf="user as u" class="status-dot" [class.online]="(u as any).isOnline === true" [class.offline]="(u as any).isOnline === false"></span>
+        <span class="status-dot" [class.online]="user.isOnline === true" [class.offline]="user.isOnline === false"></span>
       </div>
       <div class="user-details">
         <h2 class="user-name">{{ user.name }}</h2>
