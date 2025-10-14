@@ -22,6 +22,20 @@
           (userClick)="onProfessionalClick(highlightedProfessional)"
           (buttonClick)="onProfessionalBook(highlightedProfessional)">
         </ui-user-card>
+
+        <!-- Other Professionals -->
+        <ng-container *ngFor="let p of professionals">
+          <ui-user-card
+            *ngIf="!highlightedProfessional || p.id !== highlightedProfessional.id"
+            [user]="convertToUserCardData(p)"
+            [variant]="'standard'"
+            [size]="'sm'"
+            [buttonText]="'Ver perfil y Agendar'"
+            [showRating]="true"
+            (userClick)="onProfessionalClick(p)"
+            (buttonClick)="onProfessionalBook(p)">
+          </ui-user-card>
+        </ng-container>
       </div>
     </aside>
 
