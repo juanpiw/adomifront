@@ -126,3 +126,7 @@
 }
 
 .action-button:hover .button-shine { transform: translateX(100%); }
+
+.status-dot { position:absolute; right:-2px; bottom:-2px; width:12px; height:12px; border:2px solid #fff; border-radius:9999px; background:#9CA3AF; }
+.status-dot.online { background:#10B981; }
+.status-dot.offline { background:#EF4444; }
