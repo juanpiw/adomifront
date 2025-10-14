@@ -30,6 +30,16 @@
       </div>
     </div>
 
+    <!-- Botón actualizar ubicación actual -->
+    <div class="ubicacion-disponibilidad__toggle-item" *ngIf="settings.shareRealTimeLocation">
+      <button type="button" class="ubicacion-disponibilidad__add-button" (click)="updateCurrentLocation()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2m14.95-5.05l-2.83 2.83M8.88 15.12l-2.83 2.83M15.12 15.12l2.83 2.83M8.88 8.88L6.05 6.05"/>
+        </svg>
+        Actualizar ubicación actual
+      </button>
+    </div>
+
     <!-- Zonas de cobertura -->
     <div class="ubicacion-disponibilidad__zones">
       <label class="ubicacion-disponibilidad__zones-label">Zonas de Cobertura (a domicilio)</label>

@@ -63,7 +63,8 @@
         [settings]="locationSettings"
         (settingsChange)="onLocationSettingsChange($event)"
         (addCoverageZone)="onAddCoverageZone($event)"
-        (removeCoverageZone)="onRemoveCoverageZone($event)">
+        (removeCoverageZone)="onRemoveCoverageZone($event)"
+        (requestCurrentLocation)="onRequestCurrentLocation()">
       </app-ubicacion-disponibilidad>
 
       <!-- Botón para guardar cambios del perfil público -->

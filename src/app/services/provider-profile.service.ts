@@ -53,6 +53,11 @@ export interface Availability {
   share_real_time_location: boolean;
 }
 
+export interface CurrentLocationPayload {
+  lat: number;
+  lng: number;
+}
+
 export interface ProviderProfile {
   id: number;
   provider_id: number;
@@ -401,6 +406,19 @@ export class ProviderProfileService {
       { headers: this.getHeaders() }
     ).pipe(
       map(response => response.availability),
+      tap(() => this.getProfile().subscribe())
+    );
+  }
+
+  /**
+   * Actualizar ubicación actual (lat/lng)
+   */
+  updateCurrentLocation(payload: CurrentLocationPayload): Observable<any> {
+    return this.http.put<{success: boolean, location: any}>(
+      `${this.apiUrl}/provider/current-location`,
+      payload,
+      { headers: this.getHeaders() }
+    ).pipe(
       tap(() => this.getProfile().subscribe())
     );
   }

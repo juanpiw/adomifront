@@ -747,6 +747,37 @@ export class DashPerfilComponent implements OnInit {
     this.locationSettings = settings;
   }
 
+  onRequestCurrentLocation() {
+    if (!navigator?.geolocation) {
+      alert('Geolocalización no disponible en este navegador/dispositivo');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        this.providerProfileService.updateCurrentLocation({ lat, lng }).subscribe({
+          next: () => {
+            // Si el proveedor comparte ubicación, aseguramos persistir el flag también
+            this.providerProfileService.updateAvailability({
+              share_real_time_location: true
+            }).subscribe();
+            alert('✅ Ubicación actualizada');
+          },
+          error: (err) => {
+            console.error('[PERFIL] Error al actualizar ubicación actual', err);
+            alert('❌ No se pudo actualizar la ubicación');
+          }
+        });
+      },
+      (err) => {
+        console.error('[PERFIL] Geolocation error', err);
+        alert('❌ Permiso de ubicación denegado o no disponible');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
   onOnlineToggle(isOnline: boolean) {
     this.locationSettings = { ...this.locationSettings, availableForNewBookings: isOnline };
     // Guardar online/offline inmediato

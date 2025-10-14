@@ -33,6 +33,7 @@ export class UbicacionDisponibilidadComponent {
   @Output() settingsChange = new EventEmitter<LocationSettings>();
   @Output() addCoverageZone = new EventEmitter<string>();
   @Output() removeCoverageZone = new EventEmitter<string>();
+  @Output() requestCurrentLocation = new EventEmitter<void>();
 
   // Estado del selector
   selectedRegion: string = '';
@@ -109,6 +110,11 @@ export class UbicacionDisponibilidadComponent {
     this.comunasOfSelectedRegion = [];
     this.searchText = '';
     this.searchResults = [];
+  }
+
+  // Emitir petición para actualizar ubicación actual
+  updateCurrentLocation() {
+    this.requestCurrentLocation.emit();
   }
 }
 

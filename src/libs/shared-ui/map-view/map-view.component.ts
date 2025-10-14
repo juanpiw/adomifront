@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IconComponent, IconName } from '../icon/icon.component';
 import { environment } from '../../../environments/environment';
 
@@ -29,7 +30,7 @@ interface MapBounds {
 @Component({
   selector: 'ui-map-view',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent],
   template: `
     <div class="map-container" [class]="containerClass">
       <!-- Map Header -->
@@ -65,6 +66,28 @@ interface MapBounds {
             </button>
           </div>
           
+          <!-- Address Search -->
+          <div class="map-address flex items-center gap-2">
+            <input 
+              #addressInput
+              type="text" 
+              [(ngModel)]="addressQuery" 
+              (keyup.enter)="onAddressSearch()" 
+              placeholder="Ingresa una dirección"
+              class="px-3 py-2 text-sm border border-slate-300 rounded-lg w-56"
+              aria-label="Buscar por dirección"
+            />
+            <button
+              type="button"
+              class="map-action-btn"
+              [class]="actionButtonClass"
+              (click)="onAddressSearch()"
+              aria-label="Buscar dirección"
+            >
+              <ui-icon name="search" [class]="actionIconClass"></ui-icon>
+            </button>
+          </div>
+
           <!-- Map Controls -->
           <div class="map-actions" [class]="actionsClass">
             <button
@@ -308,6 +331,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   @Output() searchHere = new EventEmitter<{ center: {lat: number; lng: number}; bounds: MapBounds | null; radiusKm: number }>();
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
+  @ViewChild('addressInput') addressInput!: ElementRef<HTMLInputElement>;
 
   // State
   viewMode: 'map' | 'list' = 'map';
@@ -320,6 +344,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   private markerRefs: any[] = [];
   googleMapReady: boolean = false;
   radiusKm: number = 10;
+  addressQuery: string = '';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -377,7 +402,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
 
       const script = document.createElement('script');
       script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = () => resolve();
@@ -398,6 +423,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         streetViewControl: false
       });
       this.googleMapReady = true;
+      this.initPlacesAutocomplete();
       // Emitir bounds cuando cambie el viewport
       this.map.addListener('idle', () => {
         const b = this.map.getBounds();
@@ -412,6 +438,27 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     } catch (err) {
       console.error('Google Maps init error:', err);
       this.googleMapReady = false;
+    }
+  }
+
+  private initPlacesAutocomplete() {
+    try {
+      if (!this.addressInput || !this.googleMapReady || !google?.maps?.places) return;
+      const autocomplete = new google.maps.places.Autocomplete(this.addressInput.nativeElement, {
+        fields: ['geometry', 'formatted_address', 'name']
+      });
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place || !place.geometry || !place.geometry.location) return;
+        const loc = place.geometry.location;
+        const newCenter = { lat: loc.lat(), lng: loc.lng() };
+        this.center = newCenter;
+        if (this.map) this.map.setCenter(newCenter);
+        // Disparar búsqueda en esta zona con el radio actual
+        this.onSearchHere();
+      });
+    } catch (e) {
+      // Silencioso si Places no está disponible
     }
   }
 
@@ -474,6 +521,24 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   onSearchHere() {
     // Calcular radio aproximado a partir de zoom si se quiere; por ahora usa this.radiusKm
     this.searchHere.emit({ center: this.center, bounds: this.mapBounds, radiusKm: this.radiusKm });
+  }
+
+  // Buscar por dirección usando Geocoder si no hay Places
+  onAddressSearch() {
+    const query = (this.addressQuery || '').trim();
+    if (!query) return;
+    if (this.googleMapReady && google?.maps?.Geocoder) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: query }, (results: any, status: any) => {
+        if (status === 'OK' && results && results[0]) {
+          const loc = results[0].geometry.location;
+          const newCenter = { lat: loc.lat(), lng: loc.lng() };
+          this.center = newCenter;
+          if (this.map) this.map.setCenter(newCenter);
+          this.onSearchHere();
+        }
+      });
+    }
   }
 
   closeOverlay() {
