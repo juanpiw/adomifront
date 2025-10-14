@@ -19,9 +19,11 @@ import { PortafolioComponent, PortfolioImage } from '../../../../libs/shared-ui/
 import { TabsPerfilComponent, TabType } from '../../../../libs/shared-ui/tabs-perfil/tabs-perfil.component';
 import { UbicacionDisponibilidadComponent, LocationSettings, CoverageZone } from '../../../../libs/shared-ui/ubicacion-disponibilidad/ubicacion-disponibilidad.component';
 import { HorarioDisponibilidadComponent, WeeklySchedule } from '../../../../libs/shared-ui/horario-disponibilidad/horario-disponibilidad.component';
+import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
 import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/verificacion-perfil.component';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
+import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 
 @Component({
   selector: 'app-d-perfil',
@@ -45,7 +47,8 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
     HorarioDisponibilidadComponent,
     ExcepcionesFeriadosComponent,
     VerificacionPerfilComponent,
-    IconComponent
+    IconComponent,
+    OnlineStatusSwitchComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
@@ -53,6 +56,7 @@ import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 export class DashPerfilComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private providerProfileService = inject(ProviderProfileService);
+  private availabilityService = inject(ProviderAvailabilityService);
   private progressService = inject(ProfileProgressService);
 
   ngOnInit() {
@@ -740,6 +744,18 @@ export class DashPerfilComponent implements OnInit {
     this.locationSettings = settings;
   }
 
+  onOnlineToggle(isOnline: boolean) {
+    this.locationSettings = { ...this.locationSettings, availableForNewBookings: isOnline };
+    // Guardar online/offline inmediato
+    this.providerProfileService.updateAvailability({
+      is_online: isOnline,
+      share_real_time_location: this.locationSettings.shareRealTimeLocation
+    }).subscribe({
+      next: () => console.log('[PERFIL] Online status actualizado a', isOnline),
+      error: (err) => console.error('[PERFIL] Error actualizando Online status:', err)
+    });
+  }
+
   onAddCoverageZone(zoneName: string) {
     console.log('[PERFIL] Agregar zona de cobertura:', zoneName);
     
@@ -838,6 +854,62 @@ export class DashPerfilComponent implements OnInit {
       portfolioImages: this.portfolioImages
     });
     // TODO: Implementar persistencia
+  }
+
+  // Guardar horario semanal desde el tab Configuración del Perfil
+  savingWeeklySchedule = false;
+  saveWeeklySchedule() {
+    this.savingWeeklySchedule = true;
+    // 1) Cargar bloques existentes
+    this.availabilityService.getWeekly().subscribe({
+      next: (resp) => {
+        const existing = resp.blocks || [];
+        const mapDay: Record<string, any> = {
+          'Lunes':'monday','Martes':'tuesday','Miércoles':'wednesday','Jueves':'thursday','Viernes':'friday','Sábado':'saturday','Domingo':'sunday'
+        };
+
+        const keyExisting = (b: any) => `${b.day_of_week}|${String(b.start_time).slice(0,5)}|${String(b.end_time).slice(0,5)}`;
+        const existingMap = new Map(existing.map(b => [keyExisting(b), b]));
+
+        const tasks: Array<Promise<any>> = [];
+
+        // Crear/actualizar según weeklySchedule
+        this.weeklySchedule.days.forEach(day => {
+          const dayEnum = mapDay[day.day];
+          if (!day.enabled) {
+            // si el día está desactivado, eliminar bloques existentes de ese día
+            existing
+              .filter((b: any) => b.day_of_week === dayEnum)
+              .forEach((b: any) => tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise()));
+            return;
+          }
+          day.timeBlocks.forEach(block => {
+            const k = `${dayEnum}|${block.start}|${block.end}`;
+            const found = existingMap.get(k);
+            if (found) {
+              tasks.push(this.availabilityService.updateWeekly(found.id, { is_active: true }).toPromise());
+              existingMap.delete(k);
+            } else {
+              tasks.push(this.availabilityService.createWeekly(dayEnum, block.start, block.end, true).toPromise());
+            }
+          });
+        });
+
+        // Eliminar los bloques restantes no usados
+        existingMap.forEach((b) => {
+          tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise());
+        });
+
+        Promise.allSettled(tasks).then(() => {
+          this.savingWeeklySchedule = false;
+          alert('✅ Horario guardado correctamente');
+        });
+      },
+      error: () => {
+        this.savingWeeklySchedule = false;
+        alert('❌ Error al guardar horario');
+      }
+    });
   }
 
   savePublicProfile() {

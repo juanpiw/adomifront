@@ -113,6 +113,10 @@
       </section>
 
       <!-- Horario y Disponibilidad -->
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+        <app-online-status-switch [isOnline]="locationSettings.availableForNewBookings" (statusChange)="onOnlineToggle($event)"></app-online-status-switch>
+        <span style="font-size:12px; color:#6b7280;">Si estás Online, podrás aparecer en búsquedas “Ahora” cuando tu horario lo permita.</span>
+      </div>
       <app-horario-disponibilidad 
         [schedule]="weeklySchedule"
         (scheduleChange)="onScheduleChange($event)"
@@ -120,6 +124,12 @@
         (removeTimeBlock)="onRemoveTimeBlock($event)"
         (toggleDay)="onToggleDay($event)">
       </app-horario-disponibilidad>
+
+      <div class="perfil-publico__actions" style="margin-top: 16px; display: flex; justify-content: flex-end;">
+        <ui-button variant="primary" (click)="saveWeeklySchedule()" [loading]="savingWeeklySchedule">
+          Guardar Horario
+        </ui-button>
+      </div>
 
       <!-- Excepciones y Feriados -->
       <app-excepciones-feriados 
