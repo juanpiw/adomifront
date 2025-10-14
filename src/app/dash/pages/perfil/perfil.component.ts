@@ -156,7 +156,10 @@ export class DashPerfilComponent implements OnInit {
   private updateLocalDataFromProfile(profile: any) {
     this.name = profile.full_name;
     this.bio = profile.bio || '';
-    this.avatar = profile.profile_photo_url;
+    // Asegurar URL absoluta para evitar 404 si viene como ruta relativa
+    this.avatar = profile.profile_photo_url ? (
+      profile.profile_photo_url.startsWith('http') ? profile.profile_photo_url : `${environment.apiBaseUrl}${profile.profile_photo_url}`
+    ) : null;
     
     // Actualizar fotos del perfil - construir URLs completas
     this.profilePhoto = profile.profile_photo_url ? 
