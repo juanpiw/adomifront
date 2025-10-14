@@ -153,6 +153,7 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
           (markerClick)="onMapCardMarkerClick($event)"
           (markerAction)="onMapCardMarkerAction($event)"
           (viewModeChange)="onMapCardViewModeChange($event)"
+          (searchHere)="onMapCardSearchHere($event)"
         ></ui-map-card>
       </section>
 
@@ -795,6 +796,64 @@ export class ExplorarComponent implements OnInit {
   onMapCardViewModeChange(mode: 'map' | 'list') {
     console.log('Map card view mode changed to:', mode);
     // Handle view mode change
+  }
+
+  onMapCardSearchHere(evt: { center: { lat: number; lng: number }, radiusKm: number }) {
+    console.log('[EXPLORAR] Buscar en esta zona:', evt);
+    this.loading = true;
+    this.searchError = '';
+
+    this.searchService.searchNearbyProviders({
+      lat: evt.center.lat,
+      lng: evt.center.lng,
+      radius_km: evt.radiusKm,
+      search: this.selectedService || this.searchTerm || '',
+      category: this.selectedCategory || '',
+      rating_min: undefined,
+      limit: 20,
+      offset: 0
+    }).subscribe({
+      next: (resp) => {
+        console.log('[EXPLORAR] Nearby resultados:', resp.data.length);
+        // Mapear a providers mínimos para reutilizar render actual
+        this.filteredProviders = resp.data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          email: '',
+          profession: p.profession,
+          description: p.description,
+          rating: p.rating,
+          review_count: p.reviews,
+          avatar_url: p.avatar_url,
+          location: p.location,
+          services_count: 0,
+          experience_years: 0,
+          is_online: p.is_online,
+          services: []
+        }));
+
+        // Actualizar mapa y tarjetas
+        this.providers = this.filteredProviders;
+        this.generateProfessionalCards();
+        this.mapCenter = evt.center;
+        this.mapCardMarkers = this.filteredProviders.map(provider => ({
+          id: `provider-${provider.id}`,
+          name: provider.name,
+          position: { lat: evt.center.lat + (Math.random() - 0.5) * 0.02, lng: evt.center.lng + (Math.random() - 0.5) * 0.02 },
+          type: 'provider' as const,
+          data: provider,
+          icon: 'user',
+          color: provider.is_online ? '#10b981' : '#9CA3AF'
+        }));
+
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('[EXPLORAR] Error nearby:', err);
+        this.searchError = 'Error al buscar en esta zona';
+        this.loading = false;
+      }
+    });
   }
 
   onMarkerClick(marker: any) {

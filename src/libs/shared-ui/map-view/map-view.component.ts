@@ -85,6 +85,22 @@ interface MapBounds {
             >
               <ui-icon [name]="isFullscreen ? 'minimize' : 'maximize'" [class]="actionIconClass"></ui-icon>
             </button>
+            <!-- Buscar en esta zona -->
+            <button
+              type="button"
+              class="map-action-btn"
+              [class]="actionButtonClass"
+              (click)="onSearchHere()"
+              aria-label="Buscar en esta zona"
+            >
+              Buscar en esta zona
+            </button>
+            <!-- Radio -->
+            <div class="flex items-center gap-2 text-xs text-slate-600">
+              <span>Radio</span>
+              <input type="range" min="1" max="50" [value]="radiusKm" (input)="radiusKm = +($event.target as HTMLInputElement).value" />
+              <span>{{ radiusKm }} km</span>
+            </div>
           </div>
         </div>
       </div>
@@ -289,6 +305,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   @Output() viewModeChange = new EventEmitter<'map' | 'list'>();
   @Output() boundsChange = new EventEmitter<MapBounds>();
   @Output() centerChange = new EventEmitter<{ lat: number; lng: number }>();
+  @Output() searchHere = new EventEmitter<{ center: {lat: number; lng: number}; bounds: MapBounds | null; radiusKm: number }>();
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
@@ -302,6 +319,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   private map: any | null = null;
   private markerRefs: any[] = [];
   googleMapReady: boolean = false;
+  radiusKm: number = 10;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -380,6 +398,16 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         streetViewControl: false
       });
       this.googleMapReady = true;
+      // Emitir bounds cuando cambie el viewport
+      this.map.addListener('idle', () => {
+        const b = this.map.getBounds();
+        if (!b) return;
+        const ne = b.getNorthEast();
+        const sw = b.getSouthWest();
+        const bounds: MapBounds = { north: ne.lat(), south: sw.lat(), east: ne.lng(), west: sw.lng() };
+        this.mapBounds = bounds;
+        this.boundsChange.emit(bounds);
+      });
       this.renderGoogleMarkers();
     } catch (err) {
       console.error('Google Maps init error:', err);
@@ -440,6 +468,12 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
 
   toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
+  }
+
+  // CTA: Buscar en esta zona (usar center + radio)
+  onSearchHere() {
+    // Calcular radio aproximado a partir de zoom si se quiere; por ahora usa this.radiusKm
+    this.searchHere.emit({ center: this.center, bounds: this.mapBounds, radiusKm: this.radiusKm });
   }
 
   closeOverlay() {

@@ -55,6 +55,7 @@ export class MapCardComponent implements OnInit {
   @Output() markerClick = new EventEmitter<MapCardMarker>();
   @Output() markerAction = new EventEmitter<{ marker: MapCardMarker; action: string }>();
   @Output() viewModeChange = new EventEmitter<'map' | 'list'>();
+  @Output() searchHere = new EventEmitter<{ center: { lat: number; lng: number }, radiusKm: number }>();
 
   ngOnInit() {
     // Detect mobile device
@@ -91,6 +92,11 @@ export class MapCardComponent implements OnInit {
 
   onViewModeChange(mode: 'map' | 'list') {
     this.viewModeChange.emit(mode);
+  }
+
+  // Relay searchHere from map-view
+  onSearchHere(evt: { center: { lat: number; lng: number }, bounds: any, radiusKm: number }) {
+    this.searchHere.emit({ center: evt.center, radiusKm: evt.radiusKm });
   }
 
   getStarArray(rating: number): number[] {

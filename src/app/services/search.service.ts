@@ -16,6 +16,9 @@ export interface SearchFilters {
   duration_max?: number;
   limit?: number;
   offset?: number;
+  lat?: number;
+  lng?: number;
+  radius_km?: number;
 }
 
 export interface Provider {
@@ -228,6 +231,20 @@ export class SearchService {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
     });
     return this.http.get<SearchResponse<Provider>>(`${this.apiUrl}/client/search/available-providers`, {
+      params,
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
+    });
+  }
+
+  /**
+   * Buscar proveedores cercanos (nearby) por lat/lng y radio
+   */
+  searchNearbyProviders(args: { lat: number; lng: number; radius_km: number; search?: string; category?: string; rating_min?: number; is_now?: boolean; date?: string; start?: string; end?: string; limit?: number; offset?: number; }): Observable<SearchResponse<any>> {
+    let params = new HttpParams();
+    Object.entries(args).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
+    });
+    return this.http.get<SearchResponse<any>>(`${this.apiUrl}/client/search/nearby-providers`, {
       params,
       headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
     });
