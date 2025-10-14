@@ -342,6 +342,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   // Google Maps state
   private map: any | null = null;
   private markerRefs: any[] = [];
+  private selectionMarker: any | null = null; // Pin para ajustar dirección
   googleMapReady: boolean = false;
   radiusKm: number = 10;
   addressQuery: string = '';
@@ -454,6 +455,8 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         const newCenter = { lat: loc.lat(), lng: loc.lng() };
         this.center = newCenter;
         if (this.map) this.map.setCenter(newCenter);
+        // Mostrar pin draggable para ajuste fino (estilo Uber)
+        this.placeSelectionMarker(newCenter);
         // Disparar búsqueda en esta zona con el radio actual
         this.onSearchHere();
       });
@@ -535,8 +538,34 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
           const newCenter = { lat: loc.lat(), lng: loc.lng() };
           this.center = newCenter;
           if (this.map) this.map.setCenter(newCenter);
+          this.placeSelectionMarker(newCenter);
           this.onSearchHere();
         }
+      });
+    }
+  }
+
+  // Crear/actualizar un pin draggable para ajustar la dirección
+  private placeSelectionMarker(position: { lat: number; lng: number }) {
+    if (!this.map || !this.googleMapReady) return;
+    if (this.selectionMarker) {
+      this.selectionMarker.setPosition(position);
+    } else {
+      this.selectionMarker = new google.maps.Marker({
+        position,
+        map: this.map,
+        draggable: true,
+        animation: google.maps.Animation.DROP,
+        title: 'Arrastra para ajustar ubicación'
+      });
+      this.selectionMarker.addListener('dragend', () => {
+        const pos = this.selectionMarker.getPosition();
+        const newCenter = { lat: pos.lat(), lng: pos.lng() };
+        this.center = newCenter;
+        // Opcional: recentrar el mapa en el pin
+        this.map.setCenter(newCenter);
+        // Buscar automáticamente en la zona ajustada
+        this.onSearchHere();
       });
     }
   }
