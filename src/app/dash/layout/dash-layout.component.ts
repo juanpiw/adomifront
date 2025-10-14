@@ -23,6 +23,7 @@ export class DashLayoutComponent implements OnInit {
   showPlanAlert = false;
   providerName: string | null = null;
   providerAvatarUrl: string | null = null;
+  isOnline: boolean | null = null;
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {
@@ -55,6 +56,7 @@ export class DashLayoutComponent implements OnInit {
       this.providerName = u.name || null;
       this.providerAvatarUrl = u.profile_photo_url ? 
         `${environment.apiBaseUrl}${u.profile_photo_url}` : null;
+      // no siempre viene is_online en sesión; se obtiene del perfil
       console.log('[DASH_LAYOUT] Datos desde sesión:', { name: this.providerName, avatar: this.providerAvatarUrl });
     }
     
@@ -66,9 +68,11 @@ export class DashLayoutComponent implements OnInit {
           this.providerName = profile.full_name || 'Provider';
           this.providerAvatarUrl = profile.profile_photo_url ? 
             `${environment.apiBaseUrl}${profile.profile_photo_url}` : null;
+          this.isOnline = profile.is_online ?? null;
           console.log('[DASH_LAYOUT] Datos actualizados desde backend:', { 
             name: this.providerName, 
-            avatar: this.providerAvatarUrl 
+            avatar: this.providerAvatarUrl,
+            isOnline: this.isOnline
           });
         }
       },

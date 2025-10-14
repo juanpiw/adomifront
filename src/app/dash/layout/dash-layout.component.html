@@ -25,7 +25,10 @@
     </div>
     <div class="panel elevated">
       <div class="user-summary">
-        <img class="avatar" [src]="providerAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" (error)="onAvatarError($event)" />
+        <div style="position: relative; display: inline-block;">
+          <img class="avatar" [src]="providerAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" (error)="onAvatarError($event)" />
+          <span class="status-dot" [class.online]="isOnline === true" [class.offline]="isOnline === false"></span>
+        </div>
         <div class="user-info">
           <div class="user-name">{{ providerName || 'Usuario' }}</div>
           <div class="user-sub">Cuenta de profesional</div>
