@@ -842,6 +842,32 @@ export class DashPerfilComponent implements OnInit {
     });
   }
 
+  // Guardar coordenadas precisas de una zona y refrescar la lista
+  onSetZoneLocation(evt: { zoneId: string; lat: number; lng: number }) {
+    const { zoneId, lat, lng } = evt || ({} as any);
+    if (!zoneId || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    this.providerProfileService.updateCoverageZoneLocation(Number(zoneId), { lat, lng }).subscribe({
+      next: () => {
+        this.providerProfileService.getCoverageZones().subscribe({
+          next: (zones) => {
+            this.locationSettings = {
+              ...this.locationSettings,
+              coverageZones: zones.map((z: any) => ({ id: String(z.id), name: z.commune }))
+            };
+            alert('✅ Punto guardado para la zona');
+          },
+          error: () => {
+            // fallback: no bloquear si falla el refresh
+          }
+        });
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error guardando coordenadas de zona', err);
+        alert('❌ No se pudo guardar el punto de la zona');
+      }
+    });
+  }
+
   // Event handlers para horario
   onScheduleChange(schedule: WeeklySchedule) {
     this.weeklySchedule = schedule;

@@ -147,11 +147,39 @@
             type="button"
             class="ubicacion-disponibilidad__zone-setpoint"
             title="Establecer punto en el mapa"
-            (click)="$event.stopPropagation(); saveZoneCoordinates(zone.id, 0, 0)"
+            (click)="$event.stopPropagation(); openZonePicker(zone.id, zone.name)"
             style="margin-left:8px; font-size:11px; color:#4f46e5;">
             Definir punto
           </button>
         </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Picker de Mapa -->
+  <div *ngIf="showMapModal" class="picker-modal-overlay">
+    <div class="picker-modal">
+      <div class="picker-modal__header">
+        <h4>Definir punto para: {{ activeZoneName }}</h4>
+        <button type="button" class="picker-modal__close" (click)="closeMapModal()">×</button>
+      </div>
+      <div class="picker-modal__controls">
+        <!-- Loader de API para Web Components -->
+        <gmpx-api-loader [attr.key]="googleKey"></gmpx-api-loader>
+        <gmpx-place-autocomplete
+          placeholder="Busca una dirección"
+          (gmpx-placechange)="onAutocompleteChange($event)"></gmpx-place-autocomplete>
+        <input type="text" [(ngModel)]="addressQuery" placeholder="O escribe una dirección" />
+        <button type="button" (click)="onFindAddress()">Buscar</button>
+      </div>
+      <div #pickerMap class="picker-modal__map"></div>
+      <div class="picker-modal__footer">
+        <div class="coords">Lat: {{ pickerLat }} | Lng: {{ pickerLng }}</div>
+        <button type="button"
+                [disabled]="!activeZoneId || pickerLat===null || pickerLng===null"
+                (click)="saveZoneCoordinates(activeZoneId!, pickerLat!, pickerLng!)">
+          Guardar punto
+        </button>
       </div>
     </div>
   </div>
