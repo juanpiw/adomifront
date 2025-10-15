@@ -403,7 +403,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
 
       const script = document.createElement('script');
       script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly`;
       script.async = true;
       script.defer = true;
       script.onload = () => resolve();
@@ -424,7 +424,6 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         streetViewControl: false
       });
       this.googleMapReady = true;
-      this.initPlacesAutocomplete();
       // Emitir bounds cuando cambie el viewport
       this.map.addListener('idle', () => {
         const b = this.map.getBounds();
@@ -442,28 +441,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
     }
   }
 
-  private initPlacesAutocomplete() {
-    try {
-      if (!this.addressInput || !this.googleMapReady || !google?.maps?.places) return;
-      const autocomplete = new google.maps.places.Autocomplete(this.addressInput.nativeElement, {
-        fields: ['geometry', 'formatted_address', 'name']
-      });
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place || !place.geometry || !place.geometry.location) return;
-        const loc = place.geometry.location;
-        const newCenter = { lat: loc.lat(), lng: loc.lng() };
-        this.center = newCenter;
-        if (this.map) this.map.setCenter(newCenter);
-        // Mostrar pin draggable para ajuste fino (estilo Uber)
-        this.placeSelectionMarker(newCenter);
-        // Disparar búsqueda en esta zona con el radio actual
-        this.onSearchHere();
-      });
-    } catch (e) {
-      // Silencioso si Places no está disponible
-    }
-  }
+  // Autocomplete legacy eliminado; se usa Geocoding en onAddressSearch
 
   private renderGoogleMarkers() {
     // Clear existing
