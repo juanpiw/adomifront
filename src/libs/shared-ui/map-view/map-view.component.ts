@@ -355,6 +355,8 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   googleMapReady: boolean = false;
   radiusKm: number = 10;
   addressQuery: string = '';
+  // Expose API key to the template loader
+  googleKey: string = (environment as any).googleMapsApiKey || '';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
