@@ -424,9 +424,11 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         streetViewControl: false
       });
       this.googleMapReady = true;
-      // Emitir bounds cuando cambie el viewport
+      // Emitir bounds cuando cambie el viewport (con guardas)
+      const mapRef = this.map;
       this.map.addListener('idle', () => {
-        const b = this.map.getBounds();
+        if (!mapRef || typeof mapRef.getBounds !== 'function') return;
+        const b = mapRef.getBounds();
         if (!b) return;
         const ne = b.getNorthEast();
         const sw = b.getSouthWest();
@@ -515,12 +517,38 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
           const loc = results[0].geometry.location;
           const newCenter = { lat: loc.lat(), lng: loc.lng() };
           this.center = newCenter;
-          if (this.map) this.map.setCenter(newCenter);
+          if (this.map) {
+            this.map.setCenter(newCenter);
+            if (typeof this.map.setZoom === 'function') this.map.setZoom(15);
+          }
           this.placeSelectionMarker(newCenter);
           this.onSearchHere();
         }
       });
+      return;
     }
+    // Fallback REST (por si Geocoder no está disponible)
+    try {
+      const apiKey = (environment as any).googleMapsApiKey;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`;
+      fetch(url)
+        .then(r => r.json())
+        .then((data) => {
+          const result = data?.results?.[0];
+          if (!result) return;
+          const loc = result.geometry?.location;
+          if (!loc) return;
+          const newCenter = { lat: Number(loc.lat), lng: Number(loc.lng) };
+          this.center = newCenter;
+          if (this.map) {
+            this.map.setCenter(newCenter);
+            if (typeof this.map.setZoom === 'function') this.map.setZoom(15);
+          }
+          this.placeSelectionMarker(newCenter);
+          this.onSearchHere();
+        })
+        .catch(() => {});
+    } catch {}
   }
 
   // Crear/actualizar un pin draggable para ajustar la dirección
