@@ -848,6 +848,8 @@ export class ExplorarComponent implements OnInit {
           review_count: p.reviews,
           avatar_url: p.avatar_url,
           location: p.location,
+          lat: p.lat,
+          lng: p.lng,
           services_count: 0,
           experience_years: 0,
           is_online: p.is_online,
@@ -861,7 +863,9 @@ export class ExplorarComponent implements OnInit {
         this.mapCardMarkers = this.filteredProviders.map(provider => ({
           id: `provider-${provider.id}`,
           name: provider.name,
-          position: { lat: evt.center.lat + (Math.random() - 0.5) * 0.02, lng: evt.center.lng + (Math.random() - 0.5) * 0.02 },
+          position: (provider as any).lat && (provider as any).lng
+            ? { lat: Number((provider as any).lat), lng: Number((provider as any).lng) }
+            : { lat: evt.center.lat + (Math.random() - 0.5) * 0.02, lng: evt.center.lng + (Math.random() - 0.5) * 0.02 },
           type: 'provider' as const,
           data: provider,
           icon: 'user',
