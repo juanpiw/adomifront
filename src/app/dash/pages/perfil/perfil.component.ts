@@ -856,12 +856,22 @@ export class DashPerfilComponent implements OnInit {
             };
             alert('✅ Punto guardado para la zona');
           },
-          error: () => {
-            // fallback: no bloquear si falla el refresh
-          }
+          error: () => {}
         });
       },
       error: (err) => {
+        if (err?.status === 404) {
+          // Fallback temporal: guardar como ubicación actual del provider
+          this.providerProfileService.updateCurrentLocation({ lat, lng }).subscribe({
+            next: () => {
+              alert('✅ Punto guardado como ubicación actual (temporal). Actualiza backend para guardar por zona.');
+            },
+            error: () => {
+              alert('❌ No se pudo guardar la ubicación');
+            }
+          });
+          return;
+        }
         console.error('[PERFIL] Error guardando coordenadas de zona', err);
         alert('❌ No se pudo guardar el punto de la zona');
       }
