@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChileLocationsService, Region } from '../../../app/services/chile-locations.service';
@@ -22,7 +22,7 @@ export interface LocationSettings {
   templateUrl: './ubicacion-disponibilidad.component.html',
   styleUrls: ['./ubicacion-disponibilidad.component.scss'],
   // Permitir Web Components de Google (gmpx-*)
-  schemas: [(window as any)?.ng?.CUSTOM_ELEMENTS_SCHEMA || (undefined as any)]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class UbicacionDisponibilidadComponent {
   private locationsService = inject(ChileLocationsService);
