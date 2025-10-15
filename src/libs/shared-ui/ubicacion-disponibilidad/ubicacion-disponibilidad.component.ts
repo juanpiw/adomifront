@@ -56,6 +56,35 @@ export class UbicacionDisponibilidadComponent {
   private pickerMap: any = null;
   private pickerMarker: any = null;
 
+  // Loader de Google Maps JS (compartido)
+  private static mapsLoaderPromise: Promise<void> | null = null;
+  private ensureGoogleMapsLoaded(): Promise<void> {
+    if ((window as any).google?.maps) return Promise.resolve();
+    if (UbicacionDisponibilidadComponent.mapsLoaderPromise) return UbicacionDisponibilidadComponent.mapsLoaderPromise;
+    UbicacionDisponibilidadComponent.mapsLoaderPromise = new Promise<void>((resolve, reject) => {
+      try {
+        const existing = document.querySelector('script[data-google-maps-js]') as HTMLScriptElement | null;
+        if (existing) {
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', () => reject(new Error('Google Maps JS failed to load')));
+          return;
+        }
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(this.googleKey)}&v=weekly`;
+        script.async = true;
+        script.defer = true;
+        script.setAttribute('data-google-maps-js', 'true');
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Google Maps JS failed to load'));
+        document.head.appendChild(script);
+      } catch (e) {
+        reject(e as any);
+      }
+    });
+    return UbicacionDisponibilidadComponent.mapsLoaderPromise;
+  }
+
   // Estado del selector
   selectedRegion: string = '';
   selectedComuna: string = '';
@@ -141,6 +170,7 @@ export class UbicacionDisponibilidadComponent {
   // Emitir evento para guardar coordenadas de una zona
   saveZoneCoordinates(zoneId: string, lat: number, lng: number) {
     this.setZoneLocation.emit({ zoneId, lat, lng });
+    this.closeMapModal();
   }
 
   // Abrir modal del picker para una zona
@@ -149,8 +179,10 @@ export class UbicacionDisponibilidadComponent {
     this.activeZoneName = zoneName;
     this.addressQuery = zoneName;
     this.showMapModal = true;
-    // Iniciar mapa en microtask para asegurar render del modal
-    setTimeout(() => this.initPickerMap(), 0);
+    // Asegurar Maps JS y luego iniciar mapa
+    this.ensureGoogleMapsLoaded()
+      .then(() => setTimeout(() => this.initPickerMap(), 0))
+      .catch(() => setTimeout(() => this.initPickerMap(), 200));
   }
 
   closeMapModal() {
@@ -188,6 +220,18 @@ export class UbicacionDisponibilidadComponent {
         this.pickerLat = pos.lat();
         this.pickerLng = pos.lng();
       });
+
+      // Intentar centrar por nombre de comuna
+      const query = (this.activeZoneName || '').trim();
+      if (query && (window as any).google?.maps?.Geocoder) {
+        const geocoder = new (window as any).google.maps.Geocoder();
+        geocoder.geocode({ address: query }, (results: any, status: any) => {
+          if (status === 'OK' && results && results[0]) {
+            const loc = results[0].geometry.location;
+            this.moveMarker(loc.lat(), loc.lng());
+          }
+        });
+      }
     } catch {}
   }
 
