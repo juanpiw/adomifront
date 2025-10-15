@@ -140,7 +140,7 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
       <!-- Map Card Section -->
       <section *ngIf="!loading" class="mt-12">
         <ui-map-card
-          [title]="'estilistas disponibles'"
+          [title]="mapPanelTitle"
           [professionals]="professionalCards"
           [highlightedProfessional]="highlightedProfessional"
           [mapMarkers]="mapCardMarkers"
@@ -209,6 +209,7 @@ export class ExplorarComponent implements OnInit {
   professionalCards: ProfessionalCard[] = [];
   highlightedProfessional: ProfessionalCard | null = null;
   mapCardMarkers: MapCardMarker[] = [];
+  mapPanelTitle: string = 'profesionales disponibles';
 
   // Data
   providers: Provider[] = [];
@@ -247,6 +248,7 @@ export class ExplorarComponent implements OnInit {
       this.loadCategories();
       this.loadLocations();
       this.loadData(); // Cargar datos reales
+      this.updateMapPanelTitle();
     }
   }
 
@@ -418,21 +420,25 @@ export class ExplorarComponent implements OnInit {
     } else {
       this.applyAdvancedFilters();
     }
+    this.updateMapPanelTitle();
   }
 
   onServiceChange(service: string) {
     this.selectedService = service;
     this.applyAdvancedFilters();
+    this.updateMapPanelTitle();
   }
 
   onLocationChange(locationId: string) {
     this.selectedLocationId = locationId;
     this.applyAdvancedFilters();
+    this.updateMapPanelTitle();
   }
 
   onDateTimeChange(dateTime: any) {
     this.selectedDateTime = dateTime;
     this.applyAdvancedFilters();
+    this.updateMapPanelTitle();
   }
 
   applyAdvancedFilters() {
@@ -593,6 +599,7 @@ export class ExplorarComponent implements OnInit {
         this.generateMapCardMarkers();
 
         this.loading = false;
+        this.updateMapPanelTitle();
       },
       error: (error) => {
         console.error('[EXPLORAR] ❌ Error aplicando filtros básicos:', error);
@@ -645,6 +652,7 @@ export class ExplorarComponent implements OnInit {
     
     // Recargar datos sin filtros
     this.loadData();
+    this.updateMapPanelTitle();
   }
 
   formatPrice(price: number): string {
@@ -859,6 +867,7 @@ export class ExplorarComponent implements OnInit {
         }));
 
         this.loading = false;
+        this.updateMapPanelTitle();
       },
       error: (err) => {
         console.error('[EXPLORAR] Error nearby:', err);
@@ -873,6 +882,7 @@ export class ExplorarComponent implements OnInit {
     this.mapCenter = { lat: coords.lat, lng: coords.lng };
     // Disparar nearby con radio por defecto (10km)
     this.onMapCardSearchHere({ center: this.mapCenter, radiusKm: this.mapRadiusKm || 10 });
+    this.updateMapPanelTitle();
   }
 
   onMarkerClick(marker: any) {
@@ -922,5 +932,17 @@ export class ExplorarComponent implements OnInit {
       // Navigate to provider's services
       console.log('Navigate to provider services:', marker.data.id);
     }
+  }
+
+  private updateMapPanelTitle() {
+    const serviceLabelRaw = (this.selectedService || this.searchTerm || 'profesionales').trim();
+    const serviceLabel = serviceLabelRaw ? serviceLabelRaw : 'profesionales';
+    // Usar comuna si está en filtros básicos; si no, intentar derivar de locations id si fuese necesario
+    const locationLabel = this.selectedLocation || '';
+    let phrase = `${serviceLabel} disponibles`;
+    if (locationLabel) {
+      phrase += ` en ${locationLabel}`;
+    }
+    this.mapPanelTitle = phrase;
   }
 }
