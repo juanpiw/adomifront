@@ -423,6 +423,15 @@ export class ProviderProfileService {
     );
   }
 
+  /** Actualizar coordenadas de una zona de cobertura */
+  updateCoverageZoneLocation(zoneId: number, payload: { lat: number; lng: number }): Observable<any> {
+    return this.http.put<{ success: boolean; zone: any }>(
+      `${this.apiUrl}/provider/coverage-zones/${zoneId}/location`,
+      payload,
+      { headers: this.getHeaders() }
+    );
+  }
+
   // ============================================
   // UTILIDADES
   // ============================================

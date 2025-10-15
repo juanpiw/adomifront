@@ -142,6 +142,15 @@
             (click)="onRemoveZone(zone.id)">
             ×
           </button>
+          <!-- Nuevo: botón para fijar punto en el mapa (abrirá modal externo) -->
+          <button 
+            type="button"
+            class="ubicacion-disponibilidad__zone-setpoint"
+            title="Establecer punto en el mapa"
+            (click)="$event.stopPropagation(); saveZoneCoordinates(zone.id, 0, 0)"
+            style="margin-left:8px; font-size:11px; color:#4f46e5;">
+            Definir punto
+          </button>
         </span>
       </div>
     </div>

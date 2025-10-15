@@ -34,6 +34,8 @@ export class UbicacionDisponibilidadComponent {
   @Output() addCoverageZone = new EventEmitter<string>();
   @Output() removeCoverageZone = new EventEmitter<string>();
   @Output() requestCurrentLocation = new EventEmitter<void>();
+  // Nuevo: establecer coordenadas para una zona específica
+  @Output() setZoneLocation = new EventEmitter<{ zoneId: string; lat: number; lng: number }>();
 
   // Estado del selector
   selectedRegion: string = '';
@@ -115,6 +117,11 @@ export class UbicacionDisponibilidadComponent {
   // Emitir petición para actualizar ubicación actual
   updateCurrentLocation() {
     this.requestCurrentLocation.emit();
+  }
+
+  // Emitir evento para guardar coordenadas de una zona
+  saveZoneCoordinates(zoneId: string, lat: number, lng: number) {
+    this.setZoneLocation.emit({ zoneId, lat, lng });
   }
 }
 
