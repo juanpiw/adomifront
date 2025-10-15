@@ -72,7 +72,7 @@ interface MapBounds {
               #addressInput
               type="text" 
               [(ngModel)]="addressQuery" 
-              (keyup.enter)="onAddressSearch()" 
+              (keydown.enter)="onAddressSearch($event)" 
               placeholder="Ingresa una dirección"
               class="px-3 py-2 text-sm border border-slate-300 rounded-lg w-56"
               aria-label="Buscar por dirección"
@@ -81,7 +81,7 @@ interface MapBounds {
               type="button"
               class="map-action-btn"
               [class]="actionButtonClass"
-              (click)="onAddressSearch()"
+              (click)="onAddressSearch($event)"
               aria-label="Buscar dirección"
             >
               <ui-icon name="search" [class]="actionIconClass"></ui-icon>
@@ -507,7 +507,8 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   // Buscar por dirección usando Geocoder si no hay Places
-  onAddressSearch() {
+  onAddressSearch(event?: Event) {
+    if (event) { try { event.preventDefault(); event.stopPropagation(); } catch {} }
     const query = (this.addressQuery || '').trim();
     if (!query) return;
     if (this.googleMapReady && google?.maps?.Geocoder) {
