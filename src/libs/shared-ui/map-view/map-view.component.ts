@@ -68,15 +68,12 @@ interface MapBounds {
           
           <!-- Address Search -->
           <div class="map-address flex items-center gap-2">
-            <input 
-              #addressInput
-              type="text" 
-              [(ngModel)]="addressQuery" 
-              (keydown.enter)="onAddressSearch($event)" 
-              placeholder="Ingresa una dirección"
+            <!-- Places API (New) Autocomplete Web Component -->
+            <gmpx-place-autocomplete
               class="px-3 py-2 text-sm border border-slate-300 rounded-lg w-56"
-              aria-label="Buscar por dirección"
-            />
+              placeholder="Ingresa una dirección"
+              (gmpx-placechange)="onPlaceChange($event)">
+            </gmpx-place-autocomplete>
             <button
               type="button"
               class="map-action-btn"
@@ -484,6 +481,25 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   }
 
   // Public methods
+  onPlaceChange(evt: any) {
+    try {
+      const place = evt?.detail?.place;
+      const loc = place?.location || place?.position || place?.geometry?.location;
+      if (!loc) return;
+      const lat = typeof loc.lat === 'function' ? loc.lat() : Number(loc.lat);
+      const lng = typeof loc.lng === 'function' ? loc.lng() : Number(loc.lng);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const newCenter = { lat, lng };
+        this.center = newCenter;
+        if (this.map) {
+          this.map.setCenter(newCenter);
+          if (typeof this.map.setZoom === 'function') this.map.setZoom(15);
+        }
+        this.placeSelectionMarker(newCenter);
+        this.onSearchHere();
+      }
+    } catch {}
+  }
   setViewMode(mode: 'map' | 'list') {
     this.viewMode = mode;
     this.viewModeChange.emit(mode);
