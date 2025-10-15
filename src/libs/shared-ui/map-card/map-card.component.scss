@@ -84,10 +84,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   max-height: 100%;
   overflow-y: auto;
   padding-right: 8px;
+  scroll-behavior: smooth;
 }
 
 /* Right Panel: Map Section */
@@ -228,10 +229,7 @@
 }
 
 /* Ensure children do not overflow parent in professionals column */
-.professionals-section,
-.professional-card-container {
-  overflow: hidden;
-}
+.professionals-section { overflow: hidden; }
 
 .professional-card-container ui-user-card,
 .professional-card-container .card {

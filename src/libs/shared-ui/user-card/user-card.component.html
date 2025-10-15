@@ -1,5 +1,5 @@
 ﻿@if (user) {
-  <div class="card" (click)="onUserClick()">
+  <div class="card" [ngClass]="['size-' + size, variant]" (click)="onUserClick()">
     <div class="card-header">
       <div style="position: relative; display: inline-block;">
         <img class="avatar" [src]="user.avatar" [alt]="'Foto de ' + user.name">
