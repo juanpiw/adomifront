@@ -181,10 +181,10 @@ export class UbicacionDisponibilidadComponent {
     this.activeZoneName = zoneName;
     this.addressQuery = zoneName;
     this.showMapModal = true;
-    // Asegurar Maps JS y luego iniciar mapa
-    this.ensureGoogleMapsLoaded()
-      .then(() => setTimeout(() => this.initPickerMap(), 0))
-      .catch(() => setTimeout(() => this.initPickerMap(), 200));
+    // Esperar a que google.maps esté disponible (lo carga gmpx-api-loader en la plantilla)
+    setTimeout(() => {
+      this.waitForGoogleMaps().then(() => this.initPickerMap());
+    }, 0);
   }
 
   closeMapModal() {
@@ -194,6 +194,21 @@ export class UbicacionDisponibilidadComponent {
     this.addressQuery = '';
     this.pickerLat = null;
     this.pickerLng = null;
+  }
+
+  private waitForGoogleMaps(timeoutMs: number = 8000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      const id = setInterval(() => {
+        if ((window as any).google?.maps) {
+          clearInterval(id);
+          resolve();
+        } else if (Date.now() - start > timeoutMs) {
+          clearInterval(id);
+          reject(new Error('Google Maps JS not loaded in time'));
+        }
+      }, 100);
+    });
   }
 
   private initPickerMap() {
