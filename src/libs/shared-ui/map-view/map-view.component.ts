@@ -510,7 +510,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
           if (typeof this.map.setZoom === 'function') this.map.setZoom(15);
         }
         this.placeSelectionMarker(newCenter);
-        this.onSearchHere();
+        // No auto-fetch here; user will click "Buscar en esta zona"
       }
     } catch {}
   }
@@ -553,7 +553,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
             if (typeof this.map.setZoom === 'function') this.map.setZoom(15);
           }
           this.placeSelectionMarker(newCenter);
-          this.onSearchHere();
+          // No auto-fetch here; user will click "Buscar en esta zona"
         }
       });
       return;
@@ -576,7 +576,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
             if (typeof this.map.setZoom === 'function') this.map.setZoom(15);
           }
           this.placeSelectionMarker(newCenter);
-          this.onSearchHere();
+          // No auto-fetch here; user will click "Buscar en esta zona"
         })
         .catch(() => {});
     } catch {}
@@ -601,8 +601,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         this.center = newCenter;
         // Opcional: recentrar el mapa en el pin
         this.map.setCenter(newCenter);
-        // Buscar automáticamente en la zona ajustada
-        this.onSearchHere();
+        // No auto-fetch al arrastrar; esperar acción del usuario
       });
     }
   }
