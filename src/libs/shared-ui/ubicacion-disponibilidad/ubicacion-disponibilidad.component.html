@@ -136,6 +136,7 @@
         <span 
           *ngFor="let zone of settings.coverageZones"
           class="ubicacion-disponibilidad__zone-tag">
+          <span *ngIf="zone.isPrimary" title="Ubicación principal" style="color:#f59e0b; margin-right:6px;">★</span>
           {{ zone.name }}
           <button 
             class="ubicacion-disponibilidad__zone-remove"
@@ -150,6 +151,14 @@
             (click)="$event.stopPropagation(); openZonePicker(zone.id, zone.name)"
             style="margin-left:8px; font-size:11px; color:#4f46e5;">
             Definir punto
+          </button>
+          <button 
+            type="button"
+            class="ubicacion-disponibilidad__zone-setpoint"
+            title="Marcar como principal"
+            (click)="$event.stopPropagation(); setZonePrimary.emit(zone.id)"
+            style="margin-left:8px; font-size:11px; color:#f59e0b;">
+            Marcar principal
           </button>
         </span>
       </div>

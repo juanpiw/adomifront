@@ -432,6 +432,15 @@ export class ProviderProfileService {
     );
   }
 
+  /** Marcar zona de cobertura como principal */
+  setCoverageZonePrimary(zoneId: number): Observable<any> {
+    return this.http.put<{ success: boolean; zones: any[] }>(
+      `${this.apiUrl}/provider/coverage-zones/${zoneId}/primary`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
   // ============================================
   // UTILIDADES
   // ============================================

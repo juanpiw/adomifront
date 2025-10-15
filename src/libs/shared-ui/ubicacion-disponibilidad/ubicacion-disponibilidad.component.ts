@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
 export interface CoverageZone {
   id: string;
   name: string;
+  isPrimary?: boolean;
 }
 
 export interface LocationSettings {
@@ -39,6 +40,7 @@ export class UbicacionDisponibilidadComponent {
   @Output() requestCurrentLocation = new EventEmitter<void>();
   // Nuevo: establecer coordenadas para una zona específica
   @Output() setZoneLocation = new EventEmitter<{ zoneId: string; lat: number; lng: number }>();
+  @Output() setZonePrimary = new EventEmitter<string>();
 
   // Google API key
   googleKey: string = (environment as any)?.googleMapsApiKey || '';

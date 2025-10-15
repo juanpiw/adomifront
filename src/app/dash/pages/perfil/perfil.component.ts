@@ -71,6 +71,25 @@ export class DashPerfilComponent implements OnInit {
     this.loadProfileData();
   }
 
+  // Marcar zona como principal
+  onSetZonePrimary(zoneId: string) {
+    if (!zoneId) return;
+    this.providerProfileService.setCoverageZonePrimary(Number(zoneId)).subscribe({
+      next: (resp) => {
+        const zones = (resp?.zones || []) as any[];
+        this.locationSettings = {
+          ...this.locationSettings,
+          coverageZones: zones.map((z: any) => ({ id: String(z.id), name: z.commune, isPrimary: !!z.is_primary }))
+        };
+        alert('✅ Zona marcada como principal');
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al marcar zona principal', err);
+        alert('❌ No se pudo marcar zona principal');
+      }
+    });
+  }
+
   /**
    * Cargar todos los datos del perfil
    */
@@ -138,9 +157,10 @@ export class DashPerfilComponent implements OnInit {
         console.log('[PERFIL] Zonas cargadas:', zones);
         this.locationSettings = {
           ...this.locationSettings,
-          coverageZones: zones.map(z => ({
+          coverageZones: zones.map((z: any) => ({
             id: String(z.id),
-            name: z.commune
+            name: z.commune,
+            isPrimary: !!z.is_primary
           }))
         };
       },
