@@ -33,6 +33,8 @@ interface MapBounds {
   imports: [CommonModule, FormsModule, IconComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
+    <!-- Google Maps API Loader for Web Components -->
+    <gmpx-api-loader [attr.key]="googleKey"></gmpx-api-loader>
     <div class="map-container" [class]="containerClass">
       <!-- Map Header -->
       <div class="map-header" [class]="headerClass">
@@ -75,6 +77,15 @@ interface MapBounds {
               placeholder="Ingresa una dirección"
               (gmpx-placechange)="onPlaceChange($event)">
             </gmpx-place-autocomplete>
+            <!-- Fallback manual input (Geocoding) -->
+            <input 
+              type="text" 
+              [(ngModel)]="addressQuery" 
+              (keydown.enter)="onAddressSearch($event)" 
+              placeholder="Ingresa una dirección"
+              class="px-3 py-2 text-sm border border-slate-300 rounded-lg w-56"
+              aria-label="Buscar por dirección"
+            />
             <button
               type="button"
               class="map-action-btn"
