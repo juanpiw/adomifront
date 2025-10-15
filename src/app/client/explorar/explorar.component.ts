@@ -738,7 +738,8 @@ export class ExplorarComponent implements OnInit {
 
   // Map Card methods
   generateProfessionalCards() {
-    this.professionalCards = this.providers.map(provider => ({
+    const source = this.nearbyActive ? this.providers : this.filteredProviders;
+    this.professionalCards = source.map(provider => ({
       id: provider.id.toString(),
       name: provider.name,
       profession: provider.profession,
@@ -756,7 +757,8 @@ export class ExplorarComponent implements OnInit {
   }
 
   generateMapCardMarkers() {
-    this.mapCardMarkers = this.providers.map(provider => ({
+    const source = this.nearbyActive ? this.providers : this.filteredProviders;
+    this.mapCardMarkers = source.map(provider => ({
       id: `provider-${provider.id}`,
       name: provider.name,
       position: {
