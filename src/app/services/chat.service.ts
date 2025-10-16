@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -29,6 +29,7 @@ export interface MessageDto {
 export class ChatService {
   private http = inject(HttpClient);
   private apiBase = environment.apiBaseUrl;
+  private zone = inject(NgZone);
 
   // socket state (lazy)
   private socket: any | null = null;
@@ -111,7 +112,8 @@ export class ChatService {
         } catch {}
       });
       this.socket.on('message:new', (msg: MessageDto) => {
-        this.messageNew$.next(msg);
+        // Asegurar ejecución dentro de Angular para disparar Change Detection
+        this.zone.run(() => this.messageNew$.next(msg));
       });
     } catch {
       // socket not available; ignore (REST seguirá funcionando)
