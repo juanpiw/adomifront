@@ -34,7 +34,7 @@
           (itemClick)="onPortfolioItemClick($event)">
         </app-portfolio>
 
-        <!-- Reviews Section -->
+        <!-- Reviews Section -->flujos-front
         <app-reviews 
           [data]="reviewsData"
           (reviewClick)="onReviewClick($event)"
@@ -53,6 +53,7 @@
       <!-- Right Sidebar - Booking Panel -->
       <div class="perfil-trabajador-right">
         <app-booking-panel 
+          [providerId]="workerId"
           [data]="bookingPanelData"
           (serviceSelected)="onServiceSelected($event)"
           (dateSelected)="onDateSelected($event)"

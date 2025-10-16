@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatContainerComponent, ChatConversation, ChatMessage } from '../../../../libs/shared-ui/chat';
@@ -33,7 +34,7 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
 
   private subs: Subscription[] = [];
 
-  constructor(private menuService: MenuService, private chat: ChatService) {}
+  constructor(private menuService: MenuService, private chat: ChatService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
     try {
@@ -52,6 +53,26 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
       })
     );
     this.loadConversations();
+    // Si viene providerId por query, auto-crear/abrir conversación
+    const qp = this.route.snapshot.queryParamMap;
+    const providerId = qp.get('providerId');
+    if (providerId) {
+      const clientId = Number(this.currentUserId);
+      const pid = Number(providerId);
+      if (clientId && pid) {
+        this.chat.createOrGetConversation(clientId, pid).subscribe({
+          next: (resp) => {
+            const conv = this.mapConversation(resp.conversation);
+            // Insertar si no está en lista
+            const exists = this.conversations.some(c => c.id === conv.id);
+            if (!exists) this.conversations.unshift(conv);
+            this.selectConversation(conv.id);
+            // Limpiar query param
+            this.router.navigate([], { queryParams: {} });
+          }
+        });
+      }
+    }
   }
 
   ngOnDestroy() {

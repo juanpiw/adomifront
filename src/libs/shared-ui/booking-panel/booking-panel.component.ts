@@ -40,6 +40,7 @@ export interface BookingPanelData {
   styleUrls: ['./booking-panel.component.scss']
 })
 export class BookingPanelComponent {
+  @Input() providerId?: string | number;
   @Input() data: BookingPanelData = {
     services: [],
     timeSlots: [],
@@ -76,8 +77,10 @@ export class BookingPanelComponent {
   }
 
   onSendMessage() {
-    console.log('Navegando a conversaciones...');
-    this.router.navigate(['/client/conversaciones']);
+    console.log('Enviar mensaje - providerId:', this.providerId);
+    this.router.navigate(['/client/conversaciones'], {
+      queryParams: this.providerId ? { providerId: this.providerId } : undefined
+    });
     this.messageClicked.emit();
   }
 }
