@@ -196,7 +196,7 @@ export class UbicacionDisponibilidadComponent {
     this.pickerLng = null;
   }
 
-  private waitForGoogleMaps(timeoutMs: number = 8000): Promise<void> {
+  private waitForGoogleMaps(timeoutMs: number = 15000): Promise<void> {
     return new Promise((resolve, reject) => {
       const start = Date.now();
       const id = setInterval(() => {

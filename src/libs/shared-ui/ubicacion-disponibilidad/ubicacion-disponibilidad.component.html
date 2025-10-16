@@ -174,8 +174,8 @@
       </div>
       <div class="picker-modal__controls">
         <!-- Loader de API para Web Components -->
-          <!-- El mapa de la página principal ya carga Google Maps; evitamos múltiples loaders aquí -->
-          <!-- <gmpx-api-loader [attr.key]="googleKey" version="weekly"></gmpx-api-loader> -->
+          <!-- Loader específico del modal para garantizar carga de Maps en el dashboard -->
+          <gmpx-api-loader [attr.key]="googleKey" version="weekly"></gmpx-api-loader>
         <gmpx-place-autocomplete
           placeholder="Busca una dirección"
           (gmpx-placechange)="onAutocompleteChange($event)"></gmpx-place-autocomplete>
