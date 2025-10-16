@@ -31,6 +31,15 @@
         <div class="conversation-content">
           <div class="conversation-header">
             <h3 class="client-name" [class.client-name--unread]="conversation.unreadCount > 0">{{ conversation.clientName }}</h3>
+            <div class="row-actions">
+              <button class="icon-btn" (click)="$event.stopPropagation(); toggleMenu(conversation.id)">
+                <ui-icon name="more-vertical" [size]="18"></ui-icon>
+              </button>
+              <div class="popup-menu" *ngIf="openMenuId === conversation.id">
+                <button (click)="$event.stopPropagation(); onToggleStar(conversation.id)">Marcar como destacada</button>
+                <button class="danger" (click)="$event.stopPropagation(); onDeleteConversation(conversation.id)">Borrar conversación</button>
+              </div>
+            </div>
             <span class="message-time">{{ conversation.lastMessage ? formatTime(conversation.lastMessage.timestamp) : '' }}</span>
           </div>
           <div class="last-message">

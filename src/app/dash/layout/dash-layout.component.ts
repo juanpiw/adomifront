@@ -9,6 +9,7 @@ import { SessionService } from '../../auth/services/session.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { ProviderProfileService } from '../../services/provider-profile.service';
 import { environment } from '../../../environments/environment';
+import { ChatService, MessageDto } from '../../services/chat.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -24,6 +25,7 @@ export class DashLayoutComponent implements OnInit {
   providerName: string | null = null;
   providerAvatarUrl: string | null = null;
   isOnline: boolean | null = null;
+  unreadTotal: number = 0;
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {
@@ -41,10 +43,22 @@ export class DashLayoutComponent implements OnInit {
   private auth = inject(AuthService);
   private providerProfile = inject(ProviderProfileService);
   private router = inject(Router);
+  private chat = inject(ChatService);
 
   ngOnInit() {
     this.loadPlanInfo();
     this.loadProviderProfile();
+
+    // Conectar socket y escuchar mensajes para badge
+    this.chat.connectSocket();
+    this.chat.onMessageNew().subscribe((msg: MessageDto) => {
+      try {
+        const me = this.sessionService.getUser()?.id;
+        if (me && Number(msg.receiver_id) === Number(me)) {
+          this.unreadTotal = Math.min(99, (this.unreadTotal || 0) + 1);
+        }
+      } catch {}
+    });
   }
 
   private loadProviderProfile() {

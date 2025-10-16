@@ -68,6 +68,22 @@ export class ChatService {
     );
   }
 
+  // REST: delete conversation
+  deleteConversation(conversationId: number): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiBase}/conversations/${conversationId}`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  // REST: unread count
+  getUnreadTotal(): Observable<{ success: boolean; count: number }> {
+    return this.http.get<{ success: boolean; count: number }>(
+      `${this.apiBase}/messages/unread/count`,
+      { headers: this.authHeaders() }
+    );
+  }
+
   sendMessage(conversationId: number, receiverId: number, content: string): Observable<{ success: boolean; message: MessageDto }> {
     return this.http.post<{ success: boolean; message: MessageDto }>(
       `${this.apiBase}/messages`,

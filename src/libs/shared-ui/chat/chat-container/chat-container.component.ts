@@ -51,9 +51,12 @@ export class ChatContainerComponent {
   @Output() selectConversation = new EventEmitter<string>();
   @Output() searchConversations = new EventEmitter<string>();
   @Output() viewAppointment = new EventEmitter<string>();
+  @Output() deleteConversation = new EventEmitter<string>();
+  @Output() toggleStar = new EventEmitter<string>();
 
   newMessage: string = '';
   searchQuery: string = '';
+  openMenuId: string | null = null;
 
   onClose(): void {
     this.close.emit();
@@ -81,6 +84,20 @@ export class ChatContainerComponent {
     if (this.currentConversation) {
       this.viewAppointment.emit(this.currentConversation.clientId);
     }
+  }
+
+  toggleMenu(conversationId: string): void {
+    this.openMenuId = this.openMenuId === conversationId ? null : conversationId;
+  }
+
+  requestDelete(conversationId: string): void {
+    this.openMenuId = null;
+    this.deleteConversation.emit(conversationId);
+  }
+
+  markStarred(conversationId: string): void {
+    this.openMenuId = null;
+    this.toggleStar.emit(conversationId);
   }
 
   formatTime(timestamp: Date): string {

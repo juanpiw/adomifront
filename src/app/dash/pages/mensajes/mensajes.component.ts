@@ -26,6 +26,7 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
   showChatView = false;
   newMessage = '';
   showUsersMenu = false;
+  openMenuId: string | null = null;
   
   // Acceso a window para responsive
   window = typeof window !== 'undefined' ? window : { innerWidth: 1024 } as any;
@@ -150,6 +151,30 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
   onViewAppointment(clientId: string) {
     console.log('Ver cita para cliente:', clientId);
     // TODO: Implementar navegación a cita
+  }
+
+  toggleMenu(conversationId: string) {
+    this.openMenuId = this.openMenuId === conversationId ? null : conversationId;
+  }
+
+  onDeleteConversation(conversationId: string) {
+    const id = Number(conversationId);
+    if (!id) return;
+    this.chat.deleteConversation(id).subscribe({
+      next: () => {
+        this.conversations = this.conversations.filter(c => c.id !== conversationId);
+        if (this.currentConversation?.id === conversationId) {
+          this.currentConversation = null;
+          this.messages = [];
+        }
+        this.openMenuId = null;
+      }
+    });
+  }
+
+  onToggleStar(conversationId: string) {
+    console.log('Destacar conversación', conversationId);
+    this.openMenuId = null;
   }
 
   getTotalUnreadCount(): number {

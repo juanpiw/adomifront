@@ -17,7 +17,10 @@
       <a class="rail-item" routerLink="/dash/ingresos" routerLinkActive="active" title="Ingresos" (click)="onNav()"><ui-icon name="money" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/estadisticas" routerLinkActive="active" title="Estadísticas" (click)="onNav()"><ui-icon name="chart" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/promocion" routerLinkActive="active" title="Promoción" (click)="onNav()"><ui-icon name="star" [size]="20"></ui-icon></a>
-      <a class="rail-item" routerLink="/dash/mensajes" routerLinkActive="active" title="Mensajes" (click)="onNav()"><ui-icon name="message" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/mensajes" routerLinkActive="active" title="Mensajes" (click)="onNav()" style="position: relative;">
+        <ui-icon name="message" [size]="20"></ui-icon>
+        <span *ngIf="unreadTotal > 0" class="badge-unread">{{ unreadTotal }}</span>
+      </a>
       <a class="rail-item" routerLink="/dash/servicios" routerLinkActive="active" title="Servicios" (click)="onNav()"><ui-icon name="briefcase" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/perfil" routerLinkActive="active" title="Perfil" (click)="onNav()"><ui-icon name="user" [size]="20"></ui-icon></a>
       <div class="spacer"></div>

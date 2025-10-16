@@ -170,6 +170,13 @@
   align-items: center;
   gap: 0.5rem;
 }
+.chat-actions { position: relative; display: flex; align-items: center; gap: 6px; }
+.chat-action-btn { width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:none; background:transparent; cursor:pointer; border-radius:6px; }
+.chat-action-btn:hover { background: rgba(0,0,0,0.06); }
+.chat-action-menu { position:absolute; right:0; top:24px; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow: 0 10px 24px rgba(0,0,0,0.12); padding:6px; display:flex; flex-direction:column; min-width: 180px; z-index: 20; }
+.chat-action-menu button { text-align:left; padding:8px 10px; border:none; background:transparent; cursor:pointer; border-radius:6px; }
+.chat-action-menu button:hover { background:#f3f4f6; }
+.chat-action-menu .danger { color:#dc2626; }
 
 .chat-name {
   font-weight: 700;

@@ -42,6 +42,15 @@
                     [class.chat-name--unread]="conversation.unreadCount > 0">
                 {{ conversation.clientName }}
               </span>
+              <div class="chat-actions">
+                <button class="chat-action-btn" (click)="$event.stopPropagation(); toggleMenu(conversation.id)">
+                  <ui-icon name="more-vertical"></ui-icon>
+                </button>
+                <div class="chat-action-menu" *ngIf="openMenuId === conversation.id">
+                  <button (click)="$event.stopPropagation(); markStarred(conversation.id)">Marcar como destacada</button>
+                  <button class="danger" (click)="$event.stopPropagation(); requestDelete(conversation.id)">Borrar conversación</button>
+                </div>
+              </div>
               <span class="chat-time" *ngIf="conversation.lastMessage">
                 {{ formatDate(conversation.lastMessage.timestamp) }}
               </span>

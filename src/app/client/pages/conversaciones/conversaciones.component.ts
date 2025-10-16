@@ -217,6 +217,25 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
     // TODO: Implementar navegación a cita
   }
 
+  onDeleteConversation(conversationId: string) {
+    const id = Number(conversationId);
+    if (!id) return;
+    this.chat.deleteConversation(id).subscribe({
+      next: () => {
+        this.conversations = this.conversations.filter(c => c.id !== conversationId);
+        if (this.currentConversation?.id === conversationId) {
+          this.currentConversation = null;
+          this.messages = [];
+        }
+      }
+    });
+  }
+
+  onToggleStar(conversationId: string) {
+    // TODO: Implementar marcar/ desmarcar destacada (persistencia)
+    console.log('Marcar como destacada:', conversationId);
+  }
+
   getTotalUnreadCount(): number {
     return this.conversations.reduce((total, conv) => total + conv.unreadCount, 0);
   }
