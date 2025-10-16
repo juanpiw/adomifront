@@ -52,8 +52,7 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
         }
       })
     );
-    this.loadConversations();
-    // Si viene providerId por query, auto-crear/abrir conversación
+    // Si viene providerId por query, auto-crear/abrir conversación primero
     const qp = this.route.snapshot.queryParamMap;
     const providerId = qp.get('providerId');
     const providerName = qp.get('providerName');
@@ -65,16 +64,22 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
           next: (resp) => {
             const conv = this.mapConversation(resp.conversation);
             if (providerName) conv.clientName = providerName;
-            // Insertar si no está en lista
             const exists = this.conversations.some(c => c.id === conv.id);
             if (!exists) this.conversations.unshift(conv);
             this.selectConversation(conv.id);
-            // Limpiar query param
             this.router.navigate([], { queryParams: {} });
+            // cargar lista en segundo plano
+            this.loadConversations();
+          },
+          error: () => {
+            // fallback: cargar lista normal
+            this.loadConversations();
           }
         });
+        return;
       }
     }
+    this.loadConversations();
   }
 
   ngOnDestroy() {
