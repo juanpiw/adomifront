@@ -463,11 +463,31 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
         position: marker.position,
         map: this.map,
         title: marker.name,
-        icon: undefined // default pin; could customize by type
+        icon: this.getGoogleMarkerIcon(marker.type)
       });
       pin.addListener('click', () => this.onMarkerClick(marker));
       this.markerRefs.push(pin);
     });
+  }
+
+  private getGoogleMarkerIcon(type: 'provider' | 'service' | 'location'): any {
+    // Prefer simple, reliable icons via HTTPS. Gold for providers as requested.
+    switch (type) {
+      case 'provider':
+        return {
+          url: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+        };
+      case 'service':
+        return {
+          url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+        };
+      case 'location':
+        return {
+          url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+        };
+      default:
+        return undefined;
+    }
   }
 
   private initializeMap() {
