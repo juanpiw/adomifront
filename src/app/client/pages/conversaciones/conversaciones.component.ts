@@ -48,10 +48,14 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.chat.onMessageNew().subscribe((msg) => {
         console.log('[CLIENT CHAT] message:new received', msg);
+        // Evitar duplicados: ignorar mensajes enviados por mí (ya se agregan por REST/optimista)
+        if (String(msg.sender_id) === this.currentUserId) return;
+        // Evitar insertar si ya existe
+        if (this.messages.some(m => m.id === String(msg.id))) return;
         // si corresponde a la conversación activa, prepend
         if (this.currentConversation && Number(this.currentConversation.id) === Number(msg.conversation_id)) {
           console.log('[CLIENT CHAT] append to active conversation', this.currentConversation.id);
-          this.messages.unshift(this.mapMessage(msg));
+          this.messages = [...this.messages, this.mapMessage(msg)];
         }
         // actualizar preview/unread en la lista
         const conv = this.conversations.find(c => Number(c.id) === Number(msg.conversation_id));
@@ -161,7 +165,8 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
   private loadMessages(conversationId: string) {
     this.chat.listMessages(Number(conversationId), { limit: 50 }).subscribe({
       next: (resp) => {
-        const list = (resp.messages || []).map(m => this.mapMessage(m));
+        // Mantener orden cronológico ascendente (viejo → nuevo)
+        const list = (resp.messages || []).map(m => this.mapMessage(m)).reverse();
         this.messages = list;
       }
     });
@@ -184,7 +189,7 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
       senderType: 'professional',
       isRead: true
     };
-    this.messages.unshift(optimistic);
+    this.messages = [...this.messages, optimistic];
     this.currentConversation.lastMessage = optimistic;
 
     this.chat.sendMessage(convId, receiverId, event.content).subscribe({
@@ -193,9 +198,11 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
         const idx = this.messages.findIndex(m => m.id === optimistic.id);
         const real = this.mapMessage(resp.message);
         if (idx >= 0) {
-          this.messages.splice(idx, 1, real);
+          const copy = [...this.messages];
+          copy.splice(idx, 1, real);
+          this.messages = copy;
         } else {
-          this.messages.unshift(real);
+          this.messages = [...this.messages, real];
         }
         this.currentConversation!.lastMessage = real;
       },

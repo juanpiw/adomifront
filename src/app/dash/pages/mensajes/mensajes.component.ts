@@ -47,9 +47,12 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.chat.onMessageNew().subscribe((msg) => {
         console.log('[PRO CHAT] message:new received', msg);
+        // Evitar duplicados: ignorar mis propios mensajes y evitar insertar si ya existe
+        if (String(msg.sender_id) === this.currentUserId) return;
+        if (this.messages.some(m => m.id === String(msg.id))) return;
         if (this.currentConversation && Number(this.currentConversation.id) === Number(msg.conversation_id)) {
           console.log('[PRO CHAT] append to active conversation', this.currentConversation.id);
-          this.messages.unshift(this.mapMessage(msg));
+          this.messages = [...this.messages, this.mapMessage(msg)];
         }
         const conv = this.conversations.find(c => Number(c.id) === Number(msg.conversation_id));
         if (conv) {
@@ -122,7 +125,8 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
   private loadMessages(conversationId: string) {
     this.chat.listMessages(Number(conversationId), { limit: 50 }).subscribe({
       next: (resp) => {
-        this.messages = (resp.messages || []).map(m => this.mapMessage(m));
+        // Mantener orden cronológico ascendente (viejo → nuevo)
+        this.messages = (resp.messages || []).map(m => this.mapMessage(m)).reverse();
       }
     });
   }
@@ -137,7 +141,7 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
     this.chat.sendMessage(convId, receiverId, event.content).subscribe({
       next: (resp) => {
         const msg = this.mapMessage(resp.message);
-        this.messages.unshift(msg);
+        this.messages = [...this.messages, msg];
         this.currentConversation!.lastMessage = msg;
       }
     });

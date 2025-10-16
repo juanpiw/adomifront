@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../icon/icon.component';
@@ -31,7 +31,7 @@ export interface ChatConversation {
   templateUrl: './chat-container.component.html',
   styleUrls: ['./chat-container.component.scss']
 })
-export class ChatContainerComponent {
+export class ChatContainerComponent implements AfterViewInit, OnChanges {
   @Input() conversations: ChatConversation[] = [];
   @Input() currentConversation: ChatConversation | null = null;
   @Input() messages: ChatMessage[] = [];
@@ -57,6 +57,18 @@ export class ChatContainerComponent {
   newMessage: string = '';
   searchQuery: string = '';
   openMenuId: string | null = null;
+  @ViewChild('messagesArea') messagesAreaRef?: ElementRef<HTMLDivElement>;
+
+  ngAfterViewInit(): void {
+    this.scrollToBottom();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['messages']) {
+      // cuando cambian los mensajes, mover al fondo
+      setTimeout(() => this.scrollToBottom(), 0);
+    }
+  }
 
   onClose(): void {
     this.close.emit();
@@ -74,6 +86,14 @@ export class ChatContainerComponent {
 
   onSelectConversation(conversationId: string): void {
     this.selectConversation.emit(conversationId);
+  }
+
+  private scrollToBottom(): void {
+    try {
+      const el = this.messagesAreaRef?.nativeElement;
+      if (!el) return;
+      el.scrollTop = el.scrollHeight;
+    } catch {}
   }
 
   onSearchChange(): void {
