@@ -101,6 +101,7 @@ export class ChatService {
         // Re-join previously joined rooms on reconnect
         try {
           this.joinedRooms.forEach((convId) => {
+            console.log('[CHAT SOCKET] rejoin:conversation', convId);
             this.socket?.emit('join:conversation', convId);
           });
         } catch {}
@@ -112,6 +113,7 @@ export class ChatService {
         } catch {}
       });
       this.socket.on('message:new', (msg: MessageDto) => {
+        console.log('[CHAT SOCKET] message:new', msg);
         // Asegurar ejecución dentro de Angular para disparar Change Detection
         this.zone.run(() => this.messageNew$.next(msg));
       });
@@ -130,6 +132,7 @@ export class ChatService {
   async joinConversation(conversationId: number): Promise<void> {
     if (!this.socket) await this.connectSocket();
     try {
+      console.log('[CHAT SOCKET] join:conversation', conversationId);
       this.socket?.emit('join:conversation', conversationId);
       this.joinedRooms.add(conversationId);
     } catch {}
