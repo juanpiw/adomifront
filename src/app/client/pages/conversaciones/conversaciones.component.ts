@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatContainerComponent, ChatConversation, ChatMessage } from '../../../../libs/shared-ui/chat';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 import { MenuService } from '../../services/menu.service';
+import { ChatService, ConversationDto, MessageDto } from '../../../services/chat.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-conversaciones',
@@ -12,12 +14,12 @@ import { MenuService } from '../../services/menu.service';
   templateUrl: './conversaciones.component.html',
   styleUrls: ['./conversaciones.component.scss']
 })
-export class ConversacionesComponent implements OnInit {
+export class ConversacionesComponent implements OnInit, OnDestroy {
   conversations: ChatConversation[] = [];
   currentConversation: ChatConversation | null = null;
   messages: ChatMessage[] = [];
-  currentUserId = 'CLIENT-001';
-  currentUserName = 'Cliente';
+  currentUserId = '0';
+  currentUserName = 'Usuario';
   loading = true;
   
   // Estado para móvil
@@ -29,76 +31,45 @@ export class ConversacionesComponent implements OnInit {
   // Acceso a window para responsive
   window = typeof window !== 'undefined' ? window : { innerWidth: 1024 } as any;
 
-  constructor(private menuService: MenuService) {}
+  private subs: Subscription[] = [];
+
+  constructor(private menuService: MenuService, private chat: ChatService) {}
 
   ngOnInit() {
+    try {
+      const raw = localStorage.getItem('adomi_user');
+      const user = raw ? JSON.parse(raw) : null;
+      if (user?.id) this.currentUserId = String(user.id);
+      if (user?.name) this.currentUserName = String(user.name);
+    } catch {}
+
+    this.chat.connectSocket();
+    this.subs.push(
+      this.chat.onMessageNew().subscribe((msg) => {
+        if (this.currentConversation && Number(this.currentConversation.id) === Number(msg.conversation_id)) {
+          this.messages.unshift(this.mapMessage(msg));
+        }
+      })
+    );
     this.loadConversations();
   }
 
+  ngOnDestroy() {
+    this.subs.forEach(s => s.unsubscribe());
+  }
+
   private loadConversations() {
-    // Simular carga de datos
-    setTimeout(() => {
-      this.conversations = [
-        {
-          id: 'conv-1',
-          clientId: 'CLIENT-001',
-          clientName: 'Elena Torres',
-          unreadCount: 2,
-          isActive: false,
-          status: 'active',
-          lastMessage: {
-            id: 'msg-1',
-            content: '¡Hola! ¿Está disponible para mañana?',
-            timestamp: new Date(Date.now() - 1000 * 60 * 30),
-            senderId: 'CLIENT-001',
-            senderName: 'Elena Torres',
-            senderType: 'client',
-            isRead: true
-          }
-        },
-        {
-          id: 'conv-2',
-          clientId: 'CLIENT-002',
-          clientName: 'Carlos Mendoza',
-          unreadCount: 0,
-          isActive: false,
-          status: 'inactive',
-          lastMessage: {
-            id: 'msg-2',
-            content: 'Perfecto, muchas gracias por confirmar.',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-            senderId: 'PRO-001',
-            senderName: 'Javier Núñez',
-            senderType: 'professional',
-            isRead: true
-          }
-        },
-        {
-          id: 'conv-3',
-          clientId: 'CLIENT-003',
-          clientName: 'María González',
-          unreadCount: 1,
-          isActive: false,
-          status: 'active',
-          lastMessage: {
-            id: 'msg-3',
-            content: '¿Podrías confirmar la hora de la cita?',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-            senderId: 'CLIENT-003',
-            senderName: 'María González',
-            senderType: 'client',
-            isRead: true
-          }
+    const uid = Number(this.currentUserId);
+    this.chat.listConversations(uid).subscribe({
+      next: (resp) => {
+        this.conversations = (resp.conversations || []).map(c => this.mapConversation(c));
+        if (this.conversations.length > 0) {
+          this.selectConversation(this.conversations[0].id);
         }
-      ];
-
-      // Seleccionar la primera conversación por defecto
-      if (this.conversations.length > 0) {
-        this.selectConversation(this.conversations[0].id);
-      }
-
-      this.loading = false;
-    }, 1000);
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
   }
 
   selectConversation(conversationId: string) {
@@ -142,141 +113,28 @@ export class ConversacionesComponent implements OnInit {
   }
 
   private loadMessages(conversationId: string) {
-    // Simular carga de mensajes según la conversación
-    const sampleMessages: { [key: string]: ChatMessage[] } = {
-      'conv-1': [
-        {
-          id: 'msg-1',
-          content: '¡Hola! ¿Está disponible para mañana?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30),
-          senderId: 'CLIENT-001',
-          senderName: 'Elena Torres',
-          senderType: 'client',
-          isRead: true
-        },
-        {
-          id: 'msg-2',
-          content: '¡Hola Elena! Sí, tengo disponibilidad mañana. ¿Qué servicio te interesa?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 25),
-          senderId: 'PRO-001',
-          senderName: 'Javier Núñez',
-          senderType: 'professional',
-          isRead: true
-        },
-        {
-          id: 'msg-3',
-          content: 'Me interesa el servicio de Soporte Técnico. ¿Podría ser a las 2:00 PM?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 20),
-          senderId: 'CLIENT-001',
-          senderName: 'Elena Torres',
-          senderType: 'client',
-          isRead: true
-        }
-      ],
-      'conv-2': [
-        {
-          id: 'msg-4',
-          content: 'Hola, ¿podrías ayudarme con mi computadora?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-          senderId: 'CLIENT-002',
-          senderName: 'Carlos Mendoza',
-          senderType: 'client',
-          isRead: true
-        },
-        {
-          id: 'msg-5',
-          content: 'Por supuesto, ¿qué problema específico tienes?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 23),
-          senderId: 'PRO-001',
-          senderName: 'Javier Núñez',
-          senderType: 'professional',
-          isRead: true
-        },
-        {
-          id: 'msg-6',
-          content: 'Perfecto, muchas gracias por confirmar.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 22),
-          senderId: 'CLIENT-002',
-          senderName: 'Carlos Mendoza',
-          senderType: 'client',
-          isRead: true
-        }
-      ],
-      'conv-3': [
-        {
-          id: 'msg-7',
-          content: 'Buenos días, ¿está disponible para hoy?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-          senderId: 'CLIENT-003',
-          senderName: 'María González',
-          senderType: 'client',
-          isRead: true
-        },
-        {
-          id: 'msg-8',
-          content: 'Sí, tengo disponibilidad. ¿Qué servicio necesitas?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1),
-          senderId: 'PRO-001',
-          senderName: 'Javier Núñez',
-          senderType: 'professional',
-          isRead: true
-        },
-        {
-          id: 'msg-9',
-          content: '¿Podrías confirmar la hora de la cita?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1),
-          senderId: 'CLIENT-003',
-          senderName: 'María González',
-          senderType: 'client',
-          isRead: true
-        }
-      ]
-    };
-
-    this.messages = sampleMessages[conversationId] || [];
+    this.chat.listMessages(Number(conversationId), { limit: 50 }).subscribe({
+      next: (resp) => {
+        const list = (resp.messages || []).map(m => this.mapMessage(m));
+        this.messages = list;
+      }
+    });
   }
 
   onSendMessage(event: { conversationId: string; content: string }) {
-    console.log('Enviando mensaje:', event);
-    
-    // Crear nuevo mensaje
-    const newMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      content: event.content,
-      timestamp: new Date(),
-      senderId: this.currentUserId,
-      senderName: this.currentUserName,
-      senderType: 'client',
-      isRead: true
-    };
-
-    // Agregar mensaje a la lista
-    this.messages.push(newMessage);
-
-    // Actualizar último mensaje en la conversación
-    if (this.currentConversation) {
-      this.currentConversation.lastMessage = newMessage;
-    }
-
-    // Simular respuesta automática después de 2 segundos
-    setTimeout(() => {
-      const response: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        content: 'Perfecto, gracias por tu mensaje. Te responderé pronto.',
-        timestamp: new Date(),
-        senderId: 'PRO-001',
-        senderName: 'Javier Núñez',
-        senderType: 'professional',
-        isRead: true
-      };
-      
-      this.messages.push(response);
-      
-      // Actualizar último mensaje en la conversación
-      if (this.currentConversation) {
-        this.currentConversation.lastMessage = response;
+    const convId = Number(event.conversationId || this.currentConversation?.id);
+    if (!convId || !event.content || !this.currentConversation) return;
+    const dto = (this.currentConversation as any).__dto as ConversationDto | undefined;
+    const userId = Number(this.currentUserId);
+    const receiverId = dto ? (userId === Number(dto.client_id) ? Number(dto.provider_id) : Number(dto.client_id)) : 0;
+    if (!receiverId) return;
+    this.chat.sendMessage(convId, receiverId, event.content).subscribe({
+      next: (resp) => {
+        const msg = this.mapMessage(resp.message);
+        this.messages.unshift(msg);
+        this.currentConversation!.lastMessage = msg;
       }
-    }, 2000);
+    });
   }
 
   onSearchConversations(query: string) {
@@ -325,5 +183,43 @@ export class ConversacionesComponent implements OnInit {
 
   isMobile(): boolean {
     return typeof window !== 'undefined' && window.innerWidth <= 768;
+  }
+
+  private mapConversation(c: ConversationDto): ChatConversation {
+    const otherLabel = 'Contacto';
+    const last: ChatMessage | undefined = c.last_message_id ? {
+      id: String(c.last_message_id),
+      content: c.last_message_preview || '',
+      timestamp: c.last_message_at ? new Date(c.last_message_at) : new Date(),
+      senderId: '',
+      senderName: otherLabel,
+      senderType: 'client',
+      isRead: true
+    } : undefined;
+    const conv: ChatConversation = {
+      id: String(c.id),
+      clientId: String(c.client_id),
+      clientName: otherLabel,
+      unreadCount: Number(c.unread_count || 0),
+      isActive: false,
+      status: 'active',
+      lastMessage: last
+    };
+    (conv as any).__dto = c;
+    return conv;
+  }
+
+  private mapMessage(m: MessageDto): ChatMessage {
+    const userId = Number(this.currentUserId);
+    const fromCurrent = Number(m.sender_id) === userId;
+    return {
+      id: String(m.id),
+      content: m.content,
+      timestamp: new Date(m.created_at),
+      senderId: String(m.sender_id),
+      senderName: fromCurrent ? 'Tú' : 'Contacto',
+      senderType: fromCurrent ? 'professional' : 'client',
+      isRead: !!m.read_at
+    };
   }
 }

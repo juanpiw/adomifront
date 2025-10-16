@@ -133,9 +133,12 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
                 <span class="text-gray-800 font-bold ml-1.5">{{ provider.rating }}</span>
                 <span class="text-gray-400 text-sm ml-2">({{ provider.review_count }})</span>
               </div>
-              <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id, $event)">
-                Ver Perfil
-              </a>
+                <div class="flex items-center gap-3">
+                  <span *ngIf="provider.min_price !== undefined" class="text-sm text-slate-700 font-semibold whitespace-nowrap">Desde &#36;{{ provider.min_price | number:'1.0-0' }}</span>
+                <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id, $event)">
+                  Ver Perfil
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -450,9 +453,12 @@ export class ExplorarComponent implements OnInit {
     this.loading = true;
     this.searchError = '';
 
+    const price = this.getPriceRange(this.selectedPriceRange);
     const baseFilters: SearchFilters = {
       search: this.selectedService,
       location: this.selectedLocationId,
+      price_min: price.min === null ? undefined : price.min,
+      price_max: price.max === null ? undefined : price.max,
       limit: 20,
       offset: 0
     };
@@ -483,7 +489,17 @@ export class ExplorarComponent implements OnInit {
             providers: results.providers.data.length,
             services: results.services.data.length
           });
-          this.filteredProviders = results.providers.data;
+          // Anotar precio mínimo si viene lista de servicios en el payload
+          this.filteredProviders = results.providers.data.map((p: any) => {
+            let minPrice: number | undefined = undefined;
+            if (Array.isArray(p.services) && p.services.length > 0) {
+              try {
+                const prices = p.services.map((s: any) => Number(s.price)).filter((n: number) => Number.isFinite(n));
+                if (prices.length > 0) minPrice = Math.min(...prices);
+              } catch {}
+            }
+            return { ...p, min_price: minPrice };
+          });
           this.filteredServices = results.services.data;
         }
 
@@ -500,6 +516,16 @@ export class ExplorarComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // Helper único para convertir el rango de precio del UI a min/max
+  private getPriceRange(range: string | null | undefined): { min: number | null; max: number | null } {
+    if (!range) return { min: null, max: null };
+    if (range === '0-10000') return { min: 0, max: 10000 };
+    if (range === '10001-25000') return { min: 10001, max: 25000 };
+    if (range === '25001-50000') return { min: 25001, max: 50000 };
+    if (range === '50001+') return { min: 50001, max: null };
+    return { min: null, max: null };
   }
 
   private getDateISO(datetime: any): string {
