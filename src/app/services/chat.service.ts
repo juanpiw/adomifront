@@ -91,10 +91,12 @@ export class ChatService {
       const token = localStorage.getItem('adomi_access_token') || '';
       this.socket = io(this.apiBase, {
         path: '/socket.io',
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'],
         auth: { token }
       });
-      this.socket.on('connect', () => {});
+      this.socket.on('connect', () => {
+        try { console.log('[CHAT SOCKET] connected:', this.socket?.id); } catch {}
+      });
       this.socket.on('message:new', (msg: MessageDto) => {
         this.messageNew$.next(msg);
       });

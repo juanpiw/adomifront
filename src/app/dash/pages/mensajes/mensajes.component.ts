@@ -48,6 +48,13 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
         if (this.currentConversation && Number(this.currentConversation.id) === Number(msg.conversation_id)) {
           this.messages.unshift(this.mapMessage(msg));
         }
+        const conv = this.conversations.find(c => Number(c.id) === Number(msg.conversation_id));
+        if (conv) {
+          conv.lastMessage = this.mapMessage(msg);
+          if (String(msg.sender_id) !== this.currentUserId && (!this.currentConversation || conv.id !== this.currentConversation.id)) {
+            conv.unreadCount = (conv.unreadCount || 0) + 1;
+          }
+        }
       })
     );
 
@@ -179,7 +186,7 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
   }
 
   private mapConversation(c: ConversationDto): ChatConversation {
-    const otherLabel = 'Contacto';
+    const otherLabel = (c as any).client_name || (c as any).provider_name || 'Contacto';
     const last: ChatMessage | undefined = c.last_message_id ? {
       id: String(c.last_message_id),
       content: c.last_message_preview || '',
