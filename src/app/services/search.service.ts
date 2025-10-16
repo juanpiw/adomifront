@@ -32,6 +32,7 @@ export interface Provider {
   avatar_url?: string;
   location: string;
   services_count: number;
+  min_price?: number;
   experience_years: number;
   is_online: boolean;
   is_favorite?: boolean;
