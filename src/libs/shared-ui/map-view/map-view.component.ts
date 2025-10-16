@@ -73,6 +73,7 @@ interface MapBounds {
           <div class="map-address flex items-center gap-2">
             <!-- Places API (New) Autocomplete Web Component -->
             <gmpx-place-autocomplete
+              #placeAuto
               class="px-3 py-2 text-sm border border-slate-300 rounded-lg w-56"
               placeholder="Ingresa una dirección"
               (gmpx-placechange)="onPlaceChange($event)">
@@ -341,6 +342,7 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
 
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   @ViewChild('addressInput') addressInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('placeAuto') placeAutoRef!: ElementRef<any>;
 
   // State
   viewMode: 'map' | 'list' = 'map';
@@ -532,7 +534,14 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
   // Buscar por dirección usando Geocoder si no hay Places
   onAddressSearch(event?: Event) {
     if (event) { try { event.preventDefault(); event.stopPropagation(); } catch {} }
-    const query = (this.addressQuery || '').trim();
+    let query = (this.addressQuery || '').trim();
+    // Si el input manual está vacío, intentar leer el valor del web component de Autocomplete
+    if (!query) {
+      try {
+        const wcVal = (this.placeAutoRef?.nativeElement?.value || '').trim();
+        if (wcVal) query = wcVal;
+      } catch {}
+    }
     if (!query) return;
     if (this.googleMapReady && google?.maps?.Geocoder) {
       const geocoder = new google.maps.Geocoder();
