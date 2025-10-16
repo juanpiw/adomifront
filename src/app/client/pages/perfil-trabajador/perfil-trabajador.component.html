@@ -53,8 +53,8 @@
       <!-- Right Sidebar - Booking Panel -->
       <div class="perfil-trabajador-right">
         <app-booking-panel 
-          [providerId]="workerId"
-          [providerName]="profileHeroData?.name"
+          [providerId]="workerId || undefined"
+          [providerName]="profileHeroData.name"
           [data]="bookingPanelData"
           (serviceSelected)="onServiceSelected($event)"
           (dateSelected)="onDateSelected($event)"
