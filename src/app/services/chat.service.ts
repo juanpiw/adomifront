@@ -96,6 +96,15 @@ export class ChatService {
         transports: ['websocket', 'polling'],
         auth: { token }
       });
+      this.socket.on('connect_error', (err: any) => {
+        console.error('[CHAT SOCKET] connect_error:', err?.message || err);
+      });
+      this.socket.on('error', (err: any) => {
+        console.error('[CHAT SOCKET] error:', err);
+      });
+      this.socket.on('disconnect', (reason: any) => {
+        console.warn('[CHAT SOCKET] disconnected:', reason);
+      });
       this.socket.on('connect', () => {
         try { console.log('[CHAT SOCKET] connected:', this.socket?.id); } catch {}
         // Re-join previously joined rooms on reconnect
