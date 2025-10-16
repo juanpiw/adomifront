@@ -34,7 +34,7 @@ interface MapBounds {
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <!-- Google Maps API Loader for Web Components -->
-    <gmpx-api-loader [attr.key]="googleKey"></gmpx-api-loader>
+    <gmpx-api-loader [attr.key]="googleKey" version="weekly"></gmpx-api-loader>
     <div class="map-container" [class]="containerClass">
       <!-- Map Header -->
       <div class="map-header" [class]="headerClass">
@@ -392,34 +392,27 @@ export class MapViewComponent implements OnInit, AfterViewInit, OnDestroy, OnCha
       return;
     }
 
-    await this.loadGoogleMapsScript(apiKey);
+    // No inyectar el script manualmente: esperar a que gmpx-api-loader lo cargue
+    await this.waitForGoogleMaps();
     this.initGoogleMap();
   }
 
-  private loadGoogleMapsScript(apiKey: string): Promise<void> {
+  private waitForGoogleMaps(timeoutMs: number = 10000): Promise<void> {
     return new Promise((resolve, reject) => {
-      // If already loaded
-      if ((window as any).google && (window as any).google.maps) {
+      if ((window as any).google?.maps) {
         resolve();
         return;
       }
-
-      const scriptId = 'google-maps-script';
-      const existing = document.getElementById(scriptId);
-      if (existing) {
-        existing.addEventListener('load', () => resolve());
-        existing.addEventListener('error', () => reject());
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject();
-      document.head.appendChild(script);
+      const start = Date.now();
+      const id = setInterval(() => {
+        if ((window as any).google?.maps) {
+          clearInterval(id);
+          resolve();
+        } else if (Date.now() - start > timeoutMs) {
+          clearInterval(id);
+          reject(new Error('Google Maps did not load in time'));
+        }
+      }, 100);
     });
   }
 
