@@ -14,8 +14,9 @@
               <a class="rail-item" routerLink="/client/favoritos" routerLinkActive="active" title="Favoritos" (click)="onNav()">
                 <ui-icon name="heart" [size]="18"></ui-icon>
               </a>
-              <a class="rail-item" routerLink="/client/conversaciones" routerLinkActive="active" title="Conversaciones" (click)="onNav()">
+              <a class="rail-item" routerLink="/client/conversaciones" routerLinkActive="active" title="Conversaciones" (click)="onNav()" style="position:relative;">
                 <ui-icon name="message" [size]="18"></ui-icon>
+                <span *ngIf="unreadTotal > 0" class="badge-unread">{{ unreadTotal }}</span>
               </a>
               <a class="rail-item" routerLink="/client/perfil" routerLinkActive="active" title="Mi Perfil" (click)="onNav()">
                 <ui-icon name="user" [size]="18"></ui-icon>

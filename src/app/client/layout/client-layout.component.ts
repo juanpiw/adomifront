@@ -10,6 +10,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { ClientProfileService } from '../../services/client-profile.service';
 import { environment } from '../../../environments/environment';
 import { MenuService } from '../services/menu.service';
+import { ChatService, MessageDto } from '../../services/chat.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -37,9 +38,12 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   menuService = inject(MenuService);
   private clientProfile = inject(ClientProfileService);
   private platformId = inject(PLATFORM_ID);
+  private chat = inject(ChatService);
 
   userName: string | null = null;
   userAvatarUrl: string | null = null;
+  unreadTotal = 0;
+  private subs: Subscription[] = [];
 
   ngOnInit() {
     // Initialize collapsed state based on screen size
@@ -77,12 +81,25 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
         this.userAvatarUrl = null;
       }
     });
+
+    // Escuchar mensajes para badge
+    this.subs.push(
+      this.chat.onMessageNew().subscribe((msg: MessageDto) => {
+        try {
+          const me = Number(JSON.parse(localStorage.getItem('adomi_user') || '{}')?.id || 0);
+          if (me && Number(msg.receiver_id) === me) {
+            this.unreadTotal = Math.min(99, (this.unreadTotal || 0) + 1);
+          }
+        } catch {}
+      })
+    );
   }
 
   ngOnDestroy() {
     if (this.menuSubscription) {
       this.menuSubscription.unsubscribe();
     }
+    this.subs.forEach(s => s.unsubscribe());
   }
 
   onNav() {
