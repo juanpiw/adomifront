@@ -120,6 +120,10 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
               <div class="ml-4">
                 <p class="font-bold text-lg text-gray-900">{{ provider.name }}</p>
                 <p class="text-sm text-gray-500">{{ provider.profession }}</p>
+                <p class="text-xs text-gray-500 flex items-center mt-1" *ngIf="provider.location">
+                  <ui-icon name="map-pin" class="w-3 h-3 mr-1"></ui-icon>
+                  {{ provider.location }}
+                </p>
               </div>
             </div>
             <p class="text-gray-600 text-sm mb-4">{{ provider.description }}</p>
