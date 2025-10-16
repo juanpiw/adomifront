@@ -33,6 +33,7 @@ export class ChatService {
   // socket state (lazy)
   private socket: any | null = null;
   private messageNew$ = new Subject<MessageDto>();
+  private joinedRooms = new Set<number>();
 
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('adomi_access_token') || '';
@@ -96,6 +97,18 @@ export class ChatService {
       });
       this.socket.on('connect', () => {
         try { console.log('[CHAT SOCKET] connected:', this.socket?.id); } catch {}
+        // Re-join previously joined rooms on reconnect
+        try {
+          this.joinedRooms.forEach((convId) => {
+            this.socket?.emit('join:conversation', convId);
+          });
+        } catch {}
+      });
+      this.socket.on('reconnect', () => {
+        try {
+          console.log('[CHAT SOCKET] reconnected, rejoining rooms');
+          this.joinedRooms.forEach((convId) => this.socket?.emit('join:conversation', convId));
+        } catch {}
       });
       this.socket.on('message:new', (msg: MessageDto) => {
         this.messageNew$.next(msg);
@@ -114,7 +127,10 @@ export class ChatService {
 
   async joinConversation(conversationId: number): Promise<void> {
     if (!this.socket) await this.connectSocket();
-    try { this.socket?.emit('join:conversation', conversationId); } catch {}
+    try {
+      this.socket?.emit('join:conversation', conversationId);
+      this.joinedRooms.add(conversationId);
+    } catch {}
   }
 
   onMessageNew(): Observable<MessageDto> {
