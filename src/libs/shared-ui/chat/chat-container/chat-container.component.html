@@ -44,7 +44,7 @@
               </span>
               <div class="chat-actions">
                 <button class="chat-action-btn" (click)="$event.stopPropagation(); toggleMenu(conversation.id)">
-                  <ui-icon name="more-vertical"></ui-icon>
+                  <ui-icon name="dots-vertical"></ui-icon>
                 </button>
                 <div class="chat-action-menu" *ngIf="openMenuId === conversation.id">
                   <button (click)="$event.stopPropagation(); markStarred(conversation.id)">Marcar como destacada</button>

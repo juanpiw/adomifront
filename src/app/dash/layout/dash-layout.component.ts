@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
@@ -14,7 +15,7 @@ import { ChatService, MessageDto } from '../../services/chat.service';
 @Component({
   selector: 'app-dash-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent, PlanUpgradeAlertComponent, TopbarComponent],
+  imports: [CommonModule, RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent, PlanUpgradeAlertComponent, TopbarComponent],
   templateUrl: './dash-layout.component.html',
   styleUrls: ['./dash-layout.component.scss']
 })
