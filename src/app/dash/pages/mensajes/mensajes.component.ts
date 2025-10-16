@@ -70,6 +70,8 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
     this.chat.listConversations(uid).subscribe({
       next: (resp) => {
         this.conversations = (resp.conversations || []).map(c => this.mapConversation(c));
+        // Unirse a todas las salas para recibir en tiempo real
+        try { this.conversations.forEach(c => this.chat.joinConversation(Number(c.id))); } catch {}
         if (this.conversations.length > 0) this.selectConversation(this.conversations[0].id);
         this.loading = false;
       },
