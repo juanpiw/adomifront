@@ -110,6 +110,8 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
       conversation.isActive = true;
       conversation.unreadCount = 0; // Marcar como leída
       this.currentConversation = conversation;
+      // Unirse a la sala socket para esta conversación
+      try { this.chat.joinConversation(Number(conversationId)); } catch {}
       this.loadMessages(conversationId);
       
       // En móvil, cambiar a vista de chat
@@ -156,11 +158,35 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
     const userId = Number(this.currentUserId);
     const receiverId = dto ? (userId === Number(dto.client_id) ? Number(dto.provider_id) : Number(dto.client_id)) : 0;
     if (!receiverId) return;
+    // Inserción optimista
+    const optimistic: ChatMessage = {
+      id: `temp-${Date.now()}`,
+      content: event.content,
+      timestamp: new Date(),
+      senderId: String(this.currentUserId),
+      senderName: 'Tú',
+      senderType: 'professional',
+      isRead: true
+    };
+    this.messages.unshift(optimistic);
+    this.currentConversation.lastMessage = optimistic;
+
     this.chat.sendMessage(convId, receiverId, event.content).subscribe({
       next: (resp) => {
-        const msg = this.mapMessage(resp.message);
-        this.messages.unshift(msg);
-        this.currentConversation!.lastMessage = msg;
+        // Reemplazar optimista con respuesta real
+        const idx = this.messages.findIndex(m => m.id === optimistic.id);
+        const real = this.mapMessage(resp.message);
+        if (idx >= 0) {
+          this.messages.splice(idx, 1, real);
+        } else {
+          this.messages.unshift(real);
+        }
+        this.currentConversation!.lastMessage = real;
+      },
+      error: () => {
+        // Revertir inserción optimista si falla
+        const idx = this.messages.findIndex(m => m.id === optimistic.id);
+        if (idx >= 0) this.messages.splice(idx, 1);
       }
     });
   }
