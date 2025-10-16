@@ -54,6 +54,7 @@
       <div class="perfil-trabajador-right">
         <app-booking-panel 
           [providerId]="workerId"
+          [providerName]="profileHeroData?.name"
           [data]="bookingPanelData"
           (serviceSelected)="onServiceSelected($event)"
           (dateSelected)="onDateSelected($event)"

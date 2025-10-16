@@ -56,6 +56,7 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
     // Si viene providerId por query, auto-crear/abrir conversación
     const qp = this.route.snapshot.queryParamMap;
     const providerId = qp.get('providerId');
+    const providerName = qp.get('providerName');
     if (providerId) {
       const clientId = Number(this.currentUserId);
       const pid = Number(providerId);
@@ -63,6 +64,7 @@ export class ConversacionesComponent implements OnInit, OnDestroy {
         this.chat.createOrGetConversation(clientId, pid).subscribe({
           next: (resp) => {
             const conv = this.mapConversation(resp.conversation);
+            if (providerName) conv.clientName = providerName;
             // Insertar si no está en lista
             const exists = this.conversations.some(c => c.id === conv.id);
             if (!exists) this.conversations.unshift(conv);
