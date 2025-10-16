@@ -88,7 +88,12 @@ export class ChatService {
     try {
       const mod: any = await import('socket.io-client');
       const io = mod.io || mod.default?.io || mod.default;
-      this.socket = io(this.apiBase, { path: '/socket.io', transports: ['websocket'] });
+      const token = localStorage.getItem('adomi_access_token') || '';
+      this.socket = io(this.apiBase, {
+        path: '/socket.io',
+        transports: ['websocket'],
+        auth: { token }
+      });
       this.socket.on('connect', () => {});
       this.socket.on('message:new', (msg: MessageDto) => {
         this.messageNew$.next(msg);
@@ -107,7 +112,7 @@ export class ChatService {
 
   async joinConversation(conversationId: number): Promise<void> {
     if (!this.socket) await this.connectSocket();
-    try { this.socket?.emit('join', { conversationId }); } catch {}
+    try { this.socket?.emit('join:conversation', conversationId); } catch {}
   }
 
   onMessageNew(): Observable<MessageDto> {
