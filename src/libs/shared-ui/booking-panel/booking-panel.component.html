@@ -40,7 +40,7 @@
             </button>
             <div *ngIf="!data.timeSlots || data.timeSlots.length === 0" class="booking-panel__time-manual">
               <input type="time" class="booking-panel__time-input"
-                     (change)="onTimeChange(($event.target as HTMLInputElement).value || '')">
+                     (change)="onTimeChange($any($event.target).value || '')">
             </div>
             <div class="booking-panel__error" *ngIf="errorTime">{{ errorTime }}</div>
           </div>

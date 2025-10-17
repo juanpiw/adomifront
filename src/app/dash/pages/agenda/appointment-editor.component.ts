@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ProviderServicesService, Service } from '../../../services/provider-services.service';
+import { ProviderServicesService, ProviderServiceDto } from '../../../services/provider-services.service';
 
 export type EditorMode = 'create' | 'edit';
 
@@ -92,7 +92,7 @@ export class AppointmentEditorComponent implements OnInit {
   private fb = inject(FormBuilder);
   private providerServices = inject(ProviderServicesService);
 
-  services: Service[] = [];
+  services: ProviderServiceDto[] = [];
   form: FormGroup = this.fb.group({
     clientId: [null],
     serviceId: [null, Validators.required],
