@@ -60,6 +60,15 @@ export class DashLayoutComponent implements OnInit {
         }
       } catch {}
     });
+
+    // Al navegar al chat, limpiar badge
+    this.router.events.subscribe((ev: any) => {
+      if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
+        if (ev.urlAfterRedirects.includes('/dash/mensajes')) {
+          this.unreadTotal = 0;
+        }
+      }
+    });
   }
 
   private loadProviderProfile() {

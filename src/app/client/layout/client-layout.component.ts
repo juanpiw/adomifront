@@ -96,6 +96,15 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
 
     // Conectar socket y unirse a sala del usuario
     this.chat.connectSocket();
+
+    // Al navegar al chat, limpiar badge
+    this.router.events.subscribe((ev: any) => {
+      if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
+        if (ev.urlAfterRedirects.includes('/client/conversaciones')) {
+          this.unreadTotal = 0;
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
