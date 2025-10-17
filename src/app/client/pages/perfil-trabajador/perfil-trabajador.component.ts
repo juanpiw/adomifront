@@ -113,7 +113,8 @@ export class PerfilTrabajadorComponent implements OnInit {
           reviews: d.profile.reviews_count,
           location: d.profile.location,
           experience: d.profile.years_experience,
-          services: d.services.map(s => ({ name: s.name, price: `$${s.price.toLocaleString('es-CL')}`, duration: `${s.duration_minutes} min`, image: s.image_url })),
+          // Conservar ids y valores numéricos para booking
+          services: d.services.map(s => ({ id: s.id, name: s.name, price: s.price, duration_minutes: s.duration_minutes, image: s.image_url })),
           photos: d.portfolio.map(p => p.image_url).filter(Boolean),
           bio: d.profile.bio,
           verified: d.profile.is_verified,
@@ -143,18 +144,18 @@ export class PerfilTrabajadorComponent implements OnInit {
     // Booking Panel Data
     this.bookingPanelData = {
       services: this.workerData.services.map((service: any, index: number) => ({
-        id: String(index),
+        id: String(service.id),
         name: service.name,
-        duration: service.duration,
-        price: service.price,
+        duration: `${service.duration_minutes} min`,
+        price: `$${Number(service.price).toLocaleString('es-CL')}`,
         isActive: index === 0
       })),
       timeSlots: [],
       summary: {
-        service: '',
+        service: this.workerData.services[0]?.name || '',
         date: this.formatToday(),
         time: '',
-        price: ''
+        price: this.workerData.services[0] ? `$${Number(this.workerData.services[0].price).toLocaleString('es-CL')}` : ''
       }
     };
 
@@ -236,14 +237,33 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onServiceSelected(serviceId: string): void {
+    // Marcar activo en el estado del padre y actualizar resumen
+    this.bookingPanelData.services = this.bookingPanelData.services.map(s => ({
+      ...s,
+      isActive: s.id === serviceId
+    }));
+    const selected = this.bookingPanelData.services.find(s => s.id === serviceId);
+    if (selected) {
+      this.bookingPanelData.summary.service = selected.name;
+      this.bookingPanelData.summary.price = selected.price;
+      this.bookingPanelData.summary.time = '';
+    }
     const providerId = Number(this.workerId);
     const date = this.bookingPanelData.summary.date || this.formatToday();
     this.loadTimeSlots(providerId, date, Number(serviceId));
   }
 
   onDateSelected(date: string): void {
+    this.bookingPanelData.summary.date = date;
     const providerId = Number(this.workerId);
-    const activeService = this.bookingPanelData.services.find(s => s.isActive);
+    let activeService = this.bookingPanelData.services.find(s => s.isActive);
+    if (!activeService && this.bookingPanelData.services.length > 0) {
+      activeService = this.bookingPanelData.services[0];
+      this.bookingPanelData.services = this.bookingPanelData.services.map((s, i) => ({ ...s, isActive: i === 0 }));
+      this.bookingPanelData.summary.service = activeService.name;
+      this.bookingPanelData.summary.price = activeService.price;
+      this.bookingPanelData.summary.time = '';
+    }
     if (activeService) this.loadTimeSlots(providerId, date, Number(activeService.id));
   }
 
