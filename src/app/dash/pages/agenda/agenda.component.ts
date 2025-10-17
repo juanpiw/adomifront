@@ -112,7 +112,11 @@ export class DashAgendaComponent implements OnInit {
     this.loadDashboardData();
     // Cargar mes actual
     const today = new Date();
+    // Preseleccionar el día de hoy para mostrar citas sin click
+    this.selectedDate = today;
     this.loadMonth(today.getFullYear(), today.getMonth() + 1);
+    const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    this.loadDay(iso);
     // Realtime updates
     this.appointments.connectSocket();
     this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
