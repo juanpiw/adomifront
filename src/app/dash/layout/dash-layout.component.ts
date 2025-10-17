@@ -11,6 +11,8 @@ import { AuthService } from '../../auth/services/auth.service';
 import { ProviderProfileService } from '../../services/provider-profile.service';
 import { environment } from '../../../environments/environment';
 import { ChatService, MessageDto } from '../../services/chat.service';
+import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
+import { NotificationService } from '../../../libs/shared-ui/notifications/services/notification.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -45,6 +47,8 @@ export class DashLayoutComponent implements OnInit {
   private providerProfile = inject(ProviderProfileService);
   private router = inject(Router);
   private chat = inject(ChatService);
+  private appointments = inject(AppointmentsService);
+  private notifications = inject(NotificationService);
 
   ngOnInit() {
     this.loadPlanInfo();
@@ -52,6 +56,26 @@ export class DashLayoutComponent implements OnInit {
 
     // Conectar socket y escuchar mensajes para badge
     this.chat.connectSocket();
+    // Conectar socket de citas y crear notificaciones a nivel dashboard
+    const me = this.sessionService.getUser()?.id;
+    if (me) {
+      this.appointments.connectSocket(me);
+      this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => {
+        try {
+          this.notifications.setUserProfile('provider');
+          const who = (a as any).client_name ? ` de ${(a as any).client_name}` : '';
+          this.notifications.createNotification({
+            type: 'appointment',
+            profile: 'provider',
+            title: 'Nueva cita por confirmar',
+            message: `Tienes una nueva cita${who} el ${a.date} a las ${a.start_time.slice(0,5)}`,
+            priority: 'high',
+            actions: ['view'],
+            metadata: { appointmentId: String(a.id), clientName: (a as any).client_name }
+          });
+        } catch {}
+      });
+    }
     this.chat.onMessageNew().subscribe((msg: MessageDto) => {
       try {
         const me = this.sessionService.getUser()?.id;
