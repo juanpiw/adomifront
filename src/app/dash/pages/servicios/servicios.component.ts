@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   ServicesHeaderComponent,
@@ -12,6 +12,7 @@ import {
   ToastType
 } from '../../../../libs/shared-ui/services';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
+import { ProviderServicesService, ProviderServiceDto } from '../../../services/provider-services.service';
 
 @Component({
   selector: 'app-d-servicios',
@@ -56,6 +57,7 @@ export class DashServiciosComponent implements OnInit {
   
   // Form state
   editingService: Service | null = null;
+  private api = inject(ProviderServicesService);
   
   // Modal state
   showConfirmationModal = false;
@@ -72,35 +74,14 @@ export class DashServiciosComponent implements OnInit {
 
   private loadServices() {
     this.loading = true;
-    
-    // Simular carga de datos
-    setTimeout(() => {
-      this.services = [
-        {
-          id: 1,
-          name: 'Soporte Técnico Premium',
-          category: 'Tecnología',
-          type: 'Soporte Técnico',
-          description: 'Servicio completo de soporte técnico para computadoras y dispositivos móviles. Incluye diagnóstico, reparación y optimización.',
-          price: 25000,
-          duration: 60,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: 2,
-          name: 'Limpieza Profunda de Hogar',
-          category: 'Hogar',
-          type: 'Limpieza de Hogar',
-          description: 'Servicio de limpieza completa que incluye todas las habitaciones, baños, cocina y áreas comunes.',
-          price: 45000,
-          duration: 180,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ];
-      this.loading = false;
-    }, 1000);
+    this.api.list().subscribe({
+      next: (resp) => {
+        const dtos = resp.services || [];
+        this.services = dtos.map(this.mapDtoToService);
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
   }
 
   // Header events
@@ -127,30 +108,39 @@ export class DashServiciosComponent implements OnInit {
   // Form events
   onServiceSaved(formData: ServiceFormData) {
     if (this.editingService) {
-      // Editar servicio existente
-      const index = this.services.findIndex(s => s.id === this.editingService!.id);
-      if (index !== -1) {
-        this.services[index] = {
-          ...this.editingService,
-          ...formData,
-          updatedAt: new Date()
-        };
-        this.showToastMessage('success', 'Servicio actualizado correctamente');
-      }
+      this.api.update(this.editingService.id, {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        duration_minutes: formData.duration,
+        custom_category: formData.category === 'Otro' ? formData.type : undefined,
+      }).subscribe({
+        next: (resp) => {
+          const updated = this.mapDtoToService(resp.service);
+          const index = this.services.findIndex(s => s.id === updated.id);
+          if (index !== -1) this.services[index] = updated;
+          this.showToastMessage('success', 'Servicio actualizado correctamente');
+          this.currentView = 'list';
+          this.editingService = null;
+        }
+      });
     } else {
-      // Crear nuevo servicio
-      const newService: Service = {
-        id: Date.now(), // En producción usar UUID
-        ...formData,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      this.services.unshift(newService);
-      this.showToastMessage('success', 'Servicio creado correctamente');
+      this.api.create({
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        duration_minutes: formData.duration,
+        custom_category: formData.category === 'Otro' ? formData.type : undefined,
+      }).subscribe({
+        next: (resp) => {
+          const created = this.mapDtoToService(resp.service);
+          this.services.unshift(created);
+          this.showToastMessage('success', 'Servicio creado correctamente');
+          this.currentView = 'list';
+          this.editingService = null;
+        }
+      });
     }
-    
-    this.currentView = 'list';
-    this.editingService = null;
   }
 
   onFormCancelled() {
@@ -160,12 +150,20 @@ export class DashServiciosComponent implements OnInit {
 
   // Modal events
   onDeleteConfirmed() {
-    if (this.serviceToDelete) {
-      this.services = this.services.filter(s => s.id !== this.serviceToDelete!.id);
-      this.showToastMessage('success', 'Servicio eliminado correctamente');
-    }
-    this.showConfirmationModal = false;
-    this.serviceToDelete = null;
+    if (!this.serviceToDelete) { this.showConfirmationModal = false; return; }
+    const id = this.serviceToDelete.id;
+    this.api.delete(id).subscribe({
+      next: () => {
+        this.services = this.services.filter(s => s.id !== id);
+        this.showToastMessage('success', 'Servicio eliminado correctamente');
+        this.showConfirmationModal = false;
+        this.serviceToDelete = null;
+      },
+      error: () => {
+        this.showConfirmationModal = false;
+        this.serviceToDelete = null;
+      }
+    });
   }
 
   onDeleteCancelled() {
@@ -188,4 +186,16 @@ export class DashServiciosComponent implements OnInit {
       this.showToast = false;
     }, 3000);
   }
+
+  private mapDtoToService = (dto: ProviderServiceDto): Service => ({
+    id: dto.id,
+    name: dto.name,
+    description: dto.description || '',
+    category: dto.custom_category || 'Otros',
+    type: dto.custom_category || 'Servicio',
+    price: dto.price,
+    duration: dto.duration_minutes,
+    createdAt: dto.created_at ? new Date(dto.created_at) : new Date(),
+    updatedAt: dto.updated_at ? new Date(dto.updated_at) : new Date(),
+  });
 }
