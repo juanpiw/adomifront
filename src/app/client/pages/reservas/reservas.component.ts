@@ -11,6 +11,7 @@ import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/rev
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
+import { PaymentsService } from '../../../services/payments.service';
 
 @Component({ 
   selector:'app-c-reservas', 
@@ -65,6 +66,7 @@ export class ClientReservasComponent implements OnInit {
   private profileValidation = inject(ProfileValidationService);
   private appointments = inject(AppointmentsService);
   private router = inject(Router);
+  private payments = inject(PaymentsService);
 
   activeTab = 0;
   
@@ -168,7 +170,16 @@ export class ClientReservasComponent implements OnInit {
   }
 
   onPagar(appointmentId: number) {
-    this.router.navigate(['/client/pago'], { queryParams: { appointmentId } });
+    this.payments.createCheckoutSession(appointmentId).subscribe({
+      next: (resp) => {
+        if (resp.success && resp.url) {
+          window.location.href = resp.url;
+        }
+      },
+      error: (err) => {
+        console.error('Error creando checkout de pago', err);
+      }
+    });
   }
 
   // Métodos del modal de reseñas
