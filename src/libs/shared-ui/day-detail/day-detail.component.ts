@@ -30,6 +30,7 @@ export class DayDetailComponent {
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
   @Output() newAppointment = new EventEmitter<Date>();
   @Output() citaCreated = new EventEmitter<NuevaCitaData>();
+  @Output() confirmAppointment = new EventEmitter<string>();
 
   isModalOpen: boolean = false;
 
@@ -80,6 +81,11 @@ export class DayDetailComponent {
 
   onAppointmentClick(appointment: DayAppointment) {
     this.appointmentClick.emit(appointment);
+  }
+
+  onConfirmClick(event: Event, appointment: DayAppointment) {
+    event.stopPropagation();
+    this.confirmAppointment.emit(appointment.id);
   }
 
   onNewAppointment() {

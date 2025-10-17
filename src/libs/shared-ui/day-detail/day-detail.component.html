@@ -53,6 +53,9 @@
           <p *ngIf="appointment.notes" class="day-detail__appointment-notes">
             {{ appointment.notes }}
           </p>
+          <div *ngIf="appointment.status === 'scheduled'" class="day-detail__appointment-actions">
+            <button class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
+          </div>
         </div>
       </div>
     </div>
