@@ -115,9 +115,9 @@ export class DashAgendaComponent implements OnInit {
     this.loadMonth(today.getFullYear(), today.getMonth() + 1);
     // Realtime updates
     this.appointments.connectSocket();
-    this.appointments.onAppointmentCreated().subscribe(a => this.onRealtimeUpsert(a));
-    this.appointments.onAppointmentUpdated().subscribe(a => this.onRealtimeUpsert(a));
-    this.appointments.onAppointmentDeleted().subscribe(p => this.onRealtimeDelete(p.id));
+    this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
+    this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
+    this.appointments.onAppointmentDeleted().subscribe((p: { id: number }) => this.onRealtimeDelete(p.id));
   }
 
   private loadDashboardData() {
@@ -251,7 +251,7 @@ export class DashAgendaComponent implements OnInit {
     const monthStr = `${year}-${String(month).padStart(2, '0')}`;
     this.loading = true;
     this.appointments.listByMonth(monthStr).subscribe({
-      next: (resp) => {
+      next: (resp: { success: boolean; appointments: AppointmentDto[] }) => {
         const apps = (resp.appointments || []) as AppointmentDto[];
         this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
         this.loading = false;
@@ -264,8 +264,8 @@ export class DashAgendaComponent implements OnInit {
   private loadDay(dateIso: string) {
     this.loading = true;
     this.appointments.listByDay(dateIso).subscribe({
-      next: (resp) => {
-        const apps = (resp.appointments || []) as AppointmentDto[];
+      next: (resp: { success: boolean; appointments: (AppointmentDto & { client_name?: string })[] }) => {
+        const apps = (resp.appointments || []) as (AppointmentDto & { client_name?: string })[];
         this.dayAppointments = apps.map(a => this.mapAppointmentToDay(a));
         this.loading = false;
       },

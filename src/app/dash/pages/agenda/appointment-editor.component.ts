@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ProviderServicesService, Service } from '../../services/provider-services.service';
+import { ProviderServicesService, Service } from '../../../services/provider-services.service';
 
 export type EditorMode = 'create' | 'edit';
 
