@@ -33,16 +33,19 @@ import { PaymentsService } from '../../../services/payments.service';
     <div class="content" *ngIf="activeTab === 0">
       <ui-proxima-cita-card *ngIf="proxima as p" [data]="p" (pagar)="onPagar($event)" style="margin-bottom:12px;"></ui-proxima-cita-card>
       <ui-pendiente-card *ngIf="pendiente as pen" [data]="pen"></ui-pendiente-card>
+      <p *ngIf="!proxima && !pendiente" style="color:#64748b;margin:8px 0 0 4px;">No tienes próximas reservas.</p>
     </div>
 
     <div class="content" *ngIf="activeTab === 1">
       <ui-reserva-pasada-card *ngIf="pasada1 as pa1" [data]="pa1" (onReview)="openReviewModal('Javier Núñez', 'Soporte Técnico', '1')" style="margin-bottom:12px;"></ui-reserva-pasada-card>
       <ui-reserva-pasada-card *ngIf="pasada2 as pa2" [data]="pa2" (onReview)="openReviewModal('Ana Pérez', 'Manicura', '2')"></ui-reserva-pasada-card>
+      <p *ngIf="!pasada1 && !pasada2" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas pasadas para mostrar.</p>
     </div>
 
     <div class="content" *ngIf="activeTab === 2">
       <ui-cancelada-cliente-card *ngIf="canceladaCliente as cc" [data]="cc" style="margin-bottom:12px;"></ui-cancelada-cliente-card>
       <ui-cancelada-profesional-card *ngIf="canceladaProfesional as cp" [data]="cp"></ui-cancelada-profesional-card>
+      <p *ngIf="!canceladaCliente && !canceladaProfesional" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas canceladas.</p>
     </div>
   </section>
 
