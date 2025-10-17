@@ -75,7 +75,7 @@
         <ng-template #appointmentActionsTemplate let-appointment="appointment">
           <button *ngIf="appointment.status === 'scheduled'"
                   class="day-detail__action-btn day-detail__action-btn--confirm"
-                  (click)="onConfirmAppointment(Number(appointment.id))">
+                  (click)="onConfirmAppointment(+appointment.id)">
             Confirmar
           </button>
         </ng-template>

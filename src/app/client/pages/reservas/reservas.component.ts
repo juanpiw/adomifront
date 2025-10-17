@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ReservasTabsComponent } from '../../../../libs/shared-ui/reservas/reservas-tabs.component';
 import { ProximaCitaCardComponent, ProximaCitaData } from '../../../../libs/shared-ui/reservas/proxima-cita-card.component';
 import { PendienteCardComponent, PendienteData } from '../../../../libs/shared-ui/reservas/pendiente-card.component';
@@ -29,18 +30,18 @@ import { AppointmentsService, AppointmentDto } from '../../../services/appointme
     <ui-reservas-tabs (tabChange)="activeTab = $event"></ui-reservas-tabs>
 
     <div class="content" *ngIf="activeTab === 0">
-      <ui-proxima-cita-card [data]="proxima" style="margin-bottom:12px;"></ui-proxima-cita-card>
-      <ui-pendiente-card [data]="pendiente"></ui-pendiente-card>
+      <ui-proxima-cita-card *ngIf="proxima as p" [data]="p" (pagar)="onPagar($event)" style="margin-bottom:12px;"></ui-proxima-cita-card>
+      <ui-pendiente-card *ngIf="pendiente as pen" [data]="pen"></ui-pendiente-card>
     </div>
 
     <div class="content" *ngIf="activeTab === 1">
-      <ui-reserva-pasada-card [data]="pasada1" (onReview)="openReviewModal('Javier Núñez', 'Soporte Técnico', '1')" style="margin-bottom:12px;"></ui-reserva-pasada-card>
-      <ui-reserva-pasada-card [data]="pasada2" (onReview)="openReviewModal('Ana Pérez', 'Manicura', '2')"></ui-reserva-pasada-card>
+      <ui-reserva-pasada-card *ngIf="pasada1 as pa1" [data]="pa1" (onReview)="openReviewModal('Javier Núñez', 'Soporte Técnico', '1')" style="margin-bottom:12px;"></ui-reserva-pasada-card>
+      <ui-reserva-pasada-card *ngIf="pasada2 as pa2" [data]="pa2" (onReview)="openReviewModal('Ana Pérez', 'Manicura', '2')"></ui-reserva-pasada-card>
     </div>
 
     <div class="content" *ngIf="activeTab === 2">
-      <ui-cancelada-cliente-card [data]="canceladaCliente" style="margin-bottom:12px;"></ui-cancelada-cliente-card>
-      <ui-cancelada-profesional-card [data]="canceladaProfesional"></ui-cancelada-profesional-card>
+      <ui-cancelada-cliente-card *ngIf="canceladaCliente as cc" [data]="cc" style="margin-bottom:12px;"></ui-cancelada-cliente-card>
+      <ui-cancelada-profesional-card *ngIf="canceladaProfesional as cp" [data]="cp"></ui-cancelada-profesional-card>
     </div>
   </section>
 
@@ -63,6 +64,7 @@ import { AppointmentsService, AppointmentDto } from '../../../services/appointme
 export class ClientReservasComponent implements OnInit {
   private profileValidation = inject(ProfileValidationService);
   private appointments = inject(AppointmentsService);
+  private router = inject(Router);
 
   activeTab = 0;
   
@@ -163,6 +165,10 @@ export class ClientReservasComponent implements OnInit {
     const target = new Date(y, m-1, d);
     const diff = Math.ceil((target.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime())/ (1000*60*60*24));
     return Math.max(diff, 0);
+  }
+
+  onPagar(appointmentId: number) {
+    this.router.navigate(['/client/pago'], { queryParams: { appointmentId } });
   }
 
   // Métodos del modal de reseñas
