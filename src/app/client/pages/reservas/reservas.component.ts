@@ -9,6 +9,7 @@ import { CanceladaProfesionalCardComponent, CanceladaProfesionalData } from '../
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
+import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 
 @Component({ 
   selector:'app-c-reservas', 
@@ -61,6 +62,7 @@ import { ProfileValidationService } from '../../../services/profile-validation.s
 })
 export class ClientReservasComponent implements OnInit {
   private profileValidation = inject(ProfileValidationService);
+  private appointments = inject(AppointmentsService);
 
   activeTab = 0;
   
@@ -69,13 +71,13 @@ export class ClientReservasComponent implements OnInit {
   missingFields: string[] = [];
   userType: 'client' | 'provider' = 'client';
   
-  // Datos de las reservas
-  proxima: ProximaCitaData = { titulo: 'Corte de Pelo con Elena Torres', subtitulo: 'Confirmada', fecha: 'Jueves, 25 de Octubre', hora: '10:00 AM', diasRestantes: 2 };
-  pendiente: PendienteData = { titulo: 'Manicura con Ana Pérez', fecha: 'Sábado, 27 de Octubre', hora: '15:00 PM' };
-  pasada1: ReservaPasadaData = { avatarUrl: 'https://placehold.co/64x64/E2E8F0/475569?text=JN', titulo: 'Soporte Técnico con Javier Núñez', fecha: '12 de Septiembre, 2025', precio: '$35.000', estado: 'Completado' };
-  pasada2: ReservaPasadaData = { avatarUrl: 'https://placehold.co/64x64/E2E8F0/475569?text=AP', titulo: 'Manicura con Ana Pérez', fecha: '03 de Agosto, 2025', precio: '$15.000', estado: 'Completado' };
-  canceladaCliente: CanceladaClienteData = { avatarUrl: 'https://placehold.co/64x64/E2E8F0/475569?text=RV', titulo: 'Jardinería con Ricardo Vega', fecha: '15 de Agosto, 2025', estadoPill: 'Gestionando Reembolso' };
-  canceladaProfesional: CanceladaProfesionalData = { avatarUrl: 'https://placehold.co/64x64/E2E8F0/475569?text=CS', titulo: 'Manicura con Carla Soto', fecha: '28 de Agosto, 2025', pillText: 'Reembolso completado' };
+  // Datos de las reservas (se rellenan desde API)
+  proxima: ProximaCitaData | null = null;
+  pendiente: PendienteData | null = null;
+  pasada1: ReservaPasadaData | null = null;
+  pasada2: ReservaPasadaData | null = null;
+  canceladaCliente: CanceladaClienteData | null = null;
+  canceladaProfesional: CanceladaProfesionalData | null = null;
 
   // Estado del modal de reseñas
   showReviewModal = false;
@@ -85,6 +87,7 @@ export class ClientReservasComponent implements OnInit {
 
   ngOnInit(): void {
     this.validateProfile();
+    this.loadAppointments();
   }
 
   private validateProfile() {
@@ -98,6 +101,68 @@ export class ClientReservasComponent implements OnInit {
       },
       error: (error) => console.error('Error validando perfil:', error)
     });
+  }
+
+  private loadAppointments(): void {
+    this.appointments.listClientAppointments().subscribe({
+      next: (resp) => {
+        const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number })[];
+        const todayIso = new Date();
+        const todayStr = `${todayIso.getFullYear()}-${String(todayIso.getMonth()+1).padStart(2,'0')}-${String(todayIso.getDate()).padStart(2,'0')}`;
+
+        const upcoming = list.filter(a => a.date >= todayStr && (a.status === 'scheduled' || a.status === 'confirmed'))
+                             .sort((a,b) => (a.date + a.start_time).localeCompare(b.date + b.start_time));
+        const past = list.filter(a => a.date < todayStr && a.status === 'completed')
+                         .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
+        const cancelled = list.filter(a => a.status === 'cancelled');
+
+        // Próxima confirmada → tarjeta principal; si no, mostrar pendiente
+        const nextConfirmed = upcoming.find(a => a.status === 'confirmed');
+        if (nextConfirmed) {
+          this.proxima = {
+            titulo: `${nextConfirmed.service_name || 'Servicio'} con ${nextConfirmed.provider_name || 'Profesional'}`,
+            subtitulo: 'Confirmada (Esperando pago)',
+            fecha: this.formatDate(nextConfirmed.date),
+            hora: this.formatTime(nextConfirmed.start_time),
+            diasRestantes: this.daysFromToday(nextConfirmed.date),
+            mostrarPagar: true,
+            appointmentId: nextConfirmed.id
+          };
+        } else {
+          const nextScheduled = upcoming.find(a => a.status === 'scheduled');
+          this.pendiente = nextScheduled ? {
+            titulo: `${nextScheduled.service_name || 'Servicio'} con ${nextScheduled.provider_name || 'Profesional'}`,
+            fecha: this.formatDate(nextScheduled.date),
+            hora: this.formatTime(nextScheduled.start_time)
+          } : null;
+        }
+        // Pasadas/canceladas demo: mapear primeras (en producción haríamos bucles para listarlas todas)
+        this.pasada1 = past[0] ? {
+          avatarUrl: '',
+          titulo: `${past[0].service_name || 'Servicio'} con ${past[0].provider_name || 'Profesional'}`,
+          fecha: this.formatDate(past[0].date),
+          precio: past[0].price ? `$${Number(past[0].price).toLocaleString('es-CL')}` : '',
+          estado: 'Completado'
+        } : null;
+      },
+      error: (err) => {
+        console.error('Error cargando citas del cliente', err);
+      }
+    });
+  }
+
+  private formatDate(iso: string): string {
+    const [y,m,d] = iso.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    return dt.toLocaleDateString('es-CL', { weekday:'long', day:'2-digit', month:'long' });
+  }
+  private formatTime(hhmm: string): string { return hhmm; }
+  private daysFromToday(dateIso: string): number {
+    const [y,m,d] = dateIso.split('-').map(Number);
+    const today = new Date();
+    const target = new Date(y, m-1, d);
+    const diff = Math.ceil((target.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime())/ (1000*60*60*24));
+    return Math.max(diff, 0);
   }
 
   // Métodos del modal de reseñas

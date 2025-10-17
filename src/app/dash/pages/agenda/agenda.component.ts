@@ -7,6 +7,7 @@ import { DashboardGraficoComponent } from '../../../../libs/shared-ui/dashboard-
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-d-agenda',
@@ -105,6 +106,8 @@ export class DashAgendaComponent implements OnInit {
   currentView: 'dashboard' | 'calendar' | 'config' = 'dashboard';
 
   private appointments = inject(AppointmentsService);
+  private auth = inject(AuthService);
+  private currentProviderId: number | null = null;
 
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
@@ -117,8 +120,11 @@ export class DashAgendaComponent implements OnInit {
     this.loadMonth(today.getFullYear(), today.getMonth() + 1);
     const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     this.loadDay(iso);
-    // Realtime updates
-    this.appointments.connectSocket();
+    // Realtime updates (join provider user room)
+    this.currentProviderId = this.auth.getCurrentUser()?.id || null;
+    if (this.currentProviderId) {
+      this.appointments.connectSocket(this.currentProviderId);
+    }
     this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
     this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
     this.appointments.onAppointmentDeleted().subscribe((p: { id: number }) => this.onRealtimeDelete(p.id));
@@ -161,6 +167,18 @@ export class DashAgendaComponent implements OnInit {
   onAppointmentClick(appointment: DayAppointment) {
     console.log('Cita seleccionada:', appointment);
     // TODO(siguiente iteración): Abrir modal para editar/cancelar
+  }
+
+  onConfirmAppointment(appointmentId: number) {
+    this.appointments.updateStatus(appointmentId, 'confirmed' as any).subscribe({
+      next: (resp) => {
+        if (resp.success) {
+          console.log('Cita confirmada', appointmentId);
+          // La UI se actualizará por socket (appointment:updated)
+        }
+      },
+      error: (err) => console.error('Error confirmando cita', err)
+    });
   }
 
   onNewAppointmentForDay(date: Date) {

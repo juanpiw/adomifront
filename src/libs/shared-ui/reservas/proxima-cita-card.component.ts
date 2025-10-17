@@ -7,6 +7,8 @@ export interface ProximaCitaData {
   fecha: string;
   hora: string;
   diasRestantes: number;
+  mostrarPagar?: boolean;
+  appointmentId?: number;
 }
 
 @Component({
@@ -21,6 +23,7 @@ export class ProximaCitaCardComponent {
   @Output() contactar = new EventEmitter<void>();
   @Output() reprogramar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
+  @Output() pagar = new EventEmitter<number>();
 }
 
 

@@ -43,6 +43,24 @@ export class AppointmentsService {
     });
   }
 
+  // Client - list own appointments
+  listClientAppointments(): Observable<{ success: boolean; appointments: (AppointmentDto & { provider_name?: string; service_name?: string; price?: number })[] }>{
+    return this.http.get<{ success: boolean; appointments: (AppointmentDto & { provider_name?: string; service_name?: string; price?: number })[] }>(
+      `${this.api}/client/appointments`,
+      { headers: this.headers() }
+    );
+  }
+
+  // Update status only
+  updateStatus(id: number, status: 'scheduled'|'confirmed'|'completed'|'cancelled'):
+    Observable<{ success: boolean; appointment: AppointmentDto }>{
+    return this.http.patch<{ success: boolean; appointment: AppointmentDto }>(
+      `${this.api}/appointments/${id}/status`,
+      { status },
+      { headers: this.headers() }
+    );
+  }
+
   // Create appointment
   create(payload: {
     provider_id: number;
@@ -102,13 +120,16 @@ export class AppointmentsService {
   }
 
   // Socket connect (lazy)
-  async connectSocket(): Promise<void> {
+  async connectSocket(userId: number): Promise<void> {
     if (this.socket) return;
     try {
       const mod: any = await import('socket.io-client');
       const io = mod.io || mod.default?.io || mod.default;
       const token = this.auth.getAccessToken() || '';
       this.socket = io(this.api, { path: '/socket.io', transports: ['websocket', 'polling'], auth: { token } });
+      this.socket.on('connect', () => {
+        try { this.socket?.emit('join:user', userId); } catch {}
+      });
       this.socket.on('appointment:created', (a: AppointmentDto) => this.appointmentCreated$.next(a));
       this.socket.on('appointment:updated', (a: AppointmentDto) => this.appointmentUpdated$.next(a));
       this.socket.on('appointment:deleted', (p: { id: number }) => this.appointmentDeleted$.next(p));

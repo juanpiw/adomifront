@@ -23,6 +23,7 @@
     <button class="pc-btn primary" (click)="contactar.emit()">Contactar</button>
     <button class="pc-btn secondary" (click)="reprogramar.emit()">Reprogramar</button>
     <button class="pc-btn danger" (click)="cancelar.emit()">Cancelar Cita</button>
+    <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="pagar.emit(data.appointmentId || 0)">Pagar</button>
   </div>
 </div>
 
