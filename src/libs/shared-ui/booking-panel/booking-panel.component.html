@@ -64,4 +64,22 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal de confirmación -->
+  <div class="booking-confirm__backdrop" *ngIf="isConfirmOpen" (click)="closeConfirm()"></div>
+  <div class="booking-confirm__modal" *ngIf="isConfirmOpen">
+    <div class="booking-confirm__header">
+      <h4>Confirmar cita</h4>
+      <button class="booking-confirm__close" (click)="closeConfirm()">✕</button>
+    </div>
+    <div class="booking-confirm__body">
+      <p><strong>Servicio:</strong> {{ data.summary.service }}</p>
+      <p><strong>Fecha y hora:</strong> {{ data.summary.date }} {{ data.summary.time }}</p>
+      <p><strong>Precio:</strong> {{ data.summary.price }}</p>
+    </div>
+    <div class="booking-confirm__actions">
+      <button class="booking-confirm__btn booking-confirm__btn--secondary" (click)="closeConfirm()">Cancelar</button>
+      <button class="booking-confirm__btn booking-confirm__btn--primary" (click)="confirmBookingNow()">Confirmar</button>
+    </div>
+  </div>
 </aside>

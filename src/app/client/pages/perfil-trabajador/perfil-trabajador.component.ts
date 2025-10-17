@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { ProviderPublicService, ProviderDetailResponse } from '../../services/provider-public.service';
+import { AppointmentsService } from '../../../services/appointments.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { ProfileHeroComponent, ProfileHeroData } from '../../../../libs/shared-ui/profile-hero/profile-hero.component';
 import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
 import { PortfolioComponent, PortfolioData, PortfolioItem } from '../../../../libs/shared-ui/portfolio/portfolio.component';
@@ -77,6 +79,8 @@ export class PerfilTrabajadorComponent implements OnInit {
   private router = inject(Router);
   private locationSvc = inject(Location);
   private providerService = inject(ProviderPublicService);
+  private appointments = inject(AppointmentsService);
+  private auth = inject(AuthService);
 
   ngOnInit(): void {
     this.workerId = this.route.snapshot.paramMap.get('workerId');
@@ -136,26 +140,27 @@ export class PerfilTrabajadorComponent implements OnInit {
     // Booking Panel Data
     this.bookingPanelData = {
       services: this.workerData.services.map((service: any, index: number) => ({
-        id: `service-${index}`,
+        id: String(index),
         name: service.name,
         duration: service.duration,
         price: service.price,
-        isActive: index === 2 // Maquillaje Profesional activo por defecto
+        isActive: index === 0
       })),
-      timeSlots: [
-        { time: '11:00', isAvailable: true, isSelected: true },
-        { time: '12:00', isAvailable: false },
-        { time: '13:00', isAvailable: false },
-        { time: '15:00', isAvailable: true },
-        { time: '16:00', isAvailable: false }
-      ],
+      timeSlots: [],
       summary: {
-        service: 'Maquillaje Profesional',
-        date: '29-10-2025',
-        time: '11:00',
-        price: '$30.000'
+        service: '',
+        date: this.formatToday(),
+        time: '',
+        price: ''
       }
     };
+
+    // Cargar slots iniciales
+    const firstServiceId = Number(this.bookingPanelData.services[0]?.id);
+    const providerId = Number(this.workerId);
+    if (firstServiceId && providerId) {
+      this.loadTimeSlots(providerId, this.bookingPanelData.summary.date, firstServiceId);
+    }
 
     // Portfolio Data
     this.portfolioData = {
@@ -228,23 +233,48 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onServiceSelected(serviceId: string): void {
-    console.log('Service selected:', serviceId);
-    // TODO: Implementar lógica de selección de servicio
+    const providerId = Number(this.workerId);
+    const date = this.bookingPanelData.summary.date || this.formatToday();
+    this.loadTimeSlots(providerId, date, Number(serviceId));
   }
 
   onDateSelected(date: string): void {
-    console.log('Date selected:', date);
-    // TODO: Implementar lógica de selección de fecha
+    const providerId = Number(this.workerId);
+    const activeService = this.bookingPanelData.services.find(s => s.isActive);
+    if (activeService) this.loadTimeSlots(providerId, date, Number(activeService.id));
   }
 
   onTimeSelected(time: string): void {
-    console.log('Time selected:', time);
-    // TODO: Implementar lógica de selección de hora
+    this.bookingPanelData.summary.time = time;
   }
 
   onBookingConfirmed(summary: BookingSummary): void {
-    console.log('Booking confirmed:', summary);
-    // TODO: Implementar lógica de confirmación de reserva
+    const user = this.auth.getCurrentUser() as any;
+    const clientId = user?.id;
+    const providerId = Number(this.workerId);
+    const activeService = this.bookingPanelData.services.find(s => s.isActive);
+    if (!clientId || !activeService || !summary.date || !summary.time) {
+      alert('Completa servicio, fecha y hora. Inicia sesión si es necesario.');
+      return;
+    }
+    const duration = this.parseDuration(activeService.duration);
+    const endTime = this.addMinutes(summary.time, duration);
+    this.appointments.create({
+      provider_id: providerId,
+      client_id: clientId,
+      service_id: Number(activeService.id),
+      date: this.toIsoDate(summary.date),
+      start_time: summary.time,
+      end_time: endTime
+    }).subscribe({
+      next: (resp: { success: boolean }) => {
+        if (resp.success) alert('✅ Cita creada');
+      },
+      error: (err: any) => {
+        console.error('Error creando cita', err);
+        alert('❌ No se pudo crear la cita');
+      }
+    });
   }
 
   onMessageClicked(): void {
@@ -297,5 +327,53 @@ export class PerfilTrabajadorComponent implements OnInit {
   contactWorker(): void {
     console.log('Contactar trabajador:', this.workerId);
     // TODO: Implementar lógica de contacto
+  }
+
+  private loadTimeSlots(providerId: number, date: string, serviceId: number) {
+    this.appointments.getTimeSlots(providerId, this.toIsoDate(date), serviceId).subscribe({
+      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean }> }) => {
+        const slots = (resp.time_slots || []).map((s: { time: string; is_available: boolean }) => ({ time: s.time, isAvailable: s.is_available }));
+        this.bookingPanelData.timeSlots = slots;
+        // Actualizar summary conservando servicio/precio
+        const active = this.bookingPanelData.services.find((s: Service) => s.isActive);
+        const firstAvail = slots.find((s: any) => s.isAvailable);
+        this.bookingPanelData.summary = {
+          service: active?.name || '',
+          date: date,
+          time: firstAvail?.time || '',
+          price: active?.price || ''
+        };
+      },
+      error: (err: any) => {
+        console.error('Error cargando time-slots', err);
+        this.bookingPanelData.timeSlots = [];
+      }
+    });
+  }
+
+  private formatToday(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  private toIsoDate(date: string): string {
+    // soporta formatos YYYY-MM-DD o DD-MM-YYYY
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+    const [dd, mm, yyyy] = date.split('-');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private parseDuration(durationLabel: string): number {
+    const m = durationLabel.match(/(\d+)/);
+    return m ? Number(m[1]) : 60;
+  }
+
+  private addMinutes(hhmm: string, minutes: number): string {
+    const [hh, mm] = hhmm.split(':').map(Number);
+    const d = new Date(1970, 0, 1, hh, mm);
+    d.setMinutes(d.getMinutes() + minutes);
+    const H = String(d.getHours()).padStart(2, '0');
+    const M = String(d.getMinutes()).padStart(2, '0');
+    return `${H}:${M}`;
   }
 }

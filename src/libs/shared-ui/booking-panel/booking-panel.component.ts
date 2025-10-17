@@ -59,6 +59,9 @@ export class BookingPanelComponent {
   @Output() bookingConfirmed = new EventEmitter<BookingSummary>();
   @Output() messageClicked = new EventEmitter<void>();
 
+  // Modal de confirmación
+  isConfirmOpen = false;
+
   constructor(private router: Router) {}
 
   onServiceClick(serviceId: string) {
@@ -74,7 +77,8 @@ export class BookingPanelComponent {
   }
 
   onConfirmBooking() {
-    this.bookingConfirmed.emit(this.data.summary);
+    // Primero abrir modal de confirmación
+    this.isConfirmOpen = true;
   }
 
   onSendMessage() {
@@ -83,5 +87,15 @@ export class BookingPanelComponent {
       queryParams: this.providerId ? { providerId: this.providerId, providerName: this.providerName } : undefined
     });
     this.messageClicked.emit();
+  }
+
+  // Confirmación
+  closeConfirm() {
+    this.isConfirmOpen = false;
+  }
+
+  confirmBookingNow() {
+    this.isConfirmOpen = false;
+    this.bookingConfirmed.emit(this.data.summary);
   }
 }
