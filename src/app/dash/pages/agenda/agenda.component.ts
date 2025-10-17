@@ -8,6 +8,7 @@ import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/h
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 
 @Component({
   selector: 'app-d-agenda',
@@ -107,6 +108,7 @@ export class DashAgendaComponent implements OnInit {
 
   private appointments = inject(AppointmentsService);
   private auth = inject(AuthService);
+  private notifications = inject(NotificationService);
   private currentProviderId: number | null = null;
 
   constructor(private availabilityService: ProviderAvailabilityService) {}
@@ -125,7 +127,24 @@ export class DashAgendaComponent implements OnInit {
     if (this.currentProviderId) {
       this.appointments.connectSocket(this.currentProviderId);
     }
-    this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
+    this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => {
+      this.onRealtimeUpsert(a);
+      try {
+        const title = 'Nueva cita por confirmar';
+        const who = (a as any).client_name ? ` de ${(a as any).client_name}` : '';
+        const msg = `Tienes una nueva cita${who} el ${a.date} a las ${a.start_time.slice(0,5)}`;
+        this.notifications.setUserProfile('provider');
+        this.notifications.createNotification({
+          type: 'appointment',
+          profile: 'provider',
+          title,
+          message: msg,
+          priority: 'high',
+          actions: ['view'],
+          metadata: { appointmentId: String(a.id), clientName: (a as any).client_name }
+        });
+      } catch {}
+    });
     this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
     this.appointments.onAppointmentDeleted().subscribe((p: { id: number }) => this.onRealtimeDelete(p.id));
   }
