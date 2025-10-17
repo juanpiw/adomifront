@@ -6,6 +6,7 @@ import { DayDetailComponent, DayAppointment } from '../../../../libs/shared-ui/d
 import { DashboardGraficoComponent } from '../../../../libs/shared-ui/dashboard-grafico/dashboard-grafico.component';
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
+import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 
 @Component({
   selector: 'app-d-agenda',
@@ -47,29 +48,7 @@ export class DashAgendaComponent implements OnInit {
   ];
 
   // Datos del calendario
-  calendarEvents: CalendarEvent[] = [
-    {
-      id: '1',
-      title: 'Corte de Cabello',
-      date: new Date(2025, 9, 15), // Octubre 15, 2025
-      time: '10:00',
-      type: 'appointment'
-    },
-    {
-      id: '2',
-      title: 'Manicura',
-      date: new Date(2025, 9, 15),
-      time: '14:00',
-      type: 'appointment'
-    },
-    {
-      id: '3',
-      title: 'Descanso',
-      date: new Date(2025, 9, 16),
-      time: '12:00',
-      type: 'break'
-    }
-  ];
+  calendarEvents: CalendarEvent[] = [];
 
   // Datos del día seleccionado
   selectedDate: Date | null = null;
@@ -125,10 +104,20 @@ export class DashAgendaComponent implements OnInit {
   loading = false;
   currentView: 'dashboard' | 'calendar' | 'config' = 'dashboard';
 
+  private appointments = inject(AppointmentsService);
+
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
   ngOnInit() {
     this.loadDashboardData();
+    // Cargar mes actual
+    const today = new Date();
+    this.loadMonth(today.getFullYear(), today.getMonth() + 1);
+    // Realtime updates
+    this.appointments.connectSocket();
+    this.appointments.onAppointmentCreated().subscribe(a => this.onRealtimeUpsert(a));
+    this.appointments.onAppointmentUpdated().subscribe(a => this.onRealtimeUpsert(a));
+    this.appointments.onAppointmentDeleted().subscribe(p => this.onRealtimeDelete(p.id));
   }
 
   private loadDashboardData() {
@@ -139,7 +128,10 @@ export class DashAgendaComponent implements OnInit {
   // Event handlers del calendario
   onDateSelected(date: Date) {
     this.selectedDate = date;
-    this.loadDayAppointments(date);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    this.loadDay(`${yyyy}-${mm}-${dd}`);
   }
 
   onNewAppointment() {
@@ -148,11 +140,17 @@ export class DashAgendaComponent implements OnInit {
   }
 
   onPreviousMonth() {
-    console.log('Mes anterior');
+    const base = this.selectedDate || new Date();
+    const prev = new Date(base.getFullYear(), base.getMonth() - 1, 1);
+    this.selectedDate = prev;
+    this.loadMonth(prev.getFullYear(), prev.getMonth() + 1);
   }
 
   onNextMonth() {
-    console.log('Mes siguiente');
+    const base = this.selectedDate || new Date();
+    const next = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+    this.selectedDate = next;
+    this.loadMonth(next.getFullYear(), next.getMonth() + 1);
   }
 
   // Event handlers del día
@@ -240,25 +238,88 @@ export class DashAgendaComponent implements OnInit {
     this.currentView = view;
   }
 
-  // Cargar citas del día
-  private loadDayAppointments(date: Date) {
-    // TODO: Cargar citas reales desde el backend
-    this.dayAppointments = this.calendarEvents
-      .filter(event => 
-        event.date.getDate() === date.getDate() &&
-        event.date.getMonth() === date.getMonth() &&
-        event.date.getFullYear() === date.getFullYear()
-      )
-      .map(event => ({
-        id: event.id,
-        title: event.title,
-        time: event.time,
-        duration: 60,
-        clientName: 'Cliente Ejemplo',
-        clientPhone: '+56 9 1234 5678',
-        status: 'scheduled' as const,
-        type: event.type,
-        notes: 'Notas de la cita'
-      }));
+  // Cargar citas del mes
+  private loadMonth(year: number, month: number) {
+    const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+    this.loading = true;
+    this.appointments.listByMonth(monthStr).subscribe({
+      next: (resp) => {
+        const apps = (resp.appointments || []) as AppointmentDto[];
+        this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  // Cargar citas del día (YYYY-MM-DD)
+  private loadDay(dateIso: string) {
+    this.loading = true;
+    this.appointments.listByDay(dateIso).subscribe({
+      next: (resp) => {
+        const apps = (resp.appointments || []) as AppointmentDto[];
+        this.dayAppointments = apps.map(a => this.mapAppointmentToDay(a));
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  private mapAppointmentToEvent(a: AppointmentDto): CalendarEvent {
+    // Convertir YYYY-MM-DD a Date
+    const [y, m, d] = a.date.split('-').map(Number);
+    return {
+      id: String(a.id),
+      title: 'Cita',
+      date: new Date(y, m - 1, d),
+      time: a.start_time.slice(0, 5),
+      type: 'appointment'
+    };
+  }
+
+  private mapAppointmentToDay(a: AppointmentDto): DayAppointment {
+    return {
+      id: String(a.id),
+      title: 'Cita',
+      time: a.start_time.slice(0, 5),
+      duration: this.diffMinutes(a.start_time, a.end_time),
+      clientName: '',
+      clientPhone: '',
+      status: a.status as any,
+      type: 'appointment',
+      notes: a.notes || ''
+    };
+  }
+
+  private diffMinutes(start: string, end: string): number {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  }
+
+  private onRealtimeUpsert(a: AppointmentDto) {
+    // Si el evento pertenece al mes seleccionado, actualizar calendario
+    const [y, m] = a.date.split('-').map(Number);
+    const current = this.selectedDate || new Date();
+    if (current.getFullYear() === y && (current.getMonth() + 1) === m) {
+      // Reemplazar/insertar en calendarEvents
+      const ev = this.mapAppointmentToEvent(a);
+      const idx = this.calendarEvents.findIndex(e => e.id === String(a.id));
+      if (idx >= 0) this.calendarEvents[idx] = ev; else this.calendarEvents.push(ev);
+    }
+    // Si el día seleccionado coincide, refrescar listado del día
+    if (this.selectedDate) {
+      const dIso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth()+1).padStart(2,'0')}-${String(this.selectedDate.getDate()).padStart(2,'0')}`;
+      if (dIso === a.date) {
+        const da = this.mapAppointmentToDay(a);
+        const di = this.dayAppointments.findIndex(x => x.id === String(a.id));
+        if (di >= 0) this.dayAppointments[di] = da; else this.dayAppointments.push(da);
+      }
+    }
+  }
+
+  private onRealtimeDelete(id: number) {
+    this.calendarEvents = this.calendarEvents.filter(e => e.id !== String(id));
+    this.dayAppointments = this.dayAppointments.filter(d => d.id !== String(id));
   }
 }

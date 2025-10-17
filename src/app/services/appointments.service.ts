@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/services/auth.service';
 
@@ -28,6 +28,12 @@ export class AppointmentsService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private api = environment.apiBaseUrl;
+  private socket: any | null = null;
+
+  // Subjects realtime
+  private appointmentCreated$ = new Subject<AppointmentDto>();
+  private appointmentUpdated$ = new Subject<AppointmentDto>();
+  private appointmentDeleted$ = new Subject<{ id: number }>();
 
   private headers(): HttpHeaders {
     const token = this.auth.getAccessToken();
@@ -94,6 +100,24 @@ export class AppointmentsService {
       { headers: this.headers(), params: { provider_id, date, service_id } as any }
     );
   }
+
+  // Socket connect (lazy)
+  async connectSocket(): Promise<void> {
+    if (this.socket) return;
+    try {
+      const mod: any = await import('socket.io-client');
+      const io = mod.io || mod.default?.io || mod.default;
+      const token = this.auth.getAccessToken() || '';
+      this.socket = io(this.api, { path: '/socket.io', transports: ['websocket', 'polling'], auth: { token } });
+      this.socket.on('appointment:created', (a: AppointmentDto) => this.appointmentCreated$.next(a));
+      this.socket.on('appointment:updated', (a: AppointmentDto) => this.appointmentUpdated$.next(a));
+      this.socket.on('appointment:deleted', (p: { id: number }) => this.appointmentDeleted$.next(p));
+    } catch {}
+  }
+
+  onAppointmentCreated(): Observable<AppointmentDto> { return this.appointmentCreated$.asObservable(); }
+  onAppointmentUpdated(): Observable<AppointmentDto> { return this.appointmentUpdated$.asObservable(); }
+  onAppointmentDeleted(): Observable<{ id: number }> { return this.appointmentDeleted$.asObservable(); }
 }
 
 
