@@ -82,7 +82,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Escuchar mensajes para badge
+    // Escuchar mensajes para badge (desde sala global de usuario)
     this.subs.push(
       this.chat.onMessageNew().subscribe((msg: MessageDto) => {
         try {
@@ -93,6 +93,9 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
         } catch {}
       })
     );
+
+    // Conectar socket y unirse a sala del usuario
+    this.chat.connectSocket();
   }
 
   ngOnDestroy() {

@@ -129,6 +129,13 @@ export class ChatService {
             console.log('[CHAT SOCKET] rejoin:conversation', convId);
             this.socket?.emit('join:conversation', convId);
           });
+          // También unirse a la sala del usuario para badges globales
+          const meRaw = localStorage.getItem('adomi_user');
+          const me = meRaw ? JSON.parse(meRaw) : null;
+          if (me?.id) {
+            this.socket?.emit('join:user', Number(me.id));
+            console.log('[CHAT SOCKET] join:user', me.id);
+          }
         } catch {}
       });
       this.socket.on('reconnect', () => {
