@@ -31,6 +31,9 @@ export class PerfilTrabajadorComponent implements OnInit {
   workerId: string | null = null;
   workerData: any = null;
   loading: boolean = true;
+  confirming: boolean = false;
+  confirmError: string | null = null;
+  closeConfirmSignal: number = 0;
 
   // Component data
   profileHeroData: ProfileHeroData = {
@@ -257,6 +260,8 @@ export class PerfilTrabajadorComponent implements OnInit {
       alert('Completa servicio, fecha y hora. Inicia sesión si es necesario.');
       return;
     }
+    this.confirmError = null;
+    this.confirming = true;
     const duration = this.parseDuration(activeService.duration);
     const endTime = this.addMinutes(summary.time, duration);
     this.appointments.create({
@@ -268,11 +273,19 @@ export class PerfilTrabajadorComponent implements OnInit {
       end_time: endTime
     }).subscribe({
       next: (resp: { success: boolean }) => {
-        if (resp.success) alert('✅ Cita creada');
+        if (resp.success) {
+          this.closeConfirmSignal++;
+          this.confirming = false;
+          alert('✅ Cita creada');
+        } else {
+          this.confirmError = 'No se pudo crear la cita';
+          this.confirming = false;
+        }
       },
       error: (err: any) => {
         console.error('Error creando cita', err);
-        alert('❌ No se pudo crear la cita');
+        this.confirmError = err?.error?.error || '❌ No se pudo crear la cita';
+        this.confirming = false;
       }
     });
   }

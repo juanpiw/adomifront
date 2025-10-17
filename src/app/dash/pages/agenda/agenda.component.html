@@ -70,7 +70,8 @@
         [appointments]="dayAppointments"
         [loading]="loading"
         (appointmentClick)="onAppointmentClick($event)"
-        (newAppointment)="onNewAppointmentForDay($event)">
+        (newAppointment)="onNewAppointmentForDay($event)"
+        (citaCreated)="onDayCitaCreated($event)">
       </app-day-detail>
     </div>
   </div>

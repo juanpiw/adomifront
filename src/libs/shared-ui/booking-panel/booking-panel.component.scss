@@ -208,6 +208,12 @@
       background-color: #cbd5e1; /* bg-slate-300 */
     }
   }
+
+  &__error {
+    color: #ef4444; /* text-red-500 */
+    font-size: 0.75rem; /* text-xs */
+    margin-top: 0.25rem;
+  }
 }
 
 /* Modal de confirmación */
@@ -254,6 +260,11 @@
   display: grid;
   gap: 8px;
   color: #334155;
+}
+
+.booking-confirm__error {
+  color: #ef4444;
+  font-size: 0.875rem;
 }
 
 .booking-confirm__actions {

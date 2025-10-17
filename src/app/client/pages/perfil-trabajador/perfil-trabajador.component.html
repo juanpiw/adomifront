@@ -60,6 +60,9 @@
           (dateSelected)="onDateSelected($event)"
           (timeSelected)="onTimeSelected($event)"
           (bookingConfirmed)="onBookingConfirmed($event)"
+          [confirming]="confirming"
+          [confirmError]="confirmError"
+          [closeConfirmSignal]="closeConfirmSignal"
           (messageClicked)="onMessageClicked()">
         </app-booking-panel>
       </div>

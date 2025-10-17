@@ -13,6 +13,7 @@
               <p class="booking-panel__service-name">{{ service.name }}</p>
               <p class="booking-panel__service-meta">{{ service.duration }} · {{ service.price }}</p>
             </button>
+            <div class="booking-panel__error" *ngIf="errorService">{{ errorService }}</div>
           </div>
         </div>
         
@@ -21,8 +22,9 @@
           <div class="booking-panel__datepicker">
             <input type="date" 
                    class="booking-panel__date-input"
-                   [value]="data.selectedDate"
+                   [value]="data.selectedDate || data.summary.date"
                    (change)="onDateChange($event.target.value || '')">
+            <div class="booking-panel__error" *ngIf="errorDate">{{ errorDate }}</div>
           </div>
         </div>
         
@@ -36,6 +38,11 @@
                     (click)="onTimeClick(slot.time)">
               {{ slot.time }}
             </button>
+            <div *ngIf="!data.timeSlots || data.timeSlots.length === 0" class="booking-panel__time-manual">
+              <input type="time" class="booking-panel__time-input"
+                     (change)="onTimeChange(($event.target as HTMLInputElement).value || '')">
+            </div>
+            <div class="booking-panel__error" *ngIf="errorTime">{{ errorTime }}</div>
           </div>
         </div>
         
@@ -76,10 +83,14 @@
       <p><strong>Servicio:</strong> {{ data.summary.service }}</p>
       <p><strong>Fecha y hora:</strong> {{ data.summary.date }} {{ data.summary.time }}</p>
       <p><strong>Precio:</strong> {{ data.summary.price }}</p>
+      <p class="booking-confirm__error" *ngIf="confirmError">{{ confirmError }}</p>
     </div>
     <div class="booking-confirm__actions">
-      <button class="booking-confirm__btn booking-confirm__btn--secondary" (click)="closeConfirm()">Cancelar</button>
-      <button class="booking-confirm__btn booking-confirm__btn--primary" (click)="confirmBookingNow()">Confirmar</button>
+      <button class="booking-confirm__btn booking-confirm__btn--secondary" [disabled]="confirming" (click)="closeConfirm()">Cancelar</button>
+      <button class="booking-confirm__btn booking-confirm__btn--primary" [disabled]="confirming" (click)="confirmBookingNow()">
+        <span *ngIf="!confirming">Confirmar</span>
+        <span *ngIf="confirming">Confirmando…</span>
+      </button>
     </div>
   </div>
 </aside>

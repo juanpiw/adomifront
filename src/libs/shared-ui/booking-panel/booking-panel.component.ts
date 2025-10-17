@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -39,7 +39,7 @@ export interface BookingPanelData {
   templateUrl: './booking-panel.component.html',
   styleUrls: ['./booking-panel.component.scss']
 })
-export class BookingPanelComponent {
+export class BookingPanelComponent implements OnChanges {
   @Input() providerId?: string | number;
   @Input() providerName?: string;
   @Input() data: BookingPanelData = {
@@ -53,6 +53,11 @@ export class BookingPanelComponent {
     }
   };
 
+  // Estado de confirmación controlado por el padre (para mostrar loading/errores en el modal)
+  @Input() confirming: boolean = false;
+  @Input() confirmError: string | null = null;
+  @Input() closeConfirmSignal: number = 0; // aumentar para cerrar modal desde el padre
+
   @Output() serviceSelected = new EventEmitter<string>();
   @Output() dateSelected = new EventEmitter<string>();
   @Output() timeSelected = new EventEmitter<string>();
@@ -62,22 +67,70 @@ export class BookingPanelComponent {
   // Modal de confirmación
   isConfirmOpen = false;
 
+  // Errores de validación simples
+  errorService = '';
+  errorDate = '';
+  errorTime = '';
+
   constructor(private router: Router) {}
 
   onServiceClick(serviceId: string) {
+    // Actualizar selección local para feedback inmediato
+    this.data.services = this.data.services.map(s => ({ ...s, isActive: s.id === serviceId }));
+    const active = this.data.services.find(s => s.id === serviceId);
+    if (active) {
+      this.data.summary.service = active.name;
+      this.data.summary.price = active.price;
+    }
+    this.errorService = '';
+    // Reset selección de hora al cambiar servicio
+    this.data.timeSlots = (this.data.timeSlots || []).map(slot => ({ ...slot, isSelected: false }));
+    this.data.summary.time = '';
     this.serviceSelected.emit(serviceId);
   }
 
   onDateChange(date: string) {
+    this.data.summary.date = date;
+    this.errorDate = '';
+    // Reset selección de hora al cambiar fecha
+    this.data.timeSlots = (this.data.timeSlots || []).map(slot => ({ ...slot, isSelected: false }));
+    this.data.summary.time = '';
     this.dateSelected.emit(date);
   }
 
   onTimeClick(time: string) {
+    this.data.summary.time = time;
+    this.errorTime = '';
+    // Marcar slot seleccionado
+    this.data.timeSlots = (this.data.timeSlots || []).map(slot => ({
+      ...slot,
+      isSelected: slot.time === time
+    }));
+    this.timeSelected.emit(time);
+  }
+
+  onTimeChange(time: string) {
+    // Para entrada manual cuando no hay slots
+    this.data.summary.time = time;
+    this.errorTime = '';
+    // Limpiar selección de slots si es manual
+    this.data.timeSlots = (this.data.timeSlots || []).map(slot => ({ ...slot, isSelected: false }));
     this.timeSelected.emit(time);
   }
 
   onConfirmBooking() {
-    // Primero abrir modal de confirmación
+    // Validaciones básicas
+    const hasService = !!(this.data.services.find(s => s.isActive) || this.data.summary.service);
+    const hasDate = !!this.data.summary.date;
+    const hasTime = !!this.data.summary.time;
+
+    this.errorService = hasService ? '' : 'Selecciona un servicio.';
+    this.errorDate = hasDate ? '' : 'Selecciona una fecha.';
+    this.errorTime = hasTime ? '' : 'Selecciona una hora.';
+
+    if (!hasService || !hasDate || !hasTime) return;
+
+    // Abrir modal de confirmación
     this.isConfirmOpen = true;
   }
 
@@ -95,7 +148,18 @@ export class BookingPanelComponent {
   }
 
   confirmBookingNow() {
-    this.isConfirmOpen = false;
+    // No cerrar aún; el padre manejará confirming y cierre cuando termine
     this.bookingConfirmed.emit(this.data.summary);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['closeConfirmSignal'] && !changes['closeConfirmSignal'].firstChange) {
+      // cerrar modal cuando el padre indique
+      this.isConfirmOpen = false;
+    }
+    // Mostrar errores en el modal si llegan
+    if (changes['confirmError'] && this.isConfirmOpen && this.confirmError) {
+      // keep open to show error
+    }
   }
 }

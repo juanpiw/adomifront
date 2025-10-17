@@ -136,7 +136,7 @@ export class DashAgendaComponent implements OnInit {
 
   onNewAppointment() {
     console.log('Crear nueva cita');
-    // TODO: Abrir modal de nueva cita
+    // El modal se abre desde DayDetail con el botón + del día
   }
 
   onPreviousMonth() {
@@ -156,12 +156,20 @@ export class DashAgendaComponent implements OnInit {
   // Event handlers del día
   onAppointmentClick(appointment: DayAppointment) {
     console.log('Cita seleccionada:', appointment);
-    // TODO: Abrir modal de detalles de cita
+    // TODO(siguiente iteración): Abrir modal para editar/cancelar
   }
 
   onNewAppointmentForDay(date: Date) {
     console.log('Nueva cita para:', date);
-    // TODO: Abrir modal de nueva cita con fecha preseleccionada
+    // El modal se maneja dentro de DayDetail; aquí solo respondemos al evento de creación
+  }
+
+  // Evento desde DayDetail al confirmar nueva cita en el modal
+  onDayCitaCreated(evt: { title: string; client?: string; date: string; startTime: string; endTime: string; notes?: string; color: string }) {
+    // Por ahora creamos una cita simple con status scheduled. El cliente lo define el flujo B2C, así que se omite aquí
+    // Se asume que el provider está autenticado; el cliente_id no aplica aquí, por lo que esta acción es placeholder hasta definir UX
+    console.log('[AGENDA] citaCreated (UI only placeholder):', evt);
+    // Siguiente iteración: abrir selector de cliente y llamar AppointmentsService.create
   }
 
   // Event handlers de configuración de horarios
@@ -277,13 +285,13 @@ export class DashAgendaComponent implements OnInit {
     };
   }
 
-  private mapAppointmentToDay(a: AppointmentDto): DayAppointment {
+  private mapAppointmentToDay(a: AppointmentDto & { client_name?: string }): DayAppointment {
     return {
       id: String(a.id),
-      title: 'Cita',
+      title: a.client_name ? `Cita con ${a.client_name}` : 'Cita',
       time: a.start_time.slice(0, 5),
       duration: this.diffMinutes(a.start_time, a.end_time),
-      clientName: '',
+      clientName: a.client_name || '',
       clientPhone: '',
       status: a.status as any,
       type: 'appointment',
