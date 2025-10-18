@@ -35,7 +35,8 @@ import { PaymentsService } from '../../../services/payments.service';
         <ui-proxima-cita-card 
           *ngFor="let p of proximasConfirmadas" 
           [data]="p" 
-          (pagar)="onPagar($event)" 
+          (pagar)="onPagar($event)"
+          (contactar)="onContactar(p.appointmentId)"
           style="margin-bottom:12px;">
         </ui-proxima-cita-card>
       </ng-container>
@@ -125,13 +126,15 @@ export class ClientReservasComponent implements OnInit {
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
     if (appointmentId && sessionId) {
-      // Confirmar pago en backend y refrescar
-      this.payments.getPaymentStatus(appointmentId).subscribe({
+      this.payments.confirmAppointmentPayment(appointmentId, sessionId).subscribe({
         next: () => {
-          // Disparar confirmación explícita (idempotente) y recargar
-          this.confirmPayment(appointmentId, sessionId!);
+          this.loadAppointments();
+          this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
         },
-        error: () => this.confirmPayment(appointmentId, sessionId!)
+        error: () => {
+          this.loadAppointments();
+          this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
+        }
       });
     } else {
       this.loadAppointments();
@@ -251,20 +254,19 @@ export class ClientReservasComponent implements OnInit {
     });
   }
 
-  private confirmPayment(appointmentId: number, sessionId: string) {
-    // Llama al nuevo endpoint de confirmación y recarga la lista
-    const base = (window as any)?.__env?.apiBaseUrl || (window as any)?.env?.apiBaseUrl || '';
-    fetch(`${base || ''}/payments/appointments/${appointmentId}/confirm?session_id=${encodeURIComponent(sessionId)}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adomi_access_token') || ''}`
-      }
-    }).finally(() => {
-      this.loadAppointments();
-      // Limpiar query params para no re-procesar
-      this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
-    });
+  onContactar(appointmentId?: number | null) {
+    if (!appointmentId) return;
+    const map = (this as any)._providerByApptId as Record<number, number> | undefined;
+    const providerId = map ? map[appointmentId] : undefined;
+    if (providerId) {
+      const providerName = this.proximasConfirmadas.find(x => x.appointmentId === appointmentId)?.titulo?.split(' con ')?.[1] || '';
+      this.router.navigate(['/client/conversaciones'], {
+        queryParams: { providerId, providerName }
+      });
+    }
   }
+
+  // confirmPayment ya no es necesario; usamos PaymentsService
 
   // Métodos del modal de reseñas
   openReviewModal(workerName: string, serviceName: string, appointmentId: string): void {

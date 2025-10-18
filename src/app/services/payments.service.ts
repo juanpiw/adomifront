@@ -32,6 +32,13 @@ export class PaymentsService {
       { headers: this.headers() }
     );
   }
+
+  confirmAppointmentPayment(appointmentId: number, sessionId: string): Observable<{ success: boolean; confirmed: boolean; payment?: any }>{
+    return this.http.get<{ success: boolean; confirmed: boolean; payment?: any }>(
+      `${this.base}/payments/appointments/${appointmentId}/confirm`,
+      { headers: this.headers(), params: { session_id: sessionId } as any }
+    );
+  }
 }
 
 
