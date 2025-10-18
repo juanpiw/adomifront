@@ -6,6 +6,7 @@
       [class.active]="i === activeIndex"
       (click)="setActive(i)">
       {{ t }}
+      <span *ngIf="badges[i] && badges[i]! > 0" class="rt-badge">{{ badges[i] }}</span>
     </button>
   </nav>
 </div>

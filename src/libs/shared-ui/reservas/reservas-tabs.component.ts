@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 export class ReservasTabsComponent {
   @Input() tabs: string[] = ['Próximas', 'Pasadas', 'Canceladas'];
   @Input() activeIndex: number = 0;
+  @Input() badges: Array<number | null> = [];
   @Output() tabChange = new EventEmitter<number>();
 
   setActive(index: number) {

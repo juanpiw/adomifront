@@ -4,6 +4,9 @@
 .rt-tab:hover { color: #334155; border-color: #cbd5e1; }
 .rt-tab.active { border-color: #6366f1; color: #4f46e5; }
 
+.rt-tab { position: relative; }
+.rt-badge { position: absolute; top: 6px; right: -14px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 9999px; background: #ef4444; color: #fff; font-size: 10px; line-height: 16px; text-align: center; font-weight: 800; box-shadow: 0 0 0 2px #fff; }
+
 
 
 

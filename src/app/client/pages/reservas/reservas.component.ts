@@ -28,12 +28,29 @@ import { PaymentsService } from '../../../services/payments.service';
   <section class="reservas-page">
     <h2 class="title">Mis Reservas</h2>
 
-    <ui-reservas-tabs (tabChange)="activeTab = $event"></ui-reservas-tabs>
+    <ui-reservas-tabs (tabChange)="activeTab = $event" [badges]="tabBadges"></ui-reservas-tabs>
 
     <div class="content" *ngIf="activeTab === 0">
-      <ui-proxima-cita-card *ngIf="proxima as p" [data]="p" (pagar)="onPagar($event)" style="margin-bottom:12px;"></ui-proxima-cita-card>
-      <ui-pendiente-card *ngIf="pendiente as pen" [data]="pen"></ui-pendiente-card>
-      <p *ngIf="!proxima && !pendiente" style="color:#64748b;margin:8px 0 0 4px;">No tienes próximas reservas.</p>
+      <ng-container *ngIf="(proximasConfirmadas?.length || 0) > 0; else noConfirmadas">
+        <ui-proxima-cita-card 
+          *ngFor="let p of proximasConfirmadas" 
+          [data]="p" 
+          (pagar)="onPagar($event)" 
+          style="margin-bottom:12px;">
+        </ui-proxima-cita-card>
+      </ng-container>
+      <ng-template #noConfirmadas></ng-template>
+
+      <ng-container *ngIf="(pendientesList?.length || 0) > 0; else noPendientes">
+        <ui-pendiente-card 
+          *ngFor="let pen of pendientesList" 
+          [data]="pen" 
+          style="margin-bottom:12px;">
+        </ui-pendiente-card>
+      </ng-container>
+      <ng-template #noPendientes></ng-template>
+
+      <p *ngIf="(proximasConfirmadas?.length || 0) === 0 && (pendientesList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes próximas reservas.</p>
     </div>
 
     <div class="content" *ngIf="activeTab === 1">
@@ -43,9 +60,17 @@ import { PaymentsService } from '../../../services/payments.service';
     </div>
 
     <div class="content" *ngIf="activeTab === 2">
-      <ui-cancelada-cliente-card *ngIf="canceladaCliente as cc" [data]="cc" style="margin-bottom:12px;"></ui-cancelada-cliente-card>
-      <ui-cancelada-profesional-card *ngIf="canceladaProfesional as cp" [data]="cp"></ui-cancelada-profesional-card>
-      <p *ngIf="!canceladaCliente && !canceladaProfesional" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas canceladas.</p>
+      <ui-cancelada-cliente-card 
+        *ngFor="let cc of canceladasClienteList" 
+        [data]="cc" 
+        style="margin-bottom:12px;">
+      </ui-cancelada-cliente-card>
+      <ui-cancelada-profesional-card 
+        *ngFor="let cp of canceladasProfesionalList" 
+        [data]="cp" 
+        style="margin-bottom:12px;">
+      </ui-cancelada-profesional-card>
+      <p *ngIf="(canceladasClienteList?.length || 0) === 0 && (canceladasProfesionalList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas canceladas.</p>
     </div>
   </section>
 
@@ -73,6 +98,7 @@ export class ClientReservasComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   activeTab = 0;
+  tabBadges: Array<number | null> = [null, null, null];
   
   // Profile validation
   showProfileModal: boolean = false;
@@ -80,12 +106,12 @@ export class ClientReservasComponent implements OnInit {
   userType: 'client' | 'provider' = 'client';
   
   // Datos de las reservas (se rellenan desde API)
-  proxima: ProximaCitaData | null = null;
-  pendiente: PendienteData | null = null;
+  proximasConfirmadas: ProximaCitaData[] = [];
+  pendientesList: PendienteData[] = [];
   pasada1: ReservaPasadaData | null = null;
   pasada2: ReservaPasadaData | null = null;
-  canceladaCliente: CanceladaClienteData | null = null;
-  canceladaProfesional: CanceladaProfesionalData | null = null;
+  canceladasClienteList: CanceladaClienteData[] = [];
+  canceladasProfesionalList: CanceladaProfesionalData[] = [];
 
   // Estado del modal de reseñas
   showReviewModal = false;
@@ -141,27 +167,33 @@ export class ClientReservasComponent implements OnInit {
         const past = list.filter(a => a.date < todayStr && a.status === 'completed')
                          .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
         const cancelled = list.filter(a => a.status === 'cancelled');
+        // Actualizar badges: [Próximas, Pasadas, Canceladas]
+        const upcomingCount = this.proximasConfirmadas.length + this.pendientesList.length;
+        const pastCount = past.length;
+        const cancelledCount = cancelled.length;
+        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null];
 
-        // Próxima confirmada → tarjeta principal; si no, mostrar pendiente
-        const nextConfirmed = upcoming.find(a => a.status === 'confirmed');
-        if (nextConfirmed) {
-          this.proxima = {
-            titulo: `${nextConfirmed.service_name || 'Servicio'} con ${nextConfirmed.provider_name || 'Profesional'}`,
-            subtitulo: (nextConfirmed as any).payment_status === 'paid' || (nextConfirmed as any).payment_status === 'succeeded' ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
-            fecha: this.formatDate(nextConfirmed.date),
-            hora: this.formatTime(nextConfirmed.start_time),
-            diasRestantes: this.daysFromToday(nextConfirmed.date),
-            mostrarPagar: !((nextConfirmed as any).payment_status === 'paid' || (nextConfirmed as any).payment_status === 'succeeded'),
-            appointmentId: nextConfirmed.id
-          };
-        } else {
-          const nextScheduled = upcoming.find(a => a.status === 'scheduled');
-          this.pendiente = nextScheduled ? {
-            titulo: `${nextScheduled.service_name || 'Servicio'} con ${nextScheduled.provider_name || 'Profesional'}`,
-            fecha: this.formatDate(nextScheduled.date),
-            hora: this.formatTime(nextScheduled.start_time)
-          } : null;
-        }
+        // Todas las próximas confirmadas
+        this.proximasConfirmadas = upcoming
+          .filter(a => a.status === 'confirmed')
+          .map(a => ({
+            titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
+            subtitulo: (a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded' ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
+            fecha: this.formatDate(a.date),
+            hora: this.formatTime(a.start_time),
+            diasRestantes: this.daysFromToday(a.date),
+            mostrarPagar: !((a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded'),
+            appointmentId: a.id
+          }));
+
+        // Todas las próximas pendientes
+        this.pendientesList = upcoming
+          .filter(a => a.status === 'scheduled')
+          .map(a => ({
+            titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
+            fecha: this.formatDate(a.date),
+            hora: this.formatTime(a.start_time)
+          }));
         // Pasadas/canceladas demo: mapear primeras (en producción listaríamos todas)
         this.pasada1 = past[0] ? {
           avatarUrl: '',
@@ -171,15 +203,14 @@ export class ClientReservasComponent implements OnInit {
           estado: 'Completado'
         } : null;
 
-        // Canceladas: mostrar primera con quién canceló (si lo tuviéramos en payload), por ahora indicamos “Proveedor” si la cita estaba confirmada antes.
-        // Mostrar la primera cancelada; si hay varias, se podrían listar todas en una siguiente iteración
-        const firstCancelled = cancelled[0];
-        this.canceladaProfesional = firstCancelled ? {
+        // Canceladas (placeholder: todas como canceladas por proveedor)
+        this.canceladasProfesionalList = cancelled.map(c => ({
           avatarUrl: '',
-          titulo: `${firstCancelled.service_name || 'Servicio'} con ${firstCancelled.provider_name || 'Profesional'}`,
-          fecha: this.formatDate(firstCancelled.date),
+          titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
+          fecha: this.formatDate(c.date),
           pillText: 'Cancelada por proveedor'
-        } : null;
+        }));
+        this.canceladasClienteList = [];
       },
       error: (err) => {
         console.error('Error cargando citas del cliente', err);

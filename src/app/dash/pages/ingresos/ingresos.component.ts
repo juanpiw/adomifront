@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { 
@@ -17,6 +17,7 @@ import {
   TimeFilterComponent,
   TimeFilterChange
 } from '../../../../libs/shared-ui/time-filter/time-filter.component';
+import { FinancesService } from '../../../services/finances.service';
 
 @Component({
   selector: 'app-dash-ingresos',
@@ -36,6 +37,7 @@ import {
 })
 export class DashIngresosComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
+  private finances = inject(FinancesService);
   activeTab = 'resumen';
   selectedTimeFilter = 'month';
   currentDateRange: { startDate: Date; endDate: Date } = {
@@ -181,16 +183,50 @@ export class DashIngresosComponent implements OnInit {
   }
 
   private loadFinancialData() {
-    // Aquí se cargarían los datos reales desde un servicio
-    // usando this.currentDateRange.startDate y this.currentDateRange.endDate
-    console.log('Cargando datos financieros para el período:', {
-      desde: this.currentDateRange.startDate,
-      hasta: this.currentDateRange.endDate,
-      período: this.selectedTimeFilter
+    const from = this.formatDate(this.currentDateRange.startDate);
+    const to = this.formatDate(this.currentDateRange.endDate);
+    this.finances.getSummary(from, to).subscribe({
+      next: (resp) => {
+        if (resp.success) {
+          this.financialKPIs = {
+            netIncome: Number(resp.summary.provider_net || 0),
+            commissions: Number(resp.summary.commission_amount || 0),
+            pendingPayments: 0,
+            pendingDate: ''
+          };
+        }
+      },
+      error: () => {}
     });
-    
-    // Simular carga de datos basada en el período seleccionado
-    this.updateFinancialDataBasedOnPeriod();
+    this.finances.getTransactions(from, to, 50, 0).subscribe({
+      next: (resp) => {
+        if (resp.success) {
+          this.transactions = (resp.transactions || []).map(t => ({
+            id: t.id,
+            date: t.paid_at ? this.toYmd(t.paid_at) : t.date,
+            description: `${t.service_name || 'Servicio'} – ${t.client_name || 'Cliente'}`,
+            grossAmount: Number(t.amount || 0),
+            netAmount: Number(t.provider_amount || 0),
+            status: 'Completado'
+          }));
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  private formatDate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2, '0');
+    const da = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${da}`;
+  }
+  private toYmd(iso: string): string {
+    const dt = new Date(iso);
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   private updateFinancialDataBasedOnPeriod() {
