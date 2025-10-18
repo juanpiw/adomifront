@@ -16,6 +16,7 @@ export interface AppointmentDto {
   notes?: string | null;
   created_at?: string;
   updated_at?: string;
+  payment_status?: 'pending'|'completed'|'failed'|'refunded'|'paid'|'succeeded';
 }
 
 export interface TimeSlotDto {
