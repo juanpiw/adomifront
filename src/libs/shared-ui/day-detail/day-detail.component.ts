@@ -32,6 +32,7 @@ export class DayDetailComponent {
   @Output() newAppointment = new EventEmitter<Date>();
   @Output() citaCreated = new EventEmitter<NuevaCitaData>();
   @Output() confirmAppointment = new EventEmitter<string>();
+  @Output() deleteAppointment = new EventEmitter<string>();
 
   isModalOpen: boolean = false;
 
@@ -87,6 +88,11 @@ export class DayDetailComponent {
   onConfirmClick(event: Event, appointment: DayAppointment) {
     event.stopPropagation();
     this.confirmAppointment.emit(appointment.id);
+  }
+
+  onDeleteClick(event: Event, appointment: DayAppointment) {
+    event.stopPropagation();
+    this.deleteAppointment.emit(appointment.id);
   }
 
   onNewAppointment() {

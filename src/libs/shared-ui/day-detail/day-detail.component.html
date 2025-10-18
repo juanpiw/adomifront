@@ -63,8 +63,9 @@
                style="margin-top:4px;">
             {{ getPaymentStatusText(appointment.paymentStatus) }}
           </div>
-          <div *ngIf="appointment.status === 'scheduled'" class="day-detail__appointment-actions">
-            <button class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
+          <div class="day-detail__appointment-actions">
+            <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
+            <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Eliminar</button>
           </div>
         </div>
       </div>

@@ -326,10 +326,10 @@ export class DashAgendaComponent implements OnInit {
     };
   }
 
-  private mapAppointmentToDay(a: AppointmentDto & { client_name?: string }): DayAppointment {
+  private mapAppointmentToDay(a: AppointmentDto & { client_name?: string; service_name?: string }): DayAppointment {
     return {
       id: String(a.id),
-      title: a.client_name ? `Cita con ${a.client_name}` : 'Cita',
+      title: a.service_name ? `${a.service_name}` : (a.client_name ? `Cita con ${a.client_name}` : 'Cita'),
       time: a.start_time.slice(0, 5),
       duration: this.diffMinutes(a.start_time, a.end_time),
       clientName: a.client_name || '',
