@@ -128,12 +128,15 @@ export class ClientReservasComponent implements OnInit {
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
     if (appointmentId && sessionId) {
+      console.log('[RESERVAS] Processing payment return from Stripe:', { appointmentId, sessionId });
       this.payments.confirmAppointmentPayment(appointmentId, sessionId).subscribe({
-        next: () => {
+        next: (resp) => {
+          console.log('[RESERVAS] Payment confirmed:', resp);
           this.loadAppointments();
           this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
         },
-        error: () => {
+        error: (err) => {
+          console.error('[RESERVAS] Error confirming payment:', err);
           this.loadAppointments();
           this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
         }
