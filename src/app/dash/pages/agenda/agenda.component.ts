@@ -189,14 +189,27 @@ export class DashAgendaComponent implements OnInit {
   }
 
   onConfirmAppointment(appointmentId: number) {
+    // Optimistic UI: marcar como confirmada de inmediato
+    const index = this.dayAppointments.findIndex(a => Number(a.id) === Number(appointmentId));
+    const prev = index >= 0 ? { ...this.dayAppointments[index] } : null;
+    if (index >= 0) {
+      this.dayAppointments[index] = { ...this.dayAppointments[index], status: 'confirmed' as any };
+    }
+
     this.appointments.updateStatus(appointmentId, 'confirmed' as any).subscribe({
       next: (resp) => {
-        if (resp.success) {
-          console.log('Cita confirmada', appointmentId);
-          // La UI se actualizará por socket (appointment:updated)
+        if (resp?.success && (resp as any).appointment) {
+          // Sincronizar con payload real del backend (también llegará por socket)
+          this.onRealtimeUpsert((resp as any).appointment);
+        } else if (prev && index >= 0) {
+          // Revertir si no fue exitoso
+          this.dayAppointments[index] = prev;
         }
       },
-      error: (err) => console.error('Error confirmando cita', err)
+      error: (err) => {
+        console.error('Error confirmando cita', err);
+        if (prev && index >= 0) this.dayAppointments[index] = prev;
+      }
     });
   }
 
@@ -206,12 +219,25 @@ export class DashAgendaComponent implements OnInit {
   }
 
   onDeleteAppointment(id: number) {
-    this.appointments.delete(id).subscribe({
-      next: () => {
-        console.log('Cita eliminada:', id);
-        // UI se actualiza por socket appointment:deleted
+    // Cambiar a cancelación de cita (no borrado definitivo)
+    const idx = this.dayAppointments.findIndex(a => Number(a.id) === Number(id));
+    const prev = idx >= 0 ? { ...this.dayAppointments[idx] } : null;
+    if (idx >= 0) {
+      this.dayAppointments[idx] = { ...this.dayAppointments[idx], status: 'cancelled' as any };
+    }
+
+    this.appointments.updateStatus(id, 'cancelled' as any).subscribe({
+      next: (resp) => {
+        if (resp?.success && (resp as any).appointment) {
+          this.onRealtimeUpsert((resp as any).appointment);
+        } else if (prev && idx >= 0) {
+          this.dayAppointments[idx] = prev;
+        }
       },
-      error: (err) => console.error('Error eliminando cita:', err)
+      error: (err) => {
+        console.error('Error cancelando cita:', err);
+        if (prev && idx >= 0) this.dayAppointments[idx] = prev;
+      }
     });
   }
 

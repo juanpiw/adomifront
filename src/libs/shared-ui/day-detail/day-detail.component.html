@@ -65,7 +65,7 @@
           </div>
           <div class="day-detail__appointment-actions">
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
-            <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Eliminar</button>
+            <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>
           </div>
         </div>
       </div>

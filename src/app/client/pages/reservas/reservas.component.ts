@@ -95,10 +95,10 @@ export class ClientReservasComponent implements OnInit {
   ngOnInit(): void {
     this.validateProfile();
     this.loadAppointments();
-    // Escuchar pago completado para refrescar lista
-    this.appointments.onPaymentCompleted().subscribe(() => {
-      this.loadAppointments();
-    });
+    // Realtime: refrescar lista ante cambios relevantes
+    this.appointments.onPaymentCompleted().subscribe(() => this.loadAppointments());
+    this.appointments.onAppointmentUpdated().subscribe(() => this.loadAppointments());
+    this.appointments.onAppointmentDeleted().subscribe(() => this.loadAppointments());
   }
 
   private validateProfile() {
@@ -157,10 +157,12 @@ export class ClientReservasComponent implements OnInit {
         } : null;
 
         // Canceladas: mostrar primera con quién canceló (si lo tuviéramos en payload), por ahora indicamos “Proveedor” si la cita estaba confirmada antes.
-        this.canceladaProfesional = cancelled[0] ? {
+        // Mostrar la primera cancelada; si hay varias, se podrían listar todas en una siguiente iteración
+        const firstCancelled = cancelled[0];
+        this.canceladaProfesional = firstCancelled ? {
           avatarUrl: '',
-          titulo: `${cancelled[0].service_name || 'Servicio'} con ${cancelled[0].provider_name || 'Profesional'}`,
-          fecha: this.formatDate(cancelled[0].date),
+          titulo: `${firstCancelled.service_name || 'Servicio'} con ${firstCancelled.provider_name || 'Profesional'}`,
+          fecha: this.formatDate(firstCancelled.date),
           pillText: 'Cancelada por proveedor'
         } : null;
       },
@@ -175,7 +177,13 @@ export class ClientReservasComponent implements OnInit {
     const dt = new Date(y, m-1, d);
     return dt.toLocaleDateString('es-CL', { weekday:'long', day:'2-digit', month:'long' });
   }
-  private formatTime(hhmm: string): string { return hhmm; }
+  private formatTime(hhmm: string): string {
+    // Acepta HH:mm o HH:mm:ss desde backend
+    if (!hhmm) return '';
+    const parts = hhmm.split(':');
+    if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+    return hhmm;
+  }
   private daysFromToday(dateIso: string): number {
     const [y,m,d] = dateIso.split('-').map(Number);
     const today = new Date();
