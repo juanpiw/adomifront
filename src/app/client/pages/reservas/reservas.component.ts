@@ -12,6 +12,7 @@ import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profil
 import { ProfileValidationService } from '../../../services/profile-validation.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 import { PaymentsService } from '../../../services/payments.service';
+import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 
 @Component({ 
   selector:'app-c-reservas', 
@@ -97,6 +98,7 @@ export class ClientReservasComponent implements OnInit {
   private router = inject(Router);
   private payments = inject(PaymentsService);
   private route = inject(ActivatedRoute);
+  private notifications = inject(NotificationService);
 
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null];
@@ -141,7 +143,22 @@ export class ClientReservasComponent implements OnInit {
     }
     // Realtime: refrescar lista ante cambios relevantes
     this.appointments.onPaymentCompleted().subscribe(() => this.loadAppointments());
-    this.appointments.onAppointmentUpdated().subscribe(() => this.loadAppointments());
+    this.appointments.onAppointmentUpdated().subscribe((appt) => {
+      this.loadAppointments();
+      // Crear notificación in-app para cliente sobre cambio de estado
+      const statusMap: any = { scheduled: 'Programada', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada' };
+      const statusText = statusMap[(appt as any).status] || 'Actualizada';
+      this.notifications.setUserProfile('client');
+      this.notifications.createNotification({
+        type: 'appointment',
+        title: 'Estado de tu cita',
+        message: `Tu cita fue ${statusText.toLowerCase()}.`,
+        priority: 'high',
+        profile: 'client',
+        actions: ['view'],
+        metadata: { appointmentId: String((appt as any).id) }
+      });
+    });
     this.appointments.onAppointmentDeleted().subscribe(() => this.loadAppointments());
   }
 
