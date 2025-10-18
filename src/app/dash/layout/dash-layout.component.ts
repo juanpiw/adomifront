@@ -264,15 +264,19 @@ export class DashLayoutComponent implements OnInit {
   }
   
   private loadUnreadNotificationsCount(): void {
+    console.log('[DASH_LAYOUT] 🔔 Loading unread notifications count...');
     this.pushNotifications.getUnreadCount().subscribe({
       next: (resp: any) => {
+        console.log('[DASH_LAYOUT] 🔔 Unread count response:', resp);
         if (resp?.ok && typeof resp.count === 'number') {
           this.notifications.updateUnreadCount(resp.count);
-          console.log('[DASH_LAYOUT] Unread notifications count:', resp.count);
+          console.log('[DASH_LAYOUT] 🔔 Unread notifications count updated:', resp.count);
+        } else {
+          console.warn('[DASH_LAYOUT] 🔔 Invalid response format:', resp);
         }
       },
       error: (err) => {
-        console.error('[DASH_LAYOUT] Error loading unread count:', err);
+        console.error('[DASH_LAYOUT] 🔔 Error loading unread count:', err);
       }
     });
   }
