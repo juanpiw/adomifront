@@ -26,14 +26,14 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
           return handle401Error(authReq, next, authService, sessionService, sessionExpired);
         }
         // Sin refresh: cerrar sesión y redirigir de inmediato
-        try { sessionService.clear(); } catch {}
+        try { sessionService.clearSession(); } catch {}
         try { authService.logout().subscribe({ error: () => {} }); } catch {}
         sessionExpired.forceRedirect();
       }
 
       // Si es un error 403 (prohibido)
       if (error.status === 403) {
-        try { sessionService.clear(); } catch {}
+        try { sessionService.clearSession(); } catch {}
         sessionExpired.forceRedirect('Tu sesión no tiene permisos para continuar. Vuelve a entrar.');
       }
 
