@@ -13,6 +13,7 @@ import { environment } from '../../../environments/environment';
 import { ChatService, MessageDto } from '../../services/chat.service';
 import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
 import { NotificationService } from '../../../libs/shared-ui/notifications/services/notification.service';
+import { NotificationsService } from '../../services/notifications.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -49,10 +50,12 @@ export class DashLayoutComponent implements OnInit {
   private chat = inject(ChatService);
   private appointments = inject(AppointmentsService);
   private notifications = inject(NotificationService);
+  private pushNotifications = inject(NotificationsService);
 
   ngOnInit() {
     this.loadPlanInfo();
     this.loadProviderProfile();
+    this.initializeNotifications();
 
     // Conectar socket y escuchar mensajes para badge
     this.chat.connectSocket();
@@ -239,6 +242,16 @@ export class DashLayoutComponent implements OnInit {
       this.router.navigate(['/dash/perfil'], {
         queryParams: { tab: 'configuracion' }
       });
+    }
+  }
+
+  private async initializeNotifications(): Promise<void> {
+    try {
+      console.log('[DASH_LAYOUT] Inicializando notificaciones push...');
+      await this.pushNotifications.initializeForUser();
+      console.log('[DASH_LAYOUT] Notificaciones push inicializadas');
+    } catch (error) {
+      console.error('[DASH_LAYOUT] Error inicializando notificaciones:', error);
     }
   }
 }

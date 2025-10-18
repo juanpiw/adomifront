@@ -12,6 +12,7 @@ import { environment } from '../../../environments/environment';
 import { MenuService } from '../services/menu.service';
 import { ChatService, MessageDto } from '../../services/chat.service';
 import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
+import { NotificationsService } from '../../services/notifications.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -41,6 +42,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private chat = inject(ChatService);
   private appointmentsService = inject(AppointmentsService);
+  private notificationsService = inject(NotificationsService);
 
   userName: string | null = null;
   userAvatarUrl: string | null = null;
@@ -73,6 +75,8 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     // Cargar datos del cliente
     if (isPlatformBrowser(this.platformId)) {
       this.loadClientData();
+      // Inicializar notificaciones push
+      this.initializeNotifications();
     }
 
     // Escuchar cambios de foto de perfil (subida/eliminación) y refrescar avatar
@@ -261,6 +265,16 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   onSettingsClick(): void {
     this.router.navigate(['/client/configuracion']);
     this.onNav();
+  }
+
+  private async initializeNotifications(): Promise<void> {
+    try {
+      console.log('[CLIENT_LAYOUT] Inicializando notificaciones push...');
+      await this.notificationsService.initializeForUser();
+      console.log('[CLIENT_LAYOUT] Notificaciones push inicializadas');
+    } catch (error) {
+      console.error('[CLIENT_LAYOUT] Error inicializando notificaciones:', error);
+    }
   }
 
   isMobile(): boolean {
