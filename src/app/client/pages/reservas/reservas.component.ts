@@ -147,13 +147,21 @@ export class ClientReservasComponent implements OnInit {
             hora: this.formatTime(nextScheduled.start_time)
           } : null;
         }
-        // Pasadas/canceladas demo: mapear primeras (en producción haríamos bucles para listarlas todas)
+        // Pasadas/canceladas demo: mapear primeras (en producción listaríamos todas)
         this.pasada1 = past[0] ? {
           avatarUrl: '',
           titulo: `${past[0].service_name || 'Servicio'} con ${past[0].provider_name || 'Profesional'}`,
           fecha: this.formatDate(past[0].date),
           precio: past[0].price ? `$${Number(past[0].price).toLocaleString('es-CL')}` : '',
           estado: 'Completado'
+        } : null;
+
+        // Canceladas: mostrar primera con quién canceló (si lo tuviéramos en payload), por ahora indicamos “Proveedor” si la cita estaba confirmada antes.
+        this.canceladaProfesional = cancelled[0] ? {
+          avatarUrl: '',
+          titulo: `${cancelled[0].service_name || 'Servicio'} con ${cancelled[0].provider_name || 'Profesional'}`,
+          fecha: this.formatDate(cancelled[0].date),
+          pillText: 'Cancelada por proveedor'
         } : null;
       },
       error: (err) => {
