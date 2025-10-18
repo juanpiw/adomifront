@@ -330,7 +330,9 @@ export class DashAgendaComponent implements OnInit {
     this.appointments.listByMonth(monthStr).subscribe({
       next: (resp: { success: boolean; appointments: AppointmentDto[] }) => {
         const apps = (resp.appointments || []) as AppointmentDto[];
+        console.log(`[AGENDA] Loading month ${monthStr}: ${apps.length} appointments`, apps);
         this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
+        console.log('[AGENDA] Calendar events generated:', this.calendarEvents);
         this.loading = false;
       },
       error: () => { this.loading = false; }
@@ -353,10 +355,12 @@ export class DashAgendaComponent implements OnInit {
   private mapAppointmentToEvent(a: AppointmentDto): CalendarEvent {
     // Convertir YYYY-MM-DD a Date
     const [y, m, d] = a.date.split('-').map(Number);
+    const eventDate = new Date(y, m - 1, d);
+    console.log(`[AGENDA] Mapping event for calendar: appt #${a.id}, date="${a.date}" -> Date(${y}, ${m-1}, ${d}) = ${eventDate.toISOString()}`);
     return {
       id: String(a.id),
       title: 'Cita',
-      date: new Date(y, m - 1, d),
+      date: eventDate,
       time: a.start_time.slice(0, 5),
       type: 'appointment'
     };
