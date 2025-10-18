@@ -205,6 +205,16 @@ export class DashAgendaComponent implements OnInit {
     // El modal se maneja dentro de DayDetail; aquí solo respondemos al evento de creación
   }
 
+  onDeleteAppointment(id: number) {
+    this.appointments.delete(id).subscribe({
+      next: () => {
+        console.log('Cita eliminada:', id);
+        // UI se actualiza por socket appointment:deleted
+      },
+      error: (err) => console.error('Error eliminando cita:', err)
+    });
+  }
+
   // Evento desde DayDetail al confirmar nueva cita en el modal
   onDayCitaCreated(evt: { title: string; client?: string; date: string; startTime: string; endTime: string; notes?: string; color: string }) {
     // Por ahora creamos una cita simple con status scheduled. El cliente lo define el flujo B2C, así que se omite aquí
