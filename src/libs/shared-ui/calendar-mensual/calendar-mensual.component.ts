@@ -10,6 +10,8 @@ export interface CalendarEvent {
   time: string;
   type: 'appointment' | 'break' | 'blocked';
   color?: string;
+  status?: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+  paymentStatus?: 'unpaid' | 'paid' | 'succeeded' | 'pending' | 'completed';
 }
 
 @Component({
@@ -145,7 +147,38 @@ export class CalendarMensualComponent implements OnInit {
   getEventColor(event: CalendarEvent): string {
     switch (event.type) {
       case 'appointment':
-        return '#4338ca';
+        // Colores basados en estado y payment status
+        if (event.status === 'cancelled') {
+          console.log(`[CALENDAR] Event ${event.id}: CANCELLED -> RED`);
+          return '#ef4444'; // Rojo para canceladas
+        }
+        
+        if (event.status === 'confirmed') {
+          // Verificar si está pagada
+          const isPaid = event.paymentStatus && ['paid', 'succeeded', 'completed'].includes(event.paymentStatus);
+          if (isPaid) {
+            console.log(`[CALENDAR] Event ${event.id}: CONFIRMED + PAID -> BLUE`);
+            return '#3b82f6'; // Azul para confirmadas y pagadas
+          } else {
+            console.log(`[CALENDAR] Event ${event.id}: CONFIRMED + UNPAID -> YELLOW`);
+            return '#f59e0b'; // Amarillo para confirmadas pero sin pago
+          }
+        }
+        
+        if (event.status === 'scheduled') {
+          console.log(`[CALENDAR] Event ${event.id}: SCHEDULED -> GREEN`);
+          return '#10b981'; // Verde para programadas (esperando confirmación)
+        }
+        
+        if (event.status === 'completed') {
+          console.log(`[CALENDAR] Event ${event.id}: COMPLETED -> BLUE`);
+          return '#3b82f6'; // Azul para completadas
+        }
+        
+        // Fallback para appointments sin estado específico
+        console.log(`[CALENDAR] Event ${event.id}: UNKNOWN STATUS -> DEFAULT BLUE`);
+        return '#4338ca'; // Azul por defecto
+        
       case 'break':
         return '#f59e0b';
       case 'blocked':

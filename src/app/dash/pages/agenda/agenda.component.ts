@@ -387,13 +387,16 @@ export class DashAgendaComponent implements OnInit {
     }
     
     console.log(`[AGENDA] Mapping event for calendar: appt #${a.id}, date="${a.date}" -> ${eventDate.toISOString()}`);
+    console.log(`[AGENDA] Event data: status="${a.status}", payment_status="${(a as any).payment_status}"`);
     
     return {
       id: String(a.id),
       title: 'Cita',
       date: eventDate,
       time: a.start_time ? a.start_time.slice(0, 5) : '00:00',
-      type: 'appointment'
+      type: 'appointment',
+      status: a.status,
+      paymentStatus: (a as any).payment_status
     };
   }
 
