@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ReservasTabsComponent } from '../../../../libs/shared-ui/reservas/reservas-tabs.component';
 import { ProximaCitaCardComponent, ProximaCitaData } from '../../../../libs/shared-ui/reservas/proxima-cita-card.component';
 import { PendienteCardComponent, PendienteData } from '../../../../libs/shared-ui/reservas/pendiente-card.component';
@@ -70,6 +70,7 @@ export class ClientReservasComponent implements OnInit {
   private appointments = inject(AppointmentsService);
   private router = inject(Router);
   private payments = inject(PaymentsService);
+  private route = inject(ActivatedRoute);
 
   activeTab = 0;
   
@@ -94,7 +95,21 @@ export class ClientReservasComponent implements OnInit {
 
   ngOnInit(): void {
     this.validateProfile();
-    this.loadAppointments();
+    // Si venimos de Stripe success/cancel, procesar query y luego cargar
+    const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    if (appointmentId && sessionId) {
+      // Confirmar pago en backend y refrescar
+      this.payments.getPaymentStatus(appointmentId).subscribe({
+        next: () => {
+          // Disparar confirmación explícita (idempotente) y recargar
+          this.confirmPayment(appointmentId, sessionId!);
+        },
+        error: () => this.confirmPayment(appointmentId, sessionId!)
+      });
+    } else {
+      this.loadAppointments();
+    }
     // Realtime: refrescar lista ante cambios relevantes
     this.appointments.onPaymentCompleted().subscribe(() => this.loadAppointments());
     this.appointments.onAppointmentUpdated().subscribe(() => this.loadAppointments());
@@ -117,7 +132,7 @@ export class ClientReservasComponent implements OnInit {
   private loadAppointments(): void {
     this.appointments.listClientAppointments().subscribe({
       next: (resp) => {
-        const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number })[];
+        const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending' })[];
         const todayIso = new Date();
         const todayStr = `${todayIso.getFullYear()}-${String(todayIso.getMonth()+1).padStart(2,'0')}-${String(todayIso.getDate()).padStart(2,'0')}`;
 
@@ -132,11 +147,11 @@ export class ClientReservasComponent implements OnInit {
         if (nextConfirmed) {
           this.proxima = {
             titulo: `${nextConfirmed.service_name || 'Servicio'} con ${nextConfirmed.provider_name || 'Profesional'}`,
-            subtitulo: 'Confirmada (Esperando pago)',
+            subtitulo: (nextConfirmed as any).payment_status === 'paid' || (nextConfirmed as any).payment_status === 'succeeded' ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
             fecha: this.formatDate(nextConfirmed.date),
             hora: this.formatTime(nextConfirmed.start_time),
             diasRestantes: this.daysFromToday(nextConfirmed.date),
-            mostrarPagar: true,
+            mostrarPagar: !((nextConfirmed as any).payment_status === 'paid' || (nextConfirmed as any).payment_status === 'succeeded'),
             appointmentId: nextConfirmed.id
           };
         } else {
@@ -202,6 +217,21 @@ export class ClientReservasComponent implements OnInit {
       error: (err) => {
         console.error('Error creando checkout de pago', err);
       }
+    });
+  }
+
+  private confirmPayment(appointmentId: number, sessionId: string) {
+    // Llama al nuevo endpoint de confirmación y recarga la lista
+    const base = (window as any)?.__env?.apiBaseUrl || (window as any)?.env?.apiBaseUrl || '';
+    fetch(`${base || ''}/payments/appointments/${appointmentId}/confirm?session_id=${encodeURIComponent(sessionId)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adomi_access_token') || ''}`
+      }
+    }).finally(() => {
+      this.loadAppointments();
+      // Limpiar query params para no re-procesar
+      this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
     });
   }
 

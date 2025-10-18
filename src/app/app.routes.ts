@@ -49,6 +49,8 @@ export const routes: Routes = [
       { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },
+      { path: 'pago/exito', component: ClientReservasComponent },
+      { path: 'pago/cancelado', component: ClientReservasComponent },
       { path: 'configuracion', component: ClientConfiguracionComponent },
       { path: 'terminos', component: ClientTerminosComponent },
       { path: 'validacion-datos-trabajador', component: ValidacionDatosTrabajadorComponent }
