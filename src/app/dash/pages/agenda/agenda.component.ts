@@ -335,6 +335,7 @@ export class DashAgendaComponent implements OnInit {
       clientName: a.client_name || '',
       clientPhone: '',
       status: a.status as any,
+      paymentStatus: 'unpaid',
       type: 'appointment',
       notes: a.notes || ''
     };

@@ -34,6 +34,7 @@ export class AppointmentsService {
   private appointmentCreated$ = new Subject<AppointmentDto>();
   private appointmentUpdated$ = new Subject<AppointmentDto>();
   private appointmentDeleted$ = new Subject<{ id: number }>();
+  private paymentCompleted$ = new Subject<{ appointment_id: number; amount?: number }>();
 
   private headers(): HttpHeaders {
     const token = this.auth.getAccessToken();
@@ -133,12 +134,14 @@ export class AppointmentsService {
       this.socket.on('appointment:created', (a: AppointmentDto) => this.appointmentCreated$.next(a));
       this.socket.on('appointment:updated', (a: AppointmentDto) => this.appointmentUpdated$.next(a));
       this.socket.on('appointment:deleted', (p: { id: number }) => this.appointmentDeleted$.next(p));
+      this.socket.on('payment:completed', (p: { appointment_id: number; amount?: number }) => this.paymentCompleted$.next(p));
     } catch {}
   }
 
   onAppointmentCreated(): Observable<AppointmentDto> { return this.appointmentCreated$.asObservable(); }
   onAppointmentUpdated(): Observable<AppointmentDto> { return this.appointmentUpdated$.asObservable(); }
   onAppointmentDeleted(): Observable<{ id: number }> { return this.appointmentDeleted$.asObservable(); }
+  onPaymentCompleted(): Observable<{ appointment_id: number; amount?: number }> { return this.paymentCompleted$.asObservable(); }
 }
 
 

@@ -30,8 +30,9 @@ export class NotificationService {
   private events: NotificationEvent[] = [];
 
   constructor() {
-    this.initializeNotifications();
+    // Sin datos de demo; se inicializa configuración y se carga lista vacía
     this.loadConfiguration();
+    this.notificationsSubject.next([]);
   }
 
   // ===== CONFIGURACIÓN =====
@@ -90,11 +91,7 @@ export class NotificationService {
 
   // ===== GESTIÓN DE NOTIFICACIONES =====
 
-  private initializeNotifications(): void {
-    // Notificaciones de ejemplo para testing
-    this.notifications = this.generateSampleNotifications();
-    this.notificationsSubject.next(this.notifications);
-  }
+  private initializeNotifications(): void { /* removido demo */ }
 
   private loadNotifications(): void {
     // En una implementación real, esto cargaría desde una API
@@ -307,89 +304,7 @@ export class NotificationService {
 
   // ===== NOTIFICACIONES DE EJEMPLO =====
 
-  private generateSampleNotifications(): Notification[] {
-    const now = new Date();
-    
-    return [
-      {
-        id: '1',
-        type: 'appointment',
-        title: 'Nueva cita programada',
-        message: 'Tienes una nueva cita con <strong>María González</strong> mañana a las 10:00 AM',
-        priority: 'high',
-        status: 'unread',
-        profile: 'provider',
-        createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 horas atrás
-        link: '/dash/agenda',
-        actions: ['view', 'reschedule'],
-        metadata: { appointmentId: 'apt_123', clientName: 'María González' },
-        icon: 'calendar',
-        color: '#4f46e5'
-      },
-      {
-        id: '2',
-        type: 'payment',
-        title: 'Pago recibido',
-        message: 'Has recibido un pago de <strong>$45.000</strong> por el servicio de corte de pelo',
-        priority: 'medium',
-        status: 'unread',
-        profile: 'provider',
-        createdAt: new Date(now.getTime() - 4 * 60 * 60 * 1000), // 4 horas atrás
-        link: '/dash/ingresos',
-        actions: ['view'],
-        metadata: { paymentId: 'pay_456', amount: 45000 },
-        icon: 'credit-card',
-        color: '#10b981'
-      },
-      {
-        id: '3',
-        type: 'rating',
-        title: 'Nueva calificación',
-        message: 'Carlos Rojas te ha calificado con <strong>5 estrellas</strong>',
-        priority: 'medium',
-        status: 'read',
-        profile: 'provider',
-        createdAt: new Date(now.getTime() - 6 * 60 * 60 * 1000), // 6 horas atrás
-        readAt: new Date(now.getTime() - 5 * 60 * 60 * 1000),
-        link: '/dash/perfil',
-        actions: ['view'],
-        metadata: { rating: 5, clientName: 'Carlos Rojas' },
-        icon: 'star',
-        color: '#f59e0b'
-      },
-      {
-        id: '4',
-        type: 'booking',
-        title: 'Reserva cancelada',
-        message: 'Ana Silva ha cancelado su cita del viernes 15 de octubre',
-        priority: 'low',
-        status: 'read',
-        profile: 'provider',
-        createdAt: new Date(now.getTime() - 8 * 60 * 60 * 1000), // 8 horas atrás
-        readAt: new Date(now.getTime() - 7 * 60 * 60 * 1000),
-        link: '/dash/agenda',
-        actions: ['view'],
-        metadata: { bookingId: 'book_789', clientName: 'Ana Silva' },
-        icon: 'calendar-plus',
-        color: '#06b6d4'
-      },
-      {
-        id: '5',
-        type: 'system',
-        title: 'Mantenimiento programado',
-        message: 'El sistema estará en mantenimiento el domingo de 2:00 AM a 4:00 AM',
-        priority: 'low',
-        status: 'unread',
-        profile: 'provider',
-        createdAt: new Date(now.getTime() - 12 * 60 * 60 * 1000), // 12 horas atrás
-        link: '/dash/home',
-        actions: ['view'],
-        metadata: {},
-        icon: 'info',
-        color: '#6b7280'
-      }
-    ];
-  }
+  private generateSampleNotifications(): Notification[] { return []; }
 }
 
 

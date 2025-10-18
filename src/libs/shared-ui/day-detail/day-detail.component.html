@@ -53,6 +53,16 @@
           <p *ngIf="appointment.notes" class="day-detail__appointment-notes">
             {{ appointment.notes }}
           </p>
+          <div *ngIf="appointment.status === 'confirmed'" class="day-detail__appointment-status" 
+               [style.background-color]="getStatusColor('confirmed')"
+               style="margin-top:6px;">
+            {{ getStatusText('confirmed') }}
+          </div>
+          <div *ngIf="appointment.status === 'confirmed'" class="day-detail__appointment-status" 
+               [style.background-color]="getPaymentStatusColor(appointment.paymentStatus)"
+               style="margin-top:4px;">
+            {{ getPaymentStatusText(appointment.paymentStatus) }}
+          </div>
           <div *ngIf="appointment.status === 'scheduled'" class="day-detail__appointment-actions">
             <button class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
           </div>

@@ -12,6 +12,7 @@ export interface DayAppointment {
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   type: 'appointment' | 'break' | 'blocked';
   notes?: string;
+  paymentStatus?: 'unpaid' | 'paid';
 }
 
 @Component({
@@ -132,6 +133,16 @@ export class DayDetailComponent {
       default:
         return 'Desconocido';
     }
+  }
+
+  getPaymentStatusText(payment?: string): string {
+    if (payment === 'paid') return 'Pagada';
+    return 'Esperando pago';
+  }
+
+  getPaymentStatusColor(payment?: string): string {
+    if (payment === 'paid') return '#10b981';
+    return '#f59e0b';
   }
 
   getTypeIcon(type: string): string {

@@ -95,6 +95,10 @@ export class ClientReservasComponent implements OnInit {
   ngOnInit(): void {
     this.validateProfile();
     this.loadAppointments();
+    // Escuchar pago completado para refrescar lista
+    this.appointments.onPaymentCompleted().subscribe(() => {
+      this.loadAppointments();
+    });
   }
 
   private validateProfile() {
