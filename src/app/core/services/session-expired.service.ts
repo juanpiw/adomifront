@@ -24,6 +24,12 @@ export class SessionExpiredService {
     if (message) this.messageSig.set(message);
     this.isShowing = true;
     this.openSig.set(true);
+    // Auto-cierre y redirección en 8s para evitar bloqueo
+    setTimeout(() => {
+      if (this.isShowing) {
+        this.forceRedirect();
+      }
+    }, 8000);
   }
 
   close() {
@@ -34,6 +40,13 @@ export class SessionExpiredService {
   confirmReLogin() {
     // Limpiar sesión y enviar al login con flag de expiración
     this.session.clearSession();
+    this.close();
+    this.router.navigate(['/auth/login'], { queryParams: { expired: '1' } });
+  }
+
+  forceRedirect(message?: string) {
+    if (message) this.messageSig.set(message);
+    try { this.session.clearSession(); } catch {}
     this.close();
     this.router.navigate(['/auth/login'], { queryParams: { expired: '1' } });
   }
