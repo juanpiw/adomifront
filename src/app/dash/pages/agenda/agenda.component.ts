@@ -321,6 +321,10 @@ export class DashAgendaComponent implements OnInit {
   // Navegación
   setView(view: 'dashboard' | 'calendar' | 'config') {
     this.currentView = view;
+    // Al cambiar a calendario, recargar mes actual para asegurar datos frescos
+    if (view === 'calendar' && this.selectedDate) {
+      this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
+    }
   }
 
   // Cargar citas del mes
