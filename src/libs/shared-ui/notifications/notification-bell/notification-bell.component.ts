@@ -26,7 +26,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Suscribirse al contador de notificaciones no leídas
     this.subscriptions.push(
-      this.notificationService.getUnreadCount().subscribe(count => {
+      this.notificationService.unreadCount$.subscribe(count => {
         this.unreadCount = count;
         this.hasUnreadNotifications = count > 0;
       })

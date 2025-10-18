@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { 
   Notification, 
   NotificationType, 
@@ -28,11 +29,21 @@ export class NotificationService {
   private currentProfile: UserProfile = 'client';
   private notifications: Notification[] = [];
   private events: NotificationEvent[] = [];
+  private unreadCountSubject = new BehaviorSubject<number>(0);
+  public unreadCount$ = this.unreadCountSubject.asObservable();
 
   constructor() {
     // Sin datos de demo; se inicializa configuración y se carga lista vacía
     this.loadConfiguration();
     this.notificationsSubject.next([]);
+  }
+  
+  /**
+   * Actualizar contador de notificaciones no leídas
+   * Este método se puede llamar desde fuera para actualizar el contador con datos del backend
+   */
+  updateUnreadCount(count: number): void {
+    this.unreadCountSubject.next(count);
   }
 
   // ===== CONFIGURACIÓN =====

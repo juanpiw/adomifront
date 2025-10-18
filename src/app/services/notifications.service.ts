@@ -198,4 +198,54 @@ export class NotificationsService {
       await this.registerFCMToken();
     }
   }
+
+  /**
+   * Obtener notificaciones del usuario
+   */
+  getNotifications(limit: number = 20, offset: number = 0, unreadOnly: boolean = false): Observable<any> {
+    const params: any = { limit, offset };
+    if (unreadOnly) {
+      params.unread_only = 'true';
+    }
+
+    return this.http.get(
+      `${this.apiBase}/notifications`,
+      { 
+        headers: this.authHeaders(),
+        params
+      }
+    );
+  }
+
+  /**
+   * Obtener conteo de notificaciones no leídas
+   */
+  getUnreadCount(): Observable<any> {
+    return this.http.get(
+      `${this.apiBase}/notifications/unread-count`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  /**
+   * Marcar notificación como leída
+   */
+  markAsRead(notificationId: number): Observable<any> {
+    return this.http.patch(
+      `${this.apiBase}/notifications/${notificationId}/read`,
+      {},
+      { headers: this.authHeaders() }
+    );
+  }
+
+  /**
+   * Marcar todas las notificaciones como leídas
+   */
+  markAllAsRead(): Observable<any> {
+    return this.http.patch(
+      `${this.apiBase}/notifications/mark-all-read`,
+      {},
+      { headers: this.authHeaders() }
+    );
+  }
 }

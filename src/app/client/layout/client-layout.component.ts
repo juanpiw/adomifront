@@ -272,9 +272,31 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       console.log('[CLIENT_LAYOUT] Inicializando notificaciones push...');
       await this.notificationsService.initializeForUser();
       console.log('[CLIENT_LAYOUT] Notificaciones push inicializadas');
+      
+      // Cargar contador de notificaciones in-app
+      this.loadUnreadNotificationsCount();
+      
+      // Actualizar cada 30 segundos
+      setInterval(() => {
+        this.loadUnreadNotificationsCount();
+      }, 30000);
     } catch (error) {
       console.error('[CLIENT_LAYOUT] Error inicializando notificaciones:', error);
     }
+  }
+  
+  private loadUnreadNotificationsCount(): void {
+    this.notificationsService.getUnreadCount().subscribe({
+      next: (resp: any) => {
+        if (resp?.ok && typeof resp.count === 'number') {
+          console.log('[CLIENT_LAYOUT] Unread notifications count:', resp.count);
+          // TODO: Actualizar UI con el contador
+        }
+      },
+      error: (err) => {
+        console.error('[CLIENT_LAYOUT] Error loading unread count:', err);
+      }
+    });
   }
 
   isMobile(): boolean {

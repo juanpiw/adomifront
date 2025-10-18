@@ -250,8 +250,30 @@ export class DashLayoutComponent implements OnInit {
       console.log('[DASH_LAYOUT] Inicializando notificaciones push...');
       await this.pushNotifications.initializeForUser();
       console.log('[DASH_LAYOUT] Notificaciones push inicializadas');
+      
+      // Cargar contador de notificaciones in-app
+      this.loadUnreadNotificationsCount();
+      
+      // Actualizar cada 30 segundos
+      setInterval(() => {
+        this.loadUnreadNotificationsCount();
+      }, 30000);
     } catch (error) {
       console.error('[DASH_LAYOUT] Error inicializando notificaciones:', error);
     }
+  }
+  
+  private loadUnreadNotificationsCount(): void {
+    this.pushNotifications.getUnreadCount().subscribe({
+      next: (resp: any) => {
+        if (resp?.ok && typeof resp.count === 'number') {
+          this.notifications.updateUnreadCount(resp.count);
+          console.log('[DASH_LAYOUT] Unread notifications count:', resp.count);
+        }
+      },
+      error: (err) => {
+        console.error('[DASH_LAYOUT] Error loading unread count:', err);
+      }
+    });
   }
 }

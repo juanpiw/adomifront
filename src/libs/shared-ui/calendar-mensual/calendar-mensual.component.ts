@@ -100,11 +100,18 @@ export class CalendarMensualComponent implements OnInit {
   }
 
   getEventsForDate(date: Date): CalendarEvent[] {
-    return this.events.filter(event => 
+    const events = this.events.filter(event => 
       event.date.getDate() === date.getDate() &&
       event.date.getMonth() === date.getMonth() &&
       event.date.getFullYear() === date.getFullYear()
     );
+    
+    // Debug logging
+    if (events.length > 0) {
+      console.log(`[CALENDAR] Found ${events.length} events for ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}:`, events);
+    }
+    
+    return events;
   }
 
   onDateClick(date: Date) {

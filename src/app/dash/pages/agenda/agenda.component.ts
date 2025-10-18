@@ -337,6 +337,10 @@ export class DashAgendaComponent implements OnInit {
         console.log(`[AGENDA] Loading month ${monthStr}: ${apps.length} appointments`, apps);
         this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
         console.log('[AGENDA] Calendar events generated:', this.calendarEvents);
+        
+        // Debug: verificar eventos para el día 20
+        const day20Events = this.calendarEvents.filter(e => e.date.getDate() === 20);
+        console.log('[AGENDA] Events for day 20:', day20Events);
         this.loading = false;
       },
       error: () => { this.loading = false; }
