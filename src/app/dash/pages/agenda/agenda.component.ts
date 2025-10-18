@@ -357,15 +357,42 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private mapAppointmentToEvent(a: AppointmentDto): CalendarEvent {
-    // Convertir YYYY-MM-DD a Date
-    const [y, m, d] = a.date.split('-').map(Number);
-    const eventDate = new Date(y, m - 1, d);
-    console.log(`[AGENDA] Mapping event for calendar: appt #${a.id}, date="${a.date}" -> Date(${y}, ${m-1}, ${d}) = ${eventDate.toISOString()}`);
+    // Convertir YYYY-MM-DD a Date de forma segura
+    let eventDate: Date;
+    
+    try {
+      if (!a.date || typeof a.date !== 'string') {
+        console.warn(`[AGENDA] Invalid date for appointment ${a.id}:`, a.date);
+        eventDate = new Date(); // Usar fecha actual como fallback
+      } else {
+        const [y, m, d] = a.date.split('-').map(Number);
+        
+        // Validar que los números sean válidos
+        if (isNaN(y) || isNaN(m) || isNaN(d) || y < 1900 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) {
+          console.warn(`[AGENDA] Invalid date components for appointment ${a.id}:`, { y, m, d, originalDate: a.date });
+          eventDate = new Date(); // Usar fecha actual como fallback
+        } else {
+          eventDate = new Date(y, m - 1, d);
+          
+          // Verificar que la fecha sea válida
+          if (isNaN(eventDate.getTime())) {
+            console.warn(`[AGENDA] Invalid date object for appointment ${a.id}:`, eventDate);
+            eventDate = new Date(); // Usar fecha actual como fallback
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`[AGENDA] Error parsing date for appointment ${a.id}:`, error);
+      eventDate = new Date(); // Usar fecha actual como fallback
+    }
+    
+    console.log(`[AGENDA] Mapping event for calendar: appt #${a.id}, date="${a.date}" -> ${eventDate.toISOString()}`);
+    
     return {
       id: String(a.id),
       title: 'Cita',
       date: eventDate,
-      time: a.start_time.slice(0, 5),
+      time: a.start_time ? a.start_time.slice(0, 5) : '00:00',
       type: 'appointment'
     };
   }
