@@ -72,8 +72,8 @@
         (appointmentClick)="onAppointmentClick($event)"
         (newAppointment)="onNewAppointmentForDay($event)"
         (citaCreated)="onDayCitaCreated($event)"
-        (confirmAppointment)="onConfirmAppointment(+($event))"
-        (deleteAppointment)="onDeleteAppointment(+($event))">
+        (confirmAppointment)="onConfirmAppointment(+$any($event))"
+        (deleteAppointment)="onDeleteAppointment(+$any($event))">
         <ng-template #appointmentActionsTemplate let-appointment="appointment">
           <button *ngIf="appointment.status === 'scheduled'"
                   class="day-detail__action-btn day-detail__action-btn--confirm"

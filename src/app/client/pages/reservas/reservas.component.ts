@@ -203,7 +203,8 @@ export class ClientReservasComponent implements OnInit {
             hora: this.formatTime(a.start_time),
             diasRestantes: this.daysFromToday(a.date),
             mostrarPagar: !((a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded'),
-            appointmentId: a.id
+            appointmentId: a.id,
+            successHighlight: (a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded'
           }));
 
         // Todas las próximas pendientes

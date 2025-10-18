@@ -9,6 +9,7 @@ export interface ProximaCitaData {
   diasRestantes: number;
   mostrarPagar?: boolean;
   appointmentId?: number;
+  successHighlight?: boolean;
 }
 
 @Component({
