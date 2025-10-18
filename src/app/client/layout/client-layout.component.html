@@ -8,8 +8,9 @@
       <a class="rail-item" routerLink="/client/explorar" routerLinkActive="active" title="Explorar" (click)="onNav()">
         <ui-icon name="search" [size]="18"></ui-icon>
       </a>
-      <a class="rail-item" routerLink="/client/reservas" routerLinkActive="active" title="Mis Reservas" (click)="onNav()">
+      <a class="rail-item" routerLink="/client/reservas" routerLinkActive="active" title="Mis Reservas" (click)="onNav()" style="position:relative;">
         <ui-icon name="calendar" [size]="18"></ui-icon>
+        <span *ngIf="appointmentBadge > 0" class="badge-unread">{{ appointmentBadge }}</span>
       </a>
               <a class="rail-item" routerLink="/client/favoritos" routerLinkActive="active" title="Favoritos" (click)="onNav()">
                 <ui-icon name="heart" [size]="18"></ui-icon>

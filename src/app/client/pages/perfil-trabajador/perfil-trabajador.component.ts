@@ -5,6 +5,7 @@ import { Location } from '@angular/common';
 import { ProviderPublicService, ProviderDetailResponse } from '../../services/provider-public.service';
 import { AppointmentsService } from '../../../services/appointments.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { ProfileHeroComponent, ProfileHeroData } from '../../../../libs/shared-ui/profile-hero/profile-hero.component';
 import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
 import { PortfolioComponent, PortfolioData, PortfolioItem } from '../../../../libs/shared-ui/portfolio/portfolio.component';
@@ -84,6 +85,7 @@ export class PerfilTrabajadorComponent implements OnInit {
   private providerService = inject(ProviderPublicService);
   private appointments = inject(AppointmentsService);
   private auth = inject(AuthService);
+  private notifications = inject(NotificationService);
 
   ngOnInit(): void {
     this.workerId = this.route.snapshot.paramMap.get('workerId');
@@ -296,7 +298,17 @@ export class PerfilTrabajadorComponent implements OnInit {
         if (resp.success) {
           this.closeConfirmSignal++;
           this.confirming = false;
-          alert('✅ Cita creada');
+          // Crear notificación in-app para el cliente
+          this.notifications.setUserProfile('client');
+          this.notifications.createNotification({
+            type: 'appointment',
+            title: '✅ Cita agendada',
+            message: `Tu cita con ${this.profileHeroData.name} fue creada. Esperando confirmación del proveedor.`,
+            priority: 'high',
+            profile: 'client',
+            actions: ['view'],
+            metadata: { providerId: this.workerId || '' }
+          });
         } else {
           this.confirmError = 'No se pudo crear la cita';
           this.confirming = false;

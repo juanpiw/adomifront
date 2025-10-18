@@ -11,6 +11,7 @@ import { ClientProfileService } from '../../services/client-profile.service';
 import { environment } from '../../../environments/environment';
 import { MenuService } from '../services/menu.service';
 import { ChatService, MessageDto } from '../../services/chat.service';
+import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -39,10 +40,12 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   private clientProfile = inject(ClientProfileService);
   private platformId = inject(PLATFORM_ID);
   private chat = inject(ChatService);
+  private appointmentsService = inject(AppointmentsService);
 
   userName: string | null = null;
   userAvatarUrl: string | null = null;
   unreadTotal = 0;
+  appointmentBadge = 0;
   private subs: Subscription[] = [];
 
   ngOnInit() {
@@ -97,14 +100,39 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     // Conectar socket y unirse a sala del usuario
     this.chat.connectSocket();
 
-    // Al navegar al chat, limpiar badge
+    // Al navegar al chat/reservas, limpiar badges
     this.router.events.subscribe((ev: any) => {
       if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
         if (ev.urlAfterRedirects.includes('/client/conversaciones')) {
           this.unreadTotal = 0;
         }
+        if (ev.urlAfterRedirects.includes('/client/reservas')) {
+          this.appointmentBadge = 0;
+        }
       }
     });
+
+    // Conectar socket de citas y escuchar appointment:created
+    const me = this.auth.getCurrentUser()?.id;
+    if (me) {
+      this.appointmentsService.connectSocket(me);
+      this.subs.push(
+        this.appointmentsService.onAppointmentCreated().subscribe((appt: AppointmentDto) => {
+          // Si la cita es del cliente, incrementar badge
+          if (appt.client_id === me) {
+            this.appointmentBadge = Math.min(99, (this.appointmentBadge || 0) + 1);
+          }
+        })
+      );
+      this.subs.push(
+        this.appointmentsService.onAppointmentUpdated().subscribe((appt: AppointmentDto) => {
+          // Si cambió el estado y es del cliente, incrementar badge
+          if (appt.client_id === me) {
+            this.appointmentBadge = Math.min(99, (this.appointmentBadge || 0) + 1);
+          }
+        })
+      );
+    }
   }
 
   ngOnDestroy() {

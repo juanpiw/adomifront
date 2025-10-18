@@ -178,7 +178,8 @@ export class ClientReservasComponent implements OnInit {
   private loadAppointments(): void {
     this.appointments.listClientAppointments().subscribe({
       next: (resp) => {
-        const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending' })[];
+        const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed' })[];
+        console.log('[RESERVAS] Citas cargadas:', list);
         const todayIso = new Date();
         const todayStr = `${todayIso.getFullYear()}-${String(todayIso.getMonth()+1).padStart(2,'0')}-${String(todayIso.getDate()).padStart(2,'0')}`;
 
@@ -187,25 +188,24 @@ export class ClientReservasComponent implements OnInit {
         const past = list.filter(a => a.date < todayStr && a.status === 'completed')
                          .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
         const cancelled = list.filter(a => a.status === 'cancelled');
-        // Actualizar badges: [Próximas, Pasadas, Canceladas]
-        const upcomingCount = this.proximasConfirmadas.length + this.pendientesList.length;
-        const pastCount = past.length;
-        const cancelledCount = cancelled.length;
-        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null];
 
         // Todas las próximas confirmadas
         this.proximasConfirmadas = upcoming
           .filter(a => a.status === 'confirmed')
-          .map(a => ({
-            titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
-            subtitulo: (a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded' ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
-            fecha: this.formatDate(a.date),
-            hora: this.formatTime(a.start_time),
-            diasRestantes: this.daysFromToday(a.date),
-            mostrarPagar: !((a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded'),
-            appointmentId: a.id,
-            successHighlight: (a as any).payment_status === 'paid' || (a as any).payment_status === 'succeeded'
-          }));
+          .map(a => {
+            const isPaid = ['paid', 'succeeded', 'completed'].includes(String((a as any).payment_status || ''));
+            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${(a as any).payment_status}", isPaid=${isPaid}, date="${a.date}"`);
+            return {
+              titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
+              subtitulo: isPaid ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
+              fecha: this.formatDate(a.date),
+              hora: this.formatTime(a.start_time),
+              diasRestantes: this.daysFromToday(a.date),
+              mostrarPagar: !isPaid,
+              appointmentId: a.id,
+              successHighlight: isPaid
+            };
+          });
 
         // Todas las próximas pendientes
         this.pendientesList = upcoming
@@ -232,6 +232,12 @@ export class ClientReservasComponent implements OnInit {
           pillText: 'Cancelada por proveedor'
         }));
         this.canceladasClienteList = [];
+
+        // Actualizar badges DESPUÉS de llenar listas: [Próximas, Pasadas, Canceladas]
+        const upcomingCount = this.proximasConfirmadas.length + this.pendientesList.length;
+        const pastCount = past.length;
+        const cancelledCount = cancelled.length;
+        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null];
       },
       error: (err) => {
         console.error('Error cargando citas del cliente', err);
@@ -240,8 +246,11 @@ export class ClientReservasComponent implements OnInit {
   }
 
   private formatDate(iso: string): string {
+    if (!iso || typeof iso !== 'string') return 'Fecha no disponible';
     const [y,m,d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return 'Fecha no disponible';
     const dt = new Date(y, m-1, d);
+    if (isNaN(dt.getTime())) return 'Fecha no disponible';
     return dt.toLocaleDateString('es-CL', { weekday:'long', day:'2-digit', month:'long' });
   }
   private formatTime(hhmm: string): string {
@@ -252,9 +261,12 @@ export class ClientReservasComponent implements OnInit {
     return hhmm;
   }
   private daysFromToday(dateIso: string): number {
+    if (!dateIso || typeof dateIso !== 'string') return 0;
     const [y,m,d] = dateIso.split('-').map(Number);
+    if (!y || !m || !d) return 0;
     const today = new Date();
     const target = new Date(y, m-1, d);
+    if (isNaN(target.getTime())) return 0;
     const diff = Math.ceil((target.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime())/ (1000*60*60*24));
     return Math.max(diff, 0);
   }
