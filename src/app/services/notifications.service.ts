@@ -43,26 +43,29 @@ export class NotificationsService {
    * Solicitar permisos de notificaciones
    */
   async requestPermission(): Promise<NotificationPermission> {
+    console.log('[NOTIFICATIONS_SERVICE] 🔔 Verificando soporte de notificaciones...');
     if (!('Notification' in window)) {
-      console.warn('Este navegador no soporta notificaciones');
+      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Este navegador no soporta notificaciones');
       return 'denied';
     }
 
     try {
+      console.log('[NOTIFICATIONS_SERVICE] 🔔 Solicitando permisos de notificaciones al usuario...');
       const permission = await Notification.requestPermission();
       this.permissionSubject.next(permission);
+      console.log('[NOTIFICATIONS_SERVICE] 🔔 Respuesta del usuario:', permission);
       
       if (permission === 'granted') {
-        console.log('Permisos de notificaciones concedidos');
+        console.log('[NOTIFICATIONS_SERVICE] 🔔 Permisos concedidos, registrando token FCM...');
         // Registrar token FCM si está disponible
         await this.registerFCMToken();
       } else {
-        console.log('Permisos de notificaciones denegados');
+        console.warn('[NOTIFICATIONS_SERVICE] 🔔 Permisos denegados por el usuario');
       }
       
       return permission;
     } catch (error) {
-      console.error('Error solicitando permisos de notificaciones:', error);
+      console.error('[NOTIFICATIONS_SERVICE] 🔔 Error solicitando permisos:', error);
       return 'denied';
     }
   }
@@ -184,19 +187,32 @@ export class NotificationsService {
    * Inicializar notificaciones para el usuario actual
    */
   async initializeForUser(): Promise<void> {
+    console.log('[NOTIFICATIONS_SERVICE] 🔔 Inicializando notificaciones...');
     const user = this.auth.getCurrentUser();
-    if (!user) return;
+    if (!user) {
+      console.warn('[NOTIFICATIONS_SERVICE] 🔔 No hay usuario autenticado, abortando inicialización');
+      return;
+    }
+
+    console.log('[NOTIFICATIONS_SERVICE] 🔔 Usuario autenticado:', user);
 
     // Verificar permisos
     const permission = this.checkPermission();
+    console.log('[NOTIFICATIONS_SERVICE] 🔔 Permiso actual:', permission);
     
     if (permission === 'default') {
+      console.log('[NOTIFICATIONS_SERVICE] 🔔 Solicitando permisos...');
       // Solicitar permisos
       await this.requestPermission();
     } else if (permission === 'granted') {
+      console.log('[NOTIFICATIONS_SERVICE] 🔔 Permisos concedidos, registrando token FCM...');
       // Registrar token FCM
       await this.registerFCMToken();
+    } else {
+      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Permisos denegados');
     }
+    
+    console.log('[NOTIFICATIONS_SERVICE] 🔔 Inicialización completada');
   }
 
   /**

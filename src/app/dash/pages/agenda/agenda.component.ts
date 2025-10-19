@@ -361,7 +361,7 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private mapAppointmentToEvent(a: AppointmentDto): CalendarEvent {
-    // Convertir YYYY-MM-DD a Date de forma segura
+    // Convertir YYYY-MM-DD o ISO string a Date de forma segura
     let eventDate: Date;
     
     try {
@@ -369,7 +369,9 @@ export class DashAgendaComponent implements OnInit {
         console.warn(`[AGENDA] Invalid date for appointment ${a.id}:`, a.date);
         eventDate = new Date(); // Usar fecha actual como fallback
       } else {
-        const [y, m, d] = a.date.split('-').map(Number);
+        // Extraer solo YYYY-MM-DD si viene en formato ISO (2025-10-17T00:00:00.000Z)
+        const dateOnly = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+        const [y, m, d] = dateOnly.split('-').map(Number);
         
         // Validar que los números sean válidos
         if (isNaN(y) || isNaN(m) || isNaN(d) || y < 1900 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) {

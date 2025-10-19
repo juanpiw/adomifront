@@ -135,6 +135,20 @@
     &:hover {
       opacity: 1;
     }
+
+    // Estilo para el indicador único de día con citas
+    &--single {
+      height: 0.5rem;
+      border-radius: 0.25rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        opacity: 1;
+        transform: scaleY(1.1);
+      }
+    }
   }
 }
 

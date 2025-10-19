@@ -114,6 +114,75 @@ export class CalendarMensualComponent implements OnInit {
     return events;
   }
 
+  /**
+   * Verifica si un día tiene citas programadas
+   */
+  hasAppointments(date: Date): boolean {
+    return this.getEventsForDate(date).length > 0;
+  }
+
+  /**
+   * Obtiene el color del indicador para un día con citas
+   * El color se basa en el estado predominante de las citas del día
+   */
+  getDayIndicatorColor(date: Date): string {
+    const events = this.getEventsForDate(date);
+    
+    if (events.length === 0) {
+      return '#6b7280'; // Gris por defecto
+    }
+
+    // Contar eventos por estado
+    let confirmedCount = 0;
+    let scheduledCount = 0;
+    let cancelledCount = 0;
+    let paidCount = 0;
+
+    events.forEach(event => {
+      if (event.status === 'cancelled') {
+        cancelledCount++;
+      } else if (event.status === 'confirmed') {
+        const isPaid = event.paymentStatus && ['paid', 'succeeded', 'completed'].includes(event.paymentStatus);
+        if (isPaid) {
+          paidCount++;
+        } else {
+          confirmedCount++;
+        }
+      } else if (event.status === 'scheduled') {
+        scheduledCount++;
+      }
+    });
+
+    // Prioridad: Canceladas > Pagadas > Confirmadas > Programadas
+    if (cancelledCount > 0) {
+      return '#ef4444'; // Rojo si hay alguna cancelada
+    } else if (paidCount > 0 && paidCount === events.length) {
+      return '#3b82f6'; // Azul si todas están pagadas
+    } else if (confirmedCount > 0) {
+      return '#f59e0b'; // Amarillo si hay confirmadas pendientes de pago
+    } else if (scheduledCount > 0) {
+      return '#10b981'; // Verde si solo hay programadas
+    }
+
+    return '#4338ca'; // Azul por defecto
+  }
+
+  /**
+   * Obtiene el texto del tooltip para el indicador del día
+   */
+  getDayIndicatorTooltip(date: Date): string {
+    const events = this.getEventsForDate(date);
+    const count = events.length;
+    
+    if (count === 0) {
+      return 'Sin citas';
+    } else if (count === 1) {
+      return '1 cita programada';
+    } else {
+      return `${count} citas programadas`;
+    }
+  }
+
   onDateClick(date: Date) {
     if (this.isCurrentMonth(date)) {
       this.dateSelected.emit(date);
