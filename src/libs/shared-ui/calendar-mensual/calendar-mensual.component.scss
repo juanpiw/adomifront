@@ -124,30 +124,37 @@
     flex-direction: column;
     gap: 0.125rem;
     flex: 1;
+    margin-top: 0.25rem;
   }
 
-  &__event {
+  &__day-indicator {
+    display: flex;
+    flex-direction: row;
+    gap: 0.125rem;
+    flex-wrap: wrap;
+    padding: 0.125rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 0.25rem;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      transform: scale(1.02);
+    }
+  }
+
+  &__event-line {
     height: 0.25rem;
+    flex: 1;
+    min-width: 0.5rem;
     border-radius: 0.125rem;
-    opacity: 0.8;
-    transition: opacity 0.2s ease-in-out;
+    opacity: 0.9;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 
     &:hover {
       opacity: 1;
-    }
-
-    // Estilo para el indicador único de día con citas
-    &--single {
-      height: 0.5rem;
-      border-radius: 0.25rem;
-      opacity: 0.9;
-      margin-top: 0.25rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-      &:hover {
-        opacity: 1;
-        transform: scaleY(1.1);
-      }
+      transform: scaleY(1.2);
     }
   }
 }

@@ -47,9 +47,14 @@
       <div class="calendar-mensual__events">
         <div 
           *ngIf="hasAppointments(date)"
-          class="calendar-mensual__event calendar-mensual__event--single"
-          [style.background-color]="getDayIndicatorColor(date)"
+          class="calendar-mensual__day-indicator"
           [title]="getDayIndicatorTooltip(date)">
+          <!-- Mini líneas representando cada cita -->
+          <div 
+            *ngFor="let event of getEventsForDate(date); trackBy: trackByEventId"
+            class="calendar-mensual__event-line"
+            [style.background-color]="getEventColor(event)">
+          </div>
         </div>
       </div>
     </div>
