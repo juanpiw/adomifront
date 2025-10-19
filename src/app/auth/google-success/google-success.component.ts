@@ -107,49 +107,85 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
 
   ngOnInit() {
+    console.log('🟢 [GOOGLE_SUCCESS] ==================== COMPONENTE INICIALIZADO ====================');
+    console.log('🟢 [GOOGLE_SUCCESS] Timestamp:', new Date().toISOString());
+    
     // Solo ejecutar en el navegador
     if (isPlatformBrowser(this.platformId)) {
-      console.log('[GOOGLE_SUCCESS] Procesando callback exitoso');
+      console.log('🟢 [GOOGLE_SUCCESS] Platform es navegador, procesando callback');
+      console.log('🟢 [GOOGLE_SUCCESS] URL completa:', typeof window !== 'undefined' ? window.location.href : 'N/A');
       this.processSuccessCallback();
+    } else {
+      console.error('🔴 [GOOGLE_SUCCESS] Platform NO es navegador (SSR)');
     }
   }
 
   private processSuccessCallback() {
+    console.log('🟢 [GOOGLE_SUCCESS] ==================== PROCESANDO SUCCESS CALLBACK ====================');
+    console.log('🟢 [GOOGLE_SUCCESS] Timestamp:', new Date().toISOString());
+    
     try {
       // Obtener parámetros de la URL
+      console.log('🟢 [GOOGLE_SUCCESS] Extrayendo parámetros de query string...');
       const tokenParam = this.route.snapshot.queryParams['token'];
       const refreshParam = this.route.snapshot.queryParams['refresh'];
       const userParam = this.route.snapshot.queryParams['user'];
 
+      console.log('🟢 [GOOGLE_SUCCESS] Query params extraídos:', {
+        token: tokenParam ? `${tokenParam.substring(0, 20)}...` : 'NULL',
+        refresh: refreshParam ? `${refreshParam.substring(0, 20)}...` : 'NULL',
+        user: userParam ? `${userParam.substring(0, 50)}...` : 'NULL'
+      });
+
       if (tokenParam && refreshParam && userParam) {
+        console.log('🟢 [GOOGLE_SUCCESS] ✅ Todos los parámetros presentes');
+        console.log('🟢 [GOOGLE_SUCCESS] Decodificando tokens...');
+        
         const accessToken = decodeURIComponent(tokenParam);
         const refreshToken = decodeURIComponent(refreshParam);
+        
+        console.log('🟢 [GOOGLE_SUCCESS] ✅ Tokens decodificados');
+        console.log('🟢 [GOOGLE_SUCCESS] Parseando userParam...');
+        
         let user: any = {};
         try {
           user = JSON.parse(decodeURIComponent(userParam));
+          console.log('🟢 [GOOGLE_SUCCESS] ✅ User parseado exitosamente:', user);
         } catch (e) {
-          console.warn('[GOOGLE_SUCCESS] No se pudo parsear userParam:', e);
+          console.error('🔴 [GOOGLE_SUCCESS] ❌ Error parseando userParam:', e);
           user = {};
         }
-        console.log('[GOOGLE_SUCCESS] Usuario autenticado:', user);
 
         // Guardar tokens y usuario
         if (typeof localStorage !== 'undefined') {
-          console.log('[GOOGLE_SUCCESS] Guardando tokens decodificados en storage');
-          console.log('[GOOGLE_SUCCESS] User object que se guarda:', user);
+          console.log('🟢 [GOOGLE_SUCCESS] localStorage disponible, guardando datos...');
+          console.log('🟢 [GOOGLE_SUCCESS] User object a guardar:', JSON.stringify(user));
+          
           localStorage.setItem('adomi_access_token', accessToken);
+          console.log('🟢 [GOOGLE_SUCCESS] ✅ Access token guardado');
+          
           localStorage.setItem('adomi_refresh_token', refreshToken);
+          console.log('🟢 [GOOGLE_SUCCESS] ✅ Refresh token guardado');
+          
           localStorage.setItem('adomi_user', JSON.stringify(user));
+          console.log('🟢 [GOOGLE_SUCCESS] ✅ User guardado');
           
           // Verificar que se guardó correctamente
+          console.log('🟢 [GOOGLE_SUCCESS] Verificando guardado en localStorage...');
+          const savedToken = localStorage.getItem('adomi_access_token');
           const savedUser = localStorage.getItem('adomi_user');
-          console.log('[GOOGLE_SUCCESS] User guardado en localStorage:', savedUser);
+          
+          console.log('🟢 [GOOGLE_SUCCESS] Access token verificado:', savedToken ? `${savedToken.substring(0, 20)}...` : 'NULL');
+          console.log('🟢 [GOOGLE_SUCCESS] User JSON verificado:', savedUser);
+          
           try {
             const parsedSavedUser = JSON.parse(savedUser || '{}');
-            console.log('[GOOGLE_SUCCESS] User parseado desde localStorage:', parsedSavedUser);
+            console.log('🟢 [GOOGLE_SUCCESS] User parseado desde localStorage:', parsedSavedUser);
           } catch (e) {
-            console.error('[GOOGLE_SUCCESS] Error parseando user guardado:', e);
+            console.error('🔴 [GOOGLE_SUCCESS] ❌ Error parseando user guardado:', e);
           }
+        } else {
+          console.error('🔴 [GOOGLE_SUCCESS] localStorage NO disponible');
         }
 
         this.success = true;

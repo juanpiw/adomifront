@@ -177,13 +177,23 @@ export class LoginComponent implements OnInit {
 
   // Método para login con Google
   signInWithGoogle() {
-    console.log('[LOGIN] Iniciando login con Google');
+    console.log('🔵 [LOGIN] ==================== INICIO LOGIN CON GOOGLE ====================');
+    console.log('🔵 [LOGIN] Timestamp:', new Date().toISOString());
+    console.log('🔵 [LOGIN] localStorage antes del login:', {
+      access_token: localStorage.getItem('adomi_access_token')?.substring(0, 20) + '...',
+      refresh_token: localStorage.getItem('adomi_refresh_token')?.substring(0, 20) + '...',
+      user: localStorage.getItem('adomi_user')
+    });
     
     if (!this.googleAuth.isGoogleAuthAvailable()) {
+      console.error('🔴 [LOGIN] Google Auth NO disponible');
       this.errorMessage = 'Autenticación con Google no está disponible en este momento.';
       return;
     }
 
+    console.log('🔵 [LOGIN] Google Auth disponible, iniciando proceso...');
+    console.log('🔵 [LOGIN] Parámetros: role=client, mode=login');
+    
     // Usar modo 'login' - NO crear cuenta si no existe
     this.googleAuth.signInWithGoogle('client', 'login');
   }

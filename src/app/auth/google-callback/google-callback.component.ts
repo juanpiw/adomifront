@@ -56,48 +56,80 @@ export class GoogleCallbackComponent implements OnInit {
   private googleAuth = inject(GoogleAuthService);
 
   ngOnInit() {
+    console.log('🟠 [GOOGLE_CALLBACK] ==================== COMPONENTE INICIALIZADO ====================');
+    console.log('🟠 [GOOGLE_CALLBACK] Timestamp:', new Date().toISOString());
+    
     // Solo ejecutar en el navegador
     if (typeof window !== 'undefined') {
-      console.log('[GOOGLE_CALLBACK] Iniciando procesamiento de callback');
+      console.log('🟠 [GOOGLE_CALLBACK] Window disponible, procesando callback');
       
       // Obtener la URL completa
       const currentUrl = window.location.href;
-      console.log('[GOOGLE_CALLBACK] URL actual:', currentUrl);
+      console.log('🟠 [GOOGLE_CALLBACK] URL completa actual:', currentUrl);
+      console.log('🟠 [GOOGLE_CALLBACK] Query params:', window.location.search);
+      console.log('🟠 [GOOGLE_CALLBACK] Hash:', window.location.hash);
 
       // Procesar el callback
       this.processCallback(currentUrl);
+    } else {
+      console.error('🔴 [GOOGLE_CALLBACK] Window NO disponible (SSR?)');
     }
   }
 
   private processCallback(url: string) {
+    console.log('🟠 [GOOGLE_CALLBACK] ==================== PROCESANDO CALLBACK ====================');
+    console.log('🟠 [GOOGLE_CALLBACK] Timestamp:', new Date().toISOString());
+    console.log('🟠 [GOOGLE_CALLBACK] URL a procesar:', url);
+    
     try {
+      console.log('🟠 [GOOGLE_CALLBACK] Llamando a googleAuth.handleGoogleCallback()...');
       this.googleAuth.handleGoogleCallback(url);
+      
+      console.log('🟠 [GOOGLE_CALLBACK] ✅ Callback procesado exitosamente');
       this.success = true;
       this.loading = false;
       
+      console.log('🟠 [GOOGLE_CALLBACK] Esperando 2 segundos antes de redirigir...');
+      
       // Redirigir después de un breve delay
       setTimeout(() => {
+        console.log('🟠 [GOOGLE_CALLBACK] Ejecutando redirección al dashboard...');
         this.redirectToDashboard();
       }, 2000);
       
     } catch (error) {
-      console.error('[GOOGLE_CALLBACK] Error al procesar callback:', error);
+      console.error('🔴 [GOOGLE_CALLBACK] ❌ Error al procesar callback:', error);
+      console.error('🔴 [GOOGLE_CALLBACK] Error stack:', (error as Error).stack);
       this.error = 'Error al procesar la autenticación con Google.';
       this.loading = false;
     }
   }
 
   private redirectToDashboard() {
+    console.log('🟠 [GOOGLE_CALLBACK] ==================== REDIRIGIENDO AL DASHBOARD ====================');
+    console.log('🟠 [GOOGLE_CALLBACK] Timestamp:', new Date().toISOString());
+    
     // Solo ejecutar en el navegador
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      console.log('🟠 [GOOGLE_CALLBACK] Window y localStorage disponibles');
+      
       // Obtener el rol del usuario desde la sesión
-      const user = JSON.parse(localStorage.getItem('adomi_user') || '{}');
+      const userJson = localStorage.getItem('adomi_user') || '{}';
+      console.log('🟠 [GOOGLE_CALLBACK] User JSON desde localStorage:', userJson);
+      
+      const user = JSON.parse(userJson);
+      console.log('🟠 [GOOGLE_CALLBACK] User parseado:', user);
+      console.log('🟠 [GOOGLE_CALLBACK] User role:', user.role);
       
       if (user.role === 'provider') {
+        console.log('🟠 [GOOGLE_CALLBACK] Usuario es provider, redirigiendo a /dash/home');
         this.router.navigate(['/dash/home']);
       } else {
+        console.log('🟠 [GOOGLE_CALLBACK] Usuario es cliente, redirigiendo a /client/reservas');
         this.router.navigate(['/client/reservas']);
       }
+    } else {
+      console.error('🔴 [GOOGLE_CALLBACK] Window o localStorage NO disponibles');
     }
   }
 
