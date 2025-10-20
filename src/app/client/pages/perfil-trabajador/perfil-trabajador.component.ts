@@ -274,28 +274,49 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onBookingConfirmed(summary: BookingSummary): void {
+    console.log('🔵 [BOOKING] ==================== CONFIRMANDO CITA ====================');
+    console.log('🔵 [BOOKING] Timestamp:', new Date().toISOString());
+    console.log('🔵 [BOOKING] Summary:', summary);
+    
     const user = this.auth.getCurrentUser() as any;
     const clientId = user?.id;
     const providerId = Number(this.workerId);
     const activeService = this.bookingPanelData.services.find(s => s.isActive);
+    
+    console.log('🔵 [BOOKING] User:', user);
+    console.log('🔵 [BOOKING] Client ID:', clientId);
+    console.log('🔵 [BOOKING] Provider ID:', providerId);
+    console.log('🔵 [BOOKING] Active Service:', activeService);
+    
     if (!clientId || !activeService || !summary.date || !summary.time) {
+      console.error('🔴 [BOOKING] ❌ Validación fallida - datos incompletos');
       alert('Completa servicio, fecha y hora. Inicia sesión si es necesario.');
       return;
     }
+    
     this.confirmError = null;
     this.confirming = true;
     const duration = this.parseDuration(activeService.duration);
     const endTime = this.addMinutes(summary.time, duration);
-    this.appointments.create({
+    
+    const appointmentData = {
       provider_id: providerId,
       client_id: clientId,
       service_id: Number(activeService.id),
       date: this.toIsoDate(summary.date),
       start_time: summary.time,
       end_time: endTime
-    }).subscribe({
+    };
+    
+    console.log('🔵 [BOOKING] Datos de la cita a crear:', appointmentData);
+    console.log('🔵 [BOOKING] Enviando POST al backend...');
+    
+    this.appointments.create(appointmentData).subscribe({
       next: (resp: { success: boolean }) => {
+        console.log('🔵 [BOOKING] ✅ Respuesta del backend recibida:', resp);
+        
         if (resp.success) {
+          console.log('🔵 [BOOKING] ✅ Cita creada exitosamente');
           this.closeConfirmSignal++;
           this.confirming = false;
           // Crear notificación in-app para el cliente
@@ -309,13 +330,18 @@ export class PerfilTrabajadorComponent implements OnInit {
             actions: ['view'],
             metadata: { providerId: this.workerId || '' }
           });
+          console.log('🔵 [BOOKING] ✅ Notificación cliente creada');
         } else {
+          console.error('🔴 [BOOKING] ❌ Backend respondió con success: false');
           this.confirmError = 'No se pudo crear la cita';
           this.confirming = false;
         }
       },
       error: (err: any) => {
-        console.error('Error creando cita', err);
+        console.error('🔴 [BOOKING] ❌ Error en la petición HTTP:', err);
+        console.error('🔴 [BOOKING] Error status:', err.status);
+        console.error('🔴 [BOOKING] Error message:', err.message);
+        console.error('🔴 [BOOKING] Error completo:', err);
         this.confirmError = err?.error?.error || '❌ No se pudo crear la cita';
         this.confirming = false;
       }
