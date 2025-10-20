@@ -198,7 +198,7 @@ export class ClientReservasComponent implements OnInit {
           .map(a => {
             const isPaid = ['paid', 'succeeded', 'completed'].includes(String((a as any).payment_status || ''));
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${(a as any).payment_status}", isPaid=${isPaid}, date="${a.date}"`);
-            return {
+            const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
               subtitulo: isPaid ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
               fecha: this.formatDate(a.date),
@@ -208,6 +208,20 @@ export class ClientReservasComponent implements OnInit {
               appointmentId: a.id,
               successHighlight: isPaid
             };
+
+            // Si está pagada, obtener código de verificación
+            if (isPaid) {
+              this.appointments.getVerificationCode(a.id).subscribe({
+                next: (resp) => {
+                  if (resp?.success && resp?.code) {
+                    (card as any).verification_code = resp.code;
+                    // Opcional: notificar visualmente
+                  }
+                },
+                error: () => {}
+              });
+            }
+            return card;
           });
 
         // Todas las próximas pendientes

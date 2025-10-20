@@ -25,6 +25,11 @@
     <button class="pc-btn danger" (click)="cancelar.emit()">Cancelar Cita</button>
     <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="pagar.emit(data.appointmentId || 0)">Pagar</button>
   </div>
+
+  <!-- Código de verificación cuando está pagada -->
+  <div *ngIf="!data.mostrarPagar && (data as any).verification_code" style="margin-top:12px;">
+    <ui-verificacion-code-card [code]="(data as any).verification_code"></ui-verificacion-code-card>
+  </div>
 </div>
 
 

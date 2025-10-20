@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { VerificacionCodeCardComponent } from '../verificacion-code-card/verificacion-code-card.component';
 
 export interface ProximaCitaData {
   titulo: string;
@@ -15,7 +16,7 @@ export interface ProximaCitaData {
 @Component({
   selector: 'ui-proxima-cita-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, VerificacionCodeCardComponent],
   templateUrl: './proxima-cita-card.component.html',
   styleUrls: ['./proxima-cita-card.component.scss']
 })
