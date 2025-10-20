@@ -143,6 +143,73 @@ export class AppointmentsService {
   onAppointmentUpdated(): Observable<AppointmentDto> { return this.appointmentUpdated$.asObservable(); }
   onAppointmentDeleted(): Observable<{ id: number }> { return this.appointmentDeleted$.asObservable(); }
   onPaymentCompleted(): Observable<{ appointment_id: number; amount?: number }> { return this.paymentCompleted$.asObservable(); }
+
+  // ========================================
+  // CÓDIGOS DE VERIFICACIÓN
+  // ========================================
+
+  /**
+   * Verificar código de 4 dígitos para marcar servicio como completado (PROVEEDOR)
+   */
+  verifyCompletion(appointmentId: number, code: string): Observable<{
+    success: boolean; 
+    error?: string; 
+    remainingAttempts?: number;
+    message?: string;
+    appointment?: any;
+  }> {
+    return this.http.post<{
+      success: boolean; 
+      error?: string; 
+      remainingAttempts?: number;
+      message?: string;
+      appointment?: any;
+    }>(
+      `${this.api}/appointments/${appointmentId}/verify-completion`,
+      { verification_code: code },
+      { headers: this.headers() }
+    );
+  }
+
+  /**
+   * Obtener código de verificación de una cita (CLIENTE)
+   */
+  getVerificationCode(appointmentId: number): Observable<{
+    success: boolean; 
+    code?: string; 
+    error?: string;
+    generated_at?: string;
+    status?: string;
+  }> {
+    return this.http.get<{
+      success: boolean; 
+      code?: string; 
+      error?: string;
+      generated_at?: string;
+      status?: string;
+    }>(
+      `${this.api}/appointments/${appointmentId}/verification-code`,
+      { headers: this.headers() }
+    );
+  }
+
+  /**
+   * Listar citas pagadas (PROVEEDOR) - esperando verificación
+   */
+  listPaidAppointments(): Observable<{
+    success: boolean; 
+    appointments: any[];
+    error?: string;
+  }> {
+    return this.http.get<{
+      success: boolean; 
+      appointments: any[];
+      error?: string;
+    }>(
+      `${this.api}/provider/appointments/paid`,
+      { headers: this.headers() }
+    );
+  }
 }
 
 

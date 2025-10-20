@@ -1,0 +1,54 @@
+<div class="code-card" [class.code-card--inline]="showInline">
+  <div class="code-card__header" *ngIf="!showInline">
+    <svg class="code-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4"/>
+      <path d="M12 16h.01"/>
+      <path d="M8 12h.01"/>
+      <path d="M16 12h.01"/>
+    </svg>
+    <h4 class="code-card__title">Código de Verificación</h4>
+  </div>
+  
+  <div class="code-display">
+    <div class="code-display__digits">
+      <span 
+        *ngFor="let digit of codeDigits; let i = index" 
+        class="code-digit"
+        [class.code-digit--empty]="!digit || digit === ' '">
+        {{ digit || '-' }}
+      </span>
+    </div>
+  </div>
+  
+  <button 
+    class="code-copy-btn" 
+    (click)="copyCode()"
+    [class.code-copy-btn--success]="copySuccess"
+    type="button">
+    <svg *ngIf="!copySuccess" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="code-copy-btn__icon">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
+    <svg *ngIf="copySuccess" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="code-copy-btn__icon">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    {{ copySuccess ? '¡Copiado!' : 'Copiar Código' }}
+  </button>
+  
+  <div class="code-warning" *ngIf="!showInline">
+    <svg class="code-warning__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line>
+      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+    <div class="code-warning__content">
+      <p class="code-warning__title">Importante</p>
+      <p class="code-warning__text">
+        NO compartas este código hasta que el servicio esté completado.
+        Solo entrégalo al profesional cuando termine el trabajo.
+      </p>
+    </div>
+  </div>
+</div>
+
