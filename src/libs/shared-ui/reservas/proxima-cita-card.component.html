@@ -1,6 +1,6 @@
 <div class="pc-card" [class.pc-card--success]="data.successHighlight">
-  <p class="pc-kicker" [class.pc-kicker--paid]="data.verification_code">
-    {{ data.verification_code ? 'CITA PAGADA' : 'TU PRÓXIMA CITA (CONFIRMADA)' }}
+  <p class="pc-kicker" [class.pc-kicker--paid]="data.successHighlight || data.verification_code">
+    {{ (data.successHighlight || data.verification_code) ? 'CITA PAGADA' : 'TU PRÓXIMA CITA (CONFIRMADA)' }}
   </p>
   <div class="pc-row">
     <div class="pc-col">
@@ -22,10 +22,10 @@
     </div>
   </div>
   <div class="pc-actions">
-    <button class="pc-btn primary" (click)="contactar.emit()">Contactar</button>
-    <button class="pc-btn secondary" (click)="reprogramar.emit()">Reprogramar</button>
-    <button class="pc-btn danger" (click)="cancelar.emit()">Cancelar Cita</button>
-    <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="pagar.emit(data.appointmentId || 0)">Pagar</button>
+    <button class="pc-btn primary" (click)="onContactarClick()">Contactar</button>
+    <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>
+    <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
+    <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="onPagarClick()">Pagar</button>
   </div>
 
   <!-- Código de verificación cuando está pagada -->

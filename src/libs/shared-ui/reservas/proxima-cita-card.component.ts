@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VerificacionCodeCardComponent } from '../verificacion-code-card/verificacion-code-card.component';
 
@@ -21,23 +21,68 @@ export interface ProximaCitaData {
   templateUrl: './proxima-cita-card.component.html',
   styleUrls: ['./proxima-cita-card.component.scss']
 })
-export class ProximaCitaCardComponent {
+export class ProximaCitaCardComponent implements OnInit, OnChanges {
   @Input() data!: ProximaCitaData;
   @Output() contactar = new EventEmitter<void>();
   @Output() reprogramar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
   @Output() pagar = new EventEmitter<number>();
 
-  ngOnChanges(): void {
+  ngOnInit(): void {
+    try {
+      console.log('[PROXIMA_CITA_CARD] Init', {
+        appointmentId: this.data?.appointmentId,
+        titulo: this.data?.titulo,
+        fecha: this.data?.fecha,
+        hora: this.data?.hora,
+        diasRestantes: this.data?.diasRestantes,
+        mostrarPagar: this.data?.mostrarPagar,
+        successHighlight: this.data?.successHighlight,
+        verification_code: this.data?.verification_code
+      });
+    } catch {}
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
     try {
       const paid = !!this.data?.verification_code;
-      console.log('[PROXIMA_CITA_CARD] Estado de pago:', {
+      console.log('[PROXIMA_CITA_CARD] Changes', {
         appointmentId: this.data?.appointmentId,
         hasVerificationCode: paid,
         mostrarPagar: this.data?.mostrarPagar,
         successHighlight: this.data?.successHighlight
       });
     } catch {}
+  }
+
+  onPagarClick(): void {
+    try {
+      console.log('[PROXIMA_CITA_CARD] PAGAR click', {
+        appointmentId: this.data?.appointmentId,
+        titulo: this.data?.titulo,
+        fecha: this.data?.fecha,
+        hora: this.data?.hora,
+        mostrarPagar: this.data?.mostrarPagar,
+        successHighlight: this.data?.successHighlight,
+        verification_code: this.data?.verification_code
+      });
+    } catch {}
+    this.pagar.emit(this.data?.appointmentId || 0);
+  }
+
+  onContactarClick(): void {
+    try { console.log('[PROXIMA_CITA_CARD] CONTACTAR click', { appointmentId: this.data?.appointmentId }); } catch {}
+    this.contactar.emit();
+  }
+
+  onReprogramarClick(): void {
+    try { console.log('[PROXIMA_CITA_CARD] REPROGRAMAR click', { appointmentId: this.data?.appointmentId }); } catch {}
+    this.reprogramar.emit();
+  }
+
+  onCancelarClick(): void {
+    try { console.log('[PROXIMA_CITA_CARD] CANCELAR click', { appointmentId: this.data?.appointmentId }); } catch {}
+    this.cancelar.emit();
   }
 }
 

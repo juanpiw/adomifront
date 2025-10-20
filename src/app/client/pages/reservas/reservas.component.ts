@@ -196,11 +196,13 @@ export class ClientReservasComponent implements OnInit {
         this.proximasConfirmadas = upcoming
           .filter(a => a.status === 'confirmed')
           .map(a => {
-            const isPaid = ['paid', 'succeeded', 'completed'].includes(String((a as any).payment_status || ''));
-            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${(a as any).payment_status}", isPaid=${isPaid}, date="${a.date}"`);
+            const rawPayment = String((a as any).payment_status || '')
+            const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
+            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}"`);
+
             const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
-              subtitulo: isPaid ? 'Confirmada (Pagada)' : 'Confirmada (Esperando pago)',
+              subtitulo: isPaid ? 'CITA PAGADA' : 'Confirmada (Esperando pago)',
               fecha: this.formatDate(a.date),
               hora: this.formatTime(a.start_time),
               diasRestantes: this.daysFromToday(a.date),
@@ -209,13 +211,11 @@ export class ClientReservasComponent implements OnInit {
               successHighlight: isPaid
             };
 
-            // Si está pagada, obtener código de verificación
             if (isPaid) {
               this.appointments.getVerificationCode(a.id).subscribe({
                 next: (resp) => {
                   if (resp?.success && resp?.code) {
                     (card as any).verification_code = resp.code;
-                    // Opcional: notificar visualmente
                   }
                 },
                 error: () => {}
@@ -262,13 +262,18 @@ export class ClientReservasComponent implements OnInit {
     });
   }
 
-  private formatDate(iso: string): string {
-    if (!iso || typeof iso !== 'string') return 'Fecha no disponible';
-    const [y,m,d] = iso.split('-').map(Number);
-    if (!y || !m || !d) return 'Fecha no disponible';
-    const dt = new Date(y, m-1, d);
-    if (isNaN(dt.getTime())) return 'Fecha no disponible';
-    return dt.toLocaleDateString('es-CL', { weekday:'long', day:'2-digit', month:'long' });
+  private formatDate(dateStr: string): string {
+    if (!dateStr || typeof dateStr !== 'string') return 'Fecha no disponible';
+    try {
+      const base = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+      const [y, m, d] = base.split('-').map(Number);
+      if (!y || !m || !d) return 'Fecha no disponible';
+      const dt = new Date(y, m - 1, d);
+      if (isNaN(dt.getTime())) return 'Fecha no disponible';
+      return dt.toLocaleDateString('es-CL', { weekday: 'long', day: '2-digit', month: 'long' });
+    } catch {
+      return 'Fecha no disponible';
+    }
   }
   private formatTime(hhmm: string): string {
     // Acepta HH:mm o HH:mm:ss desde backend
