@@ -19,6 +19,7 @@ export class PaymentsService {
   }
 
   createCheckoutSession(appointmentId: number): Observable<{ success: boolean; url: string }>{
+    console.log('[PAYMENTS_SERVICE] createCheckoutSession ->', { appointmentId });
     return this.http.post<{ success: boolean; url: string }>(
       `${this.base}/payments/appointments/${appointmentId}/checkout-session`,
       {},
@@ -27,6 +28,7 @@ export class PaymentsService {
   }
 
   getPaymentStatus(appointmentId: number): Observable<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>{
+    console.log('[PAYMENTS_SERVICE] getPaymentStatus ->', { appointmentId });
     return this.http.get<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>(
       `${this.base}/payments/appointments/${appointmentId}/status`,
       { headers: this.headers() }
@@ -34,6 +36,7 @@ export class PaymentsService {
   }
 
   confirmAppointmentPayment(appointmentId: number, sessionId: string): Observable<{ success: boolean; confirmed: boolean; payment?: any }>{
+    console.log('[PAYMENTS_SERVICE] confirmAppointmentPayment ->', { appointmentId, sessionId });
     return this.http.get<{ success: boolean; confirmed: boolean; payment?: any }>(
       `${this.base}/payments/appointments/${appointmentId}/confirm`,
       { headers: this.headers(), params: { session_id: sessionId } as any }
