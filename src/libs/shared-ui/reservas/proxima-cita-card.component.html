@@ -27,8 +27,8 @@
   </div>
 
   <!-- Código de verificación cuando está pagada -->
-  <div *ngIf="!data.mostrarPagar && (data as any).verification_code" style="margin-top:12px;">
-    <ui-verificacion-code-card [code]="(data as any).verification_code"></ui-verificacion-code-card>
+  <div *ngIf="!data.mostrarPagar && data.verification_code" style="margin-top:12px;">
+    <ui-verificacion-code-card [code]="data.verification_code"></ui-verificacion-code-card>
   </div>
 </div>
 

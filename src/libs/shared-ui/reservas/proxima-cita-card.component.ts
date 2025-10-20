@@ -11,6 +11,7 @@ export interface ProximaCitaData {
   mostrarPagar?: boolean;
   appointmentId?: number;
   successHighlight?: boolean;
+  verification_code?: string;
 }
 
 @Component({
