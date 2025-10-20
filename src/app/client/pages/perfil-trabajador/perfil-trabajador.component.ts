@@ -401,10 +401,32 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   private loadTimeSlots(providerId: number, date: string, serviceId: number) {
+    console.log('🟡 [PERFIL] Cargando time slots:', { providerId, date, serviceId });
+    
     this.appointments.getTimeSlots(providerId, this.toIsoDate(date), serviceId).subscribe({
-      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean }> }) => {
-        const slots = (resp.time_slots || []).map((s: { time: string; is_available: boolean }) => ({ time: s.time, isAvailable: s.is_available }));
+      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }> }) => {
+        console.log('🟡 [PERFIL] Time slots recibidos:', resp.time_slots);
+        
+        const slots = (resp.time_slots || []).map((s: { time: string; is_available: boolean; reason?: string }) => ({ 
+          time: s.time, 
+          isAvailable: s.is_available,
+          reason: s.reason as 'booked' | 'blocked' | undefined
+        }));
+        
+        // Logs para debugging
+        const blocked = slots.filter(s => s.reason === 'blocked').length;
+        const booked = slots.filter(s => s.reason === 'booked').length;
+        const available = slots.filter(s => s.isAvailable).length;
+        
+        console.log('🟡 [PERFIL] Slots procesados:', {
+          total: slots.length,
+          disponibles: available,
+          bloqueados: blocked,
+          ocupados: booked
+        });
+        
         this.bookingPanelData.timeSlots = slots;
+        
         // Actualizar summary conservando servicio/precio
         const active = this.bookingPanelData.services.find((s: Service) => s.isActive);
         const firstAvail = slots.find((s: any) => s.isAvailable);
@@ -416,7 +438,7 @@ export class PerfilTrabajadorComponent implements OnInit {
         };
       },
       error: (err: any) => {
-        console.error('Error cargando time-slots', err);
+        console.error('🔴 [PERFIL] Error cargando time-slots:', err);
         this.bookingPanelData.timeSlots = [];
       }
     });

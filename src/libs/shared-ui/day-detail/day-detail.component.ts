@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ModalAgendarCitaComponent, NuevaCitaData } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
+import { ModalAgendarCitaComponent, NuevaCitaData, BloqueoData } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
 
 export interface DayAppointment {
   id: string;
@@ -31,6 +31,7 @@ export class DayDetailComponent {
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
   @Output() newAppointment = new EventEmitter<Date>();
   @Output() citaCreated = new EventEmitter<NuevaCitaData>();
+  @Output() espacioBloqueado = new EventEmitter<BloqueoData>();
   @Output() confirmAppointment = new EventEmitter<string>();
   @Output() deleteAppointment = new EventEmitter<string>();
 
@@ -109,6 +110,11 @@ export class DayDetailComponent {
   onCitaCreated(citaData: NuevaCitaData) {
     this.citaCreated.emit(citaData);
     console.log('Nueva cita creada desde day-detail:', citaData);
+  }
+  
+  onEspacioBloqueado(bloqueoData: BloqueoData) {
+    this.espacioBloqueado.emit(bloqueoData);
+    console.log('🔒 Espacio bloqueado desde day-detail:', bloqueoData);
   }
 
   getStatusColor(status: string): string {

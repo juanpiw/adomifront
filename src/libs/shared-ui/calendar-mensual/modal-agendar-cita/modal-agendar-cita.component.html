@@ -14,33 +14,36 @@
       <div class="modal-header">
         <h2 class="modal-title">
           <svg class="modal-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"></path>
+            <path *ngIf="mode === 'bloqueo'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            <path *ngIf="mode === 'cita'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            <path *ngIf="mode === 'cita'" stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"></path>
           </svg>
-          Crear Nueva Cita
+          {{ mode === 'bloqueo' ? '🔒 Bloquear Espacio' : 'Crear Nueva Cita' }}
         </h2>
       </div>
 
       <div class="modal-body">
-        <!-- Título -->
+        <!-- Título / Motivo -->
         <div class="form-group">
-          <label for="eventTitle" class="form-label">Título</label>
+          <label for="eventTitle" class="form-label">
+            {{ mode === 'bloqueo' ? 'Motivo del Bloqueo' : 'Título' }}
+          </label>
           <input 
             type="text" 
             id="eventTitle"
             formControlName="title"
-            placeholder="Ej: Corte de Pelo, Reunión personal..."
+            [placeholder]="mode === 'bloqueo' ? 'Ej: Reunión personal, Vacaciones...' : 'Ej: Corte de Pelo, Reunión personal...'"
             class="form-input"
             [class.form-input--error]="title?.invalid && title?.touched">
           <p 
-            *ngIf="title?.invalid && title?.touched" 
+            *ngIf="title?.invalid && title?.touched && mode === 'cita'" 
             class="form-error">
             El título es obligatorio (mínimo 3 caracteres).
           </p>
         </div>
 
-        <!-- Cliente -->
-        <div class="form-group">
+        <!-- Cliente (solo en modo cita) -->
+        <div class="form-group" *ngIf="mode === 'cita'">
           <label for="eventClient" class="form-label">Cliente (Opcional)</label>
           <input 
             type="text" 
@@ -48,6 +51,17 @@
             formControlName="client"
             placeholder="Buscar o añadir un cliente..."
             class="form-input">
+        </div>
+        
+        <!-- Checkbox: Bloquear todo el día (solo en modo bloqueo) -->
+        <div class="form-group" *ngIf="mode === 'bloqueo'">
+          <label class="form-checkbox">
+            <input 
+              type="checkbox" 
+              [checked]="blockWholeDay"
+              (change)="toggleBlockWholeDay()">
+            <span>Bloquear todo el día</span>
+          </label>
         </div>
 
         <!-- Fecha y Horas -->
@@ -61,7 +75,7 @@
               class="form-input"
               [class.form-input--error]="date?.invalid && date?.touched">
           </div>
-          <div class="form-col">
+          <div class="form-col" *ngIf="!blockWholeDay">
             <label for="eventStartTime" class="form-label">Desde</label>
             <input 
               type="time" 
@@ -70,7 +84,7 @@
               class="form-input"
               [class.form-input--error]="startTime?.invalid && startTime?.touched">
           </div>
-          <div class="form-col">
+          <div class="form-col" *ngIf="!blockWholeDay">
             <label for="eventEndTime" class="form-label">Hasta</label>
             <input 
               type="time" 
@@ -83,17 +97,17 @@
 
         <!-- Notas -->
         <div class="form-group">
-          <label for="eventNotes" class="form-label">Notas</label>
+          <label for="eventNotes" class="form-label">Notas {{ mode === 'bloqueo' ? '(Opcional)' : '' }}</label>
           <textarea 
             id="eventNotes"
             formControlName="notes"
             rows="3"
-            placeholder="Añadir detalles importantes..."
+            [placeholder]="mode === 'bloqueo' ? 'Información adicional...' : 'Añadir detalles importantes...'"
             class="form-textarea"></textarea>
         </div>
 
-        <!-- Selector de Color -->
-        <div class="form-group">
+        <!-- Selector de Color (solo en modo cita) -->
+        <div class="form-group" *ngIf="mode === 'cita'">
           <label class="form-label">Etiqueta de Color</label>
           <div class="color-picker">
             <button 
@@ -119,8 +133,9 @@
         </button>
         <button 
           type="submit"
+          [class.btn--danger]="mode === 'bloqueo'"
           class="btn btn--primary">
-          Guardar Cita
+          {{ mode === 'bloqueo' ? '🔒 Bloquear Espacio' : 'Guardar Cita' }}
         </button>
       </div>
     </form>

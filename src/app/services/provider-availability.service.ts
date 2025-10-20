@@ -36,6 +36,59 @@ export class ProviderAvailabilityService {
   deleteWeekly(id: number): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.baseUrl}/provider/availability/weekly/${id}`, { headers: this.headers() });
   }
+  
+  // ==================== EXCEPCIONES (BLOQUEOS) ====================
+  
+  /**
+   * Crear excepción/bloqueo para una fecha específica
+   */
+  createException(
+    exceptionDate: string,   // YYYY-MM-DD
+    isAvailable: boolean,    // false = bloqueo, true = habilitar
+    startTime?: string,      // HH:mm (opcional - si es null bloquea todo el día)
+    endTime?: string,        // HH:mm (opcional - si es null bloquea todo el día)
+    reason?: string          // Motivo del bloqueo
+  ): Observable<{ success: boolean; exception: any }> {
+    console.log('🔒 [AVAILABILITY_SERVICE] Creando excepción:', {
+      exceptionDate,
+      isAvailable,
+      startTime,
+      endTime,
+      reason
+    });
+    
+    return this.http.post<{ success: boolean; exception: any }>(
+      `${this.baseUrl}/provider/availability/exceptions`,
+      {
+        exception_date: exceptionDate,
+        is_available: isAvailable,
+        start_time: startTime || null,
+        end_time: endTime || null,
+        reason: reason || null
+      },
+      { headers: this.headers() }
+    );
+  }
+  
+  /**
+   * Listar excepciones del proveedor
+   */
+  listExceptions(): Observable<{ success: boolean; exceptions: any[] }> {
+    return this.http.get<{ success: boolean; exceptions: any[] }>(
+      `${this.baseUrl}/provider/availability/exceptions`,
+      { headers: this.headers() }
+    );
+  }
+  
+  /**
+   * Eliminar excepción/bloqueo
+   */
+  deleteException(id: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.baseUrl}/provider/availability/exceptions/${id}`,
+      { headers: this.headers() }
+    );
+  }
 }
 
 

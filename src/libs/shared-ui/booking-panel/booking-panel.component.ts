@@ -14,6 +14,7 @@ export interface TimeSlot {
   time: string;
   isAvailable: boolean;
   isSelected?: boolean;
+  reason?: 'booked' | 'blocked'; // 'booked' = cita existente, 'blocked' = bloqueado por proveedor
 }
 
 export interface BookingSummary {
@@ -161,5 +162,19 @@ export class BookingPanelComponent implements OnChanges {
     if (changes['confirmError'] && this.isConfirmOpen && this.confirmError) {
       // keep open to show error
     }
+  }
+  
+  /**
+   * Obtener tooltip para el slot según su estado
+   */
+  getSlotTooltip(slot: TimeSlot): string {
+    if (slot.reason === 'blocked') {
+      return '🔒 Bloqueado por el profesional';
+    } else if (slot.reason === 'booked') {
+      return '❌ Ya está ocupado';
+    } else if (slot.isAvailable) {
+      return '✅ Disponible';
+    }
+    return 'No disponible';
   }
 }

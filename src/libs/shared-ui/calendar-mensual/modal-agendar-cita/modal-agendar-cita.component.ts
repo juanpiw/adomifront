@@ -13,6 +13,14 @@ export interface NuevaCitaData {
   color: string;
 }
 
+export interface BloqueoData {
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  reason: string;
+  blockWholeDay: boolean;
+}
+
 @Component({
   selector: 'app-modal-agendar-cita',
   standalone: true,
@@ -37,11 +45,14 @@ export interface NuevaCitaData {
 export class ModalAgendarCitaComponent implements OnChanges {
   @Input() isOpen: boolean = false;
   @Input() selectedDate?: Date;
+  @Input() mode: 'cita' | 'bloqueo' = 'bloqueo'; // Modo por defecto: bloqueo
   @Output() close = new EventEmitter<void>();
   @Output() citaCreated = new EventEmitter<NuevaCitaData>();
+  @Output() espacioBloqueado = new EventEmitter<BloqueoData>();
 
   appointmentForm: FormGroup;
-  selectedColor: string = '#4338ca';
+  selectedColor: string = '#dc2626'; // Rojo para bloqueos
+  blockWholeDay: boolean = false;
 
   availableColors = [
     { color: '#4338ca', name: 'indigo', label: 'Cita' },
@@ -119,20 +130,72 @@ export class ModalAgendarCitaComponent implements OnChanges {
   }
 
   onSubmit(): void {
-    if (this.appointmentForm.valid) {
-      const formData: NuevaCitaData = {
-        ...this.appointmentForm.value,
-        color: this.selectedColor
+    if (this.mode === 'bloqueo') {
+      // Modo bloqueo de espacio
+      const date = this.appointmentForm.get('date')?.value;
+      const startTime = this.appointmentForm.get('startTime')?.value;
+      const endTime = this.appointmentForm.get('endTime')?.value;
+      const reason = this.appointmentForm.get('title')?.value || 'Bloqueado';
+      
+      if (!date) {
+        this.appointmentForm.get('date')?.markAsTouched();
+        return;
+      }
+      
+      if (!this.blockWholeDay && (!startTime || !endTime)) {
+        this.appointmentForm.get('startTime')?.markAsTouched();
+        this.appointmentForm.get('endTime')?.markAsTouched();
+        return;
+      }
+      
+      const bloqueoData: BloqueoData = {
+        date,
+        startTime: this.blockWholeDay ? undefined : startTime,
+        endTime: this.blockWholeDay ? undefined : endTime,
+        reason,
+        blockWholeDay: this.blockWholeDay
       };
-
-      this.citaCreated.emit(formData);
+      
+      console.log('🔒 [MODAL] Emitiendo bloqueo:', bloqueoData);
+      this.espacioBloqueado.emit(bloqueoData);
       this.closeModal();
+      
     } else {
-      // Marcar todos los campos como touched para mostrar errores
-      Object.keys(this.appointmentForm.controls).forEach(key => {
-        this.appointmentForm.get(key)?.markAsTouched();
-      });
+      // Modo cita normal
+      if (this.appointmentForm.valid) {
+        const formData: NuevaCitaData = {
+          ...this.appointmentForm.value,
+          color: this.selectedColor
+        };
+
+        this.citaCreated.emit(formData);
+        this.closeModal();
+      } else {
+        // Marcar todos los campos como touched para mostrar errores
+        Object.keys(this.appointmentForm.controls).forEach(key => {
+          this.appointmentForm.get(key)?.markAsTouched();
+        });
+      }
     }
+  }
+  
+  toggleBlockWholeDay(): void {
+    this.blockWholeDay = !this.blockWholeDay;
+    console.log('🔒 [MODAL] Bloquear todo el día:', this.blockWholeDay);
+    
+    if (this.blockWholeDay) {
+      // Si bloquea todo el día, limpiar y deshabilitar horas
+      this.appointmentForm.get('startTime')?.clearValidators();
+      this.appointmentForm.get('endTime')?.clearValidators();
+      this.appointmentForm.patchValue({ startTime: '', endTime: '' });
+    } else {
+      // Si no, requerir horas
+      this.appointmentForm.get('startTime')?.setValidators([Validators.required]);
+      this.appointmentForm.get('endTime')?.setValidators([Validators.required]);
+    }
+    
+    this.appointmentForm.get('startTime')?.updateValueAndValidity();
+    this.appointmentForm.get('endTime')?.updateValueAndValidity();
   }
 
   // Getters para acceso fácil a los controles del formulario

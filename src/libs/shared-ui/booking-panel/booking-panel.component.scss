@@ -121,6 +121,7 @@
     background-color: white;
     color: #374151; /* text-slate-700 */
     cursor: pointer;
+    position: relative;
 
     &:hover:not(:disabled) {
       border-color: #6366f1; /* border-indigo-500 */
@@ -137,6 +138,30 @@
       color: white;
       border-color: #6366f1; /* border-indigo-600 */
     }
+    
+    /* 🔒 Estilo para slots bloqueados */
+    &--blocked {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+      border: 2px solid #ef4444 !important;
+      color: #dc2626 !important;
+      font-weight: 700;
+      cursor: not-allowed !important;
+      opacity: 0.85;
+      
+      &:hover {
+        background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%) !important;
+        transform: none !important;
+      }
+    }
+  }
+  
+  /* Icono de candado en slots bloqueados */
+  &__time-icon {
+    font-size: 10px;
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    opacity: 0.8;
   }
 
   &__summary {

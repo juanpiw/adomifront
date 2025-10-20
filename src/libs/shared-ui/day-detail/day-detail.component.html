@@ -76,16 +76,18 @@
       <button 
         class="day-detail__new-appointment"
         (click)="onNewAppointment()">
-        + Nueva Cita
+        🔒 Bloquear Espacio
       </button>
     </div>
   </div>
 </aside>
 
-<!-- Modal para Agendar Cita -->
+<!-- Modal para Bloquear Espacio -->
 <app-modal-agendar-cita
   [isOpen]="isModalOpen"
   [selectedDate]="selectedDate || undefined"
+  [mode]="'bloqueo'"
   (close)="onCloseModal()"
-  (citaCreated)="onCitaCreated($event)">
+  (citaCreated)="onCitaCreated($event)"
+  (espacioBloqueado)="onEspacioBloqueado($event)">
 </app-modal-agendar-cita>

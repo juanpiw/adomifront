@@ -34,9 +34,12 @@
             <button *ngFor="let slot of data.timeSlots" 
                     class="booking-panel__time"
                     [class.booking-panel__time--selected]="slot.isSelected"
+                    [class.booking-panel__time--blocked]="slot.reason === 'blocked'"
                     [disabled]="!slot.isAvailable"
+                    [title]="getSlotTooltip(slot)"
                     (click)="onTimeClick(slot.time)">
               {{ slot.time }}
+              <span *ngIf="slot.reason === 'blocked'" class="booking-panel__time-icon">🔒</span>
             </button>
             <div *ngIf="!data.timeSlots || data.timeSlots.length === 0" class="booking-panel__time-manual">
               <input type="time" class="booking-panel__time-input"

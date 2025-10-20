@@ -77,6 +77,7 @@
         (appointmentClick)="onAppointmentClick($event)"
         (newAppointment)="onNewAppointmentForDay($event)"
         (citaCreated)="onDayCitaCreated($event)"
+        (espacioBloqueado)="onEspacioBloqueado($event)"
         (confirmAppointment)="onConfirmAppointment(+$any($event))"
         (deleteAppointment)="onDeleteAppointment(+$any($event))">
         <ng-template #appointmentActionsTemplate let-appointment="appointment">

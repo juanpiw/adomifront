@@ -251,6 +251,51 @@ export class DashAgendaComponent implements OnInit {
     console.log('[AGENDA] citaCreated (UI only placeholder):', evt);
     // Siguiente iteración: abrir selector de cliente y llamar AppointmentsService.create
   }
+  
+  /**
+   * Evento desde DayDetail al bloquear un espacio
+   */
+  onEspacioBloqueado(evt: { date: string; startTime?: string; endTime?: string; reason: string; blockWholeDay: boolean }): void {
+    console.log('🔒 [AGENDA] ==================== BLOQUEANDO ESPACIO ====================');
+    console.log('🔒 [AGENDA] Datos:', evt);
+    
+    this.loading = true;
+    
+    this.availabilityService.createException(
+      evt.date,
+      false, // is_available = false (es un bloqueo)
+      evt.startTime,
+      evt.endTime,
+      evt.reason
+    ).subscribe({
+      next: (resp) => {
+        console.log('🔒 [AGENDA] ✅ Espacio bloqueado exitosamente:', resp);
+        this.loading = false;
+        
+        // Recargar el mes actual para reflejar el bloqueo
+        if (this.selectedDate) {
+          this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
+        }
+        
+        // Mostrar notificación
+        this.notifications.createNotification({
+          type: 'availability',
+          profile: 'provider',
+          title: '✅ Espacio bloqueado',
+          message: evt.blockWholeDay 
+            ? `Todo el día ${evt.date} ha sido bloqueado`
+            : `Horario ${evt.startTime}-${evt.endTime} bloqueado para el ${evt.date}`,
+          priority: 'medium',
+          actions: []
+        });
+      },
+      error: (err) => {
+        console.error('🔴 [AGENDA] Error bloqueando espacio:', err);
+        this.loading = false;
+        alert('Error al bloquear el espacio. Intenta de nuevo.');
+      }
+    });
+  }
 
   // Event handlers de configuración de horarios
   onAddTimeBlock(timeBlock: Omit<TimeBlock, 'id'>) {
