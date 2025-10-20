@@ -147,6 +147,18 @@ export class DashAgendaComponent implements OnInit {
     if (this.currentProviderId) {
       this.appointments.connectSocket(this.currentProviderId);
     }
+    // Escuchar pagos completados para refrescar vista y panel de pagadas
+    this.appointments.onPaymentCompleted().subscribe((p: { appointment_id: number; amount?: number }) => {
+      console.log('💰 [AGENDA] Pago completado recibido por socket:', p);
+      // Refrescar lista de pagadas esperando verificación
+      this.loadPaidAwaiting();
+      // Refrescar día seleccionado para que muestre "Pagada"
+      if (this.selectedDate) {
+        const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+        console.log('💰 [AGENDA] Refrescando citas del día por pago:', iso);
+        this.loadDay(iso);
+      }
+    });
     this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => {
       this.onRealtimeUpsert(a);
       try {

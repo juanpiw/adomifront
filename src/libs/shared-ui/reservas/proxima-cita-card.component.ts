@@ -27,6 +27,18 @@ export class ProximaCitaCardComponent {
   @Output() reprogramar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
   @Output() pagar = new EventEmitter<number>();
+
+  ngOnChanges(): void {
+    try {
+      const paid = !!this.data?.verification_code;
+      console.log('[PROXIMA_CITA_CARD] Estado de pago:', {
+        appointmentId: this.data?.appointmentId,
+        hasVerificationCode: paid,
+        mostrarPagar: this.data?.mostrarPagar,
+        successHighlight: this.data?.successHighlight
+      });
+    } catch {}
+  }
 }
 
 
