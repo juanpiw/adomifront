@@ -86,6 +86,55 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+}
+
+/* ✨ Animación del avatar cuando hay nueva cita */
+.avatar--new-appointment {
+  animation: avatar-pulse 1.5s ease-in-out infinite;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2), 
+              0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes avatar-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2), 
+                0 0 20px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.3), 
+                0 0 30px rgba(239, 68, 68, 0.6);
+  }
+}
+
+/* Badge de alerta sobre el avatar */
+.avatar-alert-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  animation: badge-bounce 0.6s ease-in-out 3;
+  z-index: 10;
+}
+
+@keyframes badge-bounce {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.2) translateY(-2px);
+  }
 }
 
 .user-info {

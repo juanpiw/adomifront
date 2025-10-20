@@ -32,8 +32,17 @@
     <div class="panel elevated">
       <div class="user-summary">
         <div style="position: relative; display: inline-block;">
-          <img class="avatar" [src]="providerAvatarUrl || '/assets/default-avatar.png'" alt="Avatar" (error)="onAvatarError($event)" />
+          <img 
+            class="avatar" 
+            [class.avatar--new-appointment]="hasNewAppointment"
+            [src]="providerAvatarUrl || '/assets/default-avatar.png'" 
+            alt="Avatar" 
+            (error)="onAvatarError($event)" />
           <span class="status-dot" [class.online]="isOnline === true" [class.offline]="isOnline === false"></span>
+          <!-- Badge de alerta sobre el avatar -->
+          <span *ngIf="hasNewAppointment" class="avatar-alert-badge">
+            <ui-icon name="bell" [size]="12"></ui-icon>
+          </span>
         </div>
         <div class="user-info">
           <div class="user-name">{{ providerName || 'Usuario' }}</div>

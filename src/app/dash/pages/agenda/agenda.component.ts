@@ -105,6 +105,9 @@ export class DashAgendaComponent implements OnInit {
   // Estados
   loading = false;
   currentView: 'dashboard' | 'calendar' | 'config' = 'dashboard';
+  
+  // 🔔 Contador de citas programadas (scheduled) pendientes de confirmar
+  scheduledAppointmentsCount: number = 0;
 
   private appointments = inject(AppointmentsService);
   private auth = inject(AuthService);
@@ -335,6 +338,12 @@ export class DashAgendaComponent implements OnInit {
       next: (resp: { success: boolean; appointments: AppointmentDto[] }) => {
         const apps = (resp.appointments || []) as AppointmentDto[];
         console.log(`[AGENDA] Loading month ${monthStr}: ${apps.length} appointments`, apps);
+        
+        // 🔔 Contar citas programadas (scheduled) pendientes de confirmar
+        const scheduledCount = apps.filter(a => a.status === 'scheduled').length;
+        this.scheduledAppointmentsCount = scheduledCount;
+        console.log(`🔔 [AGENDA] Citas programadas (scheduled) pendientes: ${scheduledCount}`);
+        
         this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
         console.log('[AGENDA] Calendar events generated:', this.calendarEvents);
         
@@ -428,6 +437,8 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private onRealtimeUpsert(a: AppointmentDto) {
+    console.log('🔔 [AGENDA] Realtime update recibido:', a);
+    
     // Si el evento pertenece al mes seleccionado, actualizar calendario
     const [y, m] = a.date.split('-').map(Number);
     const current = this.selectedDate || new Date();
@@ -436,7 +447,11 @@ export class DashAgendaComponent implements OnInit {
       const ev = this.mapAppointmentToEvent(a);
       const idx = this.calendarEvents.findIndex(e => e.id === String(a.id));
       if (idx >= 0) this.calendarEvents[idx] = ev; else this.calendarEvents.push(ev);
+      
+      // 🔔 Recalcular contador de citas programadas
+      this.updateScheduledCount();
     }
+    
     // Si el día seleccionado coincide, refrescar listado del día
     if (this.selectedDate) {
       const dIso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth()+1).padStart(2,'0')}-${String(this.selectedDate.getDate()).padStart(2,'0')}`;
@@ -447,9 +462,22 @@ export class DashAgendaComponent implements OnInit {
       }
     }
   }
+  
+  /**
+   * 🔔 Actualizar contador de citas programadas pendientes
+   */
+  private updateScheduledCount(): void {
+    const scheduledCount = this.calendarEvents.filter(e => e.status === 'scheduled').length;
+    this.scheduledAppointmentsCount = scheduledCount;
+    console.log(`🔔 [AGENDA] Contador actualizado: ${scheduledCount} citas programadas`);
+  }
 
   private onRealtimeDelete(id: number) {
+    console.log('🔔 [AGENDA] Eliminando cita:', id);
     this.calendarEvents = this.calendarEvents.filter(e => e.id !== String(id));
     this.dayAppointments = this.dayAppointments.filter(d => d.id !== String(id));
+    
+    // 🔔 Recalcular contador
+    this.updateScheduledCount();
   }
 }

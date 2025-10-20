@@ -51,6 +51,45 @@
   }
 }
 
+/* 🔔 Badge rojo de citas pendientes en el botón */
+.agenda-nav__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  animation: badge-pulse-button 2s ease-in-out infinite;
+  z-index: 10;
+}
+
+/* Animación del badge en el botón */
+@keyframes badge-pulse-button {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.7);
+  }
+}
+
+/* Ajuste cuando el botón está activo */
+.agenda-nav__button--active .agenda-nav__badge {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.5);
+}
+
 .agenda-content {
   display: flex;
   flex-direction: column;

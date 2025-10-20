@@ -76,6 +76,16 @@ export class DashLayoutComponent implements OnInit {
             this.pendingAppointmentsCount = Math.min(99, (this.pendingAppointmentsCount || 0) + 1);
             console.log('🔔 [DASH_LAYOUT] ✅ Contador incrementado a:', this.pendingAppointmentsCount);
             
+            // ✨ Activar animación del avatar
+            this.hasNewAppointment = true;
+            console.log('🔔 [DASH_LAYOUT] ✨ Animación de avatar activada');
+            
+            // Desactivar la animación después de 5 segundos
+            setTimeout(() => {
+              this.hasNewAppointment = false;
+              console.log('🔔 [DASH_LAYOUT] ✨ Animación de avatar desactivada');
+            }, 5000);
+            
             // 🔊 Reproducir sonido de notificación
             this.playNotificationSound();
           }
