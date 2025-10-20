@@ -126,6 +126,7 @@ export class DashAgendaComponent implements OnInit {
   scheduledAppointmentsCount: number = 0;
 
   private appointments = inject(AppointmentsService);
+  private payments = inject(PaymentsService as any);
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);
   private currentProviderId: number | null = null;
@@ -134,6 +135,7 @@ export class DashAgendaComponent implements OnInit {
 
   ngOnInit() {
     this.loadDashboardData();
+    this.refreshEarnings();
     this.loadPaidAwaiting();
     // Cargar mes actual
     const today = new Date();
@@ -248,8 +250,33 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private loadDashboardData() {
-    // TODO: Cargar datos reales desde el backend
     console.log('Cargando datos del dashboard...');
+  }
+
+  private refreshEarnings(month?: string) {
+    try {
+      (this.payments as any).getProviderEarningsSummary(month).subscribe({
+        next: (resp: any) => {
+          if (resp?.success && resp.summary) {
+            const { releasable, pending, released } = resp.summary;
+            // Actualiza la tarjeta "Ingresos (Mes)" con el monto liberable
+            const idx = this.dashboardMetrics.findIndex(m => m.label === 'Ingresos (Mes)');
+            if (idx >= 0) {
+              this.dashboardMetrics[idx] = {
+                ...this.dashboardMetrics[idx],
+                value: `$${Number(releasable || 0).toLocaleString('es-CL')}`,
+                meta: `Pendiente: $${Number(pending || 0).toLocaleString('es-CL')} · Liberado: $${Number(released || 0).toLocaleString('es-CL')}`
+              } as any;
+            }
+          }
+        },
+        error: (e: any) => {
+          console.warn('[AGENDA] earnings summary error', e);
+        }
+      });
+    } catch (err) {
+      console.warn('[AGENDA] earnings summary exception', err);
+    }
   }
 
   // Event handlers del calendario

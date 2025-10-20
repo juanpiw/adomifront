@@ -42,6 +42,17 @@ export class PaymentsService {
       { headers: this.headers(), params: { session_id: sessionId } as any }
     );
   }
+
+  // Provider earnings summary
+  getProviderEarningsSummary(month?: string): Observable<{ success: boolean; summary: { month: string; releasable: number; pending: number; released: number; paidCount: number } }>{
+    const params: any = {};
+    if (month) params.month = month;
+    console.log('[PAYMENTS_SERVICE] getProviderEarningsSummary ->', params);
+    return this.http.get<{ success: boolean; summary: { month: string; releasable: number; pending: number; released: number; paidCount: number } }>(
+      `${this.base}/provider/earnings/summary`,
+      { headers: this.headers(), params }
+    );
+  }
 }
 
 
