@@ -5,6 +5,7 @@ export interface DashboardMetric {
   label: string;
   value: string | number;
   meta: string;
+  onClick?: () => void; // acción opcional
 }
 
 @Component({

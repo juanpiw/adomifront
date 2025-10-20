@@ -2,13 +2,15 @@
   <h2 class="dashboard-resumen__title">{{ title }}</h2>
   
   <div class="dashboard-resumen__cards">
-    <div 
+    <button 
       *ngFor="let metric of metrics; trackBy: trackByLabel"
-      class="dashboard-resumen__card">
+      class="dashboard-resumen__card"
+      type="button"
+      (click)="metric.onClick && metric.onClick()">
       <p class="dashboard-resumen__label">{{ metric.label }}</p>
       <p class="dashboard-resumen__value">{{ metric.value }}</p>
       <p class="dashboard-resumen__meta">{{ metric.meta }}</p>
-    </div>
+    </button>
   </div>
 </section>
 

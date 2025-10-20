@@ -33,6 +33,12 @@ export class DashAgendaComponent implements OnInit {
       meta: 'Próximos 7 días'
     },
     {
+      label: 'Citas por Pagar (esperan código)',
+      value: 0,
+      meta: 'Pagadas por clientes',
+      onClick: () => this.setView('calendar')
+    },
+    {
       label: 'Ingresos (Mes)',
       value: '$12.5k',
       meta: 'Meta: $15k'
@@ -391,6 +397,13 @@ export class DashAgendaComponent implements OnInit {
         
         this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
         console.log('[AGENDA] Calendar events generated:', this.calendarEvents);
+
+        // 🔔 Contar "citas por pagar (esperan código)": pagadas pero no completadas
+        const waitingCode = apps.filter(a => (a as any).payment_status === 'completed' && a.status !== 'completed').length;
+        const idxMetric = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
+        if (idxMetric >= 0) {
+          this.dashboardMetrics[idxMetric] = { ...this.dashboardMetrics[idxMetric], value: waitingCode };
+        }
         
         // Debug: verificar eventos para el día 20
         const day20Events = this.calendarEvents.filter(e => e.date.getDate() === 20);
