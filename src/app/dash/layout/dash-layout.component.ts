@@ -30,6 +30,7 @@ export class DashLayoutComponent implements OnInit {
   providerAvatarUrl: string | null = null;
   isOnline: boolean | null = null;
   unreadTotal: number = 0;
+  pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {
@@ -65,6 +66,20 @@ export class DashLayoutComponent implements OnInit {
       this.appointments.connectSocket(me);
       this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => {
         try {
+          console.log('🔔 [DASH_LAYOUT] ==================== NUEVA CITA RECIBIDA ====================');
+          console.log('🔔 [DASH_LAYOUT] Appointment:', a);
+          console.log('🔔 [DASH_LAYOUT] Status:', a.status);
+          
+          // Incrementar contador de citas pendientes
+          if (a.status === 'scheduled' || a.status === 'pending') {
+            this.pendingAppointmentsCount = Math.min(99, (this.pendingAppointmentsCount || 0) + 1);
+            console.log('🔔 [DASH_LAYOUT] ✅ Contador incrementado a:', this.pendingAppointmentsCount);
+            
+            // 🔊 Reproducir sonido de notificación
+            this.playNotificationSound();
+          }
+          
+          // Crear notificación visual
           this.notifications.setUserProfile('provider');
           const who = (a as any).client_name ? ` de ${(a as any).client_name}` : '';
           this.notifications.createNotification({
@@ -76,7 +91,11 @@ export class DashLayoutComponent implements OnInit {
             actions: ['view'],
             metadata: { appointmentId: String(a.id), clientName: (a as any).client_name }
           });
-        } catch {}
+          
+          console.log('🔔 [DASH_LAYOUT] ✅ Notificación creada');
+        } catch (err) {
+          console.error('🔴 [DASH_LAYOUT] Error procesando nueva cita:', err);
+        }
       });
     }
     this.chat.onMessageNew().subscribe((msg: MessageDto) => {
@@ -88,14 +107,37 @@ export class DashLayoutComponent implements OnInit {
       } catch {}
     });
 
-    // Al navegar al chat, limpiar badge
+    // Al navegar al chat o agenda, limpiar badges
     this.router.events.subscribe((ev: any) => {
       if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
         if (ev.urlAfterRedirects.includes('/dash/mensajes')) {
           this.unreadTotal = 0;
         }
+        if (ev.urlAfterRedirects.includes('/dash/agenda')) {
+          console.log('🔔 [DASH_LAYOUT] Navegando a Agenda - Limpiando contador de citas');
+          this.pendingAppointmentsCount = 0;
+        }
       }
     });
+  }
+  
+  /**
+   * 🔊 Reproducir sonido de notificación
+   * Método preparado para cuando agregues el archivo de audio
+   */
+  private playNotificationSound(): void {
+    try {
+      // Crear un elemento de audio dinámicamente
+      const audio = new Audio('/assets/sounds/notification.mp3');
+      audio.volume = 0.5; // Volumen al 50%
+      audio.play().catch(err => {
+        console.warn('🔴 [DASH_LAYOUT] No se pudo reproducir el sonido:', err);
+        // Los navegadores bloquean audio automático sin interacción del usuario
+        // Este es el comportamiento esperado en la primera carga
+      });
+    } catch (err) {
+      console.error('🔴 [DASH_LAYOUT] Error reproduciendo sonido:', err);
+    }
   }
 
   private loadProviderProfile() {

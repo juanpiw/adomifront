@@ -13,7 +13,10 @@
         <ui-icon [name]="isCollapsed ? 'chevron-right' : 'chevron-left'" [size]="18"></ui-icon>
       </button>
       <a class="rail-item" routerLink="/dash/home" routerLinkActive="active" title="Inicio" (click)="onNav()"><ui-icon name="home" [size]="20"></ui-icon></a>
-      <a class="rail-item" routerLink="/dash/agenda" routerLinkActive="active" title="Agenda" (click)="onNav()"><ui-icon name="calendar" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/agenda" routerLinkActive="active" title="Agenda" (click)="onNav()" style="position: relative;">
+        <ui-icon name="calendar" [size]="20"></ui-icon>
+        <span *ngIf="pendingAppointmentsCount > 0" class="badge-unread badge-appointment">{{ pendingAppointmentsCount }}</span>
+      </a>
       <a class="rail-item" routerLink="/dash/ingresos" routerLinkActive="active" title="Ingresos" (click)="onNav()"><ui-icon name="money" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/estadisticas" routerLinkActive="active" title="Estadísticas" (click)="onNav()"><ui-icon name="chart" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/promocion" routerLinkActive="active" title="Promoción" (click)="onNav()"><ui-icon name="star" [size]="20"></ui-icon></a>
