@@ -31,6 +31,7 @@ export class DashLayoutComponent implements OnInit {
   isOnline: boolean | null = null;
   unreadTotal: number = 0;
   pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
+  hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {
@@ -79,20 +80,36 @@ export class DashLayoutComponent implements OnInit {
             this.playNotificationSound();
           }
           
-          // Crear notificación visual
+          // Crear notificación visual detallada
           this.notifications.setUserProfile('provider');
-          const who = (a as any).client_name ? ` de ${(a as any).client_name}` : '';
+          
+          const clientName = (a as any).client_name || 'Un cliente';
+          const serviceName = (a as any).service_name || 'tu servicio';
+          const appointmentDate = this.formatDate(a.date);
+          const appointmentTime = a.start_time.slice(0,5);
+          
+          const notificationMessage = `${clientName} quiere agendar "${serviceName}" para el ${appointmentDate} a las ${appointmentTime}`;
+          
+          console.log('🔔 [DASH_LAYOUT] Creando notificación con mensaje:', notificationMessage);
+          
           this.notifications.createNotification({
             type: 'appointment',
             profile: 'provider',
-            title: 'Nueva cita por confirmar',
-            message: `Tienes una nueva cita${who} el ${a.date} a las ${a.start_time.slice(0,5)}`,
+            title: '📅 Nueva cita por confirmar',
+            message: notificationMessage,
+            description: `Cliente: ${clientName} • ${appointmentDate} ${appointmentTime}`,
             priority: 'high',
             actions: ['view'],
-            metadata: { appointmentId: String(a.id), clientName: (a as any).client_name }
+            metadata: { 
+              appointmentId: String(a.id), 
+              clientName,
+              serviceName,
+              date: a.date,
+              time: appointmentTime
+            }
           });
           
-          console.log('🔔 [DASH_LAYOUT] ✅ Notificación creada');
+          console.log('🔔 [DASH_LAYOUT] ✅ Notificación creada en campana');
         } catch (err) {
           console.error('🔴 [DASH_LAYOUT] Error procesando nueva cita:', err);
         }
@@ -284,6 +301,23 @@ export class DashLayoutComponent implements OnInit {
       this.router.navigate(['/dash/perfil'], {
         queryParams: { tab: 'configuracion' }
       });
+    }
+  }
+
+  /**
+   * Formatear fecha en español (ej: "lunes 20 de octubre")
+   */
+  private formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString + 'T00:00:00');
+      const options: Intl.DateTimeFormatOptions = { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long' 
+      };
+      return date.toLocaleDateString('es-CL', options);
+    } catch {
+      return dateString;
     }
   }
 

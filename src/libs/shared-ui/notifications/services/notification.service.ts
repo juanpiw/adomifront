@@ -113,6 +113,9 @@ export class NotificationService {
 
   // Crear nueva notificación
   createNotification(template: NotificationTemplate): Notification {
+    console.log('🔔 [NOTIFICATION_SERVICE] ==================== CREAR NOTIFICACIÓN ====================');
+    console.log('🔔 [NOTIFICATION_SERVICE] Template:', template);
+    
     const notification: Notification = {
       id: this.generateId(),
       type: template.type,
@@ -128,8 +131,16 @@ export class NotificationService {
       ...this.getNotificationDefaults(template.type)
     };
 
+    console.log('🔔 [NOTIFICATION_SERVICE] Notificación creada:', notification);
+
     this.notifications.push(notification);
     this.notificationsSubject.next(this.getProfileNotifications());
+    
+    // ✅ Actualizar contador de no leídas
+    const unreadCount = this.getProfileNotifications().filter(n => n.status === 'unread').length;
+    this.unreadCountSubject.next(unreadCount);
+    console.log('🔔 [NOTIFICATION_SERVICE] ✅ Contador actualizado a:', unreadCount);
+    
     this.emitEvent('created', notification);
     
     return notification;
@@ -144,6 +155,12 @@ export class NotificationService {
       notification.updatedAt = new Date();
       
       this.notificationsSubject.next(this.getProfileNotifications());
+      
+      // ✅ Actualizar contador de no leídas
+      const unreadCount = this.getProfileNotifications().filter(n => n.status === 'unread').length;
+      this.unreadCountSubject.next(unreadCount);
+      console.log('🔔 [NOTIFICATION_SERVICE] ✅ Notificación marcada como leída. Contador:', unreadCount);
+      
       this.emitEvent('read', notification);
     }
   }
@@ -161,6 +178,11 @@ export class NotificationService {
     });
 
     this.notificationsSubject.next(this.getProfileNotifications());
+    
+    // ✅ Actualizar contador a 0
+    this.unreadCountSubject.next(0);
+    console.log('🔔 [NOTIFICATION_SERVICE] ✅ Todas las notificaciones marcadas como leídas. Contador: 0');
+    
     unreadNotifications.forEach(n => this.emitEvent('read', n));
   }
 
