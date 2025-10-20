@@ -138,7 +138,7 @@
 <ui-modal-verificar-servicio
   *ngIf="isVerificationModalOpen"
   [isOpen]="isVerificationModalOpen"
-  [appointment]="{ client_name: selectedPaidAppointment?.client_name, service_name: selectedPaidAppointment?.service_name, amount: selectedPaidAppointment?.amount } as any"
+  [appointment]="selectedPaidAppointment"
   [verifying]="verifying"
   [errorMessage]="verificationError"
   [remainingAttempts]="remainingAttempts"
