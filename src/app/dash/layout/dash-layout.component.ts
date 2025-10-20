@@ -70,8 +70,8 @@ export class DashLayoutComponent implements OnInit {
           console.log('🔔 [DASH_LAYOUT] Appointment:', a);
           console.log('🔔 [DASH_LAYOUT] Status:', a.status);
           
-          // Incrementar contador de citas pendientes
-          if (a.status === 'scheduled' || a.status === 'pending') {
+          // Incrementar contador de citas pendientes (solo las que están 'scheduled')
+          if (a.status === 'scheduled') {
             this.pendingAppointmentsCount = Math.min(99, (this.pendingAppointmentsCount || 0) + 1);
             console.log('🔔 [DASH_LAYOUT] ✅ Contador incrementado a:', this.pendingAppointmentsCount);
             
