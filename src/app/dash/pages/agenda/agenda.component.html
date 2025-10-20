@@ -47,6 +47,26 @@
         [loading]="loading">
       </app-dashboard-resumen>
 
+      <!-- Panel: Citas por pagar (esperan código) -->
+      <div *ngIf="showPaidAwaitingPanel" class="paid-awaiting">
+        <h3 class="paid-awaiting__title">Citas por pagar (esperan verificación de código)</h3>
+        <div *ngIf="paidAwaitingAppointments.length === 0" class="paid-awaiting__empty">
+          No tienes citas pagadas esperando verificación.
+        </div>
+        <div *ngFor="let ap of paidAwaitingAppointments" class="paid-awaiting__card">
+          <div class="paid-awaiting__row">
+            <div class="paid-awaiting__col">
+              <p class="paid-awaiting__service">{{ ap.service_name || 'Servicio' }}</p>
+              <p class="paid-awaiting__meta">Cliente: {{ ap.client_name || '—' }}</p>
+              <p class="paid-awaiting__meta">Fecha: {{ ap.date }} · {{ ap.start_time?.slice(0,5) }}</p>
+            </div>
+            <div class="paid-awaiting__actions">
+              <button class="paid-awaiting__btn" (click)="openVerifyModal(ap)">Verificar Código</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Dashboard Gráfico -->
       <app-dashboard-grafico 
         [loading]="loading">
@@ -113,6 +133,18 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de verificación de servicio -->
+<ui-modal-verificar-servicio
+  *ngIf="isVerificationModalOpen"
+  [isOpen]="isVerificationModalOpen"
+  [appointment]="{ client_name: selectedPaidAppointment?.client_name, service_name: selectedPaidAppointment?.service_name, amount: selectedPaidAppointment?.amount } as any"
+  [verifying]="verifying"
+  [errorMessage]="verificationError"
+  [remainingAttempts]="remainingAttempts"
+  (verified)="onVerificationSubmit($event)"
+  (cancel)="onVerificationCancel()"
+></ui-modal-verificar-servicio>
 
 
 

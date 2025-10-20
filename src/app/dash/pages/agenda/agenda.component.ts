@@ -4,6 +4,7 @@ import { DashboardResumenComponent, DashboardMetric } from '../../../../libs/sha
 import { CalendarMensualComponent, CalendarEvent } from '../../../../libs/shared-ui/calendar-mensual/calendar-mensual.component';
 import { DayDetailComponent, DayAppointment } from '../../../../libs/shared-ui/day-detail/day-detail.component';
 import { DashboardGraficoComponent } from '../../../../libs/shared-ui/dashboard-grafico/dashboard-grafico.component';
+import { ModalVerificarServicioComponent } from '../../../../libs/shared-ui/modal-verificar-servicio/modal-verificar-servicio.component';
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
@@ -19,7 +20,8 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
     CalendarMensualComponent,
     DayDetailComponent,
     DashboardGraficoComponent,
-    HorariosConfigComponent
+    HorariosConfigComponent,
+    ModalVerificarServicioComponent
   ],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.scss']
@@ -36,7 +38,7 @@ export class DashAgendaComponent implements OnInit {
       label: 'Citas por Pagar (esperan código)',
       value: 0,
       meta: 'Pagadas por clientes',
-      onClick: () => this.setView('calendar')
+      onClick: () => this.togglePaidAwaitingPanel()
     },
     {
       label: 'Ingresos (Mes)',
@@ -111,6 +113,14 @@ export class DashAgendaComponent implements OnInit {
   // Estados
   loading = false;
   currentView: 'dashboard' | 'calendar' | 'config' = 'dashboard';
+  showPaidAwaitingPanel: boolean = false;
+  paidAwaitingAppointments: Array<{ id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number }>=[];
+  // Estado modal verificación
+  isVerificationModalOpen: boolean = false;
+  selectedPaidAppointment: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number } | null = null;
+  verificationError: string = '';
+  remainingAttempts: number = 3;
+  verifying: boolean = false;
   
   // 🔔 Contador de citas programadas (scheduled) pendientes de confirmar
   scheduledAppointmentsCount: number = 0;
@@ -124,6 +134,7 @@ export class DashAgendaComponent implements OnInit {
 
   ngOnInit() {
     this.loadDashboardData();
+    this.loadPaidAwaiting();
     // Cargar mes actual
     const today = new Date();
     // Preseleccionar el día de hoy para mostrar citas sin click
@@ -156,6 +167,72 @@ export class DashAgendaComponent implements OnInit {
     });
     this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
     this.appointments.onAppointmentDeleted().subscribe((p: { id: number }) => this.onRealtimeDelete(p.id));
+  }
+  private togglePaidAwaitingPanel() {
+    this.showPaidAwaitingPanel = !this.showPaidAwaitingPanel;
+    if (this.showPaidAwaitingPanel) {
+      this.loadPaidAwaiting();
+    }
+  }
+
+  private loadPaidAwaiting() {
+    this.appointments.listPaidAppointments().subscribe({
+      next: (resp: any) => {
+        if (resp?.success) {
+          this.paidAwaitingAppointments = (resp.appointments || []).map((a: any) => ({
+            id: a.id,
+            client_name: a.client_name,
+            service_name: a.service_name,
+            date: a.date,
+            start_time: a.start_time,
+            amount: a.amount
+          }));
+          const idx = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
+          if (idx >= 0) this.dashboardMetrics[idx] = { ...this.dashboardMetrics[idx], value: this.paidAwaitingAppointments.length };
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  openVerifyModal(appt: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number }) {
+    this.selectedPaidAppointment = appt;
+    this.verificationError = '';
+    this.remainingAttempts = 3;
+    this.isVerificationModalOpen = true;
+  }
+
+  onVerificationCancel() {
+    this.isVerificationModalOpen = false;
+    this.selectedPaidAppointment = null;
+    this.verificationError = '';
+  }
+
+  onVerificationSubmit(code: string) {
+    if (!this.selectedPaidAppointment) return;
+    this.verifying = true;
+    this.verificationError = '';
+    this.appointments.verifyCompletion(this.selectedPaidAppointment.id, code).subscribe({
+      next: (resp: any) => {
+        this.verifying = false;
+        if (resp?.success) {
+          // Quitar de la lista local y cerrar modal
+          this.paidAwaitingAppointments = this.paidAwaitingAppointments.filter(p => p.id !== this.selectedPaidAppointment!.id);
+          const idx = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
+          if (idx >= 0) this.dashboardMetrics[idx] = { ...this.dashboardMetrics[idx], value: this.paidAwaitingAppointments.length };
+          this.isVerificationModalOpen = false;
+          this.selectedPaidAppointment = null;
+          alert('✅ Servicio verificado. El pago será liberado próximamente.');
+        } else {
+          this.verificationError = resp?.error || 'Código incorrecto';
+          this.remainingAttempts = typeof resp?.remainingAttempts === 'number' ? resp.remainingAttempts : this.remainingAttempts;
+        }
+      },
+      error: () => {
+        this.verifying = false;
+        this.verificationError = 'Error al verificar. Intenta nuevamente.';
+      }
+    });
   }
 
   private loadDashboardData() {
@@ -399,11 +476,8 @@ export class DashAgendaComponent implements OnInit {
         console.log('[AGENDA] Calendar events generated:', this.calendarEvents);
 
         // 🔔 Contar "citas por pagar (esperan código)": pagadas pero no completadas
-        const waitingCode = apps.filter(a => (a as any).payment_status === 'completed' && a.status !== 'completed').length;
-        const idxMetric = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
-        if (idxMetric >= 0) {
-          this.dashboardMetrics[idxMetric] = { ...this.dashboardMetrics[idxMetric], value: waitingCode };
-        }
+        // Actualizar panel de pagadas pendientes (desde endpoint dedicado)
+        this.loadPaidAwaiting();
         
         // Debug: verificar eventos para el día 20
         const day20Events = this.calendarEvents.filter(e => e.date.getDate() === 20);
