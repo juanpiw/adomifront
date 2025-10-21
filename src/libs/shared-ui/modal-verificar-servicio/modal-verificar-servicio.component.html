@@ -30,6 +30,14 @@
           <span class="appointment-info__label">Monto:</span>
           <span class="appointment-info__value">${{ appointment.amount || appointment.price || 0 | number:'1.0-0' }}</span>
         </div>
+        <div class="appointment-info__row">
+          <span class="appointment-info__label">Fecha:</span>
+          <span class="appointment-info__value">{{ (appointment.date || '') | date:'EEEE, dd ''de'' MMMM':'':'es-CL' }}</span>
+        </div>
+        <div class="appointment-info__row">
+          <span class="appointment-info__label">Hora:</span>
+          <span class="appointment-info__value">{{ (appointment.start_time || '').slice(0,5) }}</span>
+        </div>
       </div>
       
       <!-- Instrucciones -->

@@ -58,7 +58,7 @@
             <div class="paid-awaiting__col">
               <p class="paid-awaiting__service">{{ ap.service_name || 'Servicio' }}</p>
               <p class="paid-awaiting__meta">Cliente: {{ ap.client_name || '—' }}</p>
-              <p class="paid-awaiting__meta">Fecha: {{ ap.date }} · {{ ap.start_time?.slice(0,5) }}</p>
+              <p class="paid-awaiting__meta">Fecha: {{ formatDate(ap.date) }} · {{ formatTime(ap.start_time) }}</p>
             </div>
             <div class="paid-awaiting__actions">
               <button class="paid-awaiting__btn" (click)="openVerifyModal(ap)">Verificar Código</button>

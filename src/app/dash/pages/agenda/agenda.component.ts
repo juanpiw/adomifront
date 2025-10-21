@@ -608,6 +608,24 @@ export class DashAgendaComponent implements OnInit {
     return (eh * 60 + em) - (sh * 60 + sm);
   }
 
+  // Utilidades de formato para la vista
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const base = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+    const [y, m, d] = base.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    const dt = new Date(y, m - 1, d);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toLocaleDateString('es-CL', { weekday: 'long', day: '2-digit', month: 'long' });
+  }
+
+  formatTime(hhmm: string): string {
+    if (!hhmm) return '';
+    const parts = hhmm.split(':');
+    if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+    return hhmm;
+  }
+
   private onRealtimeUpsert(a: AppointmentDto) {
     console.log('🔔 [AGENDA] Realtime update recibido:', a);
     
