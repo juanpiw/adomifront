@@ -84,7 +84,7 @@ import { FavoritesService } from '../../../services/favorites.service';
       <ui-reserva-pasada-card 
         *ngFor="let ra of realizadasList" 
         [data]="ra" 
-        (onReview)="openReviewModal((ra.titulo?.split(' con ')?.[1] || 'Profesional'), (ra.titulo?.split(' con ')?.[0] || 'Servicio'), String(ra.appointmentId || ''))"
+        (onReview)="openReviewModal((ra.titulo?.split(' con ')?.[1] || 'Profesional'), (ra.titulo?.split(' con ')?.[0] || 'Servicio'), ('' + (ra.appointmentId || '')))"
         (onToggleFavorite)="onToggleFavorite(ra)"
         style="margin-bottom:12px;">
       </ui-reserva-pasada-card>
