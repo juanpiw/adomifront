@@ -122,6 +122,9 @@ export class ClientReservasComponent implements OnInit {
   reviewServiceName = '';
   reviewAppointmentId = '';
 
+  // Mapa local: appointmentId -> providerId (para Contactar)
+  private _providerByApptId: Record<number, number> = {};
+
   ngOnInit(): void {
     this.validateProfile();
     // Si venimos de Stripe success/cancel, procesar query y luego cargar
@@ -193,9 +196,16 @@ export class ClientReservasComponent implements OnInit {
         const cancelled = list.filter(a => a.status === 'cancelled');
 
         // Todas las próximas confirmadas
+        // Resetear mapa antes de reconstruir listas
+        this._providerByApptId = {};
+
         this.proximasConfirmadas = upcoming
           .filter(a => a.status === 'confirmed')
           .map(a => {
+            // Guardar relación para botón Contactar
+            if (typeof (a as any).provider_id === 'number') {
+              this._providerByApptId[a.id] = Number((a as any).provider_id);
+            }
             const rawPayment = String((a as any).payment_status || '')
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}"`);
@@ -308,13 +318,14 @@ export class ClientReservasComponent implements OnInit {
 
   onContactar(appointmentId?: number | null) {
     if (!appointmentId) return;
-    const map = (this as any)._providerByApptId as Record<number, number> | undefined;
-    const providerId = map ? map[appointmentId] : undefined;
+    const providerId = this._providerByApptId ? this._providerByApptId[appointmentId] : undefined;
     if (providerId) {
       const providerName = this.proximasConfirmadas.find(x => x.appointmentId === appointmentId)?.titulo?.split(' con ')?.[1] || '';
       this.router.navigate(['/client/conversaciones'], {
         queryParams: { providerId, providerName }
       });
+    } else {
+      console.warn('[RESERVAS] No se encontró providerId para appointment', appointmentId, this._providerByApptId);
     }
   }
 
