@@ -405,7 +405,7 @@ export class ClientReservasComponent implements OnInit {
         next: (resp) => {
           console.log('[REVIEWS] createReview resp', resp);
           this.notifications.createNotification({
-            type: 'review',
+            type: 'rating',
             profile: 'client',
             title: '¡Gracias por tu reseña!',
             message: `Calificaste a ${providerName || 'el profesional'} con ${rating} estrellas`,

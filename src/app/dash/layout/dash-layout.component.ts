@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
+import { OnlineStatusSwitchComponent } from '../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { PlanUpgradeAlertComponent, PlanInfo } from '../../../libs/shared-ui/plan-upgrade-alert/plan-upgrade-alert.component';
 import { TopbarComponent, TopbarConfig } from '../../../libs/shared-ui/topbar/topbar.component';
@@ -18,7 +19,7 @@ import { NotificationsService } from '../../services/notifications.service';
 @Component({
   selector: 'app-dash-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent, PlanUpgradeAlertComponent, TopbarComponent],
+  imports: [CommonModule, RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent, PlanUpgradeAlertComponent, TopbarComponent, OnlineStatusSwitchComponent],
   templateUrl: './dash-layout.component.html',
   styleUrls: ['./dash-layout.component.scss']
 })
@@ -58,6 +59,12 @@ export class DashLayoutComponent implements OnInit {
     this.loadPlanInfo();
     this.loadProviderProfile();
     this.initializeNotifications();
+
+    // Inicializar estado online desde localStorage (fallback: true)
+    try {
+      const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('provider:isOnline') : null;
+      if (saved === 'true') this.isOnline = true; else if (saved === 'false') this.isOnline = false; else this.isOnline = true;
+    } catch { this.isOnline = true; }
 
     // Conectar socket y escuchar mensajes para badge
     this.chat.connectSocket();
@@ -146,6 +153,11 @@ export class DashLayoutComponent implements OnInit {
         }
       }
     });
+  }
+
+  onOnlineToggle(next: boolean) {
+    this.isOnline = !!next;
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem('provider:isOnline', String(this.isOnline)); } catch {}
   }
   
   /**
