@@ -8,6 +8,7 @@ import { ReservaPasadaCardComponent, ReservaPasadaData } from '../../../../libs/
 import { CanceladaClienteCardComponent, CanceladaClienteData } from '../../../../libs/shared-ui/reservas/cancelada-cliente-card.component';
 import { CanceladaProfesionalCardComponent, CanceladaProfesionalData } from '../../../../libs/shared-ui/reservas/cancelada-profesional-card.component';
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
+import { ReviewsService } from '../../../services/reviews.service';
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
@@ -111,6 +112,7 @@ export class ClientReservasComponent implements OnInit {
   private payments = inject(PaymentsService);
   private route = inject(ActivatedRoute);
   private notifications = inject(NotificationService);
+  private reviews = inject(ReviewsService);
 
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null];
@@ -390,11 +392,36 @@ export class ClientReservasComponent implements OnInit {
   }
 
   onReviewSubmitted(reviewData: ReviewData): void {
-    console.log('Reseña enviada:', reviewData);
-    // TODO: Implementar envío de reseña al backend
-    // Por ahora solo cerramos el modal después de un delay
-    setTimeout(() => {
+    try {
+      const apptIdNum = Number(this.reviewAppointmentId || reviewData.appointmentId);
+      const providerName = this.proximasConfirmadas.find(x => String(x.appointmentId) === String(apptIdNum))?.titulo?.split(' con ')?.[1] || '';
+      const providerId = this._providerByApptId[apptIdNum];
+      const rating = Math.max(1, Math.min(5, Number((reviewData as any).rating || 5)));
+      const comment = (reviewData as any).comment || reviewData?.comment || '';
+      if (!providerId) {
+        console.warn('[REVIEWS] No providerId for appointment', apptIdNum);
+      }
+      this.reviews.createReview({ appointment_id: apptIdNum, provider_id: Number(providerId || 0), rating, comment }).subscribe({
+        next: (resp) => {
+          console.log('[REVIEWS] createReview resp', resp);
+          this.notifications.createNotification({
+            type: 'review',
+            profile: 'client',
+            title: '¡Gracias por tu reseña!',
+            message: `Calificaste a ${providerName || 'el profesional'} con ${rating} estrellas`,
+            priority: 'low',
+            actions: []
+          });
+          this.closeReviewModal();
+        },
+        error: (err) => {
+          console.error('[REVIEWS] createReview error', err);
+          alert('No se pudo enviar la reseña. Intenta nuevamente.');
+        }
+      });
+    } catch (e) {
+      console.error('[REVIEWS] exception', e);
       this.closeReviewModal();
-    }, 2000);
+    }
   }
 }
