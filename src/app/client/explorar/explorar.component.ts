@@ -114,9 +114,12 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div *ngFor="let provider of filteredProviders" class="bg-white rounded-3xl p-6 custom-shadow custom-shadow-hover transition-all duration-300">
             <div class="flex items-center mb-4">
-              <img [src]="provider.avatar_url || '/assets/default-avatar.png'" 
-                   [alt]="provider.name" 
-                   class="w-14 h-14 rounded-full object-cover">
+              <div style="position: relative; display: inline-block;">
+                <img [src]="provider.avatar_url || '/assets/default-avatar.png'" 
+                     [alt]="provider.name" 
+                     class="w-14 h-14 rounded-full object-cover">
+                <span class="status-dot" [class.online]="provider.is_online === true" [class.offline]="provider.is_online === false"></span>
+              </div>
               <div class="ml-4">
                 <p class="font-bold text-lg text-gray-900">{{ provider.name }}</p>
                 <p class="text-sm text-gray-500">{{ provider.profession }}</p>
@@ -779,7 +782,8 @@ export class ExplorarComponent implements OnInit {
       description: provider.description,
       location: provider.location,
       price: this.services.find(s => s.provider?.id === provider.id || s.provider_id === provider.id)?.price?.toString() || 'Consultar',
-      isHighlighted: provider.id === 1 // Highlight first provider
+      isHighlighted: provider.id === 1, // Highlight first provider
+      isOnline: (provider as any).is_online === true
     }));
 
     // Set highlighted professional (first one)

@@ -656,3 +656,8 @@ h3 {
 .duration-200 {
   transition-duration: 200ms;
 }
+
+/* Punto de estado sobre el avatar en cards de explorar */
+.status-dot { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 9999px; background: #9CA3AF; }
+.status-dot.online { background: #10B981; }
+.status-dot.offline { background: #EF4444; }
