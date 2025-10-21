@@ -8,6 +8,7 @@ import { ModalVerificarServicioComponent } from '../../../../libs/shared-ui/moda
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
+import { PaymentsService } from '../../../services/payments.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 
@@ -126,7 +127,7 @@ export class DashAgendaComponent implements OnInit {
   scheduledAppointmentsCount: number = 0;
 
   private appointments = inject(AppointmentsService);
-  private payments = inject(PaymentsService as any);
+  private payments = inject(PaymentsService);
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);
   private currentProviderId: number | null = null;
