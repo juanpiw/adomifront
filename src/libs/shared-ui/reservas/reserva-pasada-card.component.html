@@ -6,7 +6,12 @@
       <p class="rp-date">{{ data.fecha }}</p>
     </div>
     <div class="rp-right">
-      <p class="rp-price">{{ data.precio }}</p>
+      <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+        <p class="rp-price" style="margin:0;">{{ data.precio }}</p>
+        <button type="button" class="favorite-toggle" aria-label="Favorito" (click)="onToggleFavorite.emit()">
+          <ui-icon name="heart" class="favorite-icon" [ngClass]="{'favorite-icon--active': data.isFavorite}"></ui-icon>
+        </button>
+      </div>
       <p class="rp-state">{{ data.estado || 'Completado' }}</p>
     </div>
   </div>

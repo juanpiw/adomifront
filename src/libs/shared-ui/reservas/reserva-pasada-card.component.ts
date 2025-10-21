@@ -7,6 +7,9 @@ export interface ReservaPasadaData {
   fecha: string;
   precio: string;
   estado?: string; // Completado, etc.
+  appointmentId?: number;
+  providerId?: number;
+  isFavorite?: boolean;
 }
 
 @Component({
@@ -20,4 +23,5 @@ export class ReservaPasadaCardComponent {
   @Input() data!: ReservaPasadaData;
   @Output() onReview = new EventEmitter<void>();
   @Output() onReschedule = new EventEmitter<void>();
+  @Output() onToggleFavorite = new EventEmitter<void>();
 }

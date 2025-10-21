@@ -14,6 +14,11 @@
 .rp-btn.dark{background:#0f172a;color:#fff}
 .rp-btn.dark:hover{background:#0b1220}
 
+.favorite-toggle{background:transparent;border:none;cursor:pointer;padding:4px;border-radius:8px;transition:background .2s ease}
+.favorite-toggle:hover{background:#f1f5f9}
+.favorite-icon{width:20px;height:20px;color:#cbd5e1}
+.favorite-icon--active{color:#ef4444}
+
 
 
 

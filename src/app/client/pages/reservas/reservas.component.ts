@@ -14,6 +14,7 @@ import { ProfileValidationService } from '../../../services/profile-validation.s
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 import { PaymentsService } from '../../../services/payments.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
+import { FavoritesService } from '../../../services/favorites.service';
 
 @Component({ 
   selector:'app-c-reservas', 
@@ -83,6 +84,8 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
       <ui-reserva-pasada-card 
         *ngFor="let ra of realizadasList" 
         [data]="ra" 
+        (onReview)="openReviewModal((ra.titulo?.split(' con ')?.[1] || 'Profesional'), (ra.titulo?.split(' con ')?.[0] || 'Servicio'), String(ra.appointmentId || ''))"
+        (onToggleFavorite)="onToggleFavorite(ra)"
         style="margin-bottom:12px;">
       </ui-reserva-pasada-card>
       <p *ngIf="(realizadasList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes citas pagadas/verificadas.</p>
@@ -113,6 +116,7 @@ export class ClientReservasComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private notifications = inject(NotificationService);
   private reviews = inject(ReviewsService);
+  private favorites = inject(FavoritesService);
 
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null];
@@ -130,6 +134,7 @@ export class ClientReservasComponent implements OnInit {
   canceladasClienteList: CanceladaClienteData[] = [];
   canceladasProfesionalList: CanceladaProfesionalData[] = [];
   realizadasList: ReservaPasadaData[] = [];
+  private favoritesSet: Set<number> = new Set<number>();
 
   // Estado del modal de reseñas
   showReviewModal = false;
@@ -181,6 +186,8 @@ export class ClientReservasComponent implements OnInit {
       });
     });
     this.appointments.onAppointmentDeleted().subscribe(() => this.loadAppointments());
+    // Cargar favoritos del cliente al iniciar
+    this.loadFavorites();
   }
 
   private validateProfile() {
@@ -301,7 +308,10 @@ export class ClientReservasComponent implements OnInit {
           titulo: `${r.service_name || 'Servicio'} con ${r.provider_name || 'Profesional'}`,
           fecha: this.formatDate(r.date),
           precio: r.price ? `$${Number(r.price).toLocaleString('es-CL')}` : '',
-          estado: 'Completado'
+          estado: 'Completado',
+          appointmentId: r.id as number,
+          providerId: (r as any).provider_id as number,
+          isFavorite: (r as any).is_favorite === true || this.favoritesSet.has(Number((r as any).provider_id))
         }));
 
         // Actualizar badges DESPUÉS de llenar listas: [Próximas, Pasadas, Canceladas]
@@ -314,6 +324,19 @@ export class ClientReservasComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando citas del cliente', err);
       }
+    });
+  }
+
+  private loadFavorites(): void {
+    this.favorites.listFavorites().subscribe({
+      next: (resp) => {
+        const ids = new Set<number>();
+        (resp.favorites || []).forEach(f => ids.add(Number(f.id)));
+        this.favoritesSet = ids;
+        // Marcar en realizadasList si ya está cargada
+        this.realizadasList = (this.realizadasList || []).map(r => ({ ...r, isFavorite: r.providerId ? this.favoritesSet.has(r.providerId) : r.isFavorite }));
+      },
+      error: () => {}
     });
   }
 
@@ -423,5 +446,27 @@ export class ClientReservasComponent implements OnInit {
       console.error('[REVIEWS] exception', e);
       this.closeReviewModal();
     }
+  }
+
+  onToggleFavorite(ra: ReservaPasadaData): void {
+    const providerId = Number(ra.providerId || 0);
+    if (!providerId) return;
+    const isFav = this.favoritesSet.has(providerId);
+    const op$ = isFav ? this.favorites.removeFavorite(providerId) : this.favorites.addFavorite(providerId);
+    op$.subscribe({
+      next: () => {
+        if (isFav) this.favoritesSet.delete(providerId); else this.favoritesSet.add(providerId);
+        this.realizadasList = this.realizadasList.map(x => x.providerId === providerId ? { ...x, isFavorite: !isFav } : x);
+        this.notifications.createNotification({
+          type: 'system',
+          profile: 'client',
+          title: isFav ? 'Eliminado de favoritos' : 'Añadido a favoritos',
+          message: ra.titulo,
+          priority: 'low',
+          actions: []
+        });
+      },
+      error: () => {}
+    });
   }
 }
