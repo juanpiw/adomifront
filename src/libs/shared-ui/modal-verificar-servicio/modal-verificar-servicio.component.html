@@ -32,7 +32,7 @@
         </div>
         <div class="appointment-info__row">
           <span class="appointment-info__label">Fecha:</span>
-          <span class="appointment-info__value">{{ (appointment.date || '') | date:'EEEE, dd ''de'' MMMM':'':'es-CL' }}</span>
+          <span class="appointment-info__value">{{ (appointment.date || '') | date: dateFormatLong : '' : 'es-CL' }}</span>
         </div>
         <div class="appointment-info__row">
           <span class="appointment-info__label">Hora:</span>

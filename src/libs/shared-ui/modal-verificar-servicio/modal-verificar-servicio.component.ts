@@ -22,6 +22,8 @@ export class ModalVerificarServicioComponent implements AfterViewInit {
   @ViewChildren('codeInput') inputs!: QueryList<ElementRef<HTMLInputElement>>;
   
   codeDigits: string[] = ['', '', '', ''];
+  // Formato de fecha con literal 'de' para usar en el template (evita problemas de comillas)
+  readonly dateFormatLong: string = "EEEE, dd 'de' MMMM";
   
   ngAfterViewInit(): void {
     // Auto-focus en el primer input cuando se abre el modal
