@@ -29,7 +29,10 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
   <section class="reservas-page">
     <h2 class="title">Mis Reservas</h2>
 
-    <ui-reservas-tabs (tabChange)="activeTab = $event" [badges]="tabBadges"></ui-reservas-tabs>
+    <ui-reservas-tabs 
+      [tabs]="['Próximas','Pasadas','Canceladas','Pagadas/Realizadas']"
+      (tabChange)="activeTab = $event" 
+      [badges]="tabBadges"></ui-reservas-tabs>
 
     <div class="content" *ngIf="activeTab === 0">
       <ng-container *ngIf="(proximasConfirmadas?.length || 0) > 0; else noConfirmadas">
@@ -74,6 +77,15 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
       </ui-cancelada-profesional-card>
       <p *ngIf="(canceladasClienteList?.length || 0) === 0 && (canceladasProfesionalList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas canceladas.</p>
     </div>
+
+    <div class="content" *ngIf="activeTab === 3">
+      <ui-reserva-pasada-card 
+        *ngFor="let ra of realizadasList" 
+        [data]="ra" 
+        style="margin-bottom:12px;">
+      </ui-reserva-pasada-card>
+      <p *ngIf="(realizadasList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes citas pagadas/verificadas.</p>
+    </div>
   </section>
 
   <!-- Modal de reseñas -->
@@ -115,6 +127,7 @@ export class ClientReservasComponent implements OnInit {
   pasada2: ReservaPasadaData | null = null;
   canceladasClienteList: CanceladaClienteData[] = [];
   canceladasProfesionalList: CanceladaProfesionalData[] = [];
+  realizadasList: ReservaPasadaData[] = [];
 
   // Estado del modal de reseñas
   showReviewModal = false;
@@ -186,13 +199,26 @@ export class ClientReservasComponent implements OnInit {
       next: (resp) => {
         const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed' })[];
         console.log('[RESERVAS] Citas cargadas:', list);
-        const todayIso = new Date();
-        const todayStr = `${todayIso.getFullYear()}-${String(todayIso.getMonth()+1).padStart(2,'0')}-${String(todayIso.getDate()).padStart(2,'0')}`;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
         const upcoming = list.filter(a => a.date >= todayStr && (a.status === 'scheduled' || a.status === 'confirmed'))
                              .sort((a,b) => (a.date + a.start_time).localeCompare(b.date + b.start_time));
-        const past = list.filter(a => a.date < todayStr && a.status === 'completed')
+        // Pasadas: ya pasó la hora (mismo día) o la fecha es menor y no están completadas
+        const isPastPending = (a: any) => {
+          const dateOnly = String(a.date || '').split('T')[0];
+          if (!dateOnly) return false;
+          if (a.status === 'completed') return false;
+          if (dateOnly < todayStr) return true;
+          if (dateOnly > todayStr) return false;
+          const end = String(a.end_time || a.start_time || '').slice(0,5);
+          return end ? end < nowTime : false;
+        };
+        const past = list.filter(isPastPending)
                          .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
+        const realizadasAll = list.filter(a => a.status === 'completed')
+                                  .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
         const cancelled = list.filter(a => a.status === 'cancelled');
 
         // Todas las próximas confirmadas
@@ -242,13 +268,20 @@ export class ClientReservasComponent implements OnInit {
             fecha: this.formatDate(a.date),
             hora: this.formatTime(a.start_time)
           }));
-        // Pasadas/canceladas demo: mapear primeras (en producción listaríamos todas)
+        // Pasadas: mostrar dos primeras (por confirmar o confirmadas pero vencidas)
         this.pasada1 = past[0] ? {
           avatarUrl: '',
           titulo: `${past[0].service_name || 'Servicio'} con ${past[0].provider_name || 'Profesional'}`,
           fecha: this.formatDate(past[0].date),
           precio: past[0].price ? `$${Number(past[0].price).toLocaleString('es-CL')}` : '',
-          estado: 'Completado'
+          estado: past[0].status === 'confirmed' ? 'Confirmada' : 'Por confirmar'
+        } : null;
+        this.pasada2 = past[1] ? {
+          avatarUrl: '',
+          titulo: `${past[1].service_name || 'Servicio'} con ${past[1].provider_name || 'Profesional'}`,
+          fecha: this.formatDate(past[1].date),
+          precio: past[1].price ? `$${Number(past[1].price).toLocaleString('es-CL')}` : '',
+          estado: past[1].status === 'confirmed' ? 'Confirmada' : 'Por confirmar'
         } : null;
 
         // Canceladas (placeholder: todas como canceladas por proveedor)
@@ -260,11 +293,21 @@ export class ClientReservasComponent implements OnInit {
         }));
         this.canceladasClienteList = [];
 
+        // Realizadas/Pagadas (todas las completadas)
+        this.realizadasList = realizadasAll.map(r => ({
+          avatarUrl: '',
+          titulo: `${r.service_name || 'Servicio'} con ${r.provider_name || 'Profesional'}`,
+          fecha: this.formatDate(r.date),
+          precio: r.price ? `$${Number(r.price).toLocaleString('es-CL')}` : '',
+          estado: 'Completado'
+        }));
+
         // Actualizar badges DESPUÉS de llenar listas: [Próximas, Pasadas, Canceladas]
         const upcomingCount = this.proximasConfirmadas.length + this.pendientesList.length;
         const pastCount = past.length;
         const cancelledCount = cancelled.length;
-        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null];
+        const realizadasCount = realizadasAll.length;
+        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null, realizadasCount || null];
       },
       error: (err) => {
         console.error('Error cargando citas del cliente', err);
