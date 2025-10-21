@@ -32,7 +32,7 @@
         </div>
         <div class="appointment-info__row">
           <span class="appointment-info__label">Fecha:</span>
-          <span class="appointment-info__value">{{ (appointment.date || '') | date: dateFormatLong : '' : 'es-CL' }}</span>
+          <span class="appointment-info__value">{{ formattedDate }}</span>
         </div>
         <div class="appointment-info__row">
           <span class="appointment-info__label">Hora:</span>
@@ -49,7 +49,7 @@
       <div class="code-inputs">
         <input 
           #codeInput
-          *ngFor="let digit of codeDigits; let i = index"
+          *ngFor="let digit of codeDigits; let i = index; trackBy: trackByIndex"
           type="text" 
           maxlength="1"
           inputmode="numeric"
@@ -58,11 +58,13 @@
           (input)="onCodeInput(i, $event)"
           (keydown)="onKeyDown(i, $event)"
           (paste)="onPaste($event)"
+          (focus)="onFocus(i, $event)"
           [disabled]="verifying"
           class="code-input"
           [class.code-input--filled]="digit"
           [class.code-input--disabled]="verifying"
-          autocomplete="off"
+          autocomplete="one-time-code"
+          aria-label="Dígito {{ i + 1 }} del código"
         />
       </div>
       

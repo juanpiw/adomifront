@@ -25,6 +25,31 @@ export class ModalVerificarServicioComponent implements AfterViewInit {
   // Formato de fecha con literal 'de' para usar en el template (evita problemas de comillas)
   readonly dateFormatLong: string = "EEEE, dd 'de' MMMM";
   
+  // Fecha formateada segura para strings YYYY-MM-DD (evita problemas de parseo)
+  get formattedDate(): string {
+    const raw = this.appointment?.date;
+    if (!raw) return '';
+    try {
+      if (raw instanceof Date) {
+        return raw.toLocaleDateString('es-CL', { weekday: 'long', day: '2-digit', month: 'long' });
+      }
+      const s = String(raw);
+      // Soporta 'YYYY-MM-DD' y ISO con 'T'
+      const y = Number(s.slice(0, 4));
+      const m = Number(s.slice(5, 7));
+      const d = Number(s.slice(8, 10));
+      if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)) {
+        const dt = new Date(y, m - 1, d);
+        return dt.toLocaleDateString('es-CL', { weekday: 'long', day: '2-digit', month: 'long' });
+      }
+      const dt = new Date(s);
+      if (!isNaN(dt.getTime())) {
+        return dt.toLocaleDateString('es-CL', { weekday: 'long', day: '2-digit', month: 'long' });
+      }
+    } catch {}
+    return '';
+  }
+  
   ngAfterViewInit(): void {
     // Auto-focus en el primer input cuando se abre el modal
     if (this.isOpen) {
@@ -63,14 +88,18 @@ export class ModalVerificarServicioComponent implements AfterViewInit {
     
     if (value && /^\d$/.test(value)) {
       this.codeDigits[index] = value;
+      // Reaplicar el valor para asegurar sincronía visual si hubo rerender
+      input.value = value;
       
-      // Auto-advance al siguiente input
+      // Auto-advance al siguiente input (usar defer para evitar saltos por rerender)
       if (index < 3) {
-        const inputsArray = this.inputs.toArray();
-        const nextInput = inputsArray[index + 1];
-        if (nextInput) {
-          nextInput.nativeElement.focus();
-        }
+        setTimeout(() => {
+          const inputsArray = this.inputs.toArray();
+          const nextInput = inputsArray[index + 1];
+          if (nextInput) {
+            nextInput.nativeElement.focus();
+          }
+        }, 0);
       }
       
       // Si se completaron los 4 dígitos, auto-verificar
@@ -149,7 +178,8 @@ export class ModalVerificarServicioComponent implements AfterViewInit {
       
       // Focus en el siguiente input vacío o el último
       const nextEmptyIndex = digits.length < 4 ? digits.length : 3;
-      inputsArray[nextEmptyIndex].nativeElement.focus();
+      const el = inputsArray[nextEmptyIndex];
+      if (el) el.nativeElement.focus();
       
       // Si se pegaron 4 dígitos, auto-verificar
       if (digits.length === 4) {
@@ -159,6 +189,14 @@ export class ModalVerificarServicioComponent implements AfterViewInit {
       }
     }
   }
+  
+  onFocus(index: number, event: FocusEvent): void {
+    const el = event.target as HTMLInputElement;
+    // Seleccionar el contenido para facilitar reemplazo inmediato
+    try { el.select(); } catch {}
+  }
+  
+  trackByIndex(index: number): number { return index; }
   
   isCodeComplete(): boolean {
     return this.codeDigits.every(d => d && d !== '');
