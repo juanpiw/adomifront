@@ -417,8 +417,14 @@ export class ClientReservasComponent implements OnInit {
   onReviewSubmitted(reviewData: ReviewData): void {
     try {
       const apptIdNum = Number(this.reviewAppointmentId || reviewData.appointmentId);
-      const providerName = this.proximasConfirmadas.find(x => String(x.appointmentId) === String(apptIdNum))?.titulo?.split(' con ')?.[1] || '';
-      const providerId = this._providerByApptId[apptIdNum];
+      let providerName = this.proximasConfirmadas.find(x => String(x.appointmentId) === String(apptIdNum))?.titulo?.split(' con ')?.[1] || '';
+      let providerId = this._providerByApptId[apptIdNum];
+      // Fallback: buscar en realizadasList cuando viene desde "Pagadas/Realizadas"
+      if (!providerId) {
+        const ra = this.realizadasList.find(r => String(r.appointmentId) === String(apptIdNum));
+        if (ra && ra.providerId) providerId = Number(ra.providerId);
+        if (!providerName && ra?.titulo) providerName = ra.titulo.split(' con ')?.[1] || '';
+      }
       const rating = Math.max(1, Math.min(5, Number((reviewData as any).rating || 5)));
       const comment = (reviewData as any).comment || reviewData?.comment || '';
       if (!providerId) {

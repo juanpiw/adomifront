@@ -24,6 +24,7 @@ import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/sh
 import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/verificacion-perfil.component';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
+import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
 
 @Component({
   selector: 'app-d-perfil',
@@ -48,7 +49,8 @@ import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-s
     ExcepcionesFeriadosComponent,
     VerificacionPerfilComponent,
     IconComponent,
-    OnlineStatusSwitchComponent
+    OnlineStatusSwitchComponent,
+    ReviewsComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
@@ -276,6 +278,13 @@ export class DashPerfilComponent implements OnInit {
   ];
 
   profileProgress = 75;
+
+  // Reseñas públicas para el preview
+  publicReviewsData: ReviewsData = {
+    title: 'Lo que dicen sus clientes',
+    reviews: [],
+    showAllButton: true
+  };
 
   // Estado de las tabs
   activeTab: TabType = 'perfil-publico';
@@ -759,6 +768,28 @@ export class DashPerfilComponent implements OnInit {
           console.error('[PERFIL] Error al cargar portafolio para perfil público:', err);
         }
       });
+    }
+
+    // Cargar reseñas públicas del proveedor (si hay id en el perfil cargado)
+    const providerId = (this as any)?.providerId || 0;
+    if (providerId) {
+      fetch(`${environment.apiBaseUrl}/providers/${providerId}/reviews`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token') || ''}` }
+      }).then(r => r.json()).then(resp => {
+        if (resp?.success && Array.isArray(resp.reviews)) {
+          this.publicReviewsData = {
+            title: 'Lo que dicen sus clientes',
+            reviews: resp.reviews.map((r: any, idx: number) => {
+              const name = String(r.client_name || 'Cliente');
+              const initials = name.trim().split(/\s+/).slice(0,2).map((p: string) => p.charAt(0).toUpperCase()).join('') || 'CL';
+              let dateStr = '';
+              try { const dt = new Date(r.created_at); if (!isNaN(dt.getTime())) dateStr = dt.toLocaleDateString('es-CL'); } catch {}
+              return { id: String(r.id ?? idx), clientName: name, clientInitials: initials, rating: Number(r.rating||0), date: dateStr, text: String(r.comment||'') };
+            }),
+            showAllButton: true
+          };
+        }
+      }).catch(() => {});
     }
   }
 
