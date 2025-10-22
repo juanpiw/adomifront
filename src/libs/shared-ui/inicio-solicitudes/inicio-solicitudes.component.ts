@@ -36,17 +36,7 @@ export interface SolicitudData {
   styleUrls: ['./inicio-solicitudes.component.scss']
 })
 export class InicioSolicitudesComponent {
-  @Input() data: SolicitudData = {
-    id: '1',
-    clientName: 'Marcos Reyes',
-    clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=MR',
-    service: 'Maquillaje Profesional',
-    when: 'Mañana',
-    time: '18:00 PM',
-    date: '2025-10-11',
-    location: 'Av. Providencia 123, Depto 45, Santiago',
-    estimatedIncome: 45000
-  };
+  @Input() data: SolicitudData[] = [];
 
   @Output() acceptClick = new EventEmitter<SolicitudData>();
   @Output() declineClick = new EventEmitter<SolicitudData>();
@@ -57,23 +47,28 @@ export class InicioSolicitudesComponent {
   showAcceptModal = false;
   showRejectModal = false;
   loading = false;
+  selectedSolicitud: SolicitudData | null = null;
 
-  onAcceptClick() {
+  onAcceptClick(solicitud: SolicitudData) {
+    this.selectedSolicitud = solicitud;
     this.showAcceptModal = true;
-    this.acceptClick.emit(this.data);
+    this.acceptClick.emit(solicitud);
   }
 
-  onDeclineClick() {
+  onDeclineClick(solicitud: SolicitudData) {
+    this.selectedSolicitud = solicitud;
     this.showRejectModal = true;
-    this.declineClick.emit(this.data);
+    this.declineClick.emit(solicitud);
   }
 
   onAcceptModalClose() {
     this.showAcceptModal = false;
+    this.selectedSolicitud = null;
   }
 
   onRejectModalClose() {
     this.showRejectModal = false;
+    this.selectedSolicitud = null;
   }
 
   onAcceptConfirm(result: AcceptReservaResult) {

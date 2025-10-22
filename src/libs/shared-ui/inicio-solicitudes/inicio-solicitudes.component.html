@@ -1,27 +1,32 @@
 <section class="inicio-solicitudes">
   <h3 class="inicio-solicitudes__title">Solicitudes de Reserva Pendientes</h3>
-  <div class="inicio-solicitudes__card">
+  
+  <div *ngIf="data.length === 0" class="inicio-solicitudes__empty">
+    No tienes solicitudes de reserva pendientes.
+  </div>
+  
+  <div *ngFor="let solicitud of data" class="inicio-solicitudes__card">
     <div class="inicio-solicitudes__row">
-      <img [src]="data.clientAvatar" [alt]="data.clientName" class="inicio-solicitudes__avatar">
+      <img [src]="solicitud.clientAvatar" [alt]="solicitud.clientName" class="inicio-solicitudes__avatar">
       <div class="ml-4">
-        <p class="inicio-solicitudes__name">{{ data.clientName }}</p>
-        <p class="inicio-solicitudes__service">Solicita <span class="font-semibold text-slate-600">{{ data.service }}</span></p>
+        <p class="inicio-solicitudes__name">{{ solicitud.clientName }}</p>
+        <p class="inicio-solicitudes__service">Solicita <span class="font-semibold text-slate-600">{{ solicitud.service }}</span></p>
       </div>
       <div class="ml-auto text-right">
-        <p class="inicio-solicitudes__when">{{ data.when }}</p>
-        <p class="inicio-solicitudes__time">{{ data.time }}</p>
+        <p class="inicio-solicitudes__when">{{ solicitud.when }}</p>
+        <p class="inicio-solicitudes__time">{{ solicitud.time }}</p>
       </div>
     </div>
     <div class="inicio-solicitudes__actions">
       <button 
         class="inicio-solicitudes__btn-accept" 
-        (click)="onAcceptClick()"
+        (click)="onAcceptClick(solicitud)"
         [disabled]="loading">
         {{ loading ? 'Procesando...' : 'Aceptar' }}
       </button>
       <button 
         class="inicio-solicitudes__btn-decline" 
-        (click)="onDeclineClick()"
+        (click)="onDeclineClick(solicitud)"
         [disabled]="loading">
         {{ loading ? 'Procesando...' : 'Rechazar' }}
       </button>
@@ -31,7 +36,7 @@
   <!-- Modales -->
   <app-accept-reserva-modal
     [isOpen]="showAcceptModal"
-    [reservaData]="data"
+    [reservaData]="selectedSolicitud"
     [loading]="loading"
     (close)="onAcceptModalClose()"
     (confirm)="onAcceptConfirm($event)">
@@ -39,7 +44,7 @@
 
   <app-reject-reserva-modal
     [isOpen]="showRejectModal"
-    [reservaData]="data"
+    [reservaData]="selectedSolicitud"
     [loading]="loading"
     (close)="onRejectModalClose()"
     (confirm)="onRejectConfirm($event)">

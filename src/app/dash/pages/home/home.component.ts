@@ -22,6 +22,8 @@ import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from 
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
+import { AppointmentsService } from '../../../services/appointments.service';
+import { PaymentsService } from '../../../services/payments.service';
 
 @Component({
   selector: 'app-d-home',
@@ -42,6 +44,8 @@ import { ProviderProfileService } from '../../../services/provider-profile.servi
 export class DashHomeComponent implements OnInit {
   private auth = inject(AuthService);
   private providerProfile = inject(ProviderProfileService);
+  private appointmentsService = inject(AppointmentsService);
+  private paymentsService = inject(PaymentsService);
   
   constructor(private router: Router) {}
   
@@ -56,6 +60,9 @@ export class DashHomeComponent implements OnInit {
 
   ngOnInit() {
     this.loadProviderName();
+    this.loadPendingRequests();
+    this.loadNextAppointment();
+    this.loadEarningsData();
   }
 
   private loadProviderName() {
@@ -104,20 +111,146 @@ export class DashHomeComponent implements OnInit {
     });
   }
 
-  // Datos para la próxima cita
-  proximaCitaData: ProximaCitaData = {
-    id: '1',
-    time: '10:00',
-    meridiem: 'AM',
-    service: 'Corte de Pelo',
-    clientName: 'Carlos Rojas',
-    date: '2025-10-10',
-    duration: '45 minutos',
-    amount: 15000,
-    clientAvatar: 'https://placehold.co/40x40/E0E7FF/4338CA?text=CR',
-    location: 'Av. Providencia 123, Depto 45, Santiago',
-    mapUrl: 'https://maps.google.com/?q=Av.+Providencia+123,+Santiago'
-  };
+  private loadPendingRequests() {
+    console.log('[DASH_HOME] Cargando solicitudes pendientes...');
+    this.appointmentsService.listPendingRequests().subscribe({
+      next: (response) => {
+        console.log('[DASH_HOME] Solicitudes pendientes recibidas:', response);
+        if (response.success && response.appointments) {
+          this.solicitudesData = response.appointments.map((appt: any) => ({
+            id: String(appt.id),
+            clientName: appt.client_name || 'Cliente',
+            clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=' + (appt.client_name || 'C').charAt(0),
+            service: appt.service_name || 'Servicio',
+            when: this.formatWhen(appt.date),
+            time: this.formatTime(appt.start_time),
+            date: appt.date,
+            location: 'Ubicación por confirmar',
+            estimatedIncome: appt.scheduled_price || 0
+          }));
+          console.log('[DASH_HOME] Solicitudes mapeadas:', this.solicitudesData);
+        } else {
+          this.solicitudesData = [];
+          console.log('[DASH_HOME] No hay solicitudes pendientes');
+        }
+      },
+      error: (error) => {
+        console.error('[DASH_HOME] Error cargando solicitudes pendientes:', error);
+        this.solicitudesData = [];
+      }
+    });
+  }
+
+  private loadNextAppointment() {
+    console.log('[DASH_HOME] Cargando próxima cita...');
+    this.appointmentsService.getNextAppointment().subscribe({
+      next: (response) => {
+        console.log('[DASH_HOME] Próxima cita recibida:', response);
+        if (response.success && response.appointment) {
+          const appt = response.appointment;
+          this.proximaCitaData = {
+            id: String(appt.id),
+            time: this.formatTime(appt.start_time),
+            meridiem: this.getMeridiem(appt.start_time),
+            service: appt.service_name || 'Servicio',
+            clientName: appt.client_name || 'Cliente',
+            date: appt.date,
+            duration: '45 minutos', // TODO: calcular desde start_time y end_time
+            amount: appt.scheduled_price || 0,
+            clientAvatar: 'https://placehold.co/40x40/E0E7FF/4338CA?text=' + (appt.client_name || 'C').charAt(0),
+            location: 'Ubicación por confirmar',
+            mapUrl: 'https://maps.google.com/?q=Ubicacion'
+          };
+          console.log('[DASH_HOME] Próxima cita mapeada:', this.proximaCitaData);
+        } else {
+          this.proximaCitaData = null;
+          console.log('[DASH_HOME] No hay próxima cita');
+        }
+      },
+      error: (error) => {
+        console.error('[DASH_HOME] Error cargando próxima cita:', error);
+        this.proximaCitaData = null;
+      }
+    });
+  }
+
+  private loadEarningsData() {
+    console.log('[DASH_HOME] Cargando datos de ingresos...');
+    
+    // Cargar ingresos del mes actual
+    const today = new Date();
+    const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    
+    this.paymentsService.getProviderEarningsSummary(month).subscribe({
+      next: (response) => {
+        console.log('[DASH_HOME] Ingresos del mes recibidos:', response);
+        if (response.success && response.data) {
+          const earnings = response.data;
+          this.ingresosData = {
+            amount: `$${(earnings.releasable || 0).toLocaleString('es-CL')}`,
+            completedAppointments: earnings.completed_appointments || 0,
+            averageRating: earnings.average_rating || 0,
+            chartData: [45, 62, 78, 55, 89, 95, 82] // TODO: datos reales del gráfico
+          };
+          console.log('[DASH_HOME] Ingresos del mes mapeados:', this.ingresosData);
+        }
+      },
+      error: (error) => {
+        console.error('[DASH_HOME] Error cargando ingresos del mes:', error);
+      }
+    });
+
+    // Cargar ingresos del día actual
+    this.paymentsService.getProviderEarningsSummary().subscribe({
+      next: (response) => {
+        console.log('[DASH_HOME] Ingresos del día recibidos:', response);
+        if (response.success && response.data) {
+          const earnings = response.data;
+          this.ingresosDiaData = {
+            amount: `$${(earnings.today_earnings || 0).toLocaleString('es-CL')}`,
+            completedAppointments: earnings.today_appointments || 0,
+            averageRating: earnings.average_rating || 0,
+            chartData: [8, 12, 15, 18, 25, 22, 20] // TODO: datos reales del gráfico
+          };
+          console.log('[DASH_HOME] Ingresos del día mapeados:', this.ingresosDiaData);
+        }
+      },
+      error: (error) => {
+        console.error('[DASH_HOME] Error cargando ingresos del día:', error);
+      }
+    });
+  }
+
+  // Métodos auxiliares para formateo
+  private formatWhen(dateStr: string): string {
+    if (!dateStr) return 'Fecha no disponible';
+    const date = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Hoy';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Mañana';
+    } else {
+      return date.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+  }
+
+  private formatTime(timeStr: string): string {
+    if (!timeStr) return '00:00';
+    return timeStr.substring(0, 5); // HH:mm
+  }
+
+  private getMeridiem(timeStr: string): string {
+    if (!timeStr) return 'AM';
+    const hour = parseInt(timeStr.substring(0, 2));
+    return hour >= 12 ? 'PM' : 'AM';
+  }
+
+  // Datos para la próxima cita (ahora será null inicialmente)
+  proximaCitaData: ProximaCitaData | null = null;
 
   // Datos para ingresos del mes
   ingresosData: IngresosData = {
@@ -135,18 +268,8 @@ export class DashHomeComponent implements OnInit {
     chartData: [8, 12, 15, 18, 25, 22, 20]
   };
 
-  // Datos para solicitudes
-  solicitudData: SolicitudData = {
-    id: '1',
-    clientName: 'Marcos Reyes',
-    clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=MR',
-    service: 'Maquillaje Profesional',
-    when: 'Mañana',
-    time: '18:00 PM',
-    date: '2025-10-11',
-    location: 'Av. Providencia 123, Depto 45, Santiago',
-    estimatedIncome: 45000
-  };
+  // Datos para solicitudes (ahora será un array)
+  solicitudesData: SolicitudData[] = [];
 
   // Datos para gestión de disponibilidad
   gestionData: GestionDisponibilidadData = {

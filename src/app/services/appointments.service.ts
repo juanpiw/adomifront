@@ -210,6 +210,42 @@ export class AppointmentsService {
       { headers: this.headers() }
     );
   }
+
+  /**
+   * Listar solicitudes pendientes de confirmación (PROVEEDOR)
+   */
+  listPendingRequests(): Observable<{
+    success: boolean; 
+    appointments: any[];
+    error?: string;
+  }> {
+    return this.http.get<{
+      success: boolean; 
+      appointments: any[];
+      error?: string;
+    }>(
+      `${this.api}/provider/appointments/pending-requests`,
+      { headers: this.headers() }
+    );
+  }
+
+  /**
+   * Obtener próxima cita confirmada (PROVEEDOR)
+   */
+  getNextAppointment(): Observable<{
+    success: boolean; 
+    appointment: any | null;
+    error?: string;
+  }> {
+    return this.http.get<{
+      success: boolean; 
+      appointment: any | null;
+      error?: string;
+    }>(
+      `${this.api}/provider/appointments/next`,
+      { headers: this.headers() }
+    );
+  }
 }
 
 
