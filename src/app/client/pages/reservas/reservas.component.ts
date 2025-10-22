@@ -84,7 +84,7 @@ import { FavoritesService } from '../../../services/favorites.service';
       <ui-reserva-pasada-card 
         *ngFor="let ra of realizadasList" 
         [data]="ra" 
-        (onReview)="openReviewModal((ra.titulo?.split(' con ')?.[1] || 'Profesional'), (ra.titulo?.split(' con ')?.[0] || 'Servicio'), ('' + (ra.appointmentId || '')))"
+        (onReview)="openReviewModal((ra.titulo.split(' con ')[1] || 'Profesional'), (ra.titulo.split(' con ')[0] || 'Servicio'), ('' + (ra.appointmentId || '')))"
         (onToggleFavorite)="onToggleFavorite(ra)"
         style="margin-bottom:12px;">
       </ui-reserva-pasada-card>
@@ -388,7 +388,7 @@ export class ClientReservasComponent implements OnInit {
     if (!appointmentId) return;
     const providerId = this._providerByApptId ? this._providerByApptId[appointmentId] : undefined;
     if (providerId) {
-      const providerName = this.proximasConfirmadas.find(x => x.appointmentId === appointmentId)?.titulo?.split(' con ')?.[1] || '';
+      const providerName = this.proximasConfirmadas.find(x => x.appointmentId === appointmentId)?.titulo?.split(' con ')[1] || '';
       this.router.navigate(['/client/conversaciones'], {
         queryParams: { providerId, providerName }
       });
@@ -417,13 +417,13 @@ export class ClientReservasComponent implements OnInit {
   onReviewSubmitted(reviewData: ReviewData): void {
     try {
       const apptIdNum = Number(this.reviewAppointmentId || reviewData.appointmentId);
-      let providerName = this.proximasConfirmadas.find(x => String(x.appointmentId) === String(apptIdNum))?.titulo?.split(' con ')?.[1] || '';
+      let providerName = this.proximasConfirmadas.find(x => String(x.appointmentId) === String(apptIdNum))?.titulo?.split(' con ')[1] || '';
       let providerId = this._providerByApptId[apptIdNum];
       // Fallback: buscar en realizadasList cuando viene desde "Pagadas/Realizadas"
       if (!providerId) {
         const ra = this.realizadasList.find(r => String(r.appointmentId) === String(apptIdNum));
         if (ra && ra.providerId) providerId = Number(ra.providerId);
-        if (!providerName && ra?.titulo) providerName = ra.titulo.split(' con ')?.[1] || '';
+        if (!providerName && ra?.titulo) providerName = ra.titulo.split(' con ')[1] || '';
       }
       const rating = Math.max(1, Math.min(5, Number((reviewData as any).rating || 5)));
       const comment = (reviewData as any).comment || reviewData?.comment || '';
