@@ -19,7 +19,6 @@ import {
   RejectReservaResult
 } from '../../../../libs/shared-ui/inicio-solicitudes';
 import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
-import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
 import { AppointmentsService } from '../../../services/appointments.service';
@@ -36,7 +35,6 @@ import { PaymentsService } from '../../../services/payments.service';
     InicioIngresosDiaComponent,
     InicioSolicitudesComponent,
     InicioGestionDisponibilidadComponent,
-    OnlineStatusSwitchComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
@@ -184,12 +182,12 @@ export class DashHomeComponent implements OnInit {
     this.paymentsService.getProviderEarningsSummary(month).subscribe({
       next: (response) => {
         console.log('[DASH_HOME] Ingresos del mes recibidos:', response);
-        if (response.success && response.data) {
-          const earnings = response.data;
+        if (response.success && response.summary) {
+          const earnings = response.summary;
           this.ingresosData = {
             amount: `$${(earnings.releasable || 0).toLocaleString('es-CL')}`,
-            completedAppointments: earnings.completed_appointments || 0,
-            averageRating: earnings.average_rating || 0,
+            completedAppointments: earnings.paidCount || 0,
+            averageRating: 4.9, // TODO: obtener rating real
             chartData: [45, 62, 78, 55, 89, 95, 82] // TODO: datos reales del gráfico
           };
           console.log('[DASH_HOME] Ingresos del mes mapeados:', this.ingresosData);
@@ -204,12 +202,12 @@ export class DashHomeComponent implements OnInit {
     this.paymentsService.getProviderEarningsSummary().subscribe({
       next: (response) => {
         console.log('[DASH_HOME] Ingresos del día recibidos:', response);
-        if (response.success && response.data) {
-          const earnings = response.data;
+        if (response.success && response.summary) {
+          const earnings = response.summary;
           this.ingresosDiaData = {
-            amount: `$${(earnings.today_earnings || 0).toLocaleString('es-CL')}`,
-            completedAppointments: earnings.today_appointments || 0,
-            averageRating: earnings.average_rating || 0,
+            amount: `$${(earnings.releasable || 0).toLocaleString('es-CL')}`,
+            completedAppointments: earnings.paidCount || 0,
+            averageRating: 4.8, // TODO: obtener rating real del día
             chartData: [8, 12, 15, 18, 25, 22, 20] // TODO: datos reales del gráfico
           };
           console.log('[DASH_HOME] Ingresos del día mapeados:', this.ingresosDiaData);

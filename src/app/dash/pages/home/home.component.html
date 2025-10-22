@@ -24,6 +24,7 @@
        
        
        <app-inicio-proxima-cita 
+        *ngIf="proximaCitaData"
         [data]="proximaCitaData"
         (viewDetailsClick)="onViewDetailsClick($event)"
         (citaAction)="onCitaAction($event)"
