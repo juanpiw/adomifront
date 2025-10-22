@@ -115,13 +115,32 @@ export class PerfilTrabajadorComponent implements OnInit {
           reviews: d.profile.reviews_count,
           location: d.profile.location,
           experience: d.profile.years_experience,
-          // Conservar ids y valores numéricos para booking
           services: d.services.map(s => ({ id: s.id, name: s.name, price: s.price, duration_minutes: s.duration_minutes, image: s.image_url })),
           photos: d.portfolio.map(p => p.image_url).filter(Boolean),
           bio: d.profile.bio,
           verified: d.profile.is_verified,
           coverImage: d.profile.cover_url,
           avatar: d.profile.avatar_url
+        };
+        // Mapear reseñas reales del backend
+        const mappedReviews = (d.reviews || []).map((r: any, idx: number) => {
+          const name = String(r.client_name || 'Cliente');
+          const initials = name.trim().split(/\s+/).slice(0,2).map((p: string) => p.charAt(0).toUpperCase()).join('') || 'CL';
+          let dateStr = '';
+          try { const dt = new Date(r.created_at); if (!isNaN(dt.getTime())) dateStr = dt.toLocaleDateString('es-CL'); } catch {}
+          return {
+            id: String(r.id ?? idx),
+            clientName: name,
+            clientInitials: initials,
+            rating: Number(r.rating || 0),
+            date: dateStr,
+            text: String(r.comment || '')
+          } as Review;
+        });
+        this.reviewsData = {
+          title: 'Lo que dicen sus clientes',
+          reviews: mappedReviews,
+          showAllButton: true
         };
         this.initializeComponentData();
         this.loading = false;
@@ -179,26 +198,10 @@ export class PerfilTrabajadorComponent implements OnInit {
       }))
     };
 
-    // Reviews Data
-    this.reviewsData = {
-      title: 'Lo que dicen sus clientes',
-      reviews: [
-        {
-          id: 'review-1',
-          clientName: 'María C.',
-          clientInitials: 'MC',
-          rating: 5.0,
-          date: 'Hace 2 semanas',
-          text: '¡Elena es increíble! Dejó mi pelo exactamente como lo quería. Es súper profesional, puntual y muy amable. ¡La recomiendo 100%!'
-        }
-      ],
-      showAllButton: true
-    };
-
-    // Trust Stats Data
+    // Actualizar estadísticas de confianza desde backend
     this.trustStatsData = {
-      rating: this.workerData.rating,
-      reviewsCount: this.workerData.reviews,
+      rating: Number(this.workerData.rating || 0),
+      reviewsCount: Number(this.workerData.reviews || 0),
       isVerified: this.workerData.verified,
       verifiedText: 'Profesional Verificado'
     };
