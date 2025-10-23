@@ -39,7 +39,7 @@ import { CommonModule } from '@angular/common';
         <td><span [ngStyle]="statusStyle(r.settlement_status)">{{ r.settlement_status }}</span></td>
         <td><strong>{{ r.provider_amount | number:'1.0-0' }} {{ r.currency }}</strong></td>
         <td>
-          <select (change)="onAction(($event.target as HTMLSelectElement).value, r)">
+          <select (change)="onActionSelect($event, r)">
             <option value="">Acción</option>
             <option value="pay" [disabled]="r.settlement_status === 'completed'">A pagar</option>
           </select>
@@ -80,6 +80,12 @@ export class AdminPaymentsTableComponent {
 
   onAction(val: string, row: any) {
     if (val === 'pay') this.action.emit({ type: 'pay', row });
+  }
+
+  onActionSelect(event: Event, row: any) {
+    const target = event.target as HTMLSelectElement | null;
+    const val = target && typeof target.value === 'string' ? target.value : '';
+    this.onAction(val, row);
   }
 
   sortBy(key: string) {
