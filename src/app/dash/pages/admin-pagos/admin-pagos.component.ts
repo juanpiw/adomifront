@@ -89,21 +89,22 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
-  applyRange(range: 'day' | 'week' | 'month' | 'all') {
+  applyRange(range: any) {
+    const r = String(range) as 'day' | 'week' | 'month' | 'all';
     const now = new Date();
     const start = new Date(now);
-    if (range === 'day') {
+    if (r === 'day') {
       start.setHours(0,0,0,0);
-    } else if (range === 'week') {
+    } else if (r === 'week') {
       const day = now.getDay();
       const diff = (day === 0 ? 6 : day - 1); // lunes como inicio
       start.setDate(now.getDate() - diff);
       start.setHours(0,0,0,0);
-    } else if (range === 'month') {
+    } else if (r === 'month') {
       start.setDate(1);
       start.setHours(0,0,0,0);
     }
-    if (range === 'all') {
+    if (r === 'all') {
       this.startISO = null;
       this.endISO = null;
     } else {
