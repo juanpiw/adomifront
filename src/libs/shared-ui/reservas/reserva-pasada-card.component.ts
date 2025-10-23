@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IconComponent } from '../../icon/icon.component';
+import { IconComponent } from '../icon/icon.component';
 import { CommonModule } from '@angular/common';
 
 export interface ReservaPasadaData {
