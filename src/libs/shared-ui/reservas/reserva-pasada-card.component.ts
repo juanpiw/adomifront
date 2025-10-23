@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IconComponent } from '../..//icon/icon.component';
 import { CommonModule } from '@angular/common';
 
 export interface ReservaPasadaData {
@@ -15,7 +16,7 @@ export interface ReservaPasadaData {
 @Component({
   selector: 'ui-reserva-pasada-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './reserva-pasada-card.component.html',
   styleUrls: ['./reserva-pasada-card.component.scss']
 })
