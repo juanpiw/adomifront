@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   PromotionsHeaderComponent,
@@ -8,6 +8,7 @@ import {
   Promotion,
   PromotionFormData
 } from '../../../../libs/shared-ui/promotions';
+import { PromotionsService, CreatePromotionDto } from '../../../services/promotions.service';
 
 @Component({
   selector: 'app-d-promocion',
@@ -22,63 +23,72 @@ import {
   templateUrl: './promocion.component.html',
   styleUrls: ['./promocion.component.scss']
 })
-export class DashPromocionComponent {
-  isFormExpanded = false;
-  activePromotions: Promotion[] = [
-    {
-      id: 1,
-      name: '20% Off en Martes',
-      description: 'Descuento válido todos los martes en servicios de limpieza.',
-      discountType: 'percentage',
-      discountValue: '20',
-      startDate: '2025-01-01',
-      endDate: '2025-12-31',
-      status: 'active',
-      usageCount: 12
-    }
-  ];
+export class DashPromocionComponent implements OnInit {
+  constructor(private promotionsService: PromotionsService) {}
 
-  historyPromotions: Promotion[] = [
-    {
-      id: 101,
-      name: '2x1 Corte de Cabello',
-      description: 'Trae a un amigo y paga 1',
-      discountType: 'other',
-      discountValue: '2x1',
-      startDate: '2024-10-01',
-      endDate: '2024-12-01',
-      status: 'expired',
-      usageCount: 47
-    }
-  ];
+  isFormExpanded = false;
+  activePromotions: Promotion[] = [];
+  historyPromotions: Promotion[] = [];
+
+  ngOnInit(): void {
+    this.loadPromotions();
+  }
+
+  private loadPromotions(): void {
+    this.promotionsService.list().subscribe({
+      next: (resp) => {
+        const list = resp.promotions || [];
+        const toUi = (p: any): Promotion => ({
+          id: p.id,
+          name: p.name,
+          description: p.description || '',
+          discountType: p.discount_type,
+          discountValue: String(p.discount_value),
+          startDate: p.start_date,
+          endDate: p.end_date,
+          status: (p.status || (p.is_active ? 'active' : 'inactive'))
+        });
+        const ui = list.map(toUi);
+        this.activePromotions = ui.filter(x => x.status === 'active');
+        this.historyPromotions = ui.filter(x => x.status !== 'active');
+      },
+      error: (err) => {
+        console.error('[PROMOTIONS] Error list:', err);
+        this.activePromotions = [];
+        this.historyPromotions = [];
+      }
+    });
+  }
 
   onFormToggled(expanded: boolean) {
     this.isFormExpanded = expanded;
   }
 
   onFormSubmitted(data: PromotionFormData) {
-    const newPromo: Promotion = {
-      id: Date.now(),
+    const dto: CreatePromotionDto = {
       name: data.name,
       description: data.description,
-      discountType: data.discountType,
-      discountValue: data.discountValue,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      status: 'active',
-      usageCount: 0
+      discount_type: data.discountType === 'other' ? 'percentage' : data.discountType,
+      discount_value: data.discountValue,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      is_active: true
     };
-    this.activePromotions.unshift(newPromo);
-    this.isFormExpanded = false;
+    this.promotionsService.create(dto).subscribe({
+      next: () => { this.isFormExpanded = false; this.loadPromotions(); },
+      error: (err) => console.error('[PROMOTIONS] Error create:', err)
+    });
   }
 
   onEditPromotion(promotion: Promotion) {
-    // Futuro: cargar datos al formulario para edición
+    // Futuro: precargar formulario y llamar update()
     this.isFormExpanded = true;
   }
 
   onDeactivatePromotion(promotion: Promotion) {
-    this.activePromotions = this.activePromotions.filter(p => p.id !== promotion.id);
-    this.historyPromotions.unshift({ ...promotion, status: 'inactive' });
+    this.promotionsService.toggle(promotion.id).subscribe({
+      next: () => this.loadPromotions(),
+      error: (err) => console.error('[PROMOTIONS] Error toggle:', err)
+    });
   }
 }
