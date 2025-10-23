@@ -1,6 +1,17 @@
 <div class="admin-pagos">
   <h2>Administración de Pagos</h2>
 
+  <div class="filters">
+    <label>Rango:</label>
+    <select #rangeSel (change)="0">
+      <option value="day">Hoy</option>
+      <option value="week">Esta semana</option>
+      <option value="month">Este mes</option>
+      <option value="all">Todo</option>
+    </select>
+    <button (click)="applyRange(rangeSel.value)">Aplicar</button>
+  </div>
+
   <div *ngIf="!adminSecret" style="margin:12px 0;">
     <label>Admin Secret</label>
     <input type="password" [(ngModel)]="adminSecret" placeholder="Pega el ADMIN_PANEL_SECRET" />
@@ -15,26 +26,34 @@
       <tr>
         <th>ID</th>
         <th>Cita</th>
+        <th>Servicio</th>
         <th>Cliente</th>
         <th>Proveedor</th>
+        <th>Banco</th>
+        <th>Cuenta</th>
         <th>Monto</th>
         <th>Comisión</th>
         <th>Neto</th>
         <th>Estado</th>
-        <th>Fecha</th>
+        <th>Pagado</th>
+        <th>Liquidación</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let r of rows">
         <td>{{ r.id }}</td>
         <td>#{{ r.appointment_id }}</td>
+        <td>{{ r.service_name }}</td>
         <td>{{ r.client_name || r.client_email }}</td>
         <td>{{ r.provider_name || r.provider_email }}</td>
+        <td>{{ r.bank_name || '-' }}</td>
+        <td>{{ mask(r.bank_account) }}</td>
         <td>{{ r.amount | number:'1.0-0' }} {{ r.currency }}</td>
         <td>{{ r.commission_amount | number:'1.0-0' }}</td>
         <td>{{ r.provider_amount | number:'1.0-0' }}</td>
         <td>{{ r.status }}</td>
         <td>{{ r.paid_at | date:'short' }}</td>
+        <td>{{ computeSettlementDate(r.paid_at) | date:'shortDate' }}</td>
       </tr>
     </tbody>
   </table>
