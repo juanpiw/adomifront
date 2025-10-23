@@ -132,6 +132,9 @@ export class DashAgendaComponent implements OnInit {
   private notifications = inject(NotificationService);
   private currentProviderId: number | null = null;
 
+  // Datos del gráfico
+  chartData: { labels: string[]; datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; tension: number; }[] } | null = null;
+
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
   ngOnInit() {
@@ -145,6 +148,8 @@ export class DashAgendaComponent implements OnInit {
     this.loadMonth(today.getFullYear(), today.getMonth() + 1);
     const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     this.loadDay(iso);
+    // Cargar datos para el gráfico (últimos 7 días)
+    this.loadChartDataLast7Days();
     // Realtime updates (join provider user room)
     this.currentProviderId = this.auth.getCurrentUser()?.id || null;
     if (this.currentProviderId) {
@@ -208,6 +213,53 @@ export class DashAgendaComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  private loadChartDataLast7Days() {
+    try {
+      const today = new Date();
+      const start = new Date();
+      start.setDate(today.getDate() - 6);
+
+      const month = today.toISOString().slice(0, 7);
+      this.appointments.listByMonth(month).subscribe({
+        next: (resp) => {
+          const seriesMap: Record<string, number> = {};
+          for (let i = 0; i < 7; i++) {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            const key = d.toISOString().slice(0, 10);
+            seriesMap[key] = 0;
+          }
+          const list = Array.isArray(resp.appointments) ? resp.appointments : [];
+          list.forEach((a: any) => {
+            const key = String(a.date || '').slice(0, 10);
+            if (seriesMap[key] !== undefined) seriesMap[key] += 1;
+          });
+          const labels: string[] = [];
+          const data: number[] = [];
+          const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+          Object.keys(seriesMap).sort().forEach((k) => {
+            const d = new Date(k + 'T00:00:00');
+            labels.push(dayNames[d.getDay()]);
+            data.push(seriesMap[k]);
+          });
+          this.chartData = {
+            labels,
+            datasets: [{
+              label: 'Citas',
+              data,
+              borderColor: '#4338ca',
+              backgroundColor: 'rgba(67, 56, 202, 0.1)',
+              tension: 0.4
+            }]
+          };
+        },
+        error: () => { this.chartData = null; }
+      });
+    } catch {
+      this.chartData = null;
+    }
   }
 
   openVerifyModal(appt: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number }) {
