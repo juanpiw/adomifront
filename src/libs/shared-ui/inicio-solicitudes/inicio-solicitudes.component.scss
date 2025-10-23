@@ -1,4 +1,58 @@
 .inicio-solicitudes {
+  &__scaffold {
+    position: relative;
+  }
+
+  &__scroller {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(280px, 1fr);
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  &__snap {
+    scroll-snap-align: start;
+  }
+
+  /* Custom scrollbar (WebKit) */
+  &__scroller::-webkit-scrollbar {
+    height: 8px;
+  }
+  &__scroller::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &__scroller::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+
+  &__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    border: none;
+    background: rgba(15, 23, 42, 0.75);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity .2s ease;
+    opacity: .85;
+
+    &:hover { opacity: 1; }
+
+    &--left { left: -6px; }
+    &--right { right: -6px; }
+  }
   &__title {
     font-size: 1.5rem;
     font-weight: 700;

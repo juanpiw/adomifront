@@ -5,32 +5,40 @@
     No tienes solicitudes de reserva pendientes.
   </div>
   
-  <div *ngFor="let solicitud of data" class="inicio-solicitudes__card">
-    <div class="inicio-solicitudes__row">
-      <img [src]="solicitud.clientAvatar" [alt]="solicitud.clientName" class="inicio-solicitudes__avatar">
-      <div class="ml-4">
-        <p class="inicio-solicitudes__name">{{ solicitud.clientName }}</p>
-        <p class="inicio-solicitudes__service">Solicita <span class="font-semibold text-slate-600">{{ solicitud.service }}</span></p>
-      </div>
-      <div class="ml-auto text-right">
-        <p class="inicio-solicitudes__when">{{ solicitud.when }}</p>
-        <p class="inicio-solicitudes__time">{{ solicitud.time }}</p>
+  <div class="inicio-solicitudes__scaffold" *ngIf="data.length > 0">
+    <button type="button" class="inicio-solicitudes__nav inicio-solicitudes__nav--left" (click)="scrollLeft()" aria-label="Anterior">‹</button>
+
+    <div #scroller class="inicio-solicitudes__scroller" tabindex="0">
+      <div *ngFor="let solicitud of data" class="inicio-solicitudes__card inicio-solicitudes__snap">
+        <div class="inicio-solicitudes__row">
+          <img [src]="solicitud.clientAvatar" [alt]="solicitud.clientName" class="inicio-solicitudes__avatar">
+          <div class="ml-4">
+            <p class="inicio-solicitudes__name">{{ solicitud.clientName }}</p>
+            <p class="inicio-solicitudes__service">Solicita <span class="font-semibold text-slate-600">{{ solicitud.service }}</span></p>
+          </div>
+          <div class="ml-auto text-right">
+            <p class="inicio-solicitudes__when">{{ solicitud.when }}</p>
+            <p class="inicio-solicitudes__time">{{ solicitud.time }}</p>
+          </div>
+        </div>
+        <div class="inicio-solicitudes__actions">
+          <button 
+            class="inicio-solicitudes__btn-accept" 
+            (click)="onAcceptClick(solicitud)"
+            [disabled]="loading">
+            {{ loading ? 'Procesando...' : 'Aceptar' }}
+          </button>
+          <button 
+            class="inicio-solicitudes__btn-decline" 
+            (click)="onDeclineClick(solicitud)"
+            [disabled]="loading">
+            {{ loading ? 'Procesando...' : 'Rechazar' }}
+          </button>
+        </div>
       </div>
     </div>
-    <div class="inicio-solicitudes__actions">
-      <button 
-        class="inicio-solicitudes__btn-accept" 
-        (click)="onAcceptClick(solicitud)"
-        [disabled]="loading">
-        {{ loading ? 'Procesando...' : 'Aceptar' }}
-      </button>
-      <button 
-        class="inicio-solicitudes__btn-decline" 
-        (click)="onDeclineClick(solicitud)"
-        [disabled]="loading">
-        {{ loading ? 'Procesando...' : 'Rechazar' }}
-      </button>
-    </div>
+
+    <button type="button" class="inicio-solicitudes__nav inicio-solicitudes__nav--right" (click)="scrollRight()" aria-label="Siguiente">›</button>
   </div>
 
   <!-- Modales -->

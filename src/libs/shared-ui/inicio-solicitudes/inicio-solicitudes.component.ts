@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   AcceptReservaModalComponent, 
@@ -49,6 +49,8 @@ export class InicioSolicitudesComponent {
   loading = false;
   selectedSolicitud: SolicitudData | null = null;
 
+  @ViewChild('scroller') private scrollerRef?: ElementRef<HTMLDivElement>;
+
   onAcceptClick(solicitud: SolicitudData) {
     this.selectedSolicitud = solicitud;
     this.showAcceptModal = true;
@@ -85,5 +87,19 @@ export class InicioSolicitudesComponent {
       this.loading = false;
       this.showRejectModal = false;
     }, 1000);
+  }
+
+  scrollLeft() {
+    const el = this.scrollerRef?.nativeElement;
+    if (!el) return;
+    const amount = Math.max(300, el.clientWidth * 0.8);
+    el.scrollBy({ left: -amount, behavior: 'smooth' });
+  }
+
+  scrollRight() {
+    const el = this.scrollerRef?.nativeElement;
+    if (!el) return;
+    const amount = Math.max(300, el.clientWidth * 0.8);
+    el.scrollBy({ left: amount, behavior: 'smooth' });
   }
 }
