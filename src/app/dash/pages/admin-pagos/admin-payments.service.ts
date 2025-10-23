@@ -14,9 +14,10 @@ export class AdminPaymentsService {
     });
   }
 
-  list(secret: string, token: string | null, start?: string | null, end?: string | null) {
+  list(secret: string, token: string | null, start?: string | null, end?: string | null, releaseStatus?: string) {
     const params: string[] = ['limit=100'];
     if (start && end) { params.push(`start=${encodeURIComponent(start)}`); params.push(`end=${encodeURIComponent(end)}`); }
+    if (releaseStatus) { params.push(`release_status=${encodeURIComponent(releaseStatus)}`); }
     return this.http.get<any>(`${this.baseUrl}/admin/payments?${params.join('&')}`, { headers: this.headers(secret, token) });
   }
 
@@ -25,6 +26,10 @@ export class AdminPaymentsService {
     if (start && end) { params.push(`start=${encodeURIComponent(start)}`); params.push(`end=${encodeURIComponent(end)}`); }
     const qs = params.length ? ('?' + params.join('&')) : '';
     return this.http.get<any>(`${this.baseUrl}/admin/payments/summary${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  pendingCount(secret: string, token: string | null) {
+    return this.http.get<any>(`${this.baseUrl}/admin/payments/pending-count`, { headers: this.headers(secret, token) });
   }
 }
 

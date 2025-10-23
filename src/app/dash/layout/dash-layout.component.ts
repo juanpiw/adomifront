@@ -15,6 +15,7 @@ import { ChatService, MessageDto } from '../../services/chat.service';
 import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
 import { NotificationService } from '../../../libs/shared-ui/notifications/services/notification.service';
 import { NotificationsService } from '../../services/notifications.service';
+import { AdminPaymentsService } from '../pages/admin-pagos/admin-payments.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -33,6 +34,7 @@ export class DashLayoutComponent implements OnInit {
   unreadTotal: number = 0; // 🔔 Contador de citas pendientes
   pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
   hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
+  adminPendingCount: number = 0;
   
   get isAdmin(): boolean {
     try {
@@ -61,6 +63,7 @@ export class DashLayoutComponent implements OnInit {
   private appointments = inject(AppointmentsService);
   private notifications = inject(NotificationService);
   private pushNotifications = inject(NotificationsService);
+  private adminPayments = inject(AdminPaymentsService);
 
   ngOnInit() {
     this.loadPlanInfo();
@@ -147,6 +150,20 @@ export class DashLayoutComponent implements OnInit {
         }
       } catch {}
     });
+
+    // Cargar contador de pagos pendientes/eligibles (solo admin)
+    if (this.isAdmin) {
+      const token = this.sessionService.getAccessToken?.() as any;
+      const secret = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : null;
+      if (secret) {
+        this.adminPayments.pendingCount(secret, token).subscribe({
+          next: (r: any) => {
+            this.adminPendingCount = Number(r?.pending || 0) + Number(r?.eligible || 0);
+          },
+          error: () => {}
+        });
+      }
+    }
 
     // Al navegar al chat o agenda, limpiar badges
     this.router.events.subscribe((ev: any) => {
