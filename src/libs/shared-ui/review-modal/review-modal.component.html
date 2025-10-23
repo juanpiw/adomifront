@@ -79,6 +79,33 @@
         Cerrar
       </button>
     </div>
+
+    <!-- Vista de error -->
+    <div *ngIf="showErrorView" class="review-modal__error">
+      <div class="review-modal__error-icon">
+        <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </div>
+      
+      <h2 class="review-modal__error-title">Error al enviar reseña</h2>
+      <p class="review-modal__error-message">
+        {{ errorMessage || 'No se pudo enviar tu reseña. Por favor, inténtalo de nuevo.' }}
+      </p>
+      
+      <div class="review-modal__error-actions">
+        <button 
+          class="review-modal__error-button review-modal__error-button--secondary"
+          (click)="onCloseError()">
+          Cerrar
+        </button>
+        <button 
+          class="review-modal__error-button review-modal__error-button--primary"
+          (click)="onCloseError()">
+          Intentar de nuevo
+        </button>
+      </div>
+    </div>
     
   </div>
 </div>

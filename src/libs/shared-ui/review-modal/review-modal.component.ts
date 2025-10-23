@@ -59,21 +59,19 @@ export class ReviewModalComponent {
     }
 
     this.isSubmitting = true;
+    this.showErrorView = false;
+    this.showSuccessView = false;
 
-    // Simular envío
-    setTimeout(() => {
-      const reviewData: ReviewData = {
-        rating: this.rating,
-        comment: this.comment,
-        workerName: this.workerName,
-        serviceName: this.serviceName,
-        appointmentId: this.appointmentId
-      };
+    const reviewData: ReviewData = {
+      rating: this.rating,
+      comment: this.comment,
+      workerName: this.workerName,
+      serviceName: this.serviceName,
+      appointmentId: this.appointmentId
+    };
 
-      this.reviewSubmitted.emit(reviewData);
-      this.showSuccessView = true;
-      this.isSubmitting = false;
-    }, 1000);
+    console.log('[REVIEW_MODAL] Enviando reseña:', reviewData);
+    this.reviewSubmitted.emit(reviewData);
   }
 
   onCloseSuccess(): void {
@@ -81,12 +79,33 @@ export class ReviewModalComponent {
     this.resetForm();
   }
 
+  onCloseError(): void {
+    this.showErrorView = false;
+    this.isSubmitting = false;
+  }
+
+  // Métodos para ser llamados desde el componente padre
+  showSuccess(): void {
+    this.isSubmitting = false;
+    this.showSuccessView = true;
+    this.showErrorView = false;
+  }
+
+  showError(errorMessage: string): void {
+    this.isSubmitting = false;
+    this.showErrorView = true;
+    this.showSuccessView = false;
+    this.errorMessage = errorMessage;
+  }
+
   private resetForm(): void {
     this.rating = 0;
     this.hoverRating = 0;
     this.comment = '';
     this.showSuccessView = false;
+    this.showErrorView = false;
     this.isSubmitting = false;
+    this.errorMessage = '';
   }
 
   // Método para obtener las estrellas

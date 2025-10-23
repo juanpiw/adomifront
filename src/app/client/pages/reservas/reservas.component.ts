@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReservasTabsComponent } from '../../../../libs/shared-ui/reservas/reservas-tabs.component';
@@ -94,6 +94,7 @@ import { FavoritesService } from '../../../services/favorites.service';
 
   <!-- Modal de reseñas -->
   <app-review-modal
+    #reviewModal
     [isOpen]="showReviewModal"
     [workerName]="reviewWorkerName"
     [serviceName]="reviewServiceName"
@@ -109,6 +110,8 @@ import { FavoritesService } from '../../../services/favorites.service';
   `]
 })
 export class ClientReservasComponent implements OnInit {
+  @ViewChild('reviewModal') reviewModal!: ReviewModalComponent;
+  
   private profileValidation = inject(ProfileValidationService);
   private appointments = inject(AppointmentsService);
   private router = inject(Router);
@@ -441,11 +444,25 @@ export class ClientReservasComponent implements OnInit {
             priority: 'low',
             actions: []
           });
-          this.closeReviewModal();
+          // Mostrar vista de éxito en el modal
+          this.reviewModal.showSuccess();
         },
         error: (err) => {
           console.error('[REVIEWS] createReview error', err);
-          alert('No se pudo enviar la reseña. Intenta nuevamente.');
+          console.error('[REVIEWS] Error details:', err.status, err.statusText, err.url);
+          
+          // Determinar mensaje de error específico
+          let errorMessage = 'No se pudo enviar la reseña. Intenta nuevamente.';
+          if (err.status === 404) {
+            errorMessage = 'El servicio de reseñas no está disponible. Por favor, contacta al soporte.';
+          } else if (err.status === 500) {
+            errorMessage = 'Error interno del servidor. Intenta nuevamente más tarde.';
+          } else if (err.status === 400) {
+            errorMessage = 'Datos inválidos. Verifica la información e intenta nuevamente.';
+          }
+          
+          // Mostrar vista de error en el modal
+          this.reviewModal.showError(errorMessage);
         }
       });
     } catch (e) {
