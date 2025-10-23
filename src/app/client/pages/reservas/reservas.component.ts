@@ -322,6 +322,7 @@ export class ClientReservasComponent implements OnInit {
           estado: 'Completado',
           appointmentId: r.id as number,
           providerId: (r as any).provider_id as number,
+          serviceId: (r as any).service_id as number,
           isFavorite: (r as any).is_favorite === true || this.favoritesSet.has(Number((r as any).provider_id))
         }));
 
@@ -481,13 +482,18 @@ export class ClientReservasComponent implements OnInit {
 
   onToggleFavorite(ra: ReservaPasadaData): void {
     const providerId = Number(ra.providerId || 0);
+    const serviceId = Number((ra as any).serviceId || 0) || null;
     if (!providerId) return;
-    const isFav = this.favoritesSet.has(providerId);
-    const op$ = isFav ? this.favorites.removeFavorite(providerId) : this.favorites.addFavorite(providerId);
+
+    // Favorito por tarjeta (provider+service). No usamos favoritesSet global por provider.
+    const isFav = !!ra.isFavorite;
+    const op$ = isFav 
+      ? this.favorites.removeFavorite(providerId, serviceId)
+      : this.favorites.addFavorite(providerId, serviceId);
     op$.subscribe({
       next: () => {
-        if (isFav) this.favoritesSet.delete(providerId); else this.favoritesSet.add(providerId);
-        this.realizadasList = this.realizadasList.map(x => x.providerId === providerId ? { ...x, isFavorite: !isFav } : x);
+        // Actualizar solo esta tarjeta
+        this.realizadasList = this.realizadasList.map(x => x.appointmentId === ra.appointmentId ? { ...x, isFavorite: !isFav } : x);
         this.notifications.createNotification({
           type: 'system',
           profile: 'client',

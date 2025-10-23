@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 
 export interface FavoriteItem {
   id: number;
+  service_id?: number | null;
   name: string;
   role: string;
   rating: number;
@@ -21,14 +22,15 @@ export class FavoritesService {
     });
   }
 
-  addFavorite(providerId: number): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.base}/client/favorites`, { provider_id: providerId }, {
+  addFavorite(providerId: number, serviceId?: number | null): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(`${this.base}/client/favorites`, { provider_id: providerId, service_id: serviceId ?? null }, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
     });
   }
 
-  removeFavorite(providerId: number): Observable<{ success: boolean }> {
-    return this.http.delete<{ success: boolean }>(`${this.base}/client/favorites/${providerId}`, {
+  removeFavorite(providerId: number, serviceId?: number | null): Observable<{ success: boolean }> {
+    const url = serviceId != null ? `${this.base}/client/favorites/${providerId}?serviceId=${serviceId}` : `${this.base}/client/favorites/${providerId}`;
+    return this.http.delete<{ success: boolean }>(url, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
     });
   }

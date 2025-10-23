@@ -30,7 +30,7 @@ export class CollapsiblePromoFormComponent {
   }
 
   onSubmit() {
-    if (!this.formData.name || !this.formData.description || !this.formData.discountType || !this.formData.discountValue || !this.formData.startDate) {
+    if (!this.formData.name || !this.formData.description || !this.formData.discountType || !this.formData.discountValue || !this.formData.startDate || !this.formData.endDate) {
       return;
     }
     this.formSubmitted.emit({ ...this.formData });

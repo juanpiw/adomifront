@@ -17,7 +17,7 @@ export interface PromotionFormData {
   discountType: 'percentage' | 'fixed' | 'other';
   discountValue: string;
   startDate: string;
-  endDate?: string;
+  endDate: string;
 }
 
 // Components
