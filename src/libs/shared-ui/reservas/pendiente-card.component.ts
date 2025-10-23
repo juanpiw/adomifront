@@ -16,6 +16,9 @@ export interface PendienteData {
 })
 export class PendienteCardComponent {
   @Input() data!: PendienteData;
+  expanded: boolean = false;
+
+  toggle() { this.expanded = !this.expanded; }
 }
 
 
