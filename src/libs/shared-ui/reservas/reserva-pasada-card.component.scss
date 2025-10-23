@@ -4,7 +4,7 @@
 .rp-info{margin-left:1rem}
 .rp-title{font-size:1.25rem;font-weight:800;color:#0f172a;margin:0}
 .rp-date{color:#64748b;margin-top:.125rem}
-.rp-right{margin-left:auto;text-align:right}
+.rp-right{margin-left:auto;text-align:right;padding-right:42px}
 .rp-price{font-weight:700;color:#0f172a}
 .rp-state{font-size:.875rem;color:#64748b}
 .rp-actions{display:flex;gap:.75rem;border-top:1px solid #e2e8f0;margin-top:1rem;padding-top:1rem}
@@ -20,7 +20,7 @@
 .favorite-icon--active{color:#ef4444}
 
 /* Botón flotante superior derecho */
-.rp-fav{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:9999px;border:none;background:rgba(15,23,42,.85);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .2s ease}
+.rp-fav{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:9999px;border:none;background:rgba(15,23,42,.85);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .2s ease;z-index:2}
 .rp-fav:hover{opacity:1}
 .rp-fav__icon{width:18px;height:18px;color:#fff;opacity:.9}
 .rp-fav--active .rp-fav__icon{color:#ef4444;opacity:1}

@@ -11,6 +11,7 @@ import {
   FavoriteProfessional
 } from '../../../../libs/shared-ui/favorites';
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
+import { FavoritesService, FavoriteItem } from '../../../services/favorites.service';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
 
 @Component({
@@ -30,6 +31,7 @@ import { ProfileValidationService } from '../../../services/profile-validation.s
 export class FavoritosComponent implements OnInit {
   private router = inject(Router);
   private profileValidation = inject(ProfileValidationService);
+  private favoritesService = inject(FavoritesService);
 
   searchValue = '';
   favorites: FavoriteProfessional[] = [];
@@ -60,23 +62,22 @@ export class FavoritosComponent implements OnInit {
   }
 
   private loadFavorites(): void {
-    // Mock data - replace with actual API call
-    this.favorites = [
-      {
-        id: '1',
-        name: 'Elena Torres',
-        role: 'Estilista Profesional',
-        rating: 4.9,
-        initials: 'ET'
+    this.favoritesService.listFavorites().subscribe({
+      next: (resp) => {
+        const items = (resp?.favorites || []) as FavoriteItem[];
+        this.favorites = items.map(it => ({
+          id: String(it.id),
+          name: it.name,
+          role: it.role,
+          rating: Number(it.rating || 0),
+          initials: it.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        }));
       },
-      {
-        id: '2',
-        name: 'Mario Rojas',
-        role: 'Chef a Domicilio',
-        rating: 5.0,
-        initials: 'MR'
+      error: (err) => {
+        console.error('[FAVORITOS] Error cargando favoritos:', err);
+        this.favorites = [];
       }
-    ];
+    });
   }
 
   private loadRecommendedProfessionals(): void {
@@ -148,7 +149,7 @@ export class FavoritosComponent implements OnInit {
   onMessageFavorite(favorite: FavoriteProfessional): void {
     console.log('Message favorite:', favorite);
     // Navigate to chat
-    this.router.navigate(['/client/conversaciones']);
+    this.router.navigate(['/client/conversaciones'], { queryParams: { providerId: favorite.id, providerName: favorite.name } });
   }
 
   onFavoriteClick(favorite: FavoriteProfessional): void {
