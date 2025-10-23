@@ -1,3 +1,10 @@
+export interface PaymentSettings {
+  accountType: 'corriente' | 'vista' | 'ahorro';
+  bankName: string;
+  accountNumber: string;
+  rutHolder: string;
+}
+
 // Interfaces para el sistema de ingresos
 
 export interface Transaction {

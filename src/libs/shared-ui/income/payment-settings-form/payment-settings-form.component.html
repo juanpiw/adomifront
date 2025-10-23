@@ -74,6 +74,8 @@
     </form>
   </div>
 
+  <div *ngIf="errorMessage" style="color:#b91c1c; margin-top:8px;">{{ errorMessage }}</div>
+
   <!-- Aviso de Seguridad -->
   <div class="security-notice">
     <div class="notice-content">

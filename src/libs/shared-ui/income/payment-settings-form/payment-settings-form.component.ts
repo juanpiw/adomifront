@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../icon/icon.component';
 import { PaymentSettings } from '../interfaces';
+import { ProviderProfileService } from '../../../../app/services/provider-profile.service';
 
 @Component({
   selector: 'ui-payment-settings-form',
@@ -24,6 +25,9 @@ export class PaymentSettingsFormComponent {
 
   isSaving = false;
   showSuccessMessage = false;
+  errorMessage: string | null = null;
+
+  constructor(private providerService: ProviderProfileService) {}
 
   onSettingsChange() {
     this.settingsChanged.emit(this.paymentSettings);
@@ -32,18 +36,35 @@ export class PaymentSettingsFormComponent {
   onSave() {
     if (this.validateForm()) {
       this.isSaving = true;
-      
-      // Simular guardado
-      setTimeout(() => {
-        this.isSaving = false;
-        this.showSuccessMessage = true;
-        this.settingsSaved.emit(this.paymentSettings);
-        
-        // Ocultar mensaje después de 3 segundos
-        setTimeout(() => {
-          this.showSuccessMessage = false;
-        }, 3000);
-      }, 1000);
+      this.errorMessage = null;
+      const payload = {
+        bank_name: this.paymentSettings.bankName,
+        account_type: this.paymentSettings.accountType,
+        bank_account: this.paymentSettings.accountNumber,
+        account_holder: this.paymentSettings.rutHolder,
+        account_rut: this.paymentSettings.rutHolder
+      } as any;
+      this.providerService.updateBasicInfo({} as any).subscribe({
+        next: () => {},
+        error: () => {},
+      });
+      // Usar el endpoint directo para campos bancarios (PUT /provider/profile)
+      this.providerService['http'].put(
+        `${this.providerService['apiUrl']}/provider/profile`,
+        payload,
+        { headers: (this.providerService as any).getHeaders() }
+      ).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.showSuccessMessage = true;
+          this.settingsSaved.emit(this.paymentSettings);
+          setTimeout(() => { this.showSuccessMessage = false; }, 3000);
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.errorMessage = 'No se pudo guardar. Reintenta.';
+        }
+      });
     }
   }
 
