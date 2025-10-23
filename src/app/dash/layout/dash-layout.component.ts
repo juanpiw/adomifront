@@ -30,9 +30,16 @@ export class DashLayoutComponent implements OnInit {
   providerName: string | null = null;
   providerAvatarUrl: string | null = null;
   isOnline: boolean | null = null;
-  unreadTotal: number = 0;
+  unreadTotal: number = 0; // 🔔 Contador de citas pendientes
   pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
   hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
+  
+  get isAdmin(): boolean {
+    try {
+      const user = this.sessionService.getUser();
+      return !!user && user.email?.toLowerCase() === 'juanpablojpw@gmail.com';
+    } catch { return false; }
+  }
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {

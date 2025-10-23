@@ -35,6 +35,8 @@ import { QuickPaymentComponent } from './auth/quick-payment/quick-payment.compon
 import { TermsComponent } from './auth/terms/terms.component';
 import { ClientTerminosComponent } from './client/pages/terminos/terminos.component';
 import { DashTerminosComponent } from './dash/pages/terminos/terminos.component';
+import { Component } from '@angular/core';
+import { AdminPagosComponent } from './dash/pages/admin-pagos/admin-pagos.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -81,6 +83,7 @@ export const routes: Routes = [
       ,{ path: 'servicios', component: DashServiciosComponent }
       ,{ path: 'perfil', component: DashPerfilComponent }
       ,{ path: 'terminos', component: DashTerminosComponent }
+      ,{ path: 'admin-pagos', component: AdminPagosComponent }
     ] },
   { path: '**', redirectTo: '' }
 ];

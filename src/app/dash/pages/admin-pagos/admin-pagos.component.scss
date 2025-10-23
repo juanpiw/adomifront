@@ -1,0 +1,9 @@
+.admin-pagos {
+  h2 { margin: 0 0 12px; }
+  .table { width: 100%; border-collapse: collapse; }
+  .table th, .table td { padding: 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .error-message { color: #b91c1c; margin: 8px 0; }
+  input { padding: 8px; margin-right: 8px; }
+}
+
+
