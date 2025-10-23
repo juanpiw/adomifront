@@ -4,17 +4,21 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { SessionService } from '../../../auth/services/session.service';
 import { FormsModule } from '@angular/forms';
+import { AdminPaymentsService } from './admin-payments.service';
+import { AdminSummaryCardsComponent } from './admin-summary-cards.component';
+import { AdminPaymentsTableComponent } from './admin-payments-table.component';
 
 @Component({
   selector: 'app-admin-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminSummaryCardsComponent, AdminPaymentsTableComponent],
   templateUrl: './admin-pagos.component.html',
   styleUrls: ['./admin-pagos.component.scss']
 })
 export class AdminPagosComponent implements OnInit {
   private http = inject(HttpClient);
   private session = inject(SessionService);
+  private adminApi = inject(AdminPaymentsService);
   baseUrl = environment.apiBaseUrl;
   loading = false;
   error: string | null = null;
@@ -22,6 +26,7 @@ export class AdminPagosComponent implements OnInit {
   adminSecret = '';
   startISO: string | null = null;
   endISO: string | null = null;
+  summary: any = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -43,25 +48,20 @@ export class AdminPagosComponent implements OnInit {
     this.loading = true;
     this.error = null;
     const token = this.session.getAccessToken();
-    const headers = new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': this.adminSecret
-    });
-    const params: string[] = ['limit=100'];
-    if (this.startISO && this.endISO) {
-      params.push(`start=${encodeURIComponent(this.startISO)}`);
-      params.push(`end=${encodeURIComponent(this.endISO)}`);
-    }
-    this.http.get<any>(`${this.baseUrl}/admin/payments?${params.join('&')}`, { headers }).subscribe({
-      next: (res) => {
+    this.adminApi.list(this.adminSecret, token, this.startISO, this.endISO).subscribe({
+      next: (res: any) => {
         this.loading = false;
         if (res?.success) {
           this.rows = res.data || [];
+          // cargar resumen
+          this.adminApi.summary(this.adminSecret, token, this.startISO, this.endISO).subscribe((s: any) => {
+            this.summary = s?.summary || null;
+          });
         } else {
           this.error = 'Respuesta inválida';
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
         this.error = err?.error?.error || 'Error cargando pagos';
       }
