@@ -1,4 +1,14 @@
 <div class="rp-card">
+  <button 
+    *ngIf="data?.estado === 'Completado'"
+    type="button"
+    class="rp-fav"
+    [class.rp-fav--active]="data?.isFavorite"
+    (click)="onToggleFavorite.emit()"
+    [attr.aria-label]="data?.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+    [title]="data?.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'">
+    <ui-icon name="heart" class="rp-fav__icon"></ui-icon>
+  </button>
   <div class="rp-row">
     <img [src]="data.avatarUrl" class="rp-avatar" [alt]="data.titulo">
     <div class="rp-info">
@@ -8,9 +18,6 @@
     <div class="rp-right">
       <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
         <p class="rp-price" style="margin:0;">{{ data.precio }}</p>
-        <button type="button" class="favorite-toggle" aria-label="Favorito" (click)="onToggleFavorite.emit()">
-          <ui-icon name="heart" class="favorite-icon" [ngClass]="{'favorite-icon--active': data.isFavorite}"></ui-icon>
-        </button>
       </div>
       <p class="rp-state">{{ data.estado || 'Completado' }}</p>
     </div>
