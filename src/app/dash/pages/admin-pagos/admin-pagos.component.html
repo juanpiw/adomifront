@@ -10,6 +10,7 @@
       <option value="all">Todo</option>
     </select>
     <button (click)="applyRange(rangeSel.value)">Aplicar</button>
+    <button (click)="exportCsv()">Export CSV</button>
   </div>
 
   <div *ngIf="!adminSecret" style="margin:12px 0;">
@@ -37,6 +38,7 @@
         <th>Estado</th>
         <th>Pagado</th>
         <th>Liquidación</th>
+        <th>Estado</th>
       </tr>
     </thead>
     <tbody>
@@ -54,6 +56,7 @@
         <td>{{ r.status }}</td>
         <td>{{ r.paid_at | date:'short' }}</td>
         <td>{{ computeSettlementDate(r.paid_at) | date:'shortDate' }}</td>
+        <td>{{ r.settlement_status }}</td>
       </tr>
     </tbody>
   </table>

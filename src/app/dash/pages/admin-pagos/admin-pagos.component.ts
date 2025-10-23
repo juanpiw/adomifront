@@ -68,6 +68,27 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
+  exportCsv() {
+    const token = this.session.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : '',
+      'x-admin-secret': this.adminSecret
+    });
+    const params: string[] = [];
+    if (this.startISO && this.endISO) {
+      params.push(`start=${encodeURIComponent(this.startISO)}`);
+      params.push(`end=${encodeURIComponent(this.endISO)}`);
+    }
+    const url = `${this.baseUrl}/admin/payments/export.csv${params.length ? ('?' + params.join('&')) : ''}`;
+    this.http.get(url, { headers, responseType: 'blob' }).subscribe(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'payments.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+
   applyRange(range: 'day' | 'week' | 'month' | 'all') {
     const now = new Date();
     const start = new Date(now);
