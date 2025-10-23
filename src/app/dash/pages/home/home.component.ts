@@ -110,42 +110,49 @@ export class DashHomeComponent implements OnInit {
   }
 
   private loadPendingRequests() {
-    console.log('[DASH_HOME] Cargando solicitudes pendientes...');
+    console.log('[DASH_HOME] 🎯 Cargando solicitudes pendientes (citas confirmadas sin pagar)...');
     this.appointmentsService.listPendingRequests().subscribe({
       next: (response) => {
-        console.log('[DASH_HOME] Solicitudes pendientes recibidas:', response);
-        if (response.success && response.appointments) {
-          this.solicitudesData = response.appointments.map((appt: any) => ({
-            id: String(appt.id),
-            clientName: appt.client_name || 'Cliente',
-            clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=' + (appt.client_name || 'C').charAt(0),
-            service: appt.service_name || 'Servicio',
-            when: this.formatWhen(appt.date),
-            time: this.formatTime(appt.start_time),
-            date: appt.date,
-            location: 'Ubicación por confirmar',
-            estimatedIncome: appt.scheduled_price || 0
-          }));
-          console.log('[DASH_HOME] Solicitudes mapeadas:', this.solicitudesData);
+        console.log('[DASH_HOME] 📦 Respuesta completa de solicitudes pendientes:', response);
+        if (response.success && response.appointments && response.appointments.length > 0) {
+          console.log('[DASH_HOME] 📋 Citas confirmadas sin pagar encontradas:', response.appointments.length);
+          this.solicitudesData = response.appointments.map((appt: any) => {
+            const solicitud = {
+              id: String(appt.id),
+              clientName: appt.client_name || 'Cliente',
+              clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=' + (appt.client_name || 'C').charAt(0),
+              service: appt.service_name || 'Servicio',
+              when: this.formatWhen(appt.date),
+              time: this.formatTime(appt.start_time),
+              date: appt.date,
+              location: 'Ubicación por confirmar',
+              estimatedIncome: appt.scheduled_price || appt.price || 0
+            };
+            console.log('[DASH_HOME] 🔄 Mapeando cita:', appt.id, '->', solicitud);
+            return solicitud;
+          });
+          console.log('[DASH_HOME] ✅ Solicitudes mapeadas exitosamente:', this.solicitudesData);
         } else {
           this.solicitudesData = [];
-          console.log('[DASH_HOME] No hay solicitudes pendientes');
+          console.log('[DASH_HOME] ⚠️ No hay solicitudes pendientes - response:', response);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] Error cargando solicitudes pendientes:', error);
+        console.error('[DASH_HOME] ❌ Error cargando solicitudes pendientes:', error);
+        console.error('[DASH_HOME] ❌ Error details:', error.status, error.statusText, error.url);
         this.solicitudesData = [];
       }
     });
   }
 
   private loadNextAppointment() {
-    console.log('[DASH_HOME] Cargando próxima cita...');
+    console.log('[DASH_HOME] 🎯 Cargando próxima cita confirmada...');
     this.appointmentsService.getNextAppointment().subscribe({
       next: (response) => {
-        console.log('[DASH_HOME] Próxima cita recibida:', response);
+        console.log('[DASH_HOME] 📦 Respuesta completa de próxima cita:', response);
         if (response.success && response.appointment) {
           const appt = response.appointment;
+          console.log('[DASH_HOME] 📅 Datos de la próxima cita:', appt);
           this.proximaCitaData = {
             id: String(appt.id),
             time: this.formatTime(appt.start_time),
@@ -154,19 +161,20 @@ export class DashHomeComponent implements OnInit {
             clientName: appt.client_name || 'Cliente',
             date: appt.date,
             duration: '45 minutos', // TODO: calcular desde start_time y end_time
-            amount: appt.scheduled_price || 0,
+            amount: appt.scheduled_price || appt.price || 0,
             clientAvatar: 'https://placehold.co/40x40/E0E7FF/4338CA?text=' + (appt.client_name || 'C').charAt(0),
             location: 'Ubicación por confirmar',
             mapUrl: 'https://maps.google.com/?q=Ubicacion'
           };
-          console.log('[DASH_HOME] Próxima cita mapeada:', this.proximaCitaData);
+          console.log('[DASH_HOME] ✅ Próxima cita mapeada exitosamente:', this.proximaCitaData);
         } else {
           this.proximaCitaData = null;
-          console.log('[DASH_HOME] No hay próxima cita');
+          console.log('[DASH_HOME] ⚠️ No hay próxima cita - response:', response);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] Error cargando próxima cita:', error);
+        console.error('[DASH_HOME] ❌ Error cargando próxima cita:', error);
+        console.error('[DASH_HOME] ❌ Error details:', error.status, error.statusText, error.url);
         this.proximaCitaData = null;
       }
     });

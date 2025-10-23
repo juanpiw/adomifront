@@ -25,12 +25,15 @@ export class ReviewModalComponent {
 
   @Output() close = new EventEmitter<void>();
   @Output() reviewSubmitted = new EventEmitter<ReviewData>();
+  @Output() reviewResult = new EventEmitter<{success: boolean, error?: string}>();
 
   rating: number = 0;
   hoverRating: number = 0; // Para el hover effect
   comment: string = '';
   showSuccessView: boolean = false;
+  showErrorView: boolean = false;
   isSubmitting: boolean = false;
+  errorMessage: string = '';
 
   setRating(rating: number): void {
     this.rating = rating;
