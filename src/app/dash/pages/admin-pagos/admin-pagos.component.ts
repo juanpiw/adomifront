@@ -58,7 +58,18 @@ export class AdminPagosComponent implements OnInit {
           this.rows = res.data || [];
           // cargar resumen
           this.adminApi.summary(this.adminSecret, token, this.startISO, this.endISO).subscribe((s: any) => {
-            this.summary = s?.summary || null;
+            const sum = s?.summary || {};
+            // Normalizar a números
+            const toNum = (v: any) => Number(v || 0);
+            this.summary = {
+              total_gross: toNum(sum.total_gross),
+              total_tax: toNum(sum.total_tax),
+              total_commission: toNum(sum.total_commission),
+              total_provider: toNum(sum.total_provider),
+              pending_total_provider: toNum(sum.pending_total_provider),
+              eligible_total_provider: toNum(sum.eligible_total_provider),
+              completed_total_provider: toNum(sum.completed_total_provider)
+            };
           });
         } else {
           this.error = 'Respuesta inválida';

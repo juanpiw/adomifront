@@ -9,19 +9,19 @@ import { CommonModule } from '@angular/common';
   <div class="cards">
     <div class="card">
       <div class="label">Total cobrado</div>
-      <div class="value">{{ summary?.total_gross | number:'1.0-0' }} CLP</div>
+      <div class="value">{{ safe(summary?.total_gross) | number:'1.0-0' }} CLP</div>
     </div>
     <div class="card">
       <div class="label">Impuestos</div>
-      <div class="value">{{ summary?.total_tax | number:'1.0-0' }} CLP</div>
+      <div class="value">{{ safe(summary?.total_tax) | number:'1.0-0' }} CLP</div>
     </div>
     <div class="card">
       <div class="label">Comisión</div>
-      <div class="value">{{ summary?.total_commission | number:'1.0-0' }} CLP</div>
+      <div class="value">{{ safe(summary?.total_commission) | number:'1.0-0' }} CLP</div>
     </div>
     <div class="card">
       <div class="label">Neto proveedores</div>
-      <div class="value">{{ summary?.total_provider | number:'1.0-0' }} CLP</div>
+      <div class="value">{{ safe(summary?.total_provider) | number:'1.0-0' }} CLP</div>
     </div>
     <div class="card accent">
       <div class="label">Adeudado hoy</div>
@@ -30,7 +30,7 @@ import { CommonModule } from '@angular/common';
     </div>
     <div class="card good">
       <div class="label">Pagado</div>
-      <div class="value">{{ summary?.completed_total_provider | number:'1.0-0' }} CLP</div>
+      <div class="value">{{ safe(summary?.completed_total_provider) | number:'1.0-0' }} CLP</div>
     </div>
   </div>
   `,
