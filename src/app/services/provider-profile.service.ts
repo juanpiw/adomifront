@@ -78,6 +78,11 @@ export interface ProviderProfile {
   review_count: number;
   created_at: string;
   updated_at: string;
+  bank_name?: string | null;
+  bank_account?: string | null;
+  account_holder?: string | null;
+  account_rut?: string | null;
+  account_type?: string | null;
 }
 
 @Injectable({

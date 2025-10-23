@@ -136,6 +136,27 @@ export class AdminPagosComponent implements OnInit {
     if (v.length <= 4) return '••••';
     return '•••• ' + v.slice(-4);
   }
+
+  onMarkReleased(row: any) {
+    const token = this.session.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : '',
+      'x-admin-secret': this.adminSecret
+    });
+    const ref = prompt('Referencia de transferencia (opcional):') || '';
+    this.http.post(`${this.baseUrl}/admin/payments/${row.id}/mark-released`, { reference: ref }, { headers }).subscribe({
+      next: () => this.load(),
+      error: () => alert('No se pudo marcar como pagado')
+    });
+  }
+
+  onTableAction(evt: { type: 'pay'; row: any }) {
+    if (!evt) return;
+    if (evt.type === 'pay') {
+      // Mostrar panel inferior simple con datos y opción de subir voucher (versión inicial con prompt)
+      this.onMarkReleased(evt.row);
+    }
+  }
 }
 
 
