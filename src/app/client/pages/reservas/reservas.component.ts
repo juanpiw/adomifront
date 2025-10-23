@@ -166,11 +166,14 @@ export class ClientReservasComponent implements OnInit {
       this.payments.confirmAppointmentPayment(appointmentId, sessionId).subscribe({
         next: (resp) => {
           console.log('[RESERVAS] Payment confirmed:', resp);
+          // Log adicional para trazar envío de emails en backend
+          console.log('[RESERVAS][TRACE] Confirm API returned. If webhook ran, backend should have logged email sending.');
           this.loadAppointments();
           this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
         },
         error: (err) => {
           console.error('[RESERVAS] Error confirming payment:', err);
+          console.warn('[RESERVAS][TRACE] Confirm API error; webhook may still send emails asynchronously if event delivered.');
           this.loadAppointments();
           this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
         }
@@ -219,6 +222,8 @@ export class ClientReservasComponent implements OnInit {
       next: (resp) => {
         const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed' })[];
         console.log('[RESERVAS] Citas cargadas:', list);
+        const paid = list.filter(a => ['paid','succeeded','completed'].includes(String((a as any).payment_status || '')));
+        console.log('[RESERVAS][TRACE] Paid appointments mapping:', paid.map(a => ({ id: a.id, status: (a as any).payment_status, date: a.date })));
         const now = new Date();
         const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
         const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -276,6 +281,7 @@ export class ClientReservasComponent implements OnInit {
                 },
                 error: () => {}
               });
+              console.log('[RESERVAS][TRACE] isPaid=true; verification code requested for appointment', a.id);
             }
             return card;
           });
