@@ -25,6 +25,29 @@
   <div *ngIf="loading">Cargando...</div>
 
   <app-admin-payments-table [rows]="rows" (action)="onTableAction($event)"></app-admin-payments-table>
+
+  <!-- Drawer simple de pago -->
+  <div *ngIf="payRow" class="pay-drawer">
+    <h3>Pagar a {{ payRow.provider_name || payRow.provider_email }}</h3>
+    <div class="grid">
+      <div><strong>Banco:</strong> {{ payRow.bank_name || '-' }}</div>
+      <div><strong>Cuenta:</strong> {{ payRow.bank_last4 ? ('•••• ' + payRow.bank_last4) : '-' }} ({{ payRow.account_type || '—' }})</div>
+      <div><strong>Titular:</strong> {{ payRow.account_holder || '-' }}</div>
+      <div><strong>Monto a transferir:</strong> {{ payRow.provider_amount | number:'1.0-0' }} {{ payRow.currency }}</div>
+    </div>
+    <div class="row">
+      <label>Referencia</label>
+      <input type="text" [(ngModel)]="payRef" placeholder="Número/Texto de referencia" />
+    </div>
+    <div class="row">
+      <label>Voucher</label>
+      <input type="file" (change)="onVoucherSelected($event)" accept="image/*,application/pdf" />
+    </div>
+    <div class="actions">
+      <button class="btn-primary" (click)="confirmPay()">Confirmar pago</button>
+      <button (click)="payRow=null">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 

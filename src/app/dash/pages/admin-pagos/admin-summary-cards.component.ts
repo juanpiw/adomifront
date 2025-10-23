@@ -25,8 +25,8 @@ import { CommonModule } from '@angular/common';
     </div>
     <div class="card accent">
       <div class="label">Adeudado hoy</div>
-      <div class="value">{{ (summary?.pending_total_provider || 0) + (summary?.eligible_total_provider || 0) | number:'1.0-0' }} CLP</div>
-      <div class="sub">Pendiente: {{ summary?.pending_total_provider | number:'1.0-0' }} • Elegible: {{ summary?.eligible_total_provider | number:'1.0-0' }}</div>
+      <div class="value">{{ totalAdeudado() | number:'1.0-0' }} CLP</div>
+      <div class="sub">Pendiente: {{ safe(summary?.pending_total_provider) | number:'1.0-0' }} • Elegible: {{ safe(summary?.eligible_total_provider) | number:'1.0-0' }}</div>
     </div>
     <div class="card good">
       <div class="label">Pagado</div>
@@ -46,6 +46,8 @@ import { CommonModule } from '@angular/common';
 })
 export class AdminSummaryCardsComponent {
   @Input() summary: any;
+  safe(v: any) { return Number(v || 0); }
+  totalAdeudado() { return this.safe(this.summary?.pending_total_provider) + this.safe(this.summary?.eligible_total_provider); }
 }
 
 

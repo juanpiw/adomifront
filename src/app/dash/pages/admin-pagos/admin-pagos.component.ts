@@ -27,6 +27,9 @@ export class AdminPagosComponent implements OnInit {
   startISO: string | null = null;
   endISO: string | null = null;
   summary: any = null;
+  payRow: any = null;
+  payRef: string = '';
+  payFile: File | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -153,8 +156,38 @@ export class AdminPagosComponent implements OnInit {
   onTableAction(evt: { type: 'pay'; row: any }) {
     if (!evt) return;
     if (evt.type === 'pay') {
-      // Mostrar panel inferior simple con datos y opción de subir voucher (versión inicial con prompt)
-      this.onMarkReleased(evt.row);
+      this.payRow = evt.row;
+      this.payRef = '';
+      this.payFile = null;
+    }
+  }
+
+  onVoucherSelected(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const files = input?.files;
+    this.payFile = files && files.length ? files[0] : null;
+  }
+
+  async confirmPay() {
+    if (!this.payRow) return;
+    const token = this.session.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : '',
+      'x-admin-secret': this.adminSecret
+    });
+    try {
+      // subir voucher si existe
+      if (this.payFile) {
+        const fd = new FormData();
+        fd.append('voucher', this.payFile);
+        await this.http.post(`${this.baseUrl}/admin/payments/${this.payRow.id}/upload-voucher`, fd, { headers }).toPromise();
+      }
+      // marcar pagado con referencia
+      await this.http.post(`${this.baseUrl}/admin/payments/${this.payRow.id}/mark-released`, { reference: this.payRef }, { headers }).toPromise();
+      this.payRow = null;
+      this.load();
+    } catch {
+      alert('No se pudo confirmar el pago');
     }
   }
 }

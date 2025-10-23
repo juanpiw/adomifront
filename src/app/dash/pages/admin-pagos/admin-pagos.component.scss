@@ -1,3 +1,13 @@
+.pay-drawer {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 12px;
+}
+.pay-drawer .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:8px; margin-bottom:8px; }
+.pay-drawer .row { margin:6px 0; display:flex; flex-direction:column; gap:4px; }
+.pay-drawer .actions { margin-top:8px; display:flex; gap:8px; }
 .admin-pagos {
   h2 { margin: 0 0 12px; }
   .table { width: 100%; border-collapse: collapse; }
