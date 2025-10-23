@@ -197,12 +197,13 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, payload)
       .pipe(
         tap(response => {
-          if (response.success && response.user && response.accessToken && response.refreshToken) {
+          const data: any = (response as any)?.data || response;
+          if (response.success && data?.user && data?.accessToken && data?.refreshToken) {
             // Guardar usuario y tokens
-            this.authStateSubject.next(response.user);
-            this.saveTokens(response.accessToken, response.refreshToken);
+            this.authStateSubject.next(data.user);
+            this.saveTokens(data.accessToken, data.refreshToken);
             if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-              localStorage.setItem('adomi_user', JSON.stringify(response.user));
+              localStorage.setItem('adomi_user', JSON.stringify(data.user));
             }
           }
           this.loadingSubject.next(false);
@@ -221,12 +222,13 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, payload)
       .pipe(
         tap(response => {
-          if (response.success && response.user && response.accessToken && response.refreshToken) {
+          const data: any = (response as any)?.data || response;
+          if (response.success && data?.user && data?.accessToken && data?.refreshToken) {
             // Guardar usuario y tokens
-            this.authStateSubject.next(response.user);
-            this.saveTokens(response.accessToken, response.refreshToken);
+            this.authStateSubject.next(data.user);
+            this.saveTokens(data.accessToken, data.refreshToken);
             if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-              localStorage.setItem('adomi_user', JSON.stringify(response.user));
+              localStorage.setItem('adomi_user', JSON.stringify(data.user));
             }
           }
           this.loadingSubject.next(false);
