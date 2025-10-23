@@ -47,7 +47,7 @@ import { CommonModule } from '@angular/common';
       </tr>
     </tbody>
   </table>
-  <div class="paginator" *ngIf="rows?.length > pageSize">
+  <div class="paginator" *ngIf="(rows?.length || 0) > pageSize">
     <button (click)="prevPage()" [disabled]="page===1">«</button>
     <span>Página {{ page }} / {{ totalPages() }}</span>
     <button (click)="nextPage()" [disabled]="page>=totalPages()">»</button>
