@@ -53,6 +53,28 @@
     &--left { left: -6px; }
     &--right { right: -6px; }
   }
+
+  &__dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #cbd5e1;
+    border: none;
+    cursor: pointer;
+    transition: transform .15s ease, background-color .15s ease;
+
+    &--active {
+      background: #6366f1;
+      transform: scale(1.2);
+    }
+  }
   &__title {
     font-size: 1.5rem;
     font-weight: 700;

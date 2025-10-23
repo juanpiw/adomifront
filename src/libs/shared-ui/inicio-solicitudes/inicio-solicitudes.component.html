@@ -5,7 +5,7 @@
     No tienes solicitudes de reserva pendientes.
   </div>
   
-  <div class="inicio-solicitudes__scaffold" *ngIf="data.length > 0">
+  <div class="inicio-solicitudes__scaffold" *ngIf="data.length > 0" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
     <button type="button" class="inicio-solicitudes__nav inicio-solicitudes__nav--left" (click)="scrollLeft()" aria-label="Anterior">‹</button>
 
     <div #scroller class="inicio-solicitudes__scroller" tabindex="0">
@@ -39,6 +39,18 @@
     </div>
 
     <button type="button" class="inicio-solicitudes__nav inicio-solicitudes__nav--right" (click)="scrollRight()" aria-label="Siguiente">›</button>
+
+    <!-- Dots pagination -->
+    <div class="inicio-solicitudes__dots" *ngIf="totalPages > 1">
+      <button 
+        *ngFor="let _ of [].constructor(totalPages); index as i" 
+        type="button" 
+        class="inicio-solicitudes__dot" 
+        [class.inicio-solicitudes__dot--active]="i === currentPage"
+        (click)="goTo(i)"
+        aria-label="Ir a página {{ i + 1 }}">
+      </button>
+    </div>
   </div>
 
   <!-- Modales -->
