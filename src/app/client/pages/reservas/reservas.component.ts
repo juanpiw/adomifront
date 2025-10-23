@@ -9,6 +9,7 @@ import { CanceladaClienteCardComponent, CanceladaClienteData } from '../../../..
 import { CanceladaProfesionalCardComponent, CanceladaProfesionalData } from '../../../../libs/shared-ui/reservas/cancelada-profesional-card.component';
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
 import { ReviewsService } from '../../../services/reviews.service';
+import { environment } from '../../../../environments/environment';
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
@@ -123,6 +124,13 @@ export class ClientReservasComponent implements OnInit {
 
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null];
+
+  private resolveAvatar(raw?: string | null): string {
+    if (!raw || raw.trim() === '') return '/assets/default-avatar.png';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/uploads')) return `${environment.apiBaseUrl}${raw}`;
+    return `${environment.apiBaseUrl}/${raw.replace(/^\//, '')}`;
+  }
   
   // Profile validation
   showProfileModal: boolean = false;
@@ -282,14 +290,14 @@ export class ClientReservasComponent implements OnInit {
           }));
         // Pasadas: mostrar dos primeras (por confirmar o confirmadas pero vencidas)
         this.pasada1 = past[0] ? {
-          avatarUrl: '',
+          avatarUrl: this.resolveAvatar((past[0] as any).provider_avatar_url || (past[0] as any).avatar_url || ''),
           titulo: `${past[0].service_name || 'Servicio'} con ${past[0].provider_name || 'Profesional'}`,
           fecha: this.formatDate(past[0].date),
           precio: past[0].price ? `$${Number(past[0].price).toLocaleString('es-CL')}` : '',
           estado: past[0].status === 'confirmed' ? 'Confirmada' : 'Por confirmar'
         } : null;
         this.pasada2 = past[1] ? {
-          avatarUrl: '',
+          avatarUrl: this.resolveAvatar((past[1] as any).provider_avatar_url || (past[1] as any).avatar_url || ''),
           titulo: `${past[1].service_name || 'Servicio'} con ${past[1].provider_name || 'Profesional'}`,
           fecha: this.formatDate(past[1].date),
           precio: past[1].price ? `$${Number(past[1].price).toLocaleString('es-CL')}` : '',
@@ -298,7 +306,7 @@ export class ClientReservasComponent implements OnInit {
 
         // Canceladas (placeholder: todas como canceladas por proveedor)
         this.canceladasProfesionalList = cancelled.map(c => ({
-          avatarUrl: '',
+          avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
           titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
           fecha: this.formatDate(c.date),
           pillText: 'Cancelada por proveedor'
@@ -307,7 +315,7 @@ export class ClientReservasComponent implements OnInit {
 
         // Realizadas/Pagadas (todas las completadas)
         this.realizadasList = realizadasAll.map(r => ({
-          avatarUrl: '',
+          avatarUrl: this.resolveAvatar((r as any).provider_avatar_url || (r as any).avatar_url || (r as any).client_avatar_url || ''),
           titulo: `${r.service_name || 'Servicio'} con ${r.provider_name || 'Profesional'}`,
           fecha: this.formatDate(r.date),
           precio: r.price ? `$${Number(r.price).toLocaleString('es-CL')}` : '',

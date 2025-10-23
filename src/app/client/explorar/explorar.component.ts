@@ -115,7 +115,7 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
           <div *ngFor="let provider of filteredProviders" class="bg-white rounded-3xl p-6 custom-shadow custom-shadow-hover transition-all duration-300">
             <div class="flex items-center mb-4">
               <div style="position: relative; display: inline-block;">
-                <img [src]="provider.avatar_url || '/assets/default-avatar.png'" 
+                <img [src]="resolveAvatar(provider.avatar_url, provider.name)" 
                      [alt]="provider.name" 
                      class="w-14 h-14 rounded-full object-cover">
                 <span class="status-dot" [class.online]="provider.is_online === true" [class.offline]="provider.is_online === false"></span>
@@ -776,7 +776,7 @@ export class ExplorarComponent implements OnInit {
       id: provider.id.toString(),
       name: provider.name,
       profession: provider.profession,
-      avatar: provider.avatar_url || `https://placehold.co/64x64/C7D2FE/4338CA?text=${provider.name.charAt(0)}`,
+      avatar: this.resolveAvatar(provider.avatar_url, provider.name, 64),
       rating: provider.rating,
       reviews: provider.review_count,
       description: provider.description,
@@ -788,6 +788,19 @@ export class ExplorarComponent implements OnInit {
 
     // Set highlighted professional (first one)
     this.highlightedProfessional = this.professionalCards[0] || null;
+  }
+
+  // Unificar URL de avatar con base API en producción
+  resolveAvatar(raw: string | undefined | null, name: string, size: number = 64): string {
+    const initial = (name || 'U').charAt(0).toUpperCase();
+    const placeholder = `https://placehold.co/${size}x${size}/C7D2FE/4338CA?text=${encodeURIComponent(initial)}`;
+    if (!raw || raw.trim() === '') return '/assets/default-avatar.png';
+    // Absoluta
+    if (/^https?:\/\//i.test(raw)) return raw;
+    // Ruta de uploads (comienza con /uploads)
+    if (raw.startsWith('/uploads')) return `${environment.apiBaseUrl}${raw}`;
+    // Otros casos: intentar con base URL
+    return `${environment.apiBaseUrl}/${raw.replace(/^\//, '')}`;
   }
 
   generateMapCardMarkers() {

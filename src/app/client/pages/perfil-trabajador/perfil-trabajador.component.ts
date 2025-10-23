@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { ProviderPublicService, ProviderDetailResponse } from '../../services/provider-public.service';
+import { environment } from '../../../../environments/environment';
 import { AppointmentsService } from '../../../services/appointments.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
@@ -87,6 +88,13 @@ export class PerfilTrabajadorComponent implements OnInit {
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);
 
+  private resolveMediaUrl(raw?: string | null): string {
+    if (!raw || raw.trim() === '') return '/assets/default-avatar.png';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/uploads')) return `${environment.apiBaseUrl}${raw}`;
+    return `${environment.apiBaseUrl}/${raw.replace(/^\//, '')}`;
+  }
+
   ngOnInit(): void {
     this.workerId = this.route.snapshot.paramMap.get('workerId');
     
@@ -116,11 +124,11 @@ export class PerfilTrabajadorComponent implements OnInit {
           location: d.profile.location,
           experience: d.profile.years_experience,
           services: d.services.map(s => ({ id: s.id, name: s.name, price: s.price, duration_minutes: s.duration_minutes, image: s.image_url })),
-          photos: d.portfolio.map(p => p.image_url).filter(Boolean),
+          photos: d.portfolio.map(p => this.resolveMediaUrl(p.image_url)).filter(Boolean),
           bio: d.profile.bio,
           verified: d.profile.is_verified,
-          coverImage: d.profile.cover_url,
-          avatar: d.profile.avatar_url
+          coverImage: this.resolveMediaUrl(d.profile.cover_url),
+          avatar: this.resolveMediaUrl(d.profile.avatar_url)
         };
         // Mapear reseñas reales del backend
         const mappedReviews = (d.reviews || []).map((r: any, idx: number) => {
@@ -157,8 +165,8 @@ export class PerfilTrabajadorComponent implements OnInit {
     this.profileHeroData = {
       name: this.workerData.name,
       title: this.workerData.title,
-      avatar: this.workerData.avatar,
-      coverImage: this.workerData.coverImage,
+      avatar: this.resolveMediaUrl(this.workerData.avatar),
+      coverImage: this.resolveMediaUrl(this.workerData.coverImage),
       hasVideo: false
     };
 
@@ -192,7 +200,7 @@ export class PerfilTrabajadorComponent implements OnInit {
       title: 'Portafolio',
       items: this.workerData.photos.map((photo: string, index: number) => ({
         id: `portfolio-${index}`,
-        imageUrl: photo,
+        imageUrl: this.resolveMediaUrl(photo),
         title: `Trabajo ${index + 1}`,
         description: `Descripción del trabajo ${index + 1}`
       }))
