@@ -1,12 +1,12 @@
 <div class="rp-card">
   <button 
-    *ngIf="data?.estado === 'Completado'"
+    *ngIf="data.estado === 'Completado'"
     type="button"
     class="rp-fav"
-    [class.rp-fav--active]="data?.isFavorite"
+    [class.rp-fav--active]="data.isFavorite"
     (click)="onToggleFavorite.emit()"
-    [attr.aria-label]="data?.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'"
-    [title]="data?.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'">
+    [attr.aria-label]="data.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+    [title]="data.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'">
     <ui-icon name="heart" class="rp-fav__icon"></ui-icon>
   </button>
   <div class="rp-row">
