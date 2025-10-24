@@ -18,32 +18,7 @@ export interface Card {
   styleUrls: ['./saved-cards-section.component.scss']
 })
 export class SavedCardsSectionComponent {
-  @Input() cards: Card[] = [
-    {
-      id: '1',
-      type: 'visa',
-      lastFour: '1234',
-      expiryMonth: '10',
-      expiryYear: '27',
-      isPrimary: true
-    },
-    {
-      id: '2',
-      type: 'mastercard',
-      lastFour: '5678',
-      expiryMonth: '05',
-      expiryYear: '26',
-      isPrimary: false
-    },
-    {
-      id: '3',
-      type: 'amex',
-      lastFour: '9012',
-      expiryMonth: '01',
-      expiryYear: '29',
-      isPrimary: false
-    }
-  ];
+  @Input() cards: Card[] = [];
 
   @Output() cardDeleted = new EventEmitter<string>();
   @Output() cardSetPrimary = new EventEmitter<string>();
