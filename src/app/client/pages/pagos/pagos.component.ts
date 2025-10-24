@@ -31,6 +31,8 @@ import { AuthService } from '../../../auth/services/auth.service';
 export class ClientPagosComponent implements OnInit {
   // Estado del modal
   showAddCardModal = false;
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
   
   // Datos de las tarjetas
   cards: Card[] = [];
@@ -105,7 +107,7 @@ export class ClientPagosComponent implements OnInit {
 
   private fetchCards() {
     this.http.get<any>(`${environment.apiBaseUrl}/client/payment-methods`, { headers: this.headers() }).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         const rows = res?.data?.cards || [];
         this.paymentPreference = res?.data?.preference || null;
         this.cards = rows.map((r: any) => ({

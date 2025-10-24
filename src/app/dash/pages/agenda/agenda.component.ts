@@ -640,4 +640,16 @@ export class DashAgendaComponent implements OnInit {
     if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
     return hhmm;
   }
+
+  // Navegación
+  setView(view: 'dashboard' | 'calendar' | 'cash' | 'config') {
+    this.currentView = view;
+    if (view === 'calendar' && this.selectedDate) {
+      this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
+    }
+    if (view === 'cash') {
+      this.loadCashSummary();
+      this.loadCashCommissions();
+    }
+  }
 }
