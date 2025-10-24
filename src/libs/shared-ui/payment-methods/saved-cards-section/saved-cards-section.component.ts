@@ -45,6 +45,15 @@ export class SavedCardsSectionComponent {
       default: return 'Tarjeta';
     }
   }
+
+  primaryCard(): Card | null {
+    return this.cards.find(c => !!c.isPrimary) || null;
+  }
+
+  formatLast4(last4: string): string {
+    const s = String(last4 || '').replace(/\D/g, '').slice(-4).padStart(4, '0');
+    return s.replace(/(\d{2})(\d{2})/, '$1 $2');
+  }
 }
 
 

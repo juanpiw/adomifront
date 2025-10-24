@@ -2,6 +2,14 @@
   <h2 class="saved-cards-title">
     Mis Métodos de Pago ({{ cards.length }})
   </h2>
+  <div *ngIf="primaryCard() || preference==='cash'" style="margin:6px 0 12px; font-size:13px; color:#065f46; background:#ecfdf5; border:1px solid #10b981; padding:8px 10px; border-radius:8px;">
+    <strong>Método principal:</strong>
+    <ng-container *ngIf="preference==='cash'">Pago en Efectivo</ng-container>
+    <ng-container *ngIf="preference!=='cash' && primaryCard() as pc">
+      **** **** {{ formatLast4(pc.lastFour) }} · {{ getCardTypeName(pc.type) }}
+    </ng-container>
+    <span style="margin-left:6px; opacity:.8;">Con este método se harán los pagos por defecto.</span>
+  </div>
 
   <div class="cards-list">
     <!-- Opción Efectivo como tarjeta virtual -->
