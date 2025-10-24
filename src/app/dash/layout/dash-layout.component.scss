@@ -162,3 +162,20 @@
 .status-dot { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 9999px; background: #9CA3AF; }
 .status-dot.online { background: #10B981; }
 .status-dot.offline { background: #EF4444; }
+
+/* Dark theme adjustments: make the sidebar/menu dark blue */
+.theme-dark .panel {
+  background: linear-gradient(180deg, #0b1220, #151c2f);
+  color: #e5e7eb;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+.theme-dark .menu a {
+  color: #e5e7eb;
+}
+.theme-dark .menu a:hover {
+  background: rgba(255,255,255,0.06);
+}
+.theme-dark .menu a.active {
+  background: rgba(255,255,255,0.08);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+}
