@@ -31,6 +31,14 @@ export class AdminPaymentsService {
   pendingCount(secret: string, token: string | null) {
     return this.http.get<any>(`${this.baseUrl}/admin/payments/pending-count`, { headers: this.headers(secret, token) });
   }
+
+  listRefunds(secret: string, token: string | null) {
+    return this.http.get<any>(`${this.baseUrl}/admin/refunds`, { headers: this.headers(secret, token) });
+  }
+
+  decideRefund(secret: string, token: string | null, id: number, decision: 'approved'|'denied'|'cancelled', notes?: string) {
+    return this.http.post<any>(`${this.baseUrl}/admin/refunds/${id}/decision`, { decision, notes }, { headers: this.headers(secret, token) });
+  }
 }
 
 

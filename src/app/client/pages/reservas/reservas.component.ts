@@ -43,6 +43,7 @@ import { FavoritesService } from '../../../services/favorites.service';
           *ngFor="let p of proximasConfirmadas" 
           [data]="p" 
           (pagar)="onPagar($event)"
+          (pedirDevolucion)="onRefund($event)"
           (contactar)="onContactar(p.appointmentId)"
           style="margin-bottom:12px;">
         </ui-proxima-cita-card>
@@ -413,6 +414,24 @@ export class ClientReservasComponent implements OnInit {
     } else {
       console.warn('[RESERVAS] No se encontró providerId para appointment', appointmentId, this._providerByApptId);
     }
+  }
+
+  onRefund(ev: { appointmentId: number; reason: string }) {
+    if (!ev || !ev.appointmentId) return;
+    this.payments.requestRefund(ev.appointmentId, ev.reason).subscribe({
+      next: (resp) => {
+        if (resp?.success) {
+          this.notifications.createNotification({
+            type: 'system', profile: 'client', title: 'Solicitud enviada', message: 'Revisaremos tu solicitud de devolución.', priority: 'low', actions: []
+          });
+        }
+      },
+      error: () => {
+        this.notifications.createNotification({
+          type: 'system', profile: 'client', title: 'Error', message: 'No pudimos registrar tu solicitud. Intenta nuevamente.', priority: 'high', actions: []
+        });
+      }
+    });
   }
 
   // confirmPayment ya no es necesario; usamos PaymentsService

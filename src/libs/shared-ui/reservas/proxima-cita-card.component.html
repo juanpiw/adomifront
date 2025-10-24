@@ -26,11 +26,24 @@
     <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>
     <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
     <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="onPagarClick()">Pagar</button>
+    <button *ngIf="!data.mostrarPagar && data.verification_code" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
   </div>
 
   <!-- Código de verificación cuando está pagada -->
   <div *ngIf="!data.mostrarPagar && data.verification_code" style="margin-top:12px;">
     <ui-verificacion-code-card [code]="data.verification_code"></ui-verificacion-code-card>
+  </div>
+
+  <!-- Área de devolución -->
+  <div *ngIf="showRefundArea" style="margin-top:12px;">
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px;">
+      <div style="font-weight:600;margin-bottom:8px;">Solicitar devolución</div>
+      <textarea [(ngModel)]="refundReason" rows="3" placeholder="Describe el motivo de la devolución (mínimo 10 caracteres)" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="pc-btn primary" (click)="submitRefund()">Enviar solicitud</button>
+        <button class="pc-btn" (click)="showRefundArea=false">Cancelar</button>
+      </div>
+    </div>
   </div>
 </div>
 

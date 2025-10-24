@@ -12,6 +12,7 @@ export interface ProximaCitaData {
   appointmentId?: number;
   successHighlight?: boolean;
   verification_code?: string;
+  canRefund?: boolean;
 }
 
 @Component({
@@ -27,6 +28,10 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   @Output() reprogramar = new EventEmitter<void>();
   @Output() cancelar = new EventEmitter<void>();
   @Output() pagar = new EventEmitter<number>();
+  @Output() pedirDevolucion = new EventEmitter<{ appointmentId: number; reason: string }>();
+
+  showRefundArea = false;
+  refundReason = '';
 
   ngOnInit(): void {
     try {
@@ -83,6 +88,18 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   onCancelarClick(): void {
     try { console.log('[PROXIMA_CITA_CARD] CANCELAR click', { appointmentId: this.data?.appointmentId }); } catch {}
     this.cancelar.emit();
+  }
+
+  onRefundClick(): void {
+    this.showRefundArea = !this.showRefundArea;
+  }
+
+  submitRefund(): void {
+    const appointmentId = this.data?.appointmentId || 0;
+    if (!appointmentId || !this.refundReason || this.refundReason.trim().length < 10) {
+      return;
+    }
+    this.pedirDevolucion.emit({ appointmentId, reason: this.refundReason.trim() });
   }
 }
 

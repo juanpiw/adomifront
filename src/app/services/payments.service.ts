@@ -53,6 +53,16 @@ export class PaymentsService {
       { headers: this.headers(), params }
     );
   }
+
+  // Refund request
+  requestRefund(appointmentId: number, reason: string): Observable<{ success: boolean; request_id: number }>{
+    const body = { reason } as any;
+    return this.http.post<{ success: boolean; request_id: number }>(
+      `${this.base}/payments/appointments/${appointmentId}/refund-request`,
+      body,
+      { headers: this.headers() }
+    );
+  }
 }
 
 
