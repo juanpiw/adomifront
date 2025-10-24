@@ -36,8 +36,11 @@
           <th>Fecha</th>
           <th>Servicio</th>
           <th>Cliente</th>
+          <th>Teléfono</th>
           <th>Proveedor</th>
-          <th>Monto</th>
+          <th>Método</th>
+          <th>Monto pagado</th>
+          <th>Monto a devolver (65%)</th>
           <th>Estado</th>
           <th>Motivo</th>
           <th>Acciones</th>
@@ -49,8 +52,11 @@
           <td>{{ r.requested_at | date:'short' }}</td>
           <td>{{ r.service_name || '-' }}</td>
           <td>{{ r.client_email }}</td>
+          <td>{{ r.client_phone || '-' }}</td>
           <td>{{ r.provider_email }}</td>
-          <td>{{ (r.amount || 0) | number:'1.0-0' }} {{ r.currency || 'CLP' }}</td>
+          <td>{{ r.payment_method || '-' }}</td>
+          <td>{{ (r.original_amount || r.amount || 0) | number:'1.0-0' }} {{ r.currency || 'CLP' }}</td>
+          <td><strong>{{ (r.refund_proposed_amount || 0) | number:'1.0-0' }} {{ r.currency || 'CLP' }}</strong></td>
           <td>{{ r.status }}</td>
           <td>{{ r.reason }}</td>
           <td>
