@@ -245,7 +245,7 @@ export class AdminPagosComponent implements OnInit {
 
   decideRefund(r: any, decision: 'approved'|'denied'|'cancelled') {
     const token = this.session.getAccessToken();
-    const notes = prompt('Notas (opcional):') || '';
+    const notes = '';
     this.adminApi.decideRefund(this.adminSecret, token, Number(r.id), decision, notes).subscribe({
       next: () => this.load(),
       error: () => alert('No se pudo registrar la decisión')

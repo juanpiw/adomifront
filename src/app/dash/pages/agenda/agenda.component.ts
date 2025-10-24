@@ -52,6 +52,16 @@ export class DashAgendaComponent implements OnInit {
       meta: 'Este mes'
     },
     {
+      label: 'Citas pagadas en efectivo',
+      value: 0,
+      meta: 'Últimos 7 días'
+    },
+    {
+      label: 'Deuda a la aplicación',
+      value: '$0',
+      meta: 'Comisiones cash pendientes'
+    },
+    {
       label: 'Tasa de Ocupación',
       value: '85%',
       meta: 'Semana actual'
@@ -113,7 +123,7 @@ export class DashAgendaComponent implements OnInit {
 
   // Estados
   loading = false;
-  currentView: 'dashboard' | 'calendar' | 'config' = 'dashboard';
+  currentView: 'dashboard' | 'calendar' | 'cash' | 'config' = 'dashboard';
   showPaidAwaitingPanel: boolean = false;
   paidAwaitingAppointments: Array<{ id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number }>=[];
   // Estado modal verificación
@@ -319,6 +329,24 @@ export class DashAgendaComponent implements OnInit {
                 ...this.dashboardMetrics[idx],
                 value: `$${Number(releasable || 0).toLocaleString('es-CL')}`,
                 meta: `Pendiente: $${Number(pending || 0).toLocaleString('es-CL')} · Liberado: $${Number(released || 0).toLocaleString('es-CL')}`
+              } as any;
+            }
+            // Actualiza "Citas pagadas en efectivo" si backend expone métrica (fallback: 0)
+            const cashIdx = this.dashboardMetrics.findIndex(m => m.label === 'Citas pagadas en efectivo');
+            if (cashIdx >= 0) {
+              const cashPaidCount = Number((resp.summary as any).cashPaidCount || 0);
+              this.dashboardMetrics[cashIdx] = {
+                ...this.dashboardMetrics[cashIdx],
+                value: cashPaidCount
+              } as any;
+            }
+            // Actualiza "Deuda a la aplicación" si backend expone métrica de comisiones cash (fallback: 0)
+            const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
+            if (debtIdx >= 0) {
+              const cashDebt = Number((resp.summary as any).cashCommissionDebt || 0);
+              this.dashboardMetrics[debtIdx] = {
+                ...this.dashboardMetrics[debtIdx],
+                value: `$${cashDebt.toLocaleString('es-CL')}`
               } as any;
             }
           }
@@ -542,7 +570,7 @@ export class DashAgendaComponent implements OnInit {
   }
 
   // Navegación
-  setView(view: 'dashboard' | 'calendar' | 'config') {
+  setView(view: 'dashboard' | 'calendar' | 'cash' | 'config') {
     this.currentView = view;
     // Al cambiar a calendario, recargar mes actual para asegurar datos frescos
     if (view === 'calendar' && this.selectedDate) {
