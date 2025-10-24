@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { VerificacionCodeCardComponent } from '../verificacion-code-card/verificacion-code-card.component';
 
 export interface ProximaCitaData {
@@ -18,7 +19,7 @@ export interface ProximaCitaData {
 @Component({
   selector: 'ui-proxima-cita-card',
   standalone: true,
-  imports: [CommonModule, VerificacionCodeCardComponent],
+  imports: [CommonModule, FormsModule, VerificacionCodeCardComponent],
   templateUrl: './proxima-cita-card.component.html',
   styleUrls: ['./proxima-cita-card.component.scss']
 })
