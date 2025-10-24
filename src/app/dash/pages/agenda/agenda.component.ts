@@ -145,6 +145,20 @@ export class DashAgendaComponent implements OnInit {
   // Datos del gráfico
   chartData: { labels: string[]; datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; tension: number; }[] } | null = null;
 
+  // Datos mock para prototipo de comisiones cash (se reemplazará con API)
+  cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'paid' }>= [
+    { time: '10:00 AM', client: 'Juan Pérez',   date: '2025-10-24', commission: 3000, dueDate: '2025-10-27', status: 'pending' },
+    { time: '14:00 PM', client: 'Carlos Ruiz',  date: '2025-10-21', commission: 1500, dueDate: '2025-10-24', status: 'overdue' },
+    { time: '11:00 AM', client: 'Sofía Mena',   date: '2025-10-18', commission: 2500, dueDate: '2025-10-21', status: 'paid' }
+  ];
+
+  get cashTotal(): number {
+    return this.cashDebts.reduce((sum, d) => sum + (d.status !== 'paid' ? d.commission : 0), 0);
+  }
+  get cashOverdueTotal(): number {
+    return this.cashDebts.reduce((sum, d) => sum + (d.status === 'overdue' ? d.commission : 0), 0);
+  }
+
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
   ngOnInit() {

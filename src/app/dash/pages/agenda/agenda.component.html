@@ -148,13 +148,52 @@
   <!-- Contenido: Pagos en efectivo -->
   <div *ngIf="currentView === 'cash'" class="agenda-content">
     <div class="agenda-content__main">
-      <h3>Pagos en Efectivo</h3>
-      <p style="color:#64748b;margin:4px 0 12px">Cobros en efectivo y comisiones pendientes</p>
-      <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px;">
-        <div class="card"><div class="label">Citas pagadas en efectivo</div><div class="value">{{ (dashboardMetrics.find(m=>m.label==='Citas pagadas en efectivo')?.value) || 0 }}</div></div>
-        <div class="card"><div class="label">Deuda a la aplicación</div><div class="value">{{ (dashboardMetrics.find(m=>m.label==='Deuda a la aplicación')?.value) || '$0' }}</div></div>
+      <h2 class="cash-title">Mis Comisiones Pendientes</h2>
+      <p class="cash-sub">Aquí puedes ver las comisiones que debes a la plataforma por los cobros en efectivo.</p>
+
+      <div class="cash-summary">
+        <div class="cash-summary__amount">
+          <div class="cash-summary__label">Total Adeudado</div>
+          <div class="cash-summary__value">${{ cashTotal | number:'1.0-0' }}</div>
+          <div class="cash-summary__overdue" *ngIf="cashOverdueTotal>0">Vencido: ${{ cashOverdueTotal | number:'1.0-0' }}</div>
+        </div>
+        <button class="cash-summary__pay" [disabled]="cashTotal===0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="margin-right:8px"><path d="M21 7H3V5h18v2zm0 4H3V9h18v2zm0 6H3v-2h18v2z"/></svg>
+          Pagar Total Adeudado
+        </button>
       </div>
-      <p style="color:#64748b">Próximamente: listado de comisiones cash y acciones.</p>
+
+      <table class="cash-table">
+        <thead>
+          <tr>
+            <th>Cita (Cliente)</th>
+            <th>Monto Comisión</th>
+            <th>Fecha Vencimiento</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of cashDebts">
+            <td>
+              <div class="cash-table__slot">{{ d.time }} – {{ d.client }}</div>
+              <div class="cash-table__date">{{ d.date | date:'dd/MM/yyyy' }}</div>
+            </td>
+            <td>
+              ${{ d.commission | number:'1.0-0' }}
+            </td>
+            <td>{{ d.dueDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge--pending': d.status==='pending',
+                'badge--overdue': d.status==='overdue',
+                'badge--paid': d.status==='paid'
+              }">
+                {{ d.status==='pending' ? 'Pendiente' : (d.status==='overdue' ? 'Vencida' : 'Pagada') }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
