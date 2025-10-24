@@ -94,6 +94,7 @@ export class DashIngresosComponent implements OnInit {
     accountType: 'corriente',
     bankName: 'Banco de Chile',
     accountNumber: '12345678901',
+    holderName: 'Juan Pérez',
     rutHolder: '12.345.678-9'
   };
   
