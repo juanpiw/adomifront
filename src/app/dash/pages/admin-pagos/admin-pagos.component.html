@@ -60,8 +60,32 @@
           <td>{{ r.status }}</td>
           <td>{{ r.reason }}</td>
           <td>
-            <button (click)="decideRefund(r, 'approved')" [disabled]="r.status!=='requested' && r.status!=='in_review'">Aprobar</button>
-            <button (click)="decideRefund(r, 'denied')" [disabled]="r.status!=='requested' && r.status!=='in_review'">Denegar</button>
+            <ng-container *ngIf="refundPayRow?.id !== r.id; else refundPayForm">
+              <button (click)="decideRefund(r, 'approved')" [disabled]="r.status!=='requested' && r.status!=='in_review'">Aprobar</button>
+              <button (click)="decideRefund(r, 'denied')" [disabled]="r.status!=='requested' && r.status!=='in_review'">Denegar</button>
+              <button *ngIf="r.status==='approved'" (click)="openRefundPay(r)">Pagar</button>
+            </ng-container>
+            <ng-template #refundPayForm>
+              <div class="pay-drawer">
+                <h4>Pagar devolución a {{ r.client_email }}</h4>
+                <div class="grid">
+                  <div><strong>Método:</strong> {{ r.payment_method || '-' }}</div>
+                  <div><strong>Monto a devolver:</strong> {{ (r.refund_proposed_amount || 0) | number:'1.0-0' }} {{ r.currency || 'CLP' }}</div>
+                </div>
+                <div class="row">
+                  <label>Referencia</label>
+                  <input type="text" [(ngModel)]="refundPayRef" placeholder="Número/Texto de referencia" />
+                </div>
+                <div class="row">
+                  <label>Voucher</label>
+                  <input type="file" (change)="onRefundVoucherSelected($event)" accept="image/*,application/pdf" />
+                </div>
+                <div class="actions">
+                  <button class="btn-primary" (click)="confirmRefundPay(r)">Confirmar pago</button>
+                  <button (click)="refundPayRow=null">Cancelar</button>
+                </div>
+              </div>
+            </ng-template>
           </td>
         </tr>
       </tbody>

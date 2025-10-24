@@ -31,6 +31,10 @@ export class AdminPagosComponent implements OnInit {
   payRow: any = null;
   payRef: string = '';
   payFile: File | null = null;
+  // Estado de pago de devolución
+  refundPayRow: any = null;
+  refundPayRef: string = '';
+  refundPayFile: File | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -182,6 +186,38 @@ export class AdminPagosComponent implements OnInit {
     const input = e.target as HTMLInputElement;
     const files = input?.files;
     this.payFile = files && files.length ? files[0] : null;
+  }
+
+  openRefundPay(r: any) {
+    this.refundPayRow = r;
+    this.refundPayRef = '';
+    this.refundPayFile = null;
+  }
+
+  onRefundVoucherSelected(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const files = input?.files;
+    this.refundPayFile = files && files.length ? files[0] : null;
+  }
+
+  async confirmRefundPay(r: any) {
+    const token = this.session.getAccessToken();
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : '',
+      'x-admin-secret': this.adminSecret
+    });
+    try {
+      if (this.refundPayFile) {
+        const fd = new FormData();
+        fd.append('voucher', this.refundPayFile);
+        await this.http.post(`${this.baseUrl}/admin/refunds/${r.id}/upload-voucher`, fd, { headers }).toPromise();
+      }
+      await this.http.post(`${this.baseUrl}/admin/refunds/${r.id}/mark-paid`, { reference: this.refundPayRef }, { headers }).toPromise();
+      this.refundPayRow = null;
+      this.load();
+    } catch {
+      alert('No se pudo marcar la devolución como pagada');
+    }
   }
 
   async confirmPay() {
