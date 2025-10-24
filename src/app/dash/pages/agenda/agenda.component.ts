@@ -512,6 +512,33 @@ export class DashAgendaComponent implements OnInit {
     // El modal se maneja dentro de DayDetail; aquí solo respondemos al evento de creación
   }
 
+  onEspacioBloqueado(evt: { date: string; startTime?: string; endTime?: string; reason: string; blockWholeDay: boolean }) {
+    // Delega al handler ya implementado en la misma clase para crear excepción
+    this.onEspacioBloqueadoInternal(evt);
+  }
+
+  private onEspacioBloqueadoInternal(evt: { date: string; startTime?: string; endTime?: string; reason: string; blockWholeDay: boolean }) {
+    // Reutilizar el flujo ya implementado (ver onEspacioBloqueado existente si lo hubiera)
+    this.loading = true;
+    this.availabilityService.createException(
+      evt.date,
+      false,
+      evt.startTime,
+      evt.endTime,
+      evt.reason
+    ).subscribe({
+      next: () => {
+        this.loading = false;
+        if (this.selectedDate) {
+          const y = this.selectedDate.getFullYear();
+          const m = this.selectedDate.getMonth() + 1;
+          this.loadMonth(y, m);
+        }
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
   onDeleteAppointment(id: number) {
     // Cambiar a cancelación de cita (no borrado definitivo)
     const idx = this.dayAppointments.findIndex(a => Number(a.id) === Number(id));
@@ -531,6 +558,31 @@ export class DashAgendaComponent implements OnInit {
       error: (err) => {
         console.error('Error cancelando cita:', err);
         if (prev && idx >= 0) this.dayAppointments[idx] = prev;
+      }
+    });
+  }
+
+  onCobrarEnEfectivo(id: string) {
+    const apptId = Number(id);
+    if (!apptId) return;
+    if (!confirm('¿Confirmas registrar el cobro en efectivo de esta cita?')) return;
+    this.loading = true;
+    this.payments.collectCash(apptId).subscribe({
+      next: (resp: any) => {
+        this.loading = false;
+        if (resp?.success) {
+          if (this.selectedDate) {
+            const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+            this.loadDay(iso);
+          }
+          alert('✅ Cobro en efectivo registrado.');
+        } else {
+          alert('No se pudo registrar el cobro en efectivo.');
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        alert(err?.error?.error || 'Error al registrar el cobro en efectivo');
       }
     });
   }

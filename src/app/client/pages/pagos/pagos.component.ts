@@ -31,8 +31,8 @@ import { AuthService } from '../../../auth/services/auth.service';
 export class ClientPagosComponent implements OnInit {
   // Estado del modal
   showAddCardModal = false;
-  private http = inject(HttpClient);
-  private auth = inject(AuthService);
+  // Evitar uso de inject() por compatibilidad con builder
+  constructor(private http: HttpClient, private auth: AuthService) {}
   
   // Datos de las tarjetas
   cards: Card[] = [];
