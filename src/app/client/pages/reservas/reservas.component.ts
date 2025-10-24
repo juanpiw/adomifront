@@ -9,7 +9,7 @@ import { CanceladaClienteCardComponent, CanceladaClienteData } from '../../../..
 import { CanceladaProfesionalCardComponent, CanceladaProfesionalData } from '../../../../libs/shared-ui/reservas/cancelada-profesional-card.component';
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
 import { ReviewsService } from '../../../services/reviews.service';
-import { ClientProfileService } from '../../services/client-profile.service';
+import { ClientProfileService } from '../../../services/client-profile.service';
 import { environment } from '../../../../environments/environment';
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
