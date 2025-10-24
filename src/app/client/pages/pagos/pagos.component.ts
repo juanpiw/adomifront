@@ -153,9 +153,21 @@ export class ClientPagosComponent implements OnInit {
   }
 
   onCardAdded(cardData: CardFormData) {
-    // Aquí debería ir integración Stripe (future). Por ahora, cerrar modal y refrescar lista.
-    this.showAddCardModal = false;
-    this.fetchCards();
+    console.log('[CLIENT_PAGOS] onCardAdded ->', cardData);
+    this.http.post<any>(`${environment.apiBaseUrl}/client/payment-methods`, {
+      cardNumber: cardData.cardNumber,
+      expiryDate: cardData.expiryDate
+    }, { headers: this.headers() }).subscribe({
+      next: () => {
+        console.log('[CLIENT_PAGOS] card saved');
+        this.showAddCardModal = false;
+        this.fetchCards();
+      },
+      error: (err) => {
+        console.error('[CLIENT_PAGOS] error saving card', err);
+        alert('No se pudo guardar la tarjeta');
+      }
+    });
   }
 
   onCloseModal() {
