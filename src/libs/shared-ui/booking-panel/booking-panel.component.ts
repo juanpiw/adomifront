@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ClientProfileService } from '../../../app/services/client-profile.service';
@@ -41,7 +41,7 @@ export interface BookingPanelData {
   templateUrl: './booking-panel.component.html',
   styleUrls: ['./booking-panel.component.scss']
 })
-export class BookingPanelComponent implements OnChanges {
+export class BookingPanelComponent implements OnChanges, OnInit {
   @Input() providerId?: string | number;
   @Input() providerName?: string;
   @Input() data: BookingPanelData = {
@@ -77,6 +77,20 @@ export class BookingPanelComponent implements OnChanges {
   errorTime = '';
 
   constructor(private router: Router, private clientProfile: ClientProfileService) {}
+
+  ngOnInit(): void {
+    // Precargar preferencia para mostrarla sin esperar a abrir el modal
+    if (!this.paymentPref && !this.loadingPaymentPref) {
+      this.loadingPaymentPref = true;
+      this.clientProfile.getPaymentPreference().subscribe({
+        next: (res) => {
+          this.paymentPref = (res && (res as any).success) ? ((res as any).preference as any) : null;
+          this.loadingPaymentPref = false;
+        },
+        error: () => { this.loadingPaymentPref = false; }
+      });
+    }
+  }
 
   onServiceClick(serviceId: string) {
     // Actualizar selección local para feedback inmediato
@@ -173,6 +187,11 @@ export class BookingPanelComponent implements OnChanges {
       });
     }
     this.bookingConfirmed.emit(this.data.summary);
+  }
+
+  paymentMethodText(): string {
+    if (this.loadingPaymentPref) return 'cargando…';
+    return this.paymentPref === 'cash' ? 'Efectivo' : 'Tarjeta';
   }
 
   ngOnChanges(changes: SimpleChanges): void {
