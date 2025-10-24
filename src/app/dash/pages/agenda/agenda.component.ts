@@ -11,6 +11,8 @@ import { AppointmentsService, AppointmentDto } from '../../../services/appointme
 import { PaymentsService } from '../../../services/payments.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-d-agenda',
@@ -136,28 +138,22 @@ export class DashAgendaComponent implements OnInit {
   // 🔔 Contador de citas programadas (scheduled) pendientes de confirmar
   scheduledAppointmentsCount: number = 0;
 
+  // Cash backend data
+  cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'paid' }>= [];
+  cashTotal = 0;
+  cashOverdueTotal = 0;
+
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiBaseUrl;
+
   private currentProviderId: number | null = null;
 
   // Datos del gráfico
   chartData: { labels: string[]; datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; tension: number; }[] } | null = null;
-
-  // Datos mock para prototipo de comisiones cash (se reemplazará con API)
-  cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'paid' }>= [
-    { time: '10:00 AM', client: 'Juan Pérez',   date: '2025-10-24', commission: 3000, dueDate: '2025-10-27', status: 'pending' },
-    { time: '14:00 PM', client: 'Carlos Ruiz',  date: '2025-10-21', commission: 1500, dueDate: '2025-10-24', status: 'overdue' },
-    { time: '11:00 AM', client: 'Sofía Mena',   date: '2025-10-18', commission: 2500, dueDate: '2025-10-21', status: 'paid' }
-  ];
-
-  get cashTotal(): number {
-    return this.cashDebts.reduce((sum, d) => sum + (d.status !== 'paid' ? d.commission : 0), 0);
-  }
-  get cashOverdueTotal(): number {
-    return this.cashDebts.reduce((sum, d) => sum + (d.status === 'overdue' ? d.commission : 0), 0);
-  }
 
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
@@ -211,7 +207,56 @@ export class DashAgendaComponent implements OnInit {
     });
     this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
     this.appointments.onAppointmentDeleted().subscribe((p: { id: number }) => this.onRealtimeDelete(p.id));
+
+    // Inicializar pestaña cash
+    this.loadCashSummary();
+    this.loadCashCommissions();
   }
+
+  private headers(): HttpHeaders {
+    const token = this.auth.getAccessToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    });
+  }
+
+  private loadCashSummary() {
+    this.http.get<any>(`${this.baseUrl}/provider/cash/summary`, { headers: this.headers() }).subscribe({
+      next: (res) => {
+        if (res?.success && res.summary) {
+          this.cashTotal = Number(res.summary.total_due || 0);
+          this.cashOverdueTotal = Number(res.summary.overdue_due || 0);
+          // Actualiza tarjeta "Deuda a la aplicación"
+          const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
+          if (debtIdx >= 0) this.dashboardMetrics[debtIdx] = { ...this.dashboardMetrics[debtIdx], value: `$${this.cashTotal.toLocaleString('es-CL')}` } as any;
+          const cashIdx = this.dashboardMetrics.findIndex(m => m.label === 'Citas pagadas en efectivo');
+          if (cashIdx >= 0) this.dashboardMetrics[cashIdx] = { ...this.dashboardMetrics[cashIdx], value: this.cashTotal > 0 ? 1 : 0 } as any;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  private loadCashCommissions(status?: 'pending'|'overdue'|'paid') {
+    const params: any = {};
+    if (status) params.status = status;
+    this.http.get<any>(`${this.baseUrl}/provider/cash/commissions`, { headers: this.headers(), params }).subscribe({
+      next: (res) => {
+        const rows = Array.isArray(res?.data) ? res.data : [];
+        this.cashDebts = rows.map((r: any) => ({
+          time: r.start_time ? String(r.start_time).slice(0,5) : '',
+          client: r.client_name || '',
+          date: r.date,
+          commission: Number(r.commission_amount || 0),
+          dueDate: r.due_date,
+          status: r.status
+        }));
+      },
+      error: () => {}
+    });
+  }
+
   private togglePaidAwaitingPanel() {
     this.showPaidAwaitingPanel = !this.showPaidAwaitingPanel;
     if (this.showPaidAwaitingPanel) {
@@ -461,206 +506,54 @@ export class DashAgendaComponent implements OnInit {
     });
   }
 
-  // Cobro en efectivo
-  onCobrarEnEfectivo(id: string) {
-    const apptId = Number(id);
-    if (!apptId) return;
-    if (!confirm('¿Confirmas registrar el cobro en efectivo de esta cita?')) return;
-    this.loading = true;
-    this.payments.collectCash(apptId).subscribe({
-      next: (resp: any) => {
-        this.loading = false;
-        if (resp?.success) {
-          // Refrescar día y panel
-          if (this.selectedDate) {
-            const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
-            this.loadDay(iso);
-          }
-          this.loadPaidAwaiting();
-          alert('✅ Cobro en efectivo registrado.');
-        } else {
-          alert('No se pudo registrar el cobro en efectivo.');
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        alert(err?.error?.error || 'Error al registrar el cobro en efectivo');
-      }
-    });
-  }
-
   // Evento desde DayDetail al confirmar nueva cita en el modal
   onDayCitaCreated(evt: { title: string; client?: string; date: string; startTime: string; endTime: string; notes?: string; color: string }) {
-    // Por ahora creamos una cita simple con status scheduled. El cliente lo define el flujo B2C, así que se omite aquí
-    // Se asume que el provider está autenticado; el cliente_id no aplica aquí, por lo que esta acción es placeholder hasta definir UX
     console.log('[AGENDA] citaCreated (UI only placeholder):', evt);
-    // Siguiente iteración: abrir selector de cliente y llamar AppointmentsService.create
   }
   
   /**
-   * Evento desde DayDetail al bloquear un espacio
+   * 🔔 Actualizar contador de citas programadas pendientes
    */
-  onEspacioBloqueado(evt: { date: string; startTime?: string; endTime?: string; reason: string; blockWholeDay: boolean }): void {
-    console.log('🔒 [AGENDA] ==================== BLOQUEANDO ESPACIO ====================');
-    console.log('🔒 [AGENDA] Datos:', evt);
+  private updateScheduledCount(): void {
+    const scheduledCount = this.calendarEvents.filter(e => e.status === 'scheduled').length;
+    this.scheduledAppointmentsCount = scheduledCount;
+    console.log(`🔔 [AGENDA] Contador actualizado: ${scheduledCount} citas programadas`);
+  }
+
+  private onRealtimeUpsert(a: AppointmentDto) {
+    console.log('🔔 [AGENDA] Realtime update recibido:', a);
     
-    this.loading = true;
+    // Si el evento pertenece al mes seleccionado, actualizar calendario
+    const [y, m] = a.date.split('-').map(Number);
+    const current = this.selectedDate || new Date();
+    if (current.getFullYear() === y && (current.getMonth() + 1) === m) {
+      // Reemplazar/insertar en calendarEvents
+      const ev = this.mapAppointmentToEvent(a);
+      const idx = this.calendarEvents.findIndex(e => e.id === String(a.id));
+      if (idx >= 0) this.calendarEvents[idx] = ev; else this.calendarEvents.push(ev);
+      
+      // 🔔 Recalcular contador de citas programadas
+      this.updateScheduledCount();
+    }
     
-    this.availabilityService.createException(
-      evt.date,
-      false, // is_available = false (es un bloqueo)
-      evt.startTime,
-      evt.endTime,
-      evt.reason
-    ).subscribe({
-      next: (resp) => {
-        console.log('🔒 [AGENDA] ✅ Espacio bloqueado exitosamente:', resp);
-        this.loading = false;
-        
-        // Recargar el mes actual para reflejar el bloqueo
-        if (this.selectedDate) {
-          this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
-        }
-        
-        // Mostrar notificación
-        this.notifications.createNotification({
-          type: 'availability',
-          profile: 'provider',
-          title: '✅ Espacio bloqueado',
-          message: evt.blockWholeDay 
-            ? `Todo el día ${evt.date} ha sido bloqueado`
-            : `Horario ${evt.startTime}-${evt.endTime} bloqueado para el ${evt.date}`,
-          priority: 'medium',
-          actions: []
-        });
-      },
-      error: (err) => {
-        console.error('🔴 [AGENDA] Error bloqueando espacio:', err);
-        this.loading = false;
-        alert('Error al bloquear el espacio. Intenta de nuevo.');
+    // Si el día seleccionado coincide, refrescar listado del día
+    if (this.selectedDate) {
+      const dIso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth()+1).padStart(2,'0')}-${String(this.selectedDate.getDate()).padStart(2,'0')}`;
+      if (dIso === a.date) {
+        const da = this.mapAppointmentToDay(a);
+        const di = this.dayAppointments.findIndex(x => x.id === String(a.id));
+        if (di >= 0) this.dayAppointments[di] = da; else this.dayAppointments.push(da);
       }
-    });
-  }
-
-  // Event handlers de configuración de horarios
-  onAddTimeBlock(timeBlock: Omit<TimeBlock, 'id'>) {
-    const newTimeBlock: TimeBlock = {
-      ...timeBlock,
-      id: Date.now().toString()
-    };
-    this.timeBlocks.push(newTimeBlock);
-    console.log('Bloque de tiempo agregado:', newTimeBlock);
-  }
-
-  onRemoveTimeBlock(blockId: string) {
-    this.timeBlocks = this.timeBlocks.filter(block => block.id !== blockId);
-    console.log('Bloque de tiempo eliminado:', blockId);
-  }
-
-  onUpdateTimeBlock(updatedBlock: TimeBlock) {
-    const index = this.timeBlocks.findIndex(block => block.id === updatedBlock.id);
-    if (index !== -1) {
-      this.timeBlocks[index] = updatedBlock;
-      console.log('Bloque de tiempo actualizado:', updatedBlock);
     }
   }
 
-  onSaveSchedule() {
-    this.loading = true;
-    // 1) Cargar bloques actuales desde backend para saber ids reales
-    this.availabilityService.getWeekly().subscribe({
-      next: (resp) => {
-        const existing = resp.blocks || [];
-        const dayNameToEnum: Record<string, any> = {
-          'Lunes': 'monday', 'Martes': 'tuesday', 'Miércoles': 'wednesday', 'Jueves': 'thursday', 'Viernes': 'friday', 'Sábado': 'saturday', 'Domingo': 'sunday'
-        };
-
-        // 2) Sincronizar: por cada bloque en UI, crear/actualizar; eliminar los que ya no existan y sí existen en backend
-        const tasks: Array<Promise<any>> = [];
-
-        // Mapear existentes por (day,start,end)
-        const key = (d: any) => `${d.day_of_week}|${String(d.start_time).slice(0,5)}|${String(d.end_time).slice(0,5)}`;
-        const existingMap = new Map(existing.map(b => [key(b), b]));
-
-        // Crear/actualizar
-        this.timeBlocks.forEach(tb => {
-          const dayEnum = dayNameToEnum[tb.day];
-          const k = `${dayEnum}|${tb.startTime}|${tb.endTime}`;
-          const found = existingMap.get(k);
-          if (found) {
-            tasks.push(this.availabilityService.updateWeekly(found.id, { is_active: tb.enabled }).toPromise());
-            existingMap.delete(k);
-          } else {
-            tasks.push(this.availabilityService.createWeekly(dayEnum, tb.startTime, tb.endTime, tb.enabled).toPromise());
-          }
-        });
-
-        // Eliminar los restantes en existingMap (ya no están en UI)
-        existingMap.forEach((b) => {
-          tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise());
-        });
-
-        return Promise.allSettled(tasks).then(() => {
-          this.loading = false;
-          console.log('Horario guardado');
-        });
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
-  }
-
-  // Navegación
-  setView(view: 'dashboard' | 'calendar' | 'cash' | 'config') {
-    this.currentView = view;
-    // Al cambiar a calendario, recargar mes actual para asegurar datos frescos
-    if (view === 'calendar' && this.selectedDate) {
-      this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
-    }
-  }
-
-  // Cargar citas del mes
-  private loadMonth(year: number, month: number) {
-    const monthStr = `${year}-${String(month).padStart(2, '0')}`;
-    this.loading = true;
-    this.appointments.listByMonth(monthStr).subscribe({
-      next: (resp: { success: boolean; appointments: AppointmentDto[] }) => {
-        const apps = (resp.appointments || []) as AppointmentDto[];
-        console.log(`[AGENDA] Loading month ${monthStr}: ${apps.length} appointments`, apps);
-        
-        // 🔔 Contar citas programadas (scheduled) pendientes de confirmar
-        const scheduledCount = apps.filter(a => a.status === 'scheduled').length;
-        this.scheduledAppointmentsCount = scheduledCount;
-        console.log(`🔔 [AGENDA] Citas programadas (scheduled) pendientes: ${scheduledCount}`);
-        
-        this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
-        console.log('[AGENDA] Calendar events generated:', this.calendarEvents);
-
-        // 🔔 Contar "citas por pagar (esperan código)": pagadas pero no completadas
-        // Actualizar panel de pagadas pendientes (desde endpoint dedicado)
-        this.loadPaidAwaiting();
-        
-        // Debug: verificar eventos para el día 20
-        const day20Events = this.calendarEvents.filter(e => e.date.getDate() === 20);
-        console.log('[AGENDA] Events for day 20:', day20Events);
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
-  }
-
-  // Cargar citas del día (YYYY-MM-DD)
-  private loadDay(dateIso: string) {
-    this.loading = true;
-    this.appointments.listByDay(dateIso).subscribe({
-      next: (resp: { success: boolean; appointments: (AppointmentDto & { client_name?: string })[] }) => {
-        const apps = (resp.appointments || []) as (AppointmentDto & { client_name?: string })[];
-        this.dayAppointments = apps.map(a => this.mapAppointmentToDay(a));
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
+  private onRealtimeDelete(id: number) {
+    console.log('🔔 [AGENDA] Eliminando cita:', id);
+    this.calendarEvents = this.calendarEvents.filter(e => e.id !== String(id));
+    this.dayAppointments = this.dayAppointments.filter(d => d.id !== String(id));
+    
+    // 🔔 Recalcular contador
+    this.updateScheduledCount();
   }
 
   private mapAppointmentToEvent(a: AppointmentDto): CalendarEvent {
@@ -746,50 +639,5 @@ export class DashAgendaComponent implements OnInit {
     const parts = hhmm.split(':');
     if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
     return hhmm;
-  }
-
-  private onRealtimeUpsert(a: AppointmentDto) {
-    console.log('🔔 [AGENDA] Realtime update recibido:', a);
-    
-    // Si el evento pertenece al mes seleccionado, actualizar calendario
-    const [y, m] = a.date.split('-').map(Number);
-    const current = this.selectedDate || new Date();
-    if (current.getFullYear() === y && (current.getMonth() + 1) === m) {
-      // Reemplazar/insertar en calendarEvents
-      const ev = this.mapAppointmentToEvent(a);
-      const idx = this.calendarEvents.findIndex(e => e.id === String(a.id));
-      if (idx >= 0) this.calendarEvents[idx] = ev; else this.calendarEvents.push(ev);
-      
-      // 🔔 Recalcular contador de citas programadas
-      this.updateScheduledCount();
-    }
-    
-    // Si el día seleccionado coincide, refrescar listado del día
-    if (this.selectedDate) {
-      const dIso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth()+1).padStart(2,'0')}-${String(this.selectedDate.getDate()).padStart(2,'0')}`;
-      if (dIso === a.date) {
-        const da = this.mapAppointmentToDay(a);
-        const di = this.dayAppointments.findIndex(x => x.id === String(a.id));
-        if (di >= 0) this.dayAppointments[di] = da; else this.dayAppointments.push(da);
-      }
-    }
-  }
-  
-  /**
-   * 🔔 Actualizar contador de citas programadas pendientes
-   */
-  private updateScheduledCount(): void {
-    const scheduledCount = this.calendarEvents.filter(e => e.status === 'scheduled').length;
-    this.scheduledAppointmentsCount = scheduledCount;
-    console.log(`🔔 [AGENDA] Contador actualizado: ${scheduledCount} citas programadas`);
-  }
-
-  private onRealtimeDelete(id: number) {
-    console.log('🔔 [AGENDA] Eliminando cita:', id);
-    this.calendarEvents = this.calendarEvents.filter(e => e.id !== String(id));
-    this.dayAppointments = this.dayAppointments.filter(d => d.id !== String(id));
-    
-    // 🔔 Recalcular contador
-    this.updateScheduledCount();
   }
 }

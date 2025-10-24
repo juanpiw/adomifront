@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ClientProfileService } from '../../../app/services/client-profile.service';
 
 export interface Service {
   id: string;
@@ -67,13 +68,15 @@ export class BookingPanelComponent implements OnChanges {
 
   // Modal de confirmación
   isConfirmOpen = false;
+  paymentPref: 'card' | 'cash' | null = null;
+  loadingPaymentPref = false;
 
   // Errores de validación simples
   errorService = '';
   errorDate = '';
   errorTime = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private clientProfile: ClientProfileService) {}
 
   onServiceClick(serviceId: string) {
     // Actualizar selección local para feedback inmediato
@@ -131,6 +134,17 @@ export class BookingPanelComponent implements OnChanges {
 
     if (!hasService || !hasDate || !hasTime) return;
 
+    // Cargar preferencia de pago antes de abrir modal (si no está cargada)
+    if (!this.paymentPref && !this.loadingPaymentPref) {
+      this.loadingPaymentPref = true;
+      this.clientProfile.getPaymentPreference().subscribe({
+        next: (res) => {
+          this.paymentPref = (res && res.success) ? (res.preference as any) : null;
+          this.loadingPaymentPref = false;
+        },
+        error: () => { this.loadingPaymentPref = false; }
+      });
+    }
     // Abrir modal de confirmación
     this.isConfirmOpen = true;
   }
@@ -150,6 +164,14 @@ export class BookingPanelComponent implements OnChanges {
 
   confirmBookingNow() {
     // No cerrar aún; el padre manejará confirming y cierre cuando termine
+    // Backup: si aún no cargó la preferencia, intentar una vez más sin bloquear UX
+    if (!this.paymentPref && !this.loadingPaymentPref) {
+      this.loadingPaymentPref = true;
+      this.clientProfile.getPaymentPreference().subscribe({
+        next: (res) => { this.paymentPref = (res && res.success) ? (res.preference as any) : null; this.loadingPaymentPref = false; },
+        error: () => { this.loadingPaymentPref = false; }
+      });
+    }
     this.bookingConfirmed.emit(this.data.summary);
   }
 

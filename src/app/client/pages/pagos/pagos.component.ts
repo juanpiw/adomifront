@@ -10,6 +10,9 @@ import {
   Transaction,
   CardFormData
 } from '../../../../libs/shared-ui/payment-methods';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-c-pagos',
@@ -30,32 +33,8 @@ export class ClientPagosComponent implements OnInit {
   showAddCardModal = false;
   
   // Datos de las tarjetas
-  cards: Card[] = [
-    {
-      id: '1',
-      type: 'visa',
-      lastFour: '1234',
-      expiryMonth: '10',
-      expiryYear: '27',
-      isPrimary: true
-    },
-    {
-      id: '2',
-      type: 'mastercard',
-      lastFour: '5678',
-      expiryMonth: '05',
-      expiryYear: '26',
-      isPrimary: false
-    },
-    {
-      id: '3',
-      type: 'amex',
-      lastFour: '9012',
-      expiryMonth: '01',
-      expiryYear: '29',
-      isPrimary: false
-    }
-  ];
+  cards: Card[] = [];
+  paymentPreference: 'card'|'cash'|null = null;
 
   // Datos de transacciones
   transactions: Transaction[] = [
@@ -107,12 +86,39 @@ export class ClientPagosComponent implements OnInit {
 
   ngOnInit() {
     this.loadPaymentData();
+    this.fetchCards();
   }
 
   private loadPaymentData() {
     // Simular carga de datos
     // En una aplicación real, esto vendría de un servicio
     this.calculateBalanceStatus();
+  }
+
+  private headers(): HttpHeaders {
+    const token = this.auth.getAccessToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    });
+  }
+
+  private fetchCards() {
+    this.http.get<any>(`${environment.apiBaseUrl}/client/payment-methods`, { headers: this.headers() }).subscribe({
+      next: (res) => {
+        const rows = res?.data?.cards || [];
+        this.paymentPreference = res?.data?.preference || null;
+        this.cards = rows.map((r: any) => ({
+          id: String(r.id),
+          type: (String(r.card_brand || '').toLowerCase() as any) || 'visa',
+          lastFour: r.card_last4 || r.last4 || '0000',
+          expiryMonth: String(r.exp_month || '').padStart(2,'0'),
+          expiryYear: String(r.exp_year || ''),
+          isPrimary: !!r.is_default
+        }));
+      },
+      error: () => {}
+    });
   }
 
   private calculateBalanceStatus() {
@@ -127,16 +133,17 @@ export class ClientPagosComponent implements OnInit {
 
   // Eventos de tarjetas
   onCardDeleted(cardId: string) {
-    this.cards = this.cards.filter(card => card.id !== cardId);
-    console.log('Tarjeta eliminada:', cardId);
+    this.http.delete(`${environment.apiBaseUrl}/client/payment-methods/${cardId}`, { headers: this.headers() }).subscribe({
+      next: () => this.fetchCards(),
+      error: () => alert('No se pudo eliminar la tarjeta')
+    });
   }
 
   onCardSetPrimary(cardId: string) {
-    this.cards = this.cards.map(card => ({
-      ...card,
-      isPrimary: card.id === cardId
-    }));
-    console.log('Tarjeta principal establecida:', cardId);
+    this.http.post(`${environment.apiBaseUrl}/client/payment-methods/set-primary`, { id: Number(cardId) }, { headers: this.headers() }).subscribe({
+      next: () => this.fetchCards(),
+      error: () => alert('No se pudo establecer como principal')
+    });
   }
 
   onAddCard() {
@@ -144,18 +151,9 @@ export class ClientPagosComponent implements OnInit {
   }
 
   onCardAdded(cardData: CardFormData) {
-    // Simular agregar nueva tarjeta
-    const newCard: Card = {
-      id: Date.now().toString(),
-      type: 'visa', // Por defecto
-      lastFour: cardData.cardNumber.slice(-4),
-      expiryMonth: cardData.expiryDate.split('/')[0],
-      expiryYear: cardData.expiryDate.split('/')[1],
-      isPrimary: this.cards.length === 0 // Primera tarjeta es principal
-    };
-
-    this.cards.push(newCard);
-    console.log('Nueva tarjeta agregada:', newCard);
+    // Aquí debería ir integración Stripe (future). Por ahora, cerrar modal y refrescar lista.
+    this.showAddCardModal = false;
+    this.fetchCards();
   }
 
   onCloseModal() {

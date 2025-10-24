@@ -1,6 +1,6 @@
 <section class="saved-cards-section">
   <h2 class="saved-cards-title">
-    Mis Tarjetas Guardadas ({{ cards.length }})
+    Mis Métodos de Pago ({{ cards.length }})
   </h2>
 
   <div class="cards-list">
@@ -58,8 +58,13 @@
       <path d="M5 12h14"/>
       <path d="M12 5v14"/>
     </svg>
-    Añadir Nuevo Método de Pago
+    Añadir Tarjeta
   </button>
+
+  <div style="margin-top:12px;">
+    <button class="set-primary-btn" (click)="onSetPrimary('')">Usar pago en efectivo</button>
+    <div style="font-size:12px;color:#64748b;margin-top:4px;">Al elegir efectivo, tu preferencia se aplicará en futuras reservas.</div>
+  </div>
 </section>
 
 

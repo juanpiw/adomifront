@@ -86,6 +86,8 @@
       <p><strong>Servicio:</strong> {{ data.summary.service }}</p>
       <p><strong>Fecha y hora:</strong> {{ data.summary.date }} {{ data.summary.time }}</p>
       <p><strong>Precio:</strong> {{ data.summary.price }}</p>
+      <p *ngIf="paymentPref !== null"><strong>Método de pago:</strong> {{ paymentPref === 'cash' ? 'Efectivo' : 'Tarjeta' }}</p>
+      <p *ngIf="paymentPref === null && loadingPaymentPref" style="opacity:.7"><strong>Método de pago:</strong> cargando…</p>
       <p class="booking-confirm__error" *ngIf="confirmError">{{ confirmError }}</p>
     </div>
     <div class="booking-confirm__actions">
