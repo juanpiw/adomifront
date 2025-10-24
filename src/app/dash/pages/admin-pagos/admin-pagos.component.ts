@@ -23,6 +23,7 @@ export class AdminPagosComponent implements OnInit {
   loading = false;
   error: string | null = null;
   rows: any[] = [];
+  refunds: any[] = [];
   adminSecret = '';
   startISO: string | null = null;
   endISO: string | null = null;
@@ -70,6 +71,10 @@ export class AdminPagosComponent implements OnInit {
               eligible_total_provider: toNum(sum.eligible_total_provider),
               completed_total_provider: toNum(sum.completed_total_provider)
             };
+          });
+          // cargar devoluciones
+          this.adminApi.listRefunds(this.adminSecret, token).subscribe((r: any) => {
+            this.refunds = r?.data || [];
           });
         } else {
           this.error = 'Respuesta inválida';
@@ -200,6 +205,15 @@ export class AdminPagosComponent implements OnInit {
     } catch {
       alert('No se pudo confirmar el pago');
     }
+  }
+
+  decideRefund(r: any, decision: 'approved'|'denied'|'cancelled') {
+    const token = this.session.getAccessToken();
+    const notes = prompt('Notas (opcional):') || '';
+    this.adminApi.decideRefund(this.adminSecret, token, Number(r.id), decision, notes).subscribe({
+      next: () => this.load(),
+      error: () => alert('No se pudo registrar la decisión')
+    });
   }
 }
 

@@ -17,6 +17,7 @@ export class PaymentSettingsFormComponent {
     accountType: 'corriente',
     bankName: '',
     accountNumber: '',
+    holderName: '',
     rutHolder: ''
   };
   
@@ -41,7 +42,7 @@ export class PaymentSettingsFormComponent {
         bank_name: this.paymentSettings.bankName,
         account_type: this.paymentSettings.accountType,
         bank_account: this.paymentSettings.accountNumber,
-        account_holder: this.paymentSettings.rutHolder,
+        account_holder: this.paymentSettings.holderName,
         account_rut: this.paymentSettings.rutHolder
       } as any;
       this.providerService.updateBasicInfo({} as any).subscribe({

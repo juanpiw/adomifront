@@ -48,6 +48,20 @@
           class="form-input">
       </div>
 
+      <!-- Nombre del Titular -->
+      <div class="form-group">
+        <label for="holder_name" class="form-label">Nombre del Titular</label>
+        <input 
+          type="text" 
+          id="holder_name" 
+          name="holder_name" 
+          [(ngModel)]="paymentSettings.holderName"
+          (ngModelChange)="onSettingsChange()"
+          placeholder="Juan Pérez" 
+          required 
+          class="form-input">
+      </div>
+
       <!-- RUT del Titular -->
       <div class="form-group">
         <label for="rut_holder" class="form-label">RUT del Titular</label>

@@ -2,6 +2,7 @@ export interface PaymentSettings {
   accountType: 'corriente' | 'vista' | 'ahorro';
   bankName: string;
   accountNumber: string;
+  holderName: string;
   rutHolder: string;
 }
 

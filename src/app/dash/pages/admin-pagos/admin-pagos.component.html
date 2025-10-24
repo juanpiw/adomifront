@@ -26,12 +26,50 @@
 
   <app-admin-payments-table [rows]="rows" (action)="onTableAction($event)"></app-admin-payments-table>
 
+  <!-- Tabla de Devoluciones -->
+  <div style="margin-top:16px;">
+    <h3>Devoluciones</h3>
+    <table class="table" *ngIf="refunds?.length; else noRefunds">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Servicio</th>
+          <th>Cliente</th>
+          <th>Proveedor</th>
+          <th>Monto</th>
+          <th>Estado</th>
+          <th>Motivo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of refunds">
+          <td>{{ r.id }}</td>
+          <td>{{ r.requested_at | date:'short' }}</td>
+          <td>{{ r.service_name || '-' }}</td>
+          <td>{{ r.client_email }}</td>
+          <td>{{ r.provider_email }}</td>
+          <td>{{ (r.amount || 0) | number:'1.0-0' }} {{ r.currency || 'CLP' }}</td>
+          <td>{{ r.status }}</td>
+          <td>{{ r.reason }}</td>
+          <td>
+            <button (click)="decideRefund(r, 'approved')" [disabled]="r.status!=='requested' && r.status!=='in_review'">Aprobar</button>
+            <button (click)="decideRefund(r, 'denied')" [disabled]="r.status!=='requested' && r.status!=='in_review'">Denegar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noRefunds>
+      <p style="color:#64748b;margin:8px 0 0 4px;">No hay solicitudes de devolución.</p>
+    </ng-template>
+  </div>
   <!-- Drawer simple de pago -->
   <div *ngIf="payRow" class="pay-drawer">
     <h3>Pagar a {{ payRow.provider_name || payRow.provider_email }}</h3>
     <div class="grid">
       <div><strong>Banco:</strong> {{ payRow.bank_name || '-' }}</div>
-      <div><strong>Cuenta:</strong> {{ payRow.bank_last4 ? ('•••• ' + payRow.bank_last4) : '-' }} ({{ payRow.account_type || '—' }})</div>
+      <div><strong>Cuenta:</strong> {{ payRow.bank_account || (payRow.bank_last4 ? ('•••• ' + payRow.bank_last4) : '-') }} ({{ payRow.account_type || '—' }})</div>
       <div><strong>Titular:</strong> {{ payRow.account_holder || '-' }}</div>
       <div><strong>Monto a transferir:</strong> {{ payRow.provider_amount | number:'1.0-0' }} {{ payRow.currency }}</div>
     </div>
