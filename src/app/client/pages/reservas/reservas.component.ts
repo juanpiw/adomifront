@@ -9,6 +9,7 @@ import { CanceladaClienteCardComponent, CanceladaClienteData } from '../../../..
 import { CanceladaProfesionalCardComponent, CanceladaProfesionalData } from '../../../../libs/shared-ui/reservas/cancelada-profesional-card.component';
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
 import { ReviewsService } from '../../../services/reviews.service';
+import { ClientProfileService } from '../../services/client-profile.service';
 import { environment } from '../../../../environments/environment';
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
@@ -104,11 +105,41 @@ import { FavoritesService } from '../../../services/favorites.service';
     (close)="closeReviewModal()"
     (reviewSubmitted)="onReviewSubmitted($event)">
   </app-review-modal>
+  
+  <!-- Modal método de pago -->
+  <div *ngIf="showPayMethodModal" class="pay-modal__backdrop" (click)="closePayModal()"></div>
+  <div *ngIf="showPayMethodModal" class="pay-modal__container">
+    <div class="pay-modal__header">
+      <h4>¿Cómo deseas pagar?</h4>
+      <button class="pay-modal__close" (click)="closePayModal()">✕</button>
+    </div>
+    <div class="pay-modal__body">
+      <div class="pay-pref-pill" [class.pay-pref-pill--cash]="clientPaymentPref==='cash'" [class.pay-pref-pill--card]="clientPaymentPref==='card'">
+        Predeterminado: {{ clientPaymentPref==='cash' ? 'Efectivo' : 'Tarjeta' }}
+      </div>
+      <p style="margin:8px 0 0;color:#475569;">Puedes cambiarlo para esta reserva.</p>
+    </div>
+    <div class="pay-modal__actions">
+      <button class="pay-modal__btn" (click)="payWithCash()">Pagar en Efectivo</button>
+      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()">Pagar con Tarjeta</button>
+    </div>
+  </div>
   `,
   styles:[`
     .reservas-page{padding:24px}
     .title{font-weight:800;font-size:24px;margin:0 0 8px;color:#0f172a}
     .content{margin-top:16px}
+    .pay-modal__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
+    .pay-modal__container{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:420px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);z-index:91;overflow:hidden}
+    .pay-modal__header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb}
+    .pay-modal__close{background:transparent;border:none;font-size:18px;cursor:pointer}
+    .pay-modal__body{padding:16px}
+    .pay-pref-pill{display:inline-block;padding:8px 12px;border-radius:9999px;font-weight:800;font-size:12px;border:1px solid transparent;background:#1f2937;color:#fff}
+    .pay-pref-pill--cash{background:#065f46;border-color:#059669}
+    .pay-pref-pill--card{background:#1f2937;border-color:#374151}
+    .pay-modal__actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid #e5e7eb}
+    .pay-modal__btn{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;color:#374151;font-weight:700;cursor:pointer}
+    .pay-modal__btn--primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
   `]
 })
 export class ClientReservasComponent implements OnInit {
@@ -122,6 +153,7 @@ export class ClientReservasComponent implements OnInit {
   private notifications = inject(NotificationService);
   private reviews = inject(ReviewsService);
   private favorites = inject(FavoritesService);
+  private clientProfile = inject(ClientProfileService);
 
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null];
@@ -156,9 +188,15 @@ export class ClientReservasComponent implements OnInit {
 
   // Mapa local: appointmentId -> providerId (para Contactar)
   private _providerByApptId: Record<number, number> = {};
+  // Pref. de pago y modal
+  clientPaymentPref: 'card'|'cash'|null = null;
+  showPayMethodModal = false;
+  payModalApptId: number | null = null;
 
   ngOnInit(): void {
     this.validateProfile();
+    // Preferencia de pago del cliente
+    try { this.clientProfile.getPaymentPreference().subscribe({ next: (res:any) => this.clientPaymentPref = (res?.preference ?? null) as any, error: () => this.clientPaymentPref = null }); } catch {}
     // Si venimos de Stripe success/cancel, procesar query y luego cargar
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
@@ -391,16 +429,20 @@ export class ClientReservasComponent implements OnInit {
   }
 
   onPagar(appointmentId: number) {
-    this.payments.createCheckoutSession(appointmentId).subscribe({
-      next: (resp) => {
-        if (resp.success && resp.url) {
-          window.location.href = resp.url;
-        }
-      },
-      error: (err) => {
-        console.error('Error creando checkout de pago', err);
-      }
+    this.payModalApptId = appointmentId || null;
+    this.showPayMethodModal = true;
+  }
+  closePayModal(){ this.showPayMethodModal = false; this.payModalApptId = null; }
+  payWithCard(){
+    if (!this.payModalApptId) return;
+    this.payments.createCheckoutSession(this.payModalApptId).subscribe({
+      next: (resp) => { if (resp.success && resp.url) window.location.href = resp.url; },
+      error: (err) => console.error('Error creando checkout de pago', err)
     });
+  }
+  payWithCash(){
+    this.closePayModal();
+    this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Pago en efectivo', message: 'Pagarás en efectivo al proveedor. Lleva el monto exacto.', priority: 'low', actions: [] });
   }
 
   onContactar(appointmentId?: number | null) {

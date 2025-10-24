@@ -287,6 +287,18 @@
   color: #334155;
 }
 
+.payment-method-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  background: #065f46; /* verde oscuro */
+  color: #ffffff; /* texto blanco */
+  font-weight: 700;
+  width: fit-content;
+}
+
 .booking-confirm__error {
   color: #ef4444;
   font-size: 0.875rem;

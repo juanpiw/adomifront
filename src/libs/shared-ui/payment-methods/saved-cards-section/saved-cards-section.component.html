@@ -26,7 +26,9 @@
       </div>
       <div class="card-actions">
         <div class="primary-status" *ngIf="preference === 'cash'">
-          <span class="primary-badge"><span class="hidden md:inline">Método </span>Principal</span>
+          <button class="primary-badge primary-badge--button" disabled title="Ya es el método principal">
+            <span class="hidden md:inline">Método </span>Principal
+          </button>
         </div>
         <button *ngIf="preference !== 'cash'"
                 class="set-primary-btn"
@@ -60,9 +62,9 @@
       
       <div class="card-actions">
         <div class="primary-status" *ngIf="card.isPrimary">
-          <span class="primary-badge">
+          <button class="primary-badge primary-badge--button" disabled title="Ya es el método principal">
             <span class="hidden md:inline">Método </span>Principal
-          </span>
+          </button>
         </div>
         <button *ngIf="!card.isPrimary" 
                 class="set-primary-btn"

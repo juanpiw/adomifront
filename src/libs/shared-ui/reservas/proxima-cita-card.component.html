@@ -1,6 +1,8 @@
 <div class="pc-card" [class.pc-card--success]="data.successHighlight">
   <p class="pc-kicker" [class.pc-kicker--paid]="data.successHighlight || data.verification_code">
-    {{ (data.successHighlight || data.verification_code) ? 'CITA PAGADA' : 'TU PRÓXIMA CITA (CONFIRMADA)' }}
+    {{ (data.successHighlight || data.verification_code)
+      ? 'CITA PAGADA'
+      : (data.paymentPreference === 'cash' ? 'CITA CONFIRMADA (PAGO EN EFECTIVO)' : 'TU PRÓXIMA CITA (CONFIRMADA)') }}
   </p>
   <div class="pc-row">
     <div class="pc-col">
@@ -26,8 +28,20 @@
     <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>
     <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
     <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="onPagarClick()">Pagar</button>
+    <span *ngIf="data.mostrarPagar && data.paymentPreference" class="pc-pref-pill" [class.pc-pref-pill--cash]="data.paymentPreference==='cash'" [class.pc-pref-pill--card]="data.paymentPreference==='card'">
+      {{ data.paymentPreference==='cash' ? 'Efectivo por defecto' : 'Tarjeta por defecto' }}
+    </span>
     <button *ngIf="!data.mostrarPagar && data.verification_code && !data.refundRequested" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
     <span *ngIf="data.refundRequested" style="color:#0e7490; font-weight:600; margin-left:8px;">Solicitud en proceso</span>
+  </div>
+
+  <!-- Recordatorio de pago en efectivo -->
+  <div *ngIf="data.paymentPreference==='cash'" class="pc-reminder">
+    <div class="pc-reminder__icon">⚠️</div>
+    <div>
+      <div class="pc-reminder__title">Recordatorio de Pago</div>
+      <div class="pc-reminder__text">El pago de esta cita se realiza en efectivo, directamente al profesional al finalizar el servicio.</div>
+    </div>
   </div>
 
   <!-- Código de verificación cuando está pagada -->
