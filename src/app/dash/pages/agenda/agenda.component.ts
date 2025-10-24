@@ -670,6 +670,67 @@ export class DashAgendaComponent implements OnInit {
     return hhmm;
   }
 
+  // Handlers de configuración de horarios (usados por el template)
+  onAddTimeBlock(timeBlock: Omit<TimeBlock, 'id'>) {
+    const newTimeBlock: TimeBlock = {
+      ...timeBlock,
+      id: Date.now().toString()
+    } as TimeBlock;
+    this.timeBlocks.push(newTimeBlock);
+    console.log('Bloque de tiempo agregado:', newTimeBlock);
+  }
+
+  onRemoveTimeBlock(blockId: string) {
+    this.timeBlocks = this.timeBlocks.filter(block => block.id !== blockId);
+    console.log('Bloque de tiempo eliminado:', blockId);
+  }
+
+  onUpdateTimeBlock(updatedBlock: TimeBlock) {
+    const index = this.timeBlocks.findIndex(block => block.id === updatedBlock.id);
+    if (index !== -1) {
+      this.timeBlocks[index] = updatedBlock;
+      console.log('Bloque de tiempo actualizado:', updatedBlock);
+    }
+  }
+
+  onSaveSchedule() {
+    this.loading = true;
+    this.availabilityService.getWeekly().subscribe({
+      next: (resp) => {
+        const existing = resp?.blocks || [];
+        const dayNameToEnum: Record<string, any> = {
+          'Lunes': 'monday', 'Martes': 'tuesday', 'Miércoles': 'wednesday', 'Jueves': 'thursday', 'Viernes': 'friday', 'Sábado': 'saturday', 'Domingo': 'sunday'
+        };
+
+        const tasks: Array<Promise<any>> = [];
+        const key = (d: any) => `${d.day_of_week}|${String(d.start_time).slice(0,5)}|${String(d.end_time).slice(0,5)}`;
+        const existingMap = new Map(existing.map((b: any) => [key(b), b]));
+
+        this.timeBlocks.forEach(tb => {
+          const dayEnum = dayNameToEnum[tb.day];
+          const k = `${dayEnum}|${tb.startTime}|${tb.endTime}`;
+          const found = existingMap.get(k);
+          if (found) {
+            tasks.push(this.availabilityService.updateWeekly(found.id, { is_active: tb.enabled }).toPromise());
+            existingMap.delete(k);
+          } else {
+            tasks.push(this.availabilityService.createWeekly(dayEnum, tb.startTime, tb.endTime, tb.enabled).toPromise());
+          }
+        });
+
+        existingMap.forEach((b: any) => {
+          tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise());
+        });
+
+        return Promise.allSettled(tasks).then(() => {
+          this.loading = false;
+          console.log('Horario guardado');
+        });
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
   // Navegación
   setView(view: 'dashboard' | 'calendar' | 'cash' | 'config') {
     this.currentView = view;
