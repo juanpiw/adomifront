@@ -213,6 +213,35 @@ export class DashAgendaComponent implements OnInit {
     this.loadCashCommissions();
   }
 
+  // Cargar citas del mes
+  private loadMonth(year: number, month: number) {
+    const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+    this.loading = true;
+    this.appointments.listByMonth(monthStr).subscribe({
+      next: (resp: { success: boolean; appointments: AppointmentDto[] }) => {
+        const apps = (resp.appointments || []) as AppointmentDto[];
+        this.calendarEvents = apps.map(a => this.mapAppointmentToEvent(a));
+        // Contador de programadas
+        this.updateScheduledCount();
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  // Cargar citas del día (YYYY-MM-DD)
+  private loadDay(dateIso: string) {
+    this.loading = true;
+    this.appointments.listByDay(dateIso).subscribe({
+      next: (resp: { success: boolean; appointments: (AppointmentDto & { client_name?: string })[] }) => {
+        const apps = (resp.appointments || []) as (AppointmentDto & { client_name?: string })[];
+        this.dayAppointments = apps.map(a => this.mapAppointmentToDay(a as any));
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
   private headers(): HttpHeaders {
     const token = this.auth.getAccessToken();
     return new HttpHeaders({
