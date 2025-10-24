@@ -34,6 +34,7 @@ export class DayDetailComponent {
   @Output() espacioBloqueado = new EventEmitter<BloqueoData>();
   @Output() confirmAppointment = new EventEmitter<string>();
   @Output() deleteAppointment = new EventEmitter<string>();
+  @Output() cobrarEnEfectivo = new EventEmitter<string>();
 
   isModalOpen: boolean = false;
 

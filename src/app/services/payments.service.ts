@@ -63,6 +63,15 @@ export class PaymentsService {
       { headers: this.headers() }
     );
   }
+
+  // Cash collect (provider)
+  collectCash(appointmentId: number): Observable<{ success: boolean; payment_id: number }>{
+    return this.http.post<{ success: boolean; payment_id: number }>(
+      `${this.base}/appointments/${appointmentId}/cash/collect`,
+      {},
+      { headers: this.headers() }
+    );
+  }
 }
 
 

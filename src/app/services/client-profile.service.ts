@@ -60,6 +60,34 @@ export class ClientProfileService {
     return this.http.get<ClientProfileResponse>(`${this.apiUrl}/client/profile`, { headers });
   }
 
+  // Preferencia de método de pago (card|cash)
+  getPaymentPreference(): Observable<{ success: boolean; preference: 'card'|'cash'|null }>{
+    const token = this.getAccessToken();
+    return this.http.get<{ success: boolean; preference: 'card'|'cash'|null }>(
+      `${this.apiUrl}/client/payment-preference`,
+      {
+        headers: new HttpHeaders({
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        })
+      }
+    );
+  }
+
+  setPaymentPreference(pref: 'card'|'cash'):
+    Observable<{ success: boolean; preference: 'card'|'cash' }>{
+    const token = this.getAccessToken();
+    return this.http.put<{ success: boolean; preference: 'card'|'cash' }>(
+      `${this.apiUrl}/client/payment-preference`,
+      { payment_method_pref: pref },
+      {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        })
+      }
+    );
+  }
+
   /**
    * Guardar o actualizar perfil del cliente
    */

@@ -461,6 +461,34 @@ export class DashAgendaComponent implements OnInit {
     });
   }
 
+  // Cobro en efectivo
+  onCobrarEnEfectivo(id: string) {
+    const apptId = Number(id);
+    if (!apptId) return;
+    if (!confirm('¿Confirmas registrar el cobro en efectivo de esta cita?')) return;
+    this.loading = true;
+    this.payments.collectCash(apptId).subscribe({
+      next: (resp: any) => {
+        this.loading = false;
+        if (resp?.success) {
+          // Refrescar día y panel
+          if (this.selectedDate) {
+            const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+            this.loadDay(iso);
+          }
+          this.loadPaidAwaiting();
+          alert('✅ Cobro en efectivo registrado.');
+        } else {
+          alert('No se pudo registrar el cobro en efectivo.');
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        alert(err?.error?.error || 'Error al registrar el cobro en efectivo');
+      }
+    });
+  }
+
   // Evento desde DayDetail al confirmar nueva cita en el modal
   onDayCitaCreated(evt: { title: string; client?: string; date: string; startTime: string; endTime: string; notes?: string; color: string }) {
     // Por ahora creamos una cita simple con status scheduled. El cliente lo define el flujo B2C, así que se omite aquí
