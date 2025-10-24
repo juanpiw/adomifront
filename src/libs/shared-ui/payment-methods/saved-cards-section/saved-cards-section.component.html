@@ -4,6 +4,29 @@
   </h2>
 
   <div class="cards-list">
+    <!-- Opción Efectivo como tarjeta virtual -->
+    <div class="card-item" [ngClass]="{ 'card-item--primary': preference === 'cash' }">
+      <div class="card-info">
+        <div class="card-icon">
+          💵
+        </div>
+        <div class="card-details">
+          <p class="card-type">Pago en Efectivo</p>
+          <p class="card-number">Preferencia de cobro</p>
+          <p class="card-expiry">—</p>
+        </div>
+      </div>
+      <div class="card-actions">
+        <div class="primary-status" *ngIf="preference === 'cash'">
+          <span class="primary-badge"><span class="hidden md:inline">Método </span>Principal</span>
+        </div>
+        <button *ngIf="preference !== 'cash'"
+                class="set-primary-btn"
+                (click)="onSetPrimary('')">
+          Usar pago en efectivo
+        </button>
+      </div>
+    </div>
     <div *ngFor="let card of cards" 
          class="card-item"
          [ngClass]="{
@@ -61,10 +84,7 @@
     Añadir Tarjeta
   </button>
 
-  <div style="margin-top:12px;">
-    <button class="set-primary-btn" (click)="onSetPrimary('')">Usar pago en efectivo</button>
-    <div style="font-size:12px;color:#64748b;margin-top:4px;">Al elegir efectivo, tu preferencia se aplicará en futuras reservas.</div>
-  </div>
+  <div style="font-size:12px;color:#64748b;margin-top:8px;">Al elegir un método como principal, se usará por defecto en reservas.</div>
 </section>
 
 

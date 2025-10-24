@@ -9,6 +9,7 @@
       <div class="pagos-section">
         <ui-saved-cards-section
           [cards]="cards"
+          [preference]="paymentPreference"
           (cardDeleted)="onCardDeleted($event)"
           (cardSetPrimary)="onCardSetPrimary($event)"
           (addCard)="onAddCard()">

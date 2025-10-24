@@ -89,12 +89,28 @@ export class ClientPagosComponent implements OnInit {
   ngOnInit() {
     this.loadPaymentData();
     this.fetchCards();
+    this.fetchCashSummary();
   }
 
   private loadPaymentData() {
     // Simular carga de datos
     // En una aplicación real, esto vendría de un servicio
     this.calculateBalanceStatus();
+  }
+
+  private fetchCashSummary() {
+    console.log('[CLIENT_PAGOS] fetchCashSummary');
+    this.http.get<any>(`${environment.apiBaseUrl}/provider/cash/summary`, { headers: this.headers() }).subscribe({
+      next: (res: any) => {
+        const total = Number(res?.summary?.total_due || 0);
+        this.balance = total;
+        this.calculateBalanceStatus();
+        console.log('[CLIENT_PAGOS] cash summary ->', res?.summary);
+      },
+      error: (err) => {
+        console.warn('[CLIENT_PAGOS] cash summary error', err?.error || err);
+      }
+    });
   }
 
   private headers(): HttpHeaders {

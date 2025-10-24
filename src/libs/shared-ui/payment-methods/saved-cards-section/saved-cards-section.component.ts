@@ -19,6 +19,7 @@ export interface Card {
 })
 export class SavedCardsSectionComponent {
   @Input() cards: Card[] = [];
+  @Input() preference: 'card'|'cash'|null = null;
 
   @Output() cardDeleted = new EventEmitter<string>();
   @Output() cardSetPrimary = new EventEmitter<string>();
