@@ -26,7 +26,8 @@
     <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>
     <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
     <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="onPagarClick()">Pagar</button>
-    <button *ngIf="!data.mostrarPagar && data.verification_code" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
+    <button *ngIf="!data.mostrarPagar && data.verification_code && !data.refundRequested" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
+    <span *ngIf="data.refundRequested" style="color:#0e7490; font-weight:600; margin-left:8px;">Solicitud en proceso</span>
   </div>
 
   <!-- Código de verificación cuando está pagada -->

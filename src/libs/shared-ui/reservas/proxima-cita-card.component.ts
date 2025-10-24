@@ -14,6 +14,7 @@ export interface ProximaCitaData {
   successHighlight?: boolean;
   verification_code?: string;
   canRefund?: boolean;
+  refundRequested?: boolean;
 }
 
 @Component({

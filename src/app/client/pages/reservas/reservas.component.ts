@@ -418,11 +418,24 @@ export class ClientReservasComponent implements OnInit {
 
   onRefund(ev: { appointmentId: number; reason: string }) {
     if (!ev || !ev.appointmentId) return;
+    if (!ev.reason || ev.reason.trim().length < 10) {
+      this.notifications.createNotification({
+        type: 'system', profile: 'client', title: 'Motivo muy corto', message: 'Escribe al menos 10 caracteres.', priority: 'low', actions: []
+      });
+      return;
+    }
     this.payments.requestRefund(ev.appointmentId, ev.reason).subscribe({
       next: (resp) => {
         if (resp?.success) {
           this.notifications.createNotification({
             type: 'system', profile: 'client', title: 'Solicitud enviada', message: 'Revisaremos tu solicitud de devolución.', priority: 'low', actions: []
+          });
+          // Marcar tarjeta como "Solicitud en proceso"
+          this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => {
+            if (card.appointmentId === ev.appointmentId) {
+              return { ...card, refundRequested: true } as any;
+            }
+            return card;
           });
         }
       },
