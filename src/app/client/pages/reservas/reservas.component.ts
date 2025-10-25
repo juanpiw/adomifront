@@ -459,12 +459,20 @@ export class ClientReservasComponent implements OnInit {
           priority: 'low',
           actions: []
         });
-        // Refrescar la tarjeta para mostrar preferencia/código si corresponde
-        this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => {
-          if (card.appointmentId === apptId) {
-            return { ...card, paymentPreference: 'cash', verification_code: res?.code || (card as any).verification_code } as any;
-          }
-          return card;
+        // Refrescar tarjeta: marcar efectivo y pedir/actualizar código desde backend
+        this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+          card.appointmentId === apptId ? { ...card, paymentPreference: 'cash' } as any : card
+        ));
+        // Forzar obtener código (endpoint de cliente)
+        this.appointments.getVerificationCode(apptId).subscribe({
+          next: (vc) => {
+            if (vc?.success && vc?.code) {
+              this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+                card.appointmentId === apptId ? { ...card, verification_code: vc.code } as any : card
+              ));
+            }
+          },
+          error: () => {}
         });
       },
       error: (err) => {
