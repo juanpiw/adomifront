@@ -127,10 +127,10 @@ export class DashAgendaComponent implements OnInit {
   loading = false;
   currentView: 'dashboard' | 'calendar' | 'cash' | 'config' = 'dashboard';
   showPaidAwaitingPanel: boolean = false;
-  paidAwaitingAppointments: Array<{ id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number }>=[];
+  paidAwaitingAppointments: Array<{ id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number; payment_method?: string }>=[];
   // Estado modal verificación
   isVerificationModalOpen: boolean = false;
-  selectedPaidAppointment: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number } | null = null;
+  selectedPaidAppointment: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number; payment_method?: string } | null = null;
   verificationError: string = '';
   remainingAttempts: number = 3;
   verifying: boolean = false;
@@ -303,7 +303,8 @@ export class DashAgendaComponent implements OnInit {
             service_name: a.service_name,
             date: a.date,
             start_time: a.start_time,
-            amount: a.amount
+            amount: a.amount,
+            payment_method: a.payment_method
           }));
           const idx = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
           if (idx >= 0) this.dashboardMetrics[idx] = { ...this.dashboardMetrics[idx], value: this.paidAwaitingAppointments.length };
@@ -360,7 +361,7 @@ export class DashAgendaComponent implements OnInit {
     }
   }
 
-  openVerifyModal(appt: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number }) {
+  openVerifyModal(appt: { id: number; client_name?: string; service_name?: string; date: string; start_time: string; amount?: number; payment_method?: string }) {
     this.selectedPaidAppointment = appt;
     this.verificationError = '';
     this.remainingAttempts = 3;
