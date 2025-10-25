@@ -308,7 +308,8 @@ export class ClientReservasComponent implements OnInit {
               diasRestantes: this.daysFromToday(a.date),
               mostrarPagar: !isPaid,
               appointmentId: a.id,
-              successHighlight: isPaid
+              successHighlight: isPaid,
+              precio: Number(a.price || 0)
             };
 
             if (isPaid) {
@@ -478,7 +479,8 @@ export class ClientReservasComponent implements OnInit {
       },
       error: (err) => {
         console.error('[RESERVAS] Error seleccionando efectivo', err);
-        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: 'No pudimos seleccionar pago en efectivo. Intenta nuevamente.', priority: 'high', actions: [] });
+        const errorMessage = err?.error?.error || 'No pudimos seleccionar pago en efectivo. Intenta nuevamente.';
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: errorMessage, priority: 'high', actions: [] });
       }
     });
     this.closePayModal();

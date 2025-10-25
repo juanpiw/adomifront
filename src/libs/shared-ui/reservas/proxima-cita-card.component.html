@@ -16,6 +16,10 @@
           <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           {{ data.hora }}
         </span>
+        <span *ngIf="data.precio" class="pc-meta-item">
+          <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+          ${{ data.precio | number:'1.0-0':'es-CL' }}
+        </span>
       </div>
     </div>
     <div class="pc-count">
@@ -23,6 +27,15 @@
       <p class="pc-days-label">días restantes</p>
     </div>
   </div>
+  <!-- Advertencia de límite de efectivo -->
+  <div *ngIf="data.mostrarPagar && data.precio && data.precio > 150000" class="pc-cash-limit-warning">
+    <div class="pc-cash-limit-warning__icon">💳</div>
+    <div class="pc-cash-limit-warning__content">
+      <div class="pc-cash-limit-warning__title">Solo pago con tarjeta</div>
+      <div class="pc-cash-limit-warning__text">Por el momento no podemos procesar pagos en efectivo de $150.000 o más. Este servicio debe pagarse con tarjeta.</div>
+    </div>
+  </div>
+
   <div class="pc-actions">
     <button class="pc-btn primary" (click)="onContactarClick()">Contactar</button>
     <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>

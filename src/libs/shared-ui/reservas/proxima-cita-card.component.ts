@@ -16,6 +16,7 @@ export interface ProximaCitaData {
   canRefund?: boolean;
   refundRequested?: boolean;
   paymentPreference?: 'card'|'cash'|null;
+  precio?: number;
 }
 
 @Component({
