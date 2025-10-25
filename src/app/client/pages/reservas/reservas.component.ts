@@ -431,6 +431,7 @@ export class ClientReservasComponent implements OnInit {
   onPagar(appointmentId: number) {
     this.payModalApptId = appointmentId || null;
     this.showPayMethodModal = true;
+    // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
   }
   closePayModal(){ this.showPayMethodModal = false; this.payModalApptId = null; }
   payWithCard(){
