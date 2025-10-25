@@ -44,8 +44,11 @@
     </div>
   </div>
 
-  <!-- Código de verificación cuando está pagada -->
-  <div *ngIf="!data.mostrarPagar && data.verification_code" style="margin-top:12px;">
+  <!-- Código de verificación (tarjeta o efectivo). En efectivo se muestra desde la selección. -->
+  <div *ngIf="data.verification_code" style="margin-top:12px;">
+    <div *ngIf="data.paymentPreference==='cash'" style="font-size:13px;color:#6b7280;margin-bottom:6px;">
+      Importante: paga en efectivo al finalizar y <strong>entrega este código</strong> al profesional.
+    </div>
     <ui-verificacion-code-card [code]="data.verification_code"></ui-verificacion-code-card>
   </div>
 
