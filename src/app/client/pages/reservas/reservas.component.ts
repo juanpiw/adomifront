@@ -273,6 +273,7 @@ export class ClientReservasComponent implements OnInit {
       next: (resp) => {
         const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed' })[];
         console.log('[RESERVAS] Citas cargadas:', list);
+        console.log('[RESERVAS] Precios en datos:', list.map(a => ({ id: a.id, price: a.price, service_name: a.service_name })));
         const paid = list.filter(a => ['paid','succeeded','completed'].includes(String((a as any).payment_status || '')));
         console.log('[RESERVAS][TRACE] Paid appointments mapping:', paid.map(a => ({ id: a.id, status: (a as any).payment_status, date: a.date })));
         const now = new Date();
@@ -310,7 +311,7 @@ export class ClientReservasComponent implements OnInit {
             }
             const rawPayment = String((a as any).payment_status || '')
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
-            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}"`);
+            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}`);
 
             const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
