@@ -321,7 +321,9 @@ export class ClientReservasComponent implements OnInit {
               mostrarPagar: !isPaid,
               appointmentId: a.id,
               successHighlight: isPaid,
-              precio: Number(a.price || 0)
+              precio: Number(a.price || 0),
+              paymentPreference: (a as any).payment_method || null,
+              verification_code: (a as any).verification_code || undefined
             };
 
             if (isPaid) {

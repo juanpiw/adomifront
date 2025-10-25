@@ -17,6 +17,8 @@ export interface AppointmentDto {
   created_at?: string;
   updated_at?: string;
   payment_status?: 'pending'|'completed'|'failed'|'refunded'|'paid'|'succeeded';
+  payment_method?: 'card'|'cash'|null;
+  verification_code?: string | null;
 }
 
 export interface TimeSlotDto {
