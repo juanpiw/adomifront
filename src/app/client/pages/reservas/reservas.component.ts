@@ -446,7 +446,19 @@ export class ClientReservasComponent implements OnInit {
     // Marcar la cita como pago en efectivo y obtener código
     this.payments.selectCash(apptId).subscribe({
       next: (res) => {
-        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Pago en efectivo', message: 'Pagarás en efectivo al proveedor. Lleva el monto exacto.', priority: 'low', actions: [] });
+        // Buscar datos para enriquecer notificación
+        const card = (this.proximasConfirmadas || []).find(c => c.appointmentId === apptId);
+        const serviceName = card?.titulo ? String(card.titulo).split(' con ')[0] : 'Tu servicio';
+        const fecha = card?.fecha || '';
+        const hora = card?.hora || '';
+        this.notifications.createNotification({
+          type: 'system',
+          profile: 'client',
+          title: `Pago en efectivo: ${serviceName}`,
+          message: `Pagarás en efectivo al finalizar. Fecha: ${fecha} • Hora: ${hora}. Lleva el monto exacto y entrega el código al proveedor.`,
+          priority: 'low',
+          actions: []
+        });
         // Refrescar la tarjeta para mostrar preferencia/código si corresponde
         this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => {
           if (card.appointmentId === apptId) {
