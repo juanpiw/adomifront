@@ -311,7 +311,7 @@ export class ClientReservasComponent implements OnInit {
             }
             const rawPayment = String((a as any).payment_status || '')
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
-            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}`);
+            console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}, rawPrice=${JSON.stringify(a.price)}`);
 
             const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
@@ -322,7 +322,7 @@ export class ClientReservasComponent implements OnInit {
               mostrarPagar: !isPaid,
               appointmentId: a.id,
               successHighlight: isPaid,
-              precio: Number(a.price || 0),
+              precio: Number(a.price || 30000), // Valor por defecto para testing
               paymentPreference: (a as any).payment_method || null,
               verification_code: (a as any).verification_code || undefined
             };
