@@ -441,7 +441,8 @@ export class ClientReservasComponent implements OnInit {
     const target = new Date(y, m-1, d);
     if (isNaN(target.getTime())) return 0;
     const diff = Math.ceil((target.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime())/ (1000*60*60*24));
-    return Math.max(diff, 0);
+    // No permitir 0: mínimo 1 día para hoy o futuras
+    return diff <= 0 ? 1 : diff;
   }
 
   onPagar(appointmentId: number) {
