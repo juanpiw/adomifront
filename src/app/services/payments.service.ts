@@ -72,6 +72,15 @@ export class PaymentsService {
       { headers: this.headers() }
     );
   }
+
+  // Cash select (client/provider) → marca payment_method='cash' y retorna código
+  selectCash(appointmentId: number): Observable<{ success: boolean; code?: string }>{
+    return this.http.post<{ success: boolean; code?: string }>(
+      `${this.base}/appointments/${appointmentId}/cash/select`,
+      {},
+      { headers: this.headers() }
+    );
+  }
 }
 
 

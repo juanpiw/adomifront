@@ -441,8 +441,26 @@ export class ClientReservasComponent implements OnInit {
     });
   }
   payWithCash(){
+    if (!this.payModalApptId) { this.closePayModal(); return; }
+    const apptId = this.payModalApptId;
+    // Marcar la cita como pago en efectivo y obtener código
+    this.payments.selectCash(apptId).subscribe({
+      next: (res) => {
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Pago en efectivo', message: 'Pagarás en efectivo al proveedor. Lleva el monto exacto.', priority: 'low', actions: [] });
+        // Refrescar la tarjeta para mostrar preferencia/código si corresponde
+        this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => {
+          if (card.appointmentId === apptId) {
+            return { ...card, paymentPreference: 'cash', verification_code: res?.code || (card as any).verification_code } as any;
+          }
+          return card;
+        });
+      },
+      error: (err) => {
+        console.error('[RESERVAS] Error seleccionando efectivo', err);
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: 'No pudimos seleccionar pago en efectivo. Intenta nuevamente.', priority: 'high', actions: [] });
+      }
+    });
     this.closePayModal();
-    this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Pago en efectivo', message: 'Pagarás en efectivo al proveedor. Lleva el monto exacto.', priority: 'low', actions: [] });
   }
 
   onContactar(appointmentId?: number | null) {
