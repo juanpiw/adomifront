@@ -462,7 +462,7 @@ export class ClientReservasComponent implements OnInit {
         });
         // Refrescar tarjeta: marcar efectivo y pedir/actualizar código desde backend
         this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
-          card.appointmentId === apptId ? { ...card, paymentPreference: 'cash' } as any : card
+          card.appointmentId === apptId ? { ...card, paymentPreference: 'cash', mostrarPagar: false, verification_code: (res as any)?.code || (card as any).verification_code } as any : card
         ));
         // Forzar obtener código (endpoint de cliente)
         this.appointments.getVerificationCode(apptId).subscribe({
