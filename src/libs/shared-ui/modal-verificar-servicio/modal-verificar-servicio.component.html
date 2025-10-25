@@ -95,9 +95,17 @@
           <path d="M12 16v-4"></path>
           <path d="M12 8h.01"></path>
         </svg>
-        <p class="info-box__text">
+        <p *ngIf="appointment?.payment_method==='cash'" class="info-box__text">
+          Si el código es correcto, el servicio se marcará como completado y deberás depositar la comisión a la plataforma según los plazos indicados.
+        </p>
+        <p *ngIf="appointment?.payment_method!=='cash'" class="info-box__text">
           Si el código es correcto, el servicio se marcará como completado y recibirás el pago en 1-3 días hábiles.
         </p>
+        <ul class="info-box__list">
+          <li><strong>T+1h</strong>: se activa cierre mutuo para pagos en efectivo.</li>
+          <li><strong>T+12h</strong>: recordatorio automático si sigue pendiente.</li>
+          <li><strong>T+25h</strong>: auto-resolución según la matriz de acciones.</li>
+        </ul>
       </div>
     </div>
     
