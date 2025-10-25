@@ -114,13 +114,20 @@ import { FavoritesService } from '../../../services/favorites.service';
       <button class="pay-modal__close" (click)="closePayModal()">✕</button>
     </div>
     <div class="pay-modal__body">
-      <div class="pay-pref-pill" [class.pay-pref-pill--cash]="clientPaymentPref==='cash'" [class.pay-pref-pill--card]="clientPaymentPref==='card'">
+      <div *ngIf="isCurrentAppointmentOverCashLimit()" class="pay-modal__cash-limit-warning">
+        <div class="pay-modal__cash-limit-icon">💳</div>
+        <div class="pay-modal__cash-limit-content">
+          <div class="pay-modal__cash-limit-title">Solo pago con tarjeta</div>
+          <div class="pay-modal__cash-limit-text">Por el momento no podemos procesar pagos en efectivo de $150.000 o más. Este servicio debe pagarse con tarjeta.</div>
+        </div>
+      </div>
+      <div *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-pref-pill" [class.pay-pref-pill--cash]="clientPaymentPref==='cash'" [class.pay-pref-pill--card]="clientPaymentPref==='card'">
         Predeterminado: {{ clientPaymentPref==='cash' ? 'Efectivo' : 'Tarjeta' }}
       </div>
-      <p style="margin:8px 0 0;color:#475569;">Puedes cambiarlo para esta reserva.</p>
+      <p *ngIf="!isCurrentAppointmentOverCashLimit()" style="margin:8px 0 0;color:#475569;">Puedes cambiarlo para esta reserva.</p>
     </div>
     <div class="pay-modal__actions">
-      <button class="pay-modal__btn" (click)="payWithCash()">Pagar en Efectivo</button>
+      <button *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-modal__btn" (click)="payWithCash()">Pagar en Efectivo</button>
       <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()">Pagar con Tarjeta</button>
     </div>
   </div>
@@ -140,6 +147,11 @@ import { FavoritesService } from '../../../services/favorites.service';
     .pay-modal__actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid #e5e7eb}
     .pay-modal__btn{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;color:#374151;font-weight:700;cursor:pointer}
     .pay-modal__btn--primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
+    .pay-modal__cash-limit-warning{display:flex;gap:8px;align-items:flex-start;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px;margin-bottom:12px}
+    .pay-modal__cash-limit-icon{font-size:18px;line-height:1}
+    .pay-modal__cash-limit-content{flex:1}
+    .pay-modal__cash-limit-title{font-weight:700;color:#92400e;margin-bottom:4px}
+    .pay-modal__cash-limit-text{color:#b45309;font-size:14px;line-height:1.4}
   `]
 })
 export class ClientReservasComponent implements OnInit {
@@ -435,6 +447,12 @@ export class ClientReservasComponent implements OnInit {
     // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
   }
   closePayModal(){ this.showPayMethodModal = false; this.payModalApptId = null; }
+  
+  isCurrentAppointmentOverCashLimit(): boolean {
+    if (!this.payModalApptId) return false;
+    const appointment = this.proximasConfirmadas.find(a => a.appointmentId === this.payModalApptId);
+    return appointment?.precio ? appointment.precio > 150000 : false;
+  }
   payWithCard(){
     if (!this.payModalApptId) return;
     this.payments.createCheckoutSession(this.payModalApptId).subscribe({
