@@ -31,7 +31,7 @@
     <span *ngIf="data.mostrarPagar && data.paymentPreference" class="pc-pref-pill" [class.pc-pref-pill--cash]="data.paymentPreference==='cash'" [class.pc-pref-pill--card]="data.paymentPreference==='card'">
       {{ data.paymentPreference==='cash' ? 'Efectivo por defecto' : 'Tarjeta por defecto' }}
     </span>
-    <button *ngIf="!data.mostrarPagar && data.verification_code && !data.refundRequested" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
+    <button *ngIf="!data.mostrarPagar && data.verification_code && !data.refundRequested && data.paymentPreference!=='cash'" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
     <span *ngIf="data.refundRequested" style="color:#0e7490; font-weight:600; margin-left:8px;">Solicitud en proceso</span>
   </div>
 

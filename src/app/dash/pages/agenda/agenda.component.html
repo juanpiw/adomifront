@@ -64,12 +64,19 @@
         <div *ngIf="paidAwaitingAppointments.length === 0" class="paid-awaiting__empty">
           No tienes citas pagadas esperando verificación.
         </div>
-        <div *ngFor="let ap of paidAwaitingAppointments" class="paid-awaiting__card">
+        <div *ngFor="let ap of paidAwaitingAppointments" class="paid-awaiting__card" [class.paid-awaiting__card--cash]="ap.payment_method==='cash'">
           <div class="paid-awaiting__row">
             <div class="paid-awaiting__col">
-              <p class="paid-awaiting__service">{{ ap.service_name || 'Servicio' }}</p>
+              <p class="paid-awaiting__service">
+                <span *ngIf="ap.payment_method==='cash'" class="cash-badge">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3" fill="#ffffff"/></svg>
+                  Efectivo
+                </span>
+                {{ ap.service_name || 'Servicio' }}
+              </p>
               <p class="paid-awaiting__meta">Cliente: {{ ap.client_name || '—' }}</p>
               <p class="paid-awaiting__meta">Fecha: {{ formatDate(ap.date) }} · {{ formatTime(ap.start_time) }}</p>
+              <p *ngIf="ap.payment_method==='cash'" class="paid-awaiting__meta" style="color:#065f46;font-weight:600;">Cita de pago actual: Efectivo</p>
             </div>
             <div class="paid-awaiting__actions">
               <button class="paid-awaiting__btn" (click)="openVerifyModal(ap)">Verificar Código</button>
