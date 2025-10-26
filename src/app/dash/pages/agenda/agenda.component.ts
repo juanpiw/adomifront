@@ -386,6 +386,11 @@ export class DashAgendaComponent implements OnInit {
           this.paidAwaitingAppointments = this.paidAwaitingAppointments.filter(p => p.id !== this.selectedPaidAppointment!.id);
           const idx = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
           if (idx >= 0) this.dashboardMetrics[idx] = { ...this.dashboardMetrics[idx], value: this.paidAwaitingAppointments.length };
+          // Actualizar métricas y listados de efectivo (resumen y tabla)
+          this.loadCashSummary();
+          this.loadCashCommissions();
+          // Refrescar métricas de ingresos (para actualizar "Citas pagadas en efectivo")
+          this.refreshEarnings();
           this.isVerificationModalOpen = false;
           this.selectedPaidAppointment = null;
           alert('✅ Servicio verificado. El pago será liberado próximamente.');
