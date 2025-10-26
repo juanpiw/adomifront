@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../icon/icon.component';
@@ -12,7 +12,7 @@ import { ProviderProfileService } from '../../../../app/services/provider-profil
   templateUrl: './payment-settings-form.component.html',
   styleUrls: ['./payment-settings-form.component.scss']
 })
-export class PaymentSettingsFormComponent {
+export class PaymentSettingsFormComponent implements OnInit {
   @Input() paymentSettings: PaymentSettings = {
     accountType: 'corriente',
     bankName: '',
@@ -29,6 +29,22 @@ export class PaymentSettingsFormComponent {
   errorMessage: string | null = null;
 
   constructor(private providerService: ProviderProfileService) {}
+
+  // Stripe Connect / Billing state
+  providerId: number | null = null;
+  connecting = false;
+  onboardingUrl: string | null = null;
+  dashboardUrl: string | null = null;
+  debts: Array<any> = [];
+  loadingDebts = false;
+  setupIntentClientSecret: string | null = null;
+
+  ngOnInit() {
+    this.providerService.getProfile().subscribe({
+      next: (p) => { this.providerId = p?.provider_id || p?.id || null; },
+      error: () => {}
+    });
+  }
 
   onSettingsChange() {
     this.settingsChanged.emit(this.paymentSettings);
@@ -76,6 +92,52 @@ export class PaymentSettingsFormComponent {
       this.paymentSettings.accountNumber &&
       this.paymentSettings.rutHolder
     );
+  }
+
+  // ========= Stripe Connect / Billing =========
+  onConnectStripe() {
+    if (!this.providerId || this.connecting) return;
+    this.connecting = true;
+    this.providerService.createConnectAccount(this.providerId).subscribe({
+      next: (res) => {
+        this.onboardingUrl = res?.onboarding_url || null;
+        this.connecting = false;
+        if (this.onboardingUrl) {
+          window.location.href = this.onboardingUrl;
+        }
+      },
+      error: () => { this.connecting = false; }
+    });
+  }
+
+  onOpenDashboard() {
+    if (!this.providerId) return;
+    this.providerService.getStripeDashboardLink(this.providerId).subscribe({
+      next: (res) => { if (res?.url) window.open(res.url, '_blank'); },
+      error: () => {}
+    });
+  }
+
+  onSetupFallbackCard() {
+    if (!this.providerId) return;
+    this.providerService.createBillingSetupIntent(this.providerId).subscribe({
+      next: (res) => {
+        this.setupIntentClientSecret = res?.client_secret || null;
+        // Nota: Para completar el guardado de tarjeta, integrar Stripe Elements con este client_secret
+        console.log('[Billing] SetupIntent client_secret:', this.setupIntentClientSecret);
+        alert('SetupIntent creado. Implementar Stripe Elements para guardar la tarjeta.');
+      },
+      error: () => {}
+    });
+  }
+
+  onLoadDebts() {
+    if (!this.providerId || this.loadingDebts) return;
+    this.loadingDebts = true;
+    this.providerService.getProviderDebts(this.providerId).subscribe({
+      next: (res) => { this.debts = res?.debts || []; this.loadingDebts = false; },
+      error: () => { this.loadingDebts = false; }
+    });
   }
 }
 

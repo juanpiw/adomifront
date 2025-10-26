@@ -507,4 +507,46 @@ export class ProviderProfileService {
     this.portfolioSubject.next([]);
     this.coverageZonesSubject.next([]);
   }
+
+  // ============================================
+  // STRIPE CONNECT / BILLING (Proveedor)
+  // ============================================
+
+  createConnectAccount(providerId: number): Observable<{ success: boolean; account_id: string; onboarding_url: string; expires_at?: number }>{
+    return this.http.post<{ success: boolean; account_id: string; onboarding_url: string; expires_at?: number }>(
+      `${this.apiUrl}/providers/${providerId}/stripe/connect/create`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getOnboardingLink(providerId: number): Observable<{ success: boolean; onboarding_url: string; expires_at?: number }>{
+    return this.http.post<{ success: boolean; onboarding_url: string; expires_at?: number }>(
+      `${this.apiUrl}/providers/${providerId}/stripe/connect/onboarding-link`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getStripeDashboardLink(providerId: number): Observable<{ success: boolean; url: string }>{
+    return this.http.get<{ success: boolean; url: string }>(
+      `${this.apiUrl}/providers/${providerId}/stripe/connect/dashboard`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  createBillingSetupIntent(providerId: number): Observable<{ success: boolean; client_secret: string; customer_id: string | null }>{
+    return this.http.post<{ success: boolean; client_secret: string; customer_id: string | null }>(
+      `${this.apiUrl}/providers/${providerId}/billing/setup-intent`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getProviderDebts(providerId: number): Observable<{ success: boolean; debts: Array<any> }>{
+    return this.http.get<{ success: boolean; debts: Array<any> }>(
+      `${this.apiUrl}/providers/${providerId}/debts`,
+      { headers: this.getHeaders() }
+    );
+  }
 }

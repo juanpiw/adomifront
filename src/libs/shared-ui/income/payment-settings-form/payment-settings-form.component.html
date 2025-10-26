@@ -105,6 +105,23 @@
     <ui-icon name="check-circle" [size]="20" class="success-icon"></ui-icon>
     <span>Configuración guardada exitosamente</span>
   </div>
+
+  <!-- Stripe Connect / Billing (para pruebas de migración) -->
+  <div class="metric-card" style="margin-top:16px;">
+    <h3>Stripe Connect (Piloto)</h3>
+    <div style="display:flex; gap:8px; flex-wrap: wrap;">
+      <button class="save-payment-btn" type="button" (click)="onConnectStripe()" [disabled]="connecting">Conectar Stripe</button>
+      <button class="save-payment-btn" type="button" (click)="onOpenDashboard()">Abrir Dashboard Stripe</button>
+      <button class="save-payment-btn" type="button" (click)="onSetupFallbackCard()">Configurar Tarjeta de Respaldo</button>
+      <button class="save-payment-btn" type="button" (click)="onLoadDebts()" [disabled]="loadingDebts">Ver Deudas Cash</button>
+    </div>
+    <div *ngIf="debts?.length" style="margin-top:8px;">
+      <h4>Deudas</h4>
+      <ul>
+        <li *ngFor="let d of debts">#{{ d.id }} · {{ d.commission_amount }} {{ d.currency }} · {{ d.status }} · venc: {{ d.due_date | date:'shortDate' }}</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 
