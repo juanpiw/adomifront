@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   apiBaseUrl: 'https://adomi.impactrenderstudio.com',
-  stripePublishableKey: 'pk_test_51Opto6Lae2ozUqcf5gI2CBX5cE1uZOAZebL8OO9wba6LVKFiW48hhFDVuDNVHH9iXhPKyLlJEonRApl7RGkHm1mh00jPkenSNZ', // TEST
+  stripePublishableKey: 'pk_test_51SKHttLQigVjRMUbKJnseEuIUaRBp4czzoSbgeMXpAqfRcf3QlWxpmy3TBCmySOuOv813RiH0NWljtQqJG2TmzDV00GWVMJZki', // TEST
   connectEnabled: false,
   googleClientId: '319925819744-4snhnq7vtcb33g516a67qu7bu42r2hk1.apps.googleusercontent.com',
   googleRedirectUri: 'http://localhost:4200/auth/google/callback',
