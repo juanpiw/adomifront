@@ -62,8 +62,6 @@ export class PaymentSuccessComponent implements OnInit {
           sessionStorage.removeItem('selectedPlan');
         }
         // Esperar promoción por webhook: hacer polling de /auth/me hasta role=provider
-        this.success = true;
-        this.loading = false;
         let attempts = 0;
         const maxAttempts = 60; // ~120s para dar margen a Stripe webhooks
         const intervalMs = 2000;
