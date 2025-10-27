@@ -48,15 +48,22 @@ export class SelectPlanComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit() {
+    console.log('[SELECT_PLAN] Init');
     // Verificar que hay datos temporales del usuario
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;
     if (!tempData) {
+      console.warn('[SELECT_PLAN] tempUserData no encontrado. Redirigiendo a /auth/register');
       this.router.navigateByUrl('/auth/register');
       return;
     }
 
-    this.tempUserData = JSON.parse(tempData);
+    try {
+      this.tempUserData = JSON.parse(tempData);
+      console.log('[SELECT_PLAN] tempUserData:', this.tempUserData);
+    } catch (e) {
+      console.error('[SELECT_PLAN] Error parseando tempUserData:', e);
+    }
     
     // ✅ VALIDACIÓN CRÍTICA: Solo proveedores pueden acceder a planes
     if (this.tempUserData?.role !== 'provider') {
@@ -75,9 +82,11 @@ export class SelectPlanComponent implements OnInit {
   }
 
   loadPlans() {
+    console.log('[SELECT_PLAN] Cargando planes...');
     this.http.get<{ ok: boolean; plans: Plan[] }>(`${environment.apiBaseUrl}/plans`)
       .subscribe({
         next: (response) => {
+          console.log('[SELECT_PLAN] Planes recibidos:', response);
           this.plans = response.plans;
           this.separatePlansByInterval();
           this.loading = false;
@@ -91,6 +100,7 @@ export class SelectPlanComponent implements OnInit {
   }
 
   separatePlansByInterval() {
+    console.log('[SELECT_PLAN] Separando planes por intervalo');
     this.annualPlans = this.plans.filter(plan => plan.interval === 'year');
     this.monthlyPlans = this.plans.filter(plan => plan.interval === 'month');
     
@@ -115,15 +125,19 @@ export class SelectPlanComponent implements OnInit {
         interval: 'year' as const
       }));
     }
+    console.log('[SELECT_PLAN] monthlyPlans:', this.monthlyPlans.length, 'annualPlans:', this.annualPlans.length);
   }
 
   selectPlan(plan: Plan) {
+    console.log('[SELECT_PLAN] Plan seleccionado:', plan);
     this.selectedPlan = plan;
   }
 
   toggleBilling() {
+    console.log('[SELECT_PLAN] Toggle billing. Estado previo isAnnualBilling:', this.isAnnualBilling);
     this.isAnnualBilling = !this.isAnnualBilling;
     this.selectedPlan = null; // Limpiar selección al cambiar
+    console.log('[SELECT_PLAN] Estado nuevo isAnnualBilling:', this.isAnnualBilling);
   }
 
   getCurrentPlans(): Plan[] {
@@ -153,15 +167,19 @@ export class SelectPlanComponent implements OnInit {
 
   continueToPayment() {
     if (!this.selectedPlan || !this.tempUserData) {
+      console.warn('[SELECT_PLAN] No hay selectedPlan o tempUserData. Abortando.');
       return;
     }
 
+    console.log('[SELECT_PLAN] Continuar a pago con plan:', this.selectedPlan);
     // Guardar plan seleccionado temporalmente
     if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
       sessionStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
+      console.log('[SELECT_PLAN] selectedPlan guardado en sessionStorage');
     }
     
     // Redirigir a checkout
+    console.log('[SELECT_PLAN] Navegando a /auth/checkout');
     this.router.navigateByUrl('/auth/checkout');
   }
 

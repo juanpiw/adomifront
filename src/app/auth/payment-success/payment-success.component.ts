@@ -32,8 +32,10 @@ export class PaymentSuccessComponent implements OnInit {
     this.success = false;
     this.error = null;
     this.loading = true;
+    console.log('[PAYMENT_SUCCESS] Init');
     // Obtener session_id de la URL
     this.sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    console.log('[PAYMENT_SUCCESS] sessionId:', this.sessionId);
     
     if (!this.sessionId) {
       this.success = false;
@@ -47,6 +49,7 @@ export class PaymentSuccessComponent implements OnInit {
 
   processPaymentSuccess() {
     try {
+      console.log('[PAYMENT_SUCCESS] processPaymentSuccess start');
       // Asegurar exclusividad de estados
       this.error = null;
       this.success = false;
@@ -71,11 +74,14 @@ export class PaymentSuccessComponent implements OnInit {
           } catch {}
           return false;
         })();
+        console.log('[PAYMENT_SUCCESS] intendedProvider:', intendedProvider);
         const poll = setInterval(() => {
           attempts++;
+          console.log('[PAYMENT_SUCCESS] Poll attempt', attempts);
           this.auth.getCurrentUserInfo().subscribe({
             next: (resp) => {
               const user = (resp as any).data?.user || (resp as any).user || resp;
+              console.log('[PAYMENT_SUCCESS] /auth/me user:', user);
               if (user?.role === 'provider') {
                 clearInterval(poll);
                 // Limpiar flag de onboarding si estaba activo
@@ -83,28 +89,34 @@ export class PaymentSuccessComponent implements OnInit {
                 // Si no tiene payouts habilitados, iniciar onboarding Connect
                 const payoutsEnabled = (user as any)?.stripe_payouts_enabled === 1 || (user as any)?.stripe_payouts_enabled === true;
                 const accountId = (user as any)?.stripe_account_id || null;
+                console.log('[PAYMENT_SUCCESS] Role provider. payoutsEnabled:', payoutsEnabled, 'accountId:', accountId);
                 if (!payoutsEnabled) {
                   // Intentar crear cuenta Connect si falta y generar onboarding link
                   const providerId = Number(user.id);
                   const launch = async () => {
                     try {
                       if (!accountId) {
+                        console.log('[PAYMENT_SUCCESS] Creando cuenta Connect...');
                         await this.providerService.createConnectAccount(providerId).toPromise();
                       }
                     } catch {}
                     try {
+                      console.log('[PAYMENT_SUCCESS] Solicitando onboarding link...');
                       const link = await this.providerService.getOnboardingLink(providerId).toPromise();
                       if ((link as any)?.onboarding_url && typeof window !== 'undefined') {
+                        console.log('[PAYMENT_SUCCESS] Redirigiendo a onboarding_url');
                         window.location.assign((link as any).onboarding_url);
                         return;
                       }
                     } catch {}
                     // Fallback al wizard si no se pudo obtener link
+                    console.warn('[PAYMENT_SUCCESS] No onboarding_url. Fallback /dash/ingresos');
                     this.router.navigateByUrl('/dash/ingresos');
                   };
                   launch();
                   return;
                 }
+                console.log('[PAYMENT_SUCCESS] Redirigiendo a /dash/home');
                 this.router.navigateByUrl('/dash/home');
               } else if (attempts >= maxAttempts) {
                 clearInterval(poll);
@@ -116,17 +128,21 @@ export class PaymentSuccessComponent implements OnInit {
                     const u = raw ? JSON.parse(raw) : {};
                     const payoutsEnabled = (u as any)?.stripe_payouts_enabled === 1 || (u as any)?.stripe_payouts_enabled === true;
                     if (!payoutsEnabled) {
+                      console.warn('[PAYMENT_SUCCESS] Timeout polling. Fallback /dash/ingresos');
                       this.router.navigateByUrl('/dash/ingresos');
                       return;
                     }
                   } catch {}
+                  console.warn('[PAYMENT_SUCCESS] Timeout polling. Fallback /dash/home');
                   this.router.navigateByUrl('/dash/home');
                 } else {
+                  console.warn('[PAYMENT_SUCCESS] Timeout polling. Rol cliente. Fallback /client/reservas');
                   this.router.navigateByUrl('/client/reservas');
                 }
               }
             },
             error: () => {
+              console.warn('[PAYMENT_SUCCESS] Error en /auth/me');
               if (attempts >= maxAttempts) {
                 clearInterval(poll);
                 if (intendedProvider) {

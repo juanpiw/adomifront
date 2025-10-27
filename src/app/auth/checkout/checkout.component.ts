@@ -52,6 +52,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
 
   ngOnInit() {
+    console.log('[CHECKOUT] Init');
     // Verificar que hay datos temporales
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;
@@ -59,12 +60,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       ? sessionStorage.getItem('selectedPlan') : null;
     
     if (!tempData || !planData) {
+      console.warn('[CHECKOUT] Faltan tempUserData o selectedPlan. Redirigiendo a /auth/register');
       this.router.navigateByUrl('/auth/register');
       return;
     }
 
-    this.tempUserData = JSON.parse(tempData);
-    this.selectedPlan = JSON.parse(planData);
+    try { this.tempUserData = JSON.parse(tempData); console.log('[CHECKOUT] tempUserData:', this.tempUserData); } catch (e) { console.error('[CHECKOUT] Error parseando tempUserData:', e); }
+    try { this.selectedPlan = JSON.parse(planData); console.log('[CHECKOUT] selectedPlan:', this.selectedPlan); } catch (e) { console.error('[CHECKOUT] Error parseando selectedPlan:', e); }
 
     // Si ya hay token (p.ej., login con Google), no intentamos registrar de nuevo
     const token = this.authService.getAccessToken();
@@ -73,6 +75,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       try {
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
           sessionStorage.removeItem('tempUserData');
+          sessionStorage.removeItem('selectedPlan');
+          console.log('[CHECKOUT] Removidos tempUserData/selectedPlan por sesión activa');
         }
       } catch {}
     }
@@ -80,6 +84,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   async proceedToPayment() {
     if (!this.selectedPlan) {
+      console.warn('[CHECKOUT] No hay selectedPlan. Abortando.');
       return;
     }
 
@@ -91,14 +96,17 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       // Si NO hay token y tenemos datos temporales, primero registrar al usuario
       const hasToken = !!this.authService.getAccessToken();
       if (!hasToken && this.tempUserData) {
+        console.log('[CHECKOUT] No hay token. Registrando usuario primero...');
         await this.registerUserFirst();
       }
 
       // Crear sesión de checkout
+      console.log('[CHECKOUT] Creando sesión de Stripe para planId:', this.selectedPlan.id);
       this.http.post<CheckoutResponse>(`${environment.apiBaseUrl}/stripe/create-checkout-session`, {
         planId: this.selectedPlan.id
       }).subscribe({
         next: async (response) => {
+          console.log('[CHECKOUT] Respuesta create-checkout-session:', response);
           if (response.ok && response.sessionId) {
             // Usar Stripe Service para redirigir
             const result = await this.stripeService.redirectToCheckout({
@@ -108,6 +116,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             });
 
             if (!result.success && result.error) {
+              console.error('[CHECKOUT] redirectToCheckout error:', result.error);
               // Manejar tanto StripeError como string
               if (typeof result.error === 'string') {
                 this.stripeError = result.error;
@@ -117,6 +126,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
               this.loading = false;
             }
           } else {
+            console.error('[CHECKOUT] Error creando sesión de pago:', response);
             this.error = response.error || 'Error al crear sesión de pago';
             this.loading = false;
           }
