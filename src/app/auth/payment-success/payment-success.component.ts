@@ -47,11 +47,49 @@ export class PaymentSuccessComponent implements OnInit {
           sessionStorage.removeItem('tempUserData');
           sessionStorage.removeItem('selectedPlan');
         }
+        // Esperar promoción por webhook: hacer polling de /auth/me hasta role=provider
         this.success = true;
         this.loading = false;
-        setTimeout(() => {
-          this.router.navigateByUrl('/onboarding');
-        }, 2000);
+        let attempts = 0;
+        const maxAttempts = 30; // ~60s si usamos 2s de intervalo
+        const intervalMs = 2000;
+        const intendedProvider = (() => {
+          try {
+            const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+            if (raw) { const u = JSON.parse(raw); return u?.intendedRole === 'provider' || u?.pending_role === 'provider'; }
+          } catch {}
+          return false;
+        })();
+        const poll = setInterval(() => {
+          attempts++;
+          this.auth.getCurrentUserInfo().subscribe({
+            next: (resp) => {
+              const user = (resp as any).data?.user || (resp as any).user || resp;
+              if (user?.role === 'provider') {
+                clearInterval(poll);
+                this.router.navigateByUrl('/dash/home');
+              } else if (attempts >= maxAttempts) {
+                clearInterval(poll);
+                // Fallback: si la intención era proveedor, dirigir al dashboard de proveedor
+                if (intendedProvider) {
+                  this.router.navigateByUrl('/dash/home');
+                } else {
+                  this.router.navigateByUrl('/client/reservas');
+                }
+              }
+            },
+            error: () => {
+              if (attempts >= maxAttempts) {
+                clearInterval(poll);
+                if (intendedProvider) {
+                  this.router.navigateByUrl('/dash/home');
+                } else {
+                  this.router.navigateByUrl('/client/reservas');
+                }
+              }
+            }
+          });
+        }, intervalMs);
         return;
       }
 
