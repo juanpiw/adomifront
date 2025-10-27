@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService, AuthResponse } from '../services/auth.service';
+import { ProviderProfileService } from '../../services/provider-profile.service';
 import { SessionService } from '../services/session.service';
 
 @Component({
@@ -23,6 +24,7 @@ export class PaymentSuccessComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private providerService = inject(ProviderProfileService);
   private session = inject(SessionService);
 
   ngOnInit() {
@@ -82,8 +84,25 @@ export class PaymentSuccessComponent implements OnInit {
                 const payoutsEnabled = (user as any)?.stripe_payouts_enabled === 1 || (user as any)?.stripe_payouts_enabled === true;
                 const accountId = (user as any)?.stripe_account_id || null;
                 if (!payoutsEnabled) {
-                  // Handoff a wizard de Connect (frontend debería llamar a endpoints y redirigir a account_link.url)
-                  this.router.navigateByUrl('/dash/ingresos');
+                  // Intentar crear cuenta Connect si falta y generar onboarding link
+                  const providerId = Number(user.id);
+                  const launch = async () => {
+                    try {
+                      if (!accountId) {
+                        await this.providerService.createConnectAccount(providerId).toPromise();
+                      }
+                    } catch {}
+                    try {
+                      const link = await this.providerService.getOnboardingLink(providerId).toPromise();
+                      if ((link as any)?.onboarding_url && typeof window !== 'undefined') {
+                        window.location.assign((link as any).onboarding_url);
+                        return;
+                      }
+                    } catch {}
+                    // Fallback al wizard si no se pudo obtener link
+                    this.router.navigateByUrl('/dash/ingresos');
+                  };
+                  launch();
                   return;
                 }
                 this.router.navigateByUrl('/dash/home');

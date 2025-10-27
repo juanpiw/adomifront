@@ -107,7 +107,8 @@ export class ProviderProfileService {
   constructor() {}
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('adomi_token');
+    // Usar el token estándar de la app
+    const token = localStorage.getItem('adomi_access_token') || localStorage.getItem('adomi_token');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
