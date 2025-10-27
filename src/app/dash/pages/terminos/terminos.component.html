@@ -3,8 +3,8 @@
     <div class="terminos-header__icon">
       <ui-icon name="clipboard"></ui-icon>
     </div>
-    <h1 class="terminos-header__title">Información Legal</h1>
-    <p class="terminos-header__subtitle">Última actualización: {{ lastUpdated }}</p>
+    <h1 class="terminos-header__title">Términos y Condiciones para Profesionales de Adomiapp</h1>
+    <p class="terminos-header__subtitle">Última actualización: 26 de octubre de 2025</p>
   </div>
 
   <!-- Tabs de navegación -->
@@ -32,20 +32,21 @@
         <li><strong>Profesional:</strong> Usted, como proveedor independiente de servicios</li>
         <li><strong>Cliente:</strong> Usuario que solicita y contrata servicios</li>
         <li><strong>Servicio:</strong> Actividad profesional que usted presta</li>
+        <li><strong>Tarifa de Servicio:</strong> Comisión que Adomiapp cobra al Profesional por el uso de la Plataforma (intermediación, procesamiento de pagos, marketing, etc.).</li>
       </ul>
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">2. Naturaleza y Alcance de la Plataforma</h2>
+      <h2 class="terminos-section__title">2. Rol de Adomiapp: Intermediario Tecnológico</h2>
       <p class="terminos-section__text">
         Adomiapp es una plataforma tecnológica de intermediación. Nuestra función se limita a conectar 
-        Clientes con Profesionales independientes.
+        Clientes con Profesionales independientes. El contrato por los Servicios se celebra exclusivamente entre Cliente y Profesional.
       </p>
       <p class="terminos-section__text">Usted entiende que Adomiapp:</p>
       <ul class="terminos-section__list">
-        <li>NO es parte del contrato entre usted y el Cliente</li>
-        <li>NO supervisa, dirige ni controla su trabajo</li>
-        <li>NO garantiza calidad, seguridad o legalidad de Servicios</li>
+        <li>NO es parte del contrato entre usted y el Cliente.</li>
+        <li>NO emplea a los Profesionales, ni supervisa, dirige o controla su trabajo.</li>
+        <li>NO garantiza calidad, seguridad o legalidad de los Servicios del Profesional.</li>
         <li>Puede contener enlaces a recursos de terceros</li>
       </ul>
     </section>
@@ -103,11 +104,38 @@
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">6. Comisiones y Obligaciones Tributarias</h2>
+      <h2 class="terminos-section__title">6. Pagos, Comisiones (Stripe Connect) y Obligaciones Tributarias</h2>
+      <h3 class="terminos-subsection__title">6.1. Procesador de Pagos (Stripe Connect)</h3>
+      <ul class="terminos-section__list">
+        <li>La Plataforma utiliza Stripe Connect como procesador de pagos externo.</li>
+        <li>Para recibir pagos, debe crear y mantener activa una cuenta de Stripe Connect vinculada a su perfil.</li>
+        <li>Usted acepta y cumplirá los términos y políticas de Stripe.</li>
+      </ul>
+
+      <h3 class="terminos-subsection__title">6.2. Modelo de Intermediación y Tarifa de Servicio (Pagos con Tarjeta)</h3>
+      <ul class="terminos-section__list">
+        <li>Cuando un Cliente paga con tarjeta, Stripe divide el pago en el origen:</li>
+        <li>El monto neto del Servicio (monto total menos la Tarifa de Servicio) se transfiere directamente a su cuenta de Stripe Connect.</li>
+        <li>La Tarifa de Servicio (actualmente 15% del monto total, salvo que se indique otra en su plan) se transfiere a Adomiapp.</li>
+        <li>Los depósitos a su cuenta bancaria ocurren según los plazos de Stripe (usualmente 3–5 días hábiles).</li>
+      </ul>
+
+      <h3 class="terminos-subsection__title">6.3. Obligaciones Tributarias del Profesional (Chile)</h3>
+      <ul class="terminos-section__list">
+        <li><strong>Boleta/Factura al Cliente:</strong> Usted es el único responsable de emitir el documento tributario al Cliente por el monto total del Servicio.</li>
+        <li><strong>Factura de Adomiapp:</strong> Adomiapp emitirá una factura por la Tarifa de Servicio (p. ej., 15%) más IVA (19%).</li>
+        <li><strong>Declaraciones:</strong> Usted declara y paga los impuestos que correspondan (IVA, Renta u otros).</li>
+      </ul>
+
+      <h3 class="terminos-subsection__title">6.4. Comisiones por Pagos en Efectivo</h3>
       <p class="terminos-section__text">
-        Adomiapp cobra 15% de comisión. Los pagos se depositan en 3-5 días hábiles. Usted es responsable 
-        de declarar ingresos y pagar impuestos según legislación chilena.
+        Si recibe pagos en efectivo por Servicios agendados en la Plataforma, se generará una deuda de comisión a favor de Adomiapp equivalente a la Tarifa de Servicio. Usted autoriza a Adomiapp a cobrar dicha deuda mediante:
       </p>
+      <ul class="terminos-section__list">
+        <li>(a) <strong>Débito de Saldo:</strong> débito desde su saldo disponible en Stripe Connect.</li>
+        <li>(b) <strong>Netting:</strong> aumento temporal de la Tarifa de Servicio en futuros cobros con tarjeta hasta saldar la deuda.</li>
+        <li>(c) <strong>Cargo a Tarjeta:</strong> cobro directo a la tarjeta registrada como método de respaldo.</li>
+      </ul>
     </section>
 
     <section class="terminos-section">
