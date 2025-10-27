@@ -26,10 +26,15 @@ export class PaymentSuccessComponent implements OnInit {
   private session = inject(SessionService);
 
   ngOnInit() {
+    // Normalizar estado inicial (evita duplicado de estados por SSR)
+    this.success = false;
+    this.error = null;
+    this.loading = true;
     // Obtener session_id de la URL
     this.sessionId = this.route.snapshot.queryParamMap.get('session_id');
     
     if (!this.sessionId) {
+      this.success = false;
       this.error = 'No se encontró información de la sesión de pago';
       this.loading = false;
       return;
@@ -40,6 +45,10 @@ export class PaymentSuccessComponent implements OnInit {
 
   processPaymentSuccess() {
     try {
+      // Asegurar exclusividad de estados
+      this.error = null;
+      this.success = false;
+      this.loading = true;
       // Si ya hay sesión (Google), no exigir datos temporales ni registrar de nuevo
       const hasToken = !!this.auth.getAccessToken();
       if (hasToken) {
@@ -100,6 +109,7 @@ export class PaymentSuccessComponent implements OnInit {
         ? sessionStorage.getItem('selectedPlan') : null;
       
       if (!tempData || !planData) {
+        this.success = false;
         this.error = 'No se encontraron los datos del usuario. Por favor, regístrate nuevamente.';
         this.loading = false;
         return;
@@ -122,12 +132,14 @@ export class PaymentSuccessComponent implements OnInit {
               sessionStorage.removeItem('selectedPlan');
             }
             this.session.setUser(response.user);
+            this.error = null;
             this.success = true;
             this.loading = false;
             setTimeout(() => {
               this.router.navigateByUrl('/onboarding');
             }, 3000);
           } else {
+            this.success = false;
             this.error = response.error || 'Error al crear la cuenta. Inténtalo nuevamente.';
             this.loading = false;
           }
@@ -135,12 +147,16 @@ export class PaymentSuccessComponent implements OnInit {
         error: (error) => {
           console.error('Registration error:', error);
           if (error.status === 409) {
+            this.success = false;
             this.error = 'El email ya está registrado. Inicia sesión en su lugar.';
           } else if (error.status === 400) {
+            this.success = false;
             this.error = 'Datos de registro inválidos. Verifica la información.';
           } else if (error.status >= 500) {
+            this.success = false;
             this.error = 'Error del servidor. Inténtalo nuevamente en unos minutos.';
           } else {
+            this.success = false;
             this.error = error.error?.error || 'Error al crear la cuenta. Contacta al soporte.';
           }
           this.loading = false;
@@ -148,6 +164,7 @@ export class PaymentSuccessComponent implements OnInit {
       });
     } catch (parseError) {
       console.error('Error parsing stored data:', parseError);
+      this.success = false;
       this.error = 'Error al procesar los datos. Por favor, regístrate nuevamente.';
       this.loading = false;
     }
