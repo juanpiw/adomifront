@@ -79,13 +79,20 @@ export class PaymentSuccessComponent implements OnInit {
           attempts++;
           console.log('[PAYMENT_SUCCESS] Poll attempt', attempts);
           this.auth.getCurrentUserInfo().subscribe({
-            next: (resp) => {
+            next: async (resp) => {
               const user = (resp as any).data?.user || (resp as any).user || resp;
               console.log('[PAYMENT_SUCCESS] /auth/me user:', user);
               if (user?.role === 'provider') {
                 clearInterval(poll);
                 // Limpiar flag de onboarding si estaba activo
                 try { if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('providerOnboarding'); } catch {}
+                // Refrescar token para que el JWT tenga role=provider antes de llamar a rutas protegidas
+                try {
+                  await this.auth.refreshAccessToken().toPromise();
+                } catch {
+                  this.router.navigateByUrl('/auth/login?expired=1');
+                  return;
+                }
                 // Si no tiene payouts habilitados, iniciar onboarding Connect
                 const payoutsEnabled = (user as any)?.stripe_payouts_enabled === 1 || (user as any)?.stripe_payouts_enabled === true;
                 const accountId = (user as any)?.stripe_account_id || null;
