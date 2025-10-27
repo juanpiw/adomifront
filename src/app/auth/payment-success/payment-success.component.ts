@@ -62,7 +62,7 @@ export class PaymentSuccessComponent implements OnInit {
         this.success = true;
         this.loading = false;
         let attempts = 0;
-        const maxAttempts = 30; // ~60s si usamos 2s de intervalo
+        const maxAttempts = 60; // ~120s para dar margen a Stripe webhooks
         const intervalMs = 2000;
         const intendedProvider = (() => {
           try {

@@ -311,8 +311,11 @@ export class AuthService {
     console.log('[AUTH] getCurrentUserInfo llamado');
     const token = this.getAccessToken();
     console.log('[AUTH] Token disponible:', token ? 'sí' : 'no');
+    // Añadir parámetro de cache-busting para evitar 304 con payload obsoleto tras promoción
+    const ts = Date.now().toString();
     return this.http.get<{ success: boolean; user: AuthUser }>(`${this.baseUrl}/auth/me`, {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
+      params: { t: ts }
     }).pipe(
       tap(response => {
         console.log('[AUTH] Respuesta de /auth/me:', response);
