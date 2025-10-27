@@ -53,16 +53,40 @@ export class SelectPlanComponent implements OnInit {
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;
     if (!tempData) {
-      console.warn('[SELECT_PLAN] tempUserData no encontrado. Redirigiendo a /auth/register');
-      this.router.navigateByUrl('/auth/register');
-      return;
-    }
-
-    try {
-      this.tempUserData = JSON.parse(tempData);
-      console.log('[SELECT_PLAN] tempUserData:', this.tempUserData);
-    } catch (e) {
-      console.error('[SELECT_PLAN] Error parseando tempUserData:', e);
+      console.warn('[SELECT_PLAN] tempUserData no encontrado. Intentando reconstruir desde localStorage.adomi_user');
+      try {
+        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+        if (raw) {
+          const u = JSON.parse(raw);
+          const intendedProvider = u?.intendedRole === 'provider' || u?.pending_role === 'provider';
+          if (intendedProvider) {
+            this.tempUserData = {
+              name: u?.name || (u?.email ? String(u.email).split('@')[0] : ''),
+              email: u?.email || '',
+              password: '',
+              role: 'provider'
+            } as any;
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('tempUserData', JSON.stringify(this.tempUserData));
+            }
+            console.log('[SELECT_PLAN] Reconstruido tempUserData desde adomi_user:', this.tempUserData);
+          }
+        }
+      } catch (e) {
+        console.error('[SELECT_PLAN] Error reconstruyendo tempUserData:', e);
+      }
+      if (!this.tempUserData) {
+        console.warn('[SELECT_PLAN] No fue posible reconstruir tempUserData. Redirigiendo a /auth/register');
+        this.router.navigateByUrl('/auth/register');
+        return;
+      }
+    } else {
+      try {
+        this.tempUserData = JSON.parse(tempData);
+        console.log('[SELECT_PLAN] tempUserData:', this.tempUserData);
+      } catch (e) {
+        console.error('[SELECT_PLAN] Error parseando tempUserData:', e);
+      }
     }
     
     // ✅ VALIDACIÓN CRÍTICA: Solo proveedores pueden acceder a planes

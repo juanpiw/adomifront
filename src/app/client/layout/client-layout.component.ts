@@ -77,8 +77,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       try {
         const po = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('providerOnboarding') : null;
         if (po === '1') {
-          console.log('[CLIENT_LAYOUT] Provider onboarding activo - redirigiendo forzadamente a /auth/select-plan');
-          try { if (typeof window !== 'undefined') window.location.assign('/auth/select-plan'); } catch {}
+          console.log('[CLIENT_LAYOUT] Provider onboarding activo - omitiendo cargas/redirecciones de cliente');
           return;
         }
       } catch {}
