@@ -65,6 +65,9 @@
         <a routerLink="/client/configuracion" routerLinkActive="active" (click)="onNav()">
           <ui-icon name="settings" [size]="16"></ui-icon><span>Configuración</span>
         </a>
+        <a (click)="switchToProvider()" style="cursor: pointer;">
+          <ui-icon name="repeat" [size]="16"></ui-icon><span>Cambiar de cuenta</span>
+        </a>
       </nav>
       <div class="footer">
         <a routerLink="/client/terminos" class="footer-link" (click)="onNav()">Términos y Condiciones</a>

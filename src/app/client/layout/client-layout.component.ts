@@ -167,6 +167,29 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  switchToProvider(): void {
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('providerOnboarding', '1');
+      }
+      // Refuerza intención en localStorage para reconstrucción de flujo
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('adomi_user');
+        if (raw && raw !== 'null' && raw !== 'undefined') {
+          try {
+            const u = JSON.parse(raw);
+            u.intendedRole = 'provider';
+            u.pending_role = 'provider';
+            u.mode = 'register';
+            localStorage.setItem('adomi_user', JSON.stringify(u));
+          } catch {}
+        }
+      }
+    } catch {}
+    this.router.navigateByUrl('/auth/select-plan');
+    this.onNav();
+  }
+
   private loadClientData() {
     console.log('[CLIENT_LAYOUT] Cargando datos del cliente...');
     
