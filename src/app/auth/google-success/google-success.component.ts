@@ -151,6 +151,12 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
         try {
           user = JSON.parse(decodeURIComponent(userParam));
           console.log('🟢 [GOOGLE_SUCCESS] ✅ User parseado exitosamente:', user);
+          // Sembrar googleAuthMode si viene en user.mode
+          try {
+            if (user && user.mode && typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('googleAuthMode', user.mode);
+            }
+          } catch {}
         } catch (e) {
           console.error('🔴 [GOOGLE_SUCCESS] ❌ Error parseando userParam:', e);
           user = {};
@@ -316,9 +322,12 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     }
 
     const finalRole = user?.role;
-    console.log('[GOOGLE_SUCCESS] Rol final para redirección:', finalRole, 'mode:', mode);
+    const pendingRole = user?.pending_role;
+    const intendedRole = user?.intendedRole;
+    console.log('[GOOGLE_SUCCESS] Rol final para redirección:', { finalRole, pendingRole, intendedRole, mode });
 
-    if (finalRole === 'provider') {
+    // Nuevo: si el usuario fue creado como client pero viene con pending_role/intendedRole provider en registro → ir a select-plan
+    if ((finalRole === 'provider') || (finalRole === 'client' && (pendingRole === 'provider' || intendedRole === 'provider'))) {
       console.log('[GOOGLE_SUCCESS] Redirigiendo provider, mode:', mode);
       if (mode === 'register') {
         // Sembrar datos mínimos para el flujo de plan/checkout
@@ -326,6 +335,7 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
           const temp = { email: user?.email || '', name: user?.name || '', role: 'provider' };
           if (typeof sessionStorage !== 'undefined') {
             sessionStorage.setItem('tempUserData', JSON.stringify(temp));
+            sessionStorage.setItem('googleAuthMode', 'register');
           }
           console.log('[GOOGLE_SUCCESS] Navegando a select-plan con temp data:', temp);
         } catch {}
