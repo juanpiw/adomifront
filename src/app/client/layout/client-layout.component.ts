@@ -72,8 +72,15 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       this.isCollapsed = !isOpen;
     });
 
-    // Cargar datos del cliente
+    // Cargar datos del cliente (evitar interferir si estamos en onboarding de proveedor)
     if (isPlatformBrowser(this.platformId)) {
+      try {
+        const po = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('providerOnboarding') : null;
+        if (po === '1') {
+          console.log('[CLIENT_LAYOUT] Provider onboarding activo - omitiendo cargas/redirecciones de cliente');
+          return;
+        }
+      } catch {}
       this.loadClientData();
       // Inicializar notificaciones push
       this.initializeNotifications();

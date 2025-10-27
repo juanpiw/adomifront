@@ -76,11 +76,31 @@ export class PaymentSuccessComponent implements OnInit {
               const user = (resp as any).data?.user || (resp as any).user || resp;
               if (user?.role === 'provider') {
                 clearInterval(poll);
+                // Limpiar flag de onboarding si estaba activo
+                try { if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('providerOnboarding'); } catch {}
+                // Si no tiene payouts habilitados, iniciar onboarding Connect
+                const payoutsEnabled = (user as any)?.stripe_payouts_enabled === 1 || (user as any)?.stripe_payouts_enabled === true;
+                const accountId = (user as any)?.stripe_account_id || null;
+                if (!payoutsEnabled) {
+                  // Handoff a wizard de Connect (frontend debería llamar a endpoints y redirigir a account_link.url)
+                  this.router.navigateByUrl('/dash/ingresos');
+                  return;
+                }
                 this.router.navigateByUrl('/dash/home');
               } else if (attempts >= maxAttempts) {
                 clearInterval(poll);
                 // Fallback: si la intención era proveedor, dirigir al dashboard de proveedor
                 if (intendedProvider) {
+                  // Enviar al wizard si faltan payouts
+                  try {
+                    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+                    const u = raw ? JSON.parse(raw) : {};
+                    const payoutsEnabled = (u as any)?.stripe_payouts_enabled === 1 || (u as any)?.stripe_payouts_enabled === true;
+                    if (!payoutsEnabled) {
+                      this.router.navigateByUrl('/dash/ingresos');
+                      return;
+                    }
+                  } catch {}
                   this.router.navigateByUrl('/dash/home');
                 } else {
                   this.router.navigateByUrl('/client/reservas');

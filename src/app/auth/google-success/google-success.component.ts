@@ -323,9 +323,17 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
           if (typeof sessionStorage !== 'undefined') {
             sessionStorage.setItem('tempUserData', JSON.stringify(temp));
             sessionStorage.setItem('googleAuthMode', 'register');
+            // Marcar onboarding de proveedor para evitar redirecciones del layout de cliente
+            sessionStorage.setItem('providerOnboarding', '1');
           }
           console.log('[GOOGLE_SUCCESS] Navegando a select-plan con temp data:', temp);
         } catch {}
+        // Forzar navegación dura para evitar intercepciones
+        if (typeof window !== 'undefined') {
+          clearInterval(this.countdownInterval);
+          window.location.assign('/auth/select-plan');
+          return;
+        }
         this.router.navigate(['/auth/select-plan']);
         return;
       }
