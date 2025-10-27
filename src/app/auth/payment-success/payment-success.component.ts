@@ -96,6 +96,12 @@ export class PaymentSuccessComponent implements OnInit {
                 const accountId = (user as any)?.stripe_account_id || null;
                 console.log('[PAYMENT_SUCCESS] Role provider. payoutsEnabled:', payoutsEnabled, 'accountId:', accountId);
                 if (!payoutsEnabled) {
+                  // Si Connect está deshabilitado globalmente, no intentar onboarding
+                  if (!environment.connectEnabled) {
+                    console.warn('[PAYMENT_SUCCESS] Connect deshabilitado. Redirigiendo a /dash/home (MoR).');
+                    this.router.navigateByUrl('/dash/home');
+                    return;
+                  }
                   // Intentar crear cuenta Connect si falta y generar onboarding link
                   const providerId = Number(user.id);
                   const launch = async () => {
