@@ -213,28 +213,15 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
               console.log('[GOOGLE_SUCCESS] Usuario URL:', user);
               console.log('[GOOGLE_SUCCESS] Usuario Backend:', backendUser);
               
-              // Verificar si tenemos un usuario válido de la URL
-              if (user && user.id) {
-                // Si los roles no coinciden, usar el de la URL (más confiable para registro)
-                if (user.role && user.role !== backendUser.role) {
-                  console.log('[GOOGLE_SUCCESS] ⚠️ Conflicto de roles detectado!');
-                  console.log('[GOOGLE_SUCCESS] URL role:', user.role, 'Backend role:', backendUser.role);
-                  console.log('[GOOGLE_SUCCESS] Usando rol de URL para registro:', user.role);
-                  
-                  // Crear usuario híbrido con rol de URL pero datos frescos del backend
-                  const hybridUser = { ...backendUser, role: user.role };
-                  localStorage.setItem('adomi_user', JSON.stringify(hybridUser));
-                  console.log('[GOOGLE_SUCCESS] Usuario híbrido guardado:', hybridUser);
-                } else {
-                  // Los roles coinciden, actualizar localStorage con datos frescos del backend
-                  localStorage.setItem('adomi_user', JSON.stringify(backendUser));
-                  console.log('[GOOGLE_SUCCESS] Usuario actualizado desde backend:', backendUser);
-                }
-              } else {
-                // No tenemos usuario de URL, usar el del backend
-                localStorage.setItem('adomi_user', JSON.stringify(backendUser));
-                console.log('[GOOGLE_SUCCESS] Usuario guardado desde backend (sin URL):', backendUser);
-              }
+              // Mezclar datos: conservar intendedRole/pending_role/mode de la URL si el backend no los retorna
+              const extras = {
+                intendedRole: user?.intendedRole,
+                pending_role: user?.pending_role,
+                mode: user?.mode
+              };
+              const mergedUser = { ...backendUser, ...extras };
+              localStorage.setItem('adomi_user', JSON.stringify(mergedUser));
+              console.log('[GOOGLE_SUCCESS] Usuario fusionado guardado:', mergedUser);
             } else {
               console.warn('[GOOGLE_SUCCESS] No se pudo extraer usuario del backend, manteniendo usuario de URL');
             }
