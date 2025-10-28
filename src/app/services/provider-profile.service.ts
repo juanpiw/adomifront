@@ -257,15 +257,27 @@ export class ProviderProfileService {
     console.log('[ProviderProfileService] URL:', `${this.apiUrl}/provider/services`);
     console.log('[ProviderProfileService] Headers:', this.getHeaders());
     
-    const payload = {
+    const durationParsed = Number(
+      service?.duration_minutes ?? service?.duration ?? 0
+    );
+    const payload: any = {
       name: service?.name,
       description: service?.description || null,
       price: Number(service?.price) || 0,
-      duration_minutes: Number(service?.duration) || 0,
-      // Usar categoría personalizada si no tenemos un category_id válido desde el catálogo
-      custom_category: (service?.type === 'Otro' ? (service?.customType || '') : (service?.type || '')) || null,
-      // category_id: se puede mapear en el futuro cuando el selector esté conectado a service_categories
-    } as any;
+      duration_minutes: durationParsed > 0 ? durationParsed : 30,
+    };
+
+    // Pasar category_id si viene numérico válido
+    if (Number.isFinite(Number(service?.category_id))) {
+      payload.category_id = Number(service.category_id);
+    }
+    // Pasar custom_category si existe texto
+    if (typeof service?.custom_category === 'string' && service.custom_category.trim().length > 0) {
+      payload.custom_category = service.custom_category.trim();
+    } else if (typeof service?.type === 'string' && service.type.trim().length > 0) {
+      // Fallback: usar el nombre del tipo seleccionado si no hay custom_category
+      payload.custom_category = service.type.trim();
+    }
 
     return this.http.post<{success: boolean, service: Service}>(
       `${this.apiUrl}/provider/services`,

@@ -51,6 +51,7 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
   // Estados
   loading = false;
   errorMessage = '';
+  priceText: string = '';
 
   // Categorías de servicios
   categories: ServiceCategory[] = [
@@ -236,6 +237,7 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
     if (this.isOpen) {
       document.body.style.overflow = 'hidden';
     }
+    this.priceText = this.formatCLP(this.formData.price);
   }
 
   ngOnDestroy() {
@@ -267,6 +269,7 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
       category_id: this.editingService.category_id || null,
       custom_category: this.editingService.custom_category || ''
     };
+    this.priceText = this.formatCLP(this.formData.price);
 
     // Cargar categoría seleccionada
     if (this.editingService.category_id) {
@@ -285,6 +288,7 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
       duration_minutes: 30,
       custom_category: ''
     };
+    this.priceText = this.formatCLP(this.formData.price);
     this.selectedCategory = null;
     this.selectedSubcategory = null;
     this.availableSubcategories = [];
@@ -369,5 +373,22 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
 
   get modalTitle(): string {
     return this.editingService ? 'Editar Servicio' : 'Crear Nuevo Servicio';
+  }
+
+  // Precio: formateo con miles en el mismo input manteniendo valor numérico
+  onPriceInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = (input.value || '').replace(/\D+/g, '');
+    const numericValue = digitsOnly ? Number(digitsOnly) : 0;
+    this.formData.price = numericValue;
+    this.priceText = this.formatCLP(numericValue);
+  }
+
+  private formatCLP(value: number | string): string {
+    const num = typeof value === 'string' ? Number(value) || 0 : value || 0;
+    return new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
   }
 }
