@@ -294,7 +294,7 @@ export class ClientReservasComponent implements OnInit {
         };
         const past = list.filter(isPastPending)
                          .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
-        const realizadasAll = list.filter(a => a.status === 'completed')
+        const realizadasCompletadas = list.filter(a => a.status === 'completed')
                                   .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
         const cancelled = list.filter(a => a.status === 'cancelled');
 
@@ -374,13 +374,18 @@ export class ClientReservasComponent implements OnInit {
         }));
         this.canceladasClienteList = [];
 
-        // Realizadas/Pagadas (todas las completadas)
+        // Realizadas/Pagadas: incluir completadas o con payment_status='paid/succeeded/completed'
+        const isPaidStatus = (s: any) => ['paid','succeeded','completed'].includes(String(s || ''));
+        const realizadasAll = list
+          .filter(r => r.status === 'completed' || isPaidStatus((r as any).payment_status))
+          .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
+
         this.realizadasList = realizadasAll.map(r => ({
           avatarUrl: this.resolveAvatar((r as any).provider_avatar_url || (r as any).avatar_url || (r as any).client_avatar_url || ''),
           titulo: `${r.service_name || 'Servicio'} con ${r.provider_name || 'Profesional'}`,
           fecha: this.formatDate(r.date),
           precio: r.price ? `$${Number(r.price).toLocaleString('es-CL')}` : '',
-          estado: 'Completado',
+          estado: r.status === 'completed' ? 'Completado' : 'Pagada',
           appointmentId: r.id as number,
           providerId: (r as any).provider_id as number,
           serviceId: (r as any).service_id as number,
