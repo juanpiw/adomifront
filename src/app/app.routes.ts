@@ -37,9 +37,11 @@ import { ClientTerminosComponent } from './client/pages/terminos/terminos.compon
 import { DashTerminosComponent } from './dash/pages/terminos/terminos.component';
 import { Component } from '@angular/core';
 import { AdminPagosComponent } from './dash/pages/admin-pagos/admin-pagos.component';
+import { TbkReturnComponent } from './client/pages/tbk-return/tbk-return.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'tbk/return', component: TbkReturnComponent },
   { path: 'libreria', component: LibraryComponent },
   { path: 'onboarding', component: OnboardingComponent },
   { path: 'client', component: ClientLayoutComponent, children: [
