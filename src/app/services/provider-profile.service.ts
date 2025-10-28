@@ -257,9 +257,19 @@ export class ProviderProfileService {
     console.log('[ProviderProfileService] URL:', `${this.apiUrl}/provider/services`);
     console.log('[ProviderProfileService] Headers:', this.getHeaders());
     
+    const payload = {
+      name: service?.name,
+      description: service?.description || null,
+      price: Number(service?.price) || 0,
+      duration_minutes: Number(service?.duration) || 0,
+      // Usar categoría personalizada si no tenemos un category_id válido desde el catálogo
+      custom_category: (service?.type === 'Otro' ? (service?.customType || '') : (service?.type || '')) || null,
+      // category_id: se puede mapear en el futuro cuando el selector esté conectado a service_categories
+    } as any;
+
     return this.http.post<{success: boolean, service: Service}>(
       `${this.apiUrl}/provider/services`,
-      service,
+      payload,
       { headers: this.getHeaders() }
     ).pipe(
       tap((response) => {

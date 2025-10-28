@@ -32,6 +32,7 @@ export class ServiceFormComponent implements OnInit {
   availableServices: string[] = [];
   showCustomService = false;
   isEditMode = false;
+  priceText: string = '';
 
   ngOnInit() {
     if (this.service) {
@@ -47,6 +48,7 @@ export class ServiceFormComponent implements OnInit {
       };
       this.onCategoryChange();
     }
+    this.priceText = this.formatCLP(this.formData.price);
   }
 
   onCategoryChange() {
@@ -84,7 +86,24 @@ export class ServiceFormComponent implements OnInit {
       (!this.showCustomService || this.formData.customType)
     );
   }
+
+  onPriceInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = (input.value || '').replace(/\D+/g, '');
+    const numericValue = digitsOnly ? Number(digitsOnly) : 0;
+    this.formData.price = numericValue;
+    this.priceText = this.formatCLP(numericValue);
+  }
+
+  private formatCLP(value: number | string): string {
+    const num = typeof value === 'string' ? Number(value) || 0 : value || 0;
+    return new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  }
 }
+
 
 
 

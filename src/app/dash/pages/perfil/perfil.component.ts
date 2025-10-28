@@ -596,7 +596,8 @@ export class DashPerfilComponent implements OnInit {
           console.error('[PERFIL] ❌ Error completo:', err);
           console.error('[PERFIL] ❌ Error status:', err.status);
           console.error('[PERFIL] ❌ Error message:', err.message);
-          alert('❌ Error al crear servicio');
+          const backendMsg = (err && err.error && err.error.error) ? String(err.error.error) : 'Error al crear servicio';
+          alert('❌ ' + backendMsg);
           this.savingService = false;
         }
       });
