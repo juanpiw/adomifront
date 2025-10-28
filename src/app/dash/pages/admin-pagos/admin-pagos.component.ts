@@ -27,6 +27,7 @@ export class AdminPagosComponent implements OnInit {
   adminSecret = '';
   startISO: string | null = null;
   endISO: string | null = null;
+  gateway: '' | 'tbk' | 'stripe' | 'cash' = '';
   summary: any = null;
   payRow: any = null;
   payRef: string = '';
@@ -56,13 +57,13 @@ export class AdminPagosComponent implements OnInit {
     this.loading = true;
     this.error = null;
     const token = this.session.getAccessToken();
-    this.adminApi.list(this.adminSecret, token, this.startISO, this.endISO).subscribe({
+    this.adminApi.list(this.adminSecret, token, this.startISO, this.endISO, undefined, this.gateway).subscribe({
       next: (res: any) => {
         this.loading = false;
         if (res?.success) {
           this.rows = res.data || [];
           // cargar resumen
-          this.adminApi.summary(this.adminSecret, token, this.startISO, this.endISO).subscribe((s: any) => {
+          this.adminApi.summary(this.adminSecret, token, this.startISO, this.endISO, this.gateway).subscribe((s: any) => {
             const sum = s?.summary || {};
             // Normalizar a números
             const toNum = (v: any) => Number(v || 0);
@@ -136,6 +137,14 @@ export class AdminPagosComponent implements OnInit {
       this.endISO = end.toISOString().slice(0,19).replace('T',' ');
     }
     this.load();
+  }
+
+  setGateway(gw: any) {
+    const g = String(gw).toLowerCase();
+    if (g === 'tbk' || g === 'stripe' || g === 'cash' || g === '') {
+      this.gateway = g as any;
+      this.load();
+    }
   }
 
   computeSettlementDate(paidAt: string | Date | null): Date | null {

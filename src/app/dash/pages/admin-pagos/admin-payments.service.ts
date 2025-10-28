@@ -14,16 +14,18 @@ export class AdminPaymentsService {
     });
   }
 
-  list(secret: string, token: string | null, start?: string | null, end?: string | null, releaseStatus?: string) {
+  list(secret: string, token: string | null, start?: string | null, end?: string | null, releaseStatus?: string, gateway?: string) {
     const params: string[] = ['limit=100'];
     if (start && end) { params.push(`start=${encodeURIComponent(start)}`); params.push(`end=${encodeURIComponent(end)}`); }
     if (releaseStatus) { params.push(`release_status=${encodeURIComponent(releaseStatus)}`); }
+    if (gateway) { params.push(`gateway=${encodeURIComponent(gateway)}`); }
     return this.http.get<any>(`${this.baseUrl}/admin/payments?${params.join('&')}`, { headers: this.headers(secret, token) });
   }
 
-  summary(secret: string, token: string | null, start?: string | null, end?: string | null) {
+  summary(secret: string, token: string | null, start?: string | null, end?: string | null, gateway?: string) {
     const params: string[] = [];
     if (start && end) { params.push(`start=${encodeURIComponent(start)}`); params.push(`end=${encodeURIComponent(end)}`); }
+    if (gateway) { params.push(`gateway=${encodeURIComponent(gateway)}`); }
     const qs = params.length ? ('?' + params.join('&')) : '';
     return this.http.get<any>(`${this.baseUrl}/admin/payments/summary${qs}`, { headers: this.headers(secret, token) });
   }

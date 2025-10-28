@@ -10,6 +10,13 @@
       <option value="all">Todo</option>
     </select>
     <button (click)="applyRange(rangeSel.value)">Aplicar</button>
+    <label style="margin-left:12px;">Gateway:</label>
+    <select #gwSel (change)="setGateway(gwSel.value)">
+      <option value="">Todos</option>
+      <option value="tbk">TBK</option>
+      <option value="stripe">Stripe</option>
+      <option value="cash">Efectivo</option>
+    </select>
     <button (click)="exportCsv()">Export CSV</button>
   </div>
 

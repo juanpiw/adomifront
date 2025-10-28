@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
         <th (click)="sortBy('amount')">Monto</th>
         <th (click)="sortBy('commission_amount')">Comisión</th>
         <th (click)="sortBy('provider_amount')">Neto</th>
+        <th (click)="sortBy('gateway')">Gateway</th>
         <th>Banco</th>
         <th>Cuenta</th>
         <th>Estado</th>
@@ -34,6 +35,7 @@ import { CommonModule } from '@angular/common';
         <td>{{ r.amount | number:'1.0-0' }} {{ r.currency }}</td>
         <td>{{ r.commission_amount | number:'1.0-0' }}</td>
         <td>{{ r.provider_amount | number:'1.0-0' }}</td>
+        <td>{{ r.gateway || '-' }}</td>
         <td>{{ r.bank_name || '-' }}</td>
         <td>{{ r.bank_last4 ? ('•••• ' + r.bank_last4) : '-' }}</td>
         <td><span [ngStyle]="statusStyle(r.settlement_status)">{{ r.settlement_status }}</span></td>
