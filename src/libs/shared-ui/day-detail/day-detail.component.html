@@ -66,7 +66,7 @@
           <div class="day-detail__appointment-actions">
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
             <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>
-            <button *ngIf="appointment.status === 'confirmed' && appointment.paymentStatus !== 'paid'" class="day-detail__action-btn" (click)="$event.stopPropagation(); cobrarEnEfectivo.emit(appointment.id)">Cobrar en efectivo</button>
+            
           </div>
         </div>
       </div>
