@@ -267,9 +267,12 @@ export class ProviderProfileService {
       duration_minutes: durationParsed > 0 ? durationParsed : 30,
     };
 
-    // Pasar category_id si viene numérico válido
-    if (Number.isFinite(Number(service?.category_id))) {
-      payload.category_id = Number(service.category_id);
+    // Pasar category_id solo si es entero positivo (>0)
+    if (service?.category_id !== null && service?.category_id !== undefined) {
+      const cid = Number(service.category_id);
+      if (Number.isInteger(cid) && cid > 0) {
+        payload.category_id = cid;
+      }
     }
     // Pasar custom_category si existe texto
     if (typeof service?.custom_category === 'string' && service.custom_category.trim().length > 0) {
