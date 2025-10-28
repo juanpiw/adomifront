@@ -295,6 +295,14 @@ export class ProviderProfileService {
         console.error('[ProviderProfileService] ❌ ERROR en POST /provider/services:', error);
         console.error('[ProviderProfileService] Error status:', error.status);
         console.error('[ProviderProfileService] Error message:', error.message);
+        try {
+          console.error('[ProviderProfileService] Error body (raw):', (error as any)?.error);
+          if (typeof (error as any)?.error === 'string') {
+            console.error('[ProviderProfileService] Error body (parsed):', JSON.parse((error as any).error));
+          }
+        } catch (e) {
+          console.warn('[ProviderProfileService] No se pudo parsear err.error como JSON');
+        }
         return throwError(() => error);
       })
     );

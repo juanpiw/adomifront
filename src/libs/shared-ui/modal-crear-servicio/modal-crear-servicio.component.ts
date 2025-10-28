@@ -352,7 +352,13 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Si no hay categoría seleccionada, usar custom_category
+    // Si no hay category_id ni custom_category pero hay categoría principal elegida,
+    // usar el id de la categoría principal (válido para backend)
+    if (!this.formData.category_id && !this.formData.custom_category?.trim() && this.selectedCategory) {
+      this.formData.category_id = this.selectedCategory.id;
+    }
+
+    // Validar nuevamente
     if (!this.formData.category_id && !this.formData.custom_category?.trim()) {
       this.errorMessage = 'Debes seleccionar una categoría o escribir una personalizada';
       return;
