@@ -796,7 +796,14 @@ export class ExplorarComponent implements OnInit {
     const placeholder = `https://placehold.co/${size}x${size}/C7D2FE/4338CA?text=${encodeURIComponent(initial)}`;
     if (!raw || raw.trim() === '') return '/assets/default-avatar.png';
     // Absoluta
-    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^https?:\/\//i.test(raw)) {
+      // Reescritura de localhost -> API base (fallback por si el backend no tiene PUBLIC_BASE_URL)
+      try {
+        const m = raw.match(/^https?:\/\/localhost(?::\d+)?(\/.*)$/i);
+        if (m && m[1]) return `${environment.apiBaseUrl}${m[1]}`;
+      } catch {}
+      return raw;
+    }
     // Ruta de uploads (comienza con /uploads)
     if (raw.startsWith('/uploads')) return `${environment.apiBaseUrl}${raw}`;
     // Otros casos: intentar con base URL
