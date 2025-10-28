@@ -465,8 +465,24 @@ export class ClientReservasComponent implements OnInit {
       client_reference: `appt-${apptId}`
     }).subscribe({
       next: (resp) => {
-        if (resp?.success && resp?.url) {
-          window.location.href = resp.url as string;
+        if (resp?.success && resp?.url && resp?.token) {
+          try {
+            // TBK requiere POST con token_ws al URL entregado
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = String(resp.url);
+            form.style.display = 'none';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'token_ws';
+            input.value = String(resp.token);
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+          } catch (e) {
+            console.error('[RESERVAS] Error enviando POST a TBK', e);
+            window.location.href = String(resp.url);
+          }
         } else {
           console.error('[RESERVAS] TBK create tx sin URL', resp);
         }
