@@ -27,6 +27,20 @@ export class PaymentsService {
     );
   }
 
+  // TBK Mall: crear transacción
+  tbkCreateMallTransaction(params: {
+    provider_id: number;
+    amount_provider: number; // monto neto proveedor (CLP)
+    commission_amount: number; // comisión plataforma (CLP)
+    client_reference?: string;
+  }): Observable<{ success: boolean; token?: string; url?: string; buy_order?: string }>{
+    return this.http.post<{ success: boolean; token?: string; url?: string; buy_order?: string }>(
+      `${this.base}/tbk/mall/transactions`,
+      params,
+      { headers: this.headers() }
+    );
+  }
+
   getPaymentStatus(appointmentId: number): Observable<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>{
     console.log('[PAYMENTS_SERVICE] getPaymentStatus ->', { appointmentId });
     return this.http.get<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>(

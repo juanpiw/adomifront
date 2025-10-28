@@ -459,9 +459,36 @@ export class ClientReservasComponent implements OnInit {
   }
   payWithCard(){
     if (!this.payModalApptId) return;
-    this.payments.createCheckoutSession(this.payModalApptId).subscribe({
-      next: (resp) => { if (resp.success && resp.url) window.location.href = resp.url; },
-      error: (err) => console.error('Error creando checkout de pago', err)
+    const apptId = this.payModalApptId;
+    // Buscar precio y provider_id mapeado
+    const card = this.proximasConfirmadas.find(a => a.appointmentId === apptId);
+    const providerId = this._providerByApptId?.[apptId];
+    const total = Math.round(Number(card?.precio || 0));
+    // Comisión: usar 15% por defecto (backend validará/ajustará al commit)
+    const commission = Math.max(0, Math.round(total * 0.15));
+    const amountProvider = Math.max(0, total - commission);
+
+    if (!providerId || total <= 0) {
+      console.error('[RESERVAS] Datos insuficientes para TBK', { apptId, providerId, total, commission });
+      return;
+    }
+
+    this.payments.tbkCreateMallTransaction({
+      provider_id: Number(providerId),
+      amount_provider: amountProvider,
+      commission_amount: commission,
+      client_reference: `appt-${apptId}`
+    }).subscribe({
+      next: (resp) => {
+        if (resp?.success && resp?.url) {
+          window.location.href = resp.url as string;
+        } else {
+          console.error('[RESERVAS] TBK create tx sin URL', resp);
+        }
+      },
+      error: (err) => {
+        console.error('[RESERVAS] Error creando transacción TBK', err);
+      }
     });
   }
   payWithCash(){
