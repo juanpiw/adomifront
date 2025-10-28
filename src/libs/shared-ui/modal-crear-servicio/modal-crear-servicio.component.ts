@@ -303,12 +303,17 @@ export class ModalCrearServicioComponent implements OnInit, OnDestroy {
     
     // Limpiar subcategoría seleccionada
     this.formData.category_id = null;
+    // Limpiar nombre seleccionado de subcategoría
+    this.formData.custom_category = '';
   }
 
   onSubcategoryChange(event: any) {
     const subcategoryId = parseInt(event.target.value);
     this.selectedSubcategory = this.availableSubcategories.find(s => s.id === subcategoryId) || null;
-    this.formData.category_id = this.selectedSubcategory?.id || null;
+    // No enviar category_id al backend (tabla valida categorías generales)
+    // Enviar el nombre de la subcategoría como custom_category para pasar validación
+    this.formData.category_id = null;
+    this.formData.custom_category = this.selectedSubcategory?.name || '';
   }
 
   onClose() {
