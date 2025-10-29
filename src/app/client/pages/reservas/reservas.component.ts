@@ -465,11 +465,13 @@ export class ClientReservasComponent implements OnInit {
   payWithCard(){
     if (!this.payModalApptId) return;
     const apptId = this.payModalApptId;
+    console.log('[RESERVAS] payWithCard clicked for appt:', apptId);
     this.payments.tbkCreateMallTransaction({
       appointment_id: apptId,
       client_reference: `appt-${apptId}`
     }).subscribe({
       next: (resp) => {
+        console.log('[RESERVAS] tbkCreateMallTransaction resp:', resp);
         if (resp?.success && resp?.url && resp?.token) {
           try {
             // TBK requiere POST con token_ws al URL entregado
@@ -482,6 +484,7 @@ export class ClientReservasComponent implements OnInit {
             input.name = 'token_ws';
             input.value = String(resp.token);
             form.appendChild(input);
+            console.log('[RESERVAS] Submitting POST to TBK with token_ws:', resp.token);
             document.body.appendChild(form);
             form.submit();
           } catch (e) {

@@ -22,14 +22,23 @@ export class TbkReturnComponent implements OnInit {
   ngOnInit(): void {
     const qp = this.route.snapshot.queryParamMap;
     const token = qp.get('token_ws') || qp.get('TBK_TOKEN') || '';
+    console.log('[TBK_RETURN] query params:', Object.fromEntries(qp.keys.map(k => [k, qp.get(k)] as any)));
+    console.log('[TBK_RETURN] token_ws detected:', !!token);
     if (!token) {
       // Si no hay token, ir a reservas
+      console.warn('[TBK_RETURN] Missing token_ws, redirecting to /client/reservas');
       this.router.navigate(['/client/reservas']);
       return;
     }
     this.payments.tbkCommit(token).subscribe({
-      next: () => this.router.navigate(['/client/reservas']),
-      error: () => this.router.navigate(['/client/reservas'])
+      next: (resp) => {
+        console.log('[TBK_RETURN] Commit OK:', resp);
+        this.router.navigate(['/client/reservas']);
+      },
+      error: (err) => {
+        console.error('[TBK_RETURN] Commit error:', err);
+        this.router.navigate(['/client/reservas']);
+      }
     });
   }
 }
