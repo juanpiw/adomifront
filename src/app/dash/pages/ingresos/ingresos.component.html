@@ -55,7 +55,9 @@
             <ul>
               <li *ngFor="let item of tbkKycMissing">{{ item }}</li>
             </ul>
-            <a routerLink="/dash/perfil">Ir a completar mi perfil</a>
+            <button type="button" class="link-as-button" (click)="goToPaymentsTab()">
+              Ir a completar mi ficha bancaria
+            </button>
           </div>
 
           <hr class="tbk-card__divider" />

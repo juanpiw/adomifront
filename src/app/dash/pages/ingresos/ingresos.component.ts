@@ -532,6 +532,11 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     return !this.tbkSecondaryCode || this.tbkStatus === 'none';
   }
 
+  goToPaymentsTab() {
+    this.activeTab = 'pagos';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   openTbkModal() {
     if (!this.tbkCanCreate) {
       this.showToast('Ya cuentas con un comercio secundario activo.');
