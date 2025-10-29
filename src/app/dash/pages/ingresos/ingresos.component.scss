@@ -6,6 +6,207 @@
   background: #f8fafc; // bg-slate-50
   min-height: 100vh;
   
+  .tbk-onboarding-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 12px 24px -18px rgba(15, 23, 42, 0.35);
+
+    .tbk-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      .tbk-card-title {
+        h2 {
+          margin: 0;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        p {
+          margin: 0.25rem 0 0;
+          color: #475569;
+          font-size: 0.95rem;
+        }
+      }
+
+      .tbk-status-chip {
+        align-self: center;
+        padding: 0.35rem 0.9rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #0f172a;
+        background: #e2e8f0;
+
+        &.active {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        &.pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
+        &.restricted {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+
+        &.none {
+          background: #e2e8f0;
+          color: #1e293b;
+        }
+      }
+    }
+
+    .tbk-loading {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 500;
+      color: #1e293b;
+      padding: 1rem 0;
+    }
+
+    .tbk-spinner {
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 3px solid #94a3b8;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .tbk-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+
+    .tbk-status-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+
+      .label {
+        display: block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+      }
+
+      .value {
+        display: block;
+        margin-top: 0.2rem;
+        font-weight: 600;
+        color: #0f172a;
+      }
+    }
+
+    .tbk-warning {
+      background: #fffbeb;
+      border: 1px dashed #fcd34d;
+      border-radius: 0.9rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+
+      h3 {
+        margin: 0 0 0.5rem;
+        color: #92400e;
+        font-size: 1rem;
+      }
+
+      ul {
+        margin: 0 0 0.75rem 1.25rem;
+        padding: 0;
+        color: #b45309;
+      }
+
+      .tbk-link {
+        font-weight: 600;
+        color: #1d4ed8;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .tbk-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+
+      .tbk-btn {
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.65rem 1.2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        background: #e2e8f0;
+        color: #0f172a;
+
+        &.primary {
+          background: #2563eb;
+          color: #ffffff;
+          box-shadow: 0 10px 20px -15px rgba(37, 99, 235, 0.8);
+        }
+
+        &.danger {
+          background: #ef4444;
+          color: #ffffff;
+        }
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 12px 20px -18px rgba(15, 23, 42, 0.5);
+        }
+
+        &:disabled {
+          cursor: not-allowed;
+          opacity: 0.6;
+          box-shadow: none;
+        }
+      }
+    }
+
+    .tbk-remote-details {
+      margin-top: 1rem;
+
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: #1d4ed8;
+      }
+
+      pre {
+        margin-top: 0.75rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: #0f172a;
+        color: #e2e8f0;
+        overflow-x: auto;
+        max-height: 320px;
+      }
+    }
+  }
+
   .tab-content {
     .tab-panel {
       animation: fadeIn 0.3s ease-in-out;
@@ -21,6 +222,12 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

@@ -19,6 +19,84 @@
     
     <!-- Pestaña: Resumen de Ingresos -->
     <div *ngIf="activeTab === 'resumen'" class="tab-panel">
+      <section class="tbk-onboarding-card">
+        <header class="tbk-card-header">
+          <div class="tbk-card-title">
+            <h2>Transbank Webpay Mall</h2>
+            <p>Activa tu comercio secundario para recibir depósitos directos desde Adomi.</p>
+          </div>
+          <span class="tbk-status-chip" [ngClass]="tbkStatus">{{ tbkStatusLabel }}</span>
+        </header>
+
+        <div *ngIf="tbkSectionLoading" class="tbk-loading">
+          <span class="tbk-spinner"></span>
+          <span>Consultando estado en Transbank…</span>
+        </div>
+
+        <ng-container *ngIf="!tbkSectionLoading">
+          <div *ngIf="tbkError" class="tbk-error">
+            {{ tbkError }}
+          </div>
+
+          <div class="tbk-status-overview">
+            <div>
+              <span class="label">Código secundario</span>
+              <span class="value">{{ tbkSecondaryCode || '—' }}</span>
+            </div>
+            <div>
+              <span class="label">Última actualización</span>
+              <span class="value">{{ tbkLastUpdated ? (tbkLastUpdated | date:'short') : '—' }}</span>
+            </div>
+            <div *ngIf="tbkRemoteStatusLabel">
+              <span class="label">Estado TBK</span>
+              <span class="value">{{ tbkRemoteStatusLabel }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="!tbkKycReady" class="tbk-warning">
+            <h3>Completa estos datos antes de solicitar el alta:</h3>
+            <ul>
+              <li *ngFor="let item of tbkKycMissing">{{ item }}</li>
+            </ul>
+            <a routerLink="/dash/perfil" class="tbk-link">Ir a completar mi perfil</a>
+          </div>
+
+          <div class="tbk-actions">
+            <button
+              type="button"
+              class="tbk-btn primary"
+              (click)="onCreateTbkSecondary()"
+              [disabled]="!tbkKycReady || !showCreateButton || tbkActionLoading">
+              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'create'; else createLabel">Procesando…</span>
+              <ng-template #createLabel>Crear comercio secundario</ng-template>
+            </button>
+
+            <button
+              type="button"
+              class="tbk-btn"
+              (click)="onRefreshTbkStatus()"
+              [disabled]="!showRefreshButton || tbkActionLoading">
+              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'refresh'; else refreshLabel">Actualizando…</span>
+              <ng-template #refreshLabel>Actualizar estado</ng-template>
+            </button>
+
+            <button
+              type="button"
+              class="tbk-btn danger"
+              (click)="onRevokeTbkSecondary()"
+              [disabled]="!showRevokeButton || tbkActionLoading">
+              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'revoke'; else revokeLabel">Procesando…</span>
+              <ng-template #revokeLabel>Solicitar baja</ng-template>
+            </button>
+          </div>
+
+          <details *ngIf="tbkRemote" class="tbk-remote-details">
+            <summary>Ver respuesta completa de TBK</summary>
+            <pre>{{ tbkRemote | json }}</pre>
+          </details>
+        </ng-container>
+      </section>
+
       <ui-financial-kpis 
         [kpis]="financialKPIs"
         (viewDetailsClicked)="onViewDetailsClicked()">
