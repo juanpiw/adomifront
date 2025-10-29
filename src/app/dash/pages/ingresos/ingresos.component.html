@@ -151,7 +151,7 @@
     
     <!-- Pestaña: Metas de Ingreso -->
     <div *ngIf="activeTab === 'metas'" class="tab-panel">
-      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoaderTpl">
+      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoaderMetas">
         <ui-income-goals 
           [currentGoal]="currentGoal"
           [currentIncome]="currentIncome"
@@ -161,6 +161,12 @@
           (goToSummary)="onGoToSummary()">
         </ui-income-goals>
       </ng-container>
+      <ng-template #incomeGoalLoaderMetas>
+        <div class="goal-loader metric-card">
+          <div class="goal-loader__spinner"></div>
+          <p>Cargando metas de ingresos...</p>
+        </div>
+      </ng-template>
     </div>
     
   </div>
