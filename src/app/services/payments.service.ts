@@ -32,6 +32,7 @@ export class PaymentsService {
     appointment_id: number;
     client_reference?: string;
   }): Observable<{ success: boolean; token?: string; url?: string; buy_order?: string }>{
+    console.log('[PAYMENTS_SERVICE] tbkCreateMallTransaction ->', params);
     return this.http.post<{ success: boolean; token?: string; url?: string; buy_order?: string }>(
       `${this.base}/tbk/mall/transactions`,
       params,
@@ -41,6 +42,7 @@ export class PaymentsService {
 
   // TBK Mall: commit
   tbkCommit(token: string): Observable<{ success: boolean; commit: any }>{
+    console.log('[PAYMENTS_SERVICE] tbkCommit ->', { token });
     return this.http.post<{ success: boolean; commit: any }>(
       `${this.base}/tbk/mall/commit`,
       { token },

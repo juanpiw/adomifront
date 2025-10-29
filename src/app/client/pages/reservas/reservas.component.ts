@@ -274,6 +274,7 @@ export class ClientReservasComponent implements OnInit {
         const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed' })[];
         console.log('[RESERVAS] Citas cargadas:', list);
         console.log('[RESERVAS] Precios en datos:', list.map(a => ({ id: a.id, price: a.price, service_name: a.service_name })));
+        console.log('[RESERVAS] Estado de pago por cita:', list.map(a => ({ id: a.id, payment_status: (a as any).payment_status, status: a.status })));
         const paid = list.filter(a => ['paid','succeeded','completed'].includes(String((a as any).payment_status || '')));
         console.log('[RESERVAS][TRACE] Paid appointments mapping:', paid.map(a => ({ id: a.id, status: (a as any).payment_status, date: a.date })));
         const now = new Date();
