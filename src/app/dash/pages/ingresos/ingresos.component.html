@@ -115,7 +115,7 @@
         (viewDetailsClicked)="onViewDetailsClicked()">
       </ui-financial-kpis>
 
-      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoader">
+      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoaderTpl">
         <ui-income-goals
           [currentGoal]="currentGoal"
           [currentIncome]="currentIncome"
@@ -126,7 +126,7 @@
         </ui-income-goals>
       </ng-container>
 
-      <ng-template #incomeGoalLoader>
+      <ng-template #incomeGoalLoaderTpl>
         <div class="goal-loader metric-card">
           <div class="goal-loader__spinner"></div>
           <p>Cargando metas de ingresos...</p>
@@ -151,7 +151,7 @@
     
     <!-- Pestaña: Metas de Ingreso -->
     <div *ngIf="activeTab === 'metas'" class="tab-panel">
-      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoader">
+      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoaderTpl">
         <ui-income-goals 
           [currentGoal]="currentGoal"
           [currentIncome]="currentIncome"
