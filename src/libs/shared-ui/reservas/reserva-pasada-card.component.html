@@ -22,6 +22,9 @@
       <p class="rp-state">{{ data.estado || 'Completado' }}</p>
     </div>
   </div>
+  <div *ngIf="data.estado === 'Completado'" class="rp-verified">
+    Servicio verificado
+  </div>
   <div class="rp-actions">
     <button class="rp-btn primary" (click)="onReview.emit()">Dejar una reseña</button>
     <button class="rp-btn dark" (click)="onReschedule.emit()">Volver a Agendar</button>
