@@ -395,6 +395,23 @@ export class ClientReservasComponent implements OnInit {
           isFavorite: (r as any).is_favorite === true || this.favoritesSet.has(Number((r as any).provider_id))
         }));
 
+        // Para las pagadas (no completadas), obtener y mostrar código
+        this.realizadasList.forEach((card, idx) => {
+          const src = realizadasAll[idx];
+          const rawPayment = String((src as any).payment_status || '');
+          const isPaid = ['paid','succeeded','completed'].includes(rawPayment);
+          if (isPaid && (src as any).status !== 'completed' && card.appointmentId) {
+            this.appointments.getVerificationCode(card.appointmentId).subscribe({
+              next: (resp) => {
+                if (resp?.success && resp?.code) {
+                  this.realizadasList = this.realizadasList.map(c => c.appointmentId === card.appointmentId ? { ...c, verificationCode: resp.code } : c);
+                }
+              },
+              error: () => {}
+            });
+          }
+        });
+
         // Actualizar badges DESPUÉS de llenar listas: [Próximas, Pasadas, Canceladas]
         const upcomingCount = this.proximasConfirmadas.length + this.pendientesList.length;
         const pastCount = past.length;

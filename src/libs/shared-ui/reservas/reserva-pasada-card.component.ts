@@ -11,6 +11,7 @@ export interface ReservaPasadaData {
   appointmentId?: number;
   providerId?: number;
   isFavorite?: boolean;
+  verificationCode?: string;
 }
 
 @Component({
