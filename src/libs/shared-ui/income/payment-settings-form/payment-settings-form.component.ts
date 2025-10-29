@@ -39,9 +39,20 @@ export class PaymentSettingsFormComponent implements OnInit {
   loadingDebts = false;
   setupIntentClientSecret: string | null = null;
 
+  // TBK Onboarding state
+  tbkLoading = false;
+  tbkStatus: string | null = null;
+  tbkCode: string | null = null;
+  tbkError: string | null = null;
+
   ngOnInit() {
     this.providerService.getProfile().subscribe({
-      next: (p) => { this.providerId = p?.provider_id || p?.id || null; },
+      next: (p) => {
+        this.providerId = p?.provider_id || p?.id || null;
+        if (this.providerId) {
+          this.fetchTbkStatus();
+        }
+      },
       error: () => {}
     });
   }
@@ -137,6 +148,63 @@ export class PaymentSettingsFormComponent implements OnInit {
     this.providerService.getProviderDebts(this.providerId).subscribe({
       next: (res) => { this.debts = res?.debts || []; this.loadingDebts = false; },
       error: () => { this.loadingDebts = false; }
+    });
+  }
+
+  // ========= TBK Onboarding =========
+  fetchTbkStatus() {
+    if (!this.providerId) return;
+    this.tbkLoading = true;
+    this.tbkError = null;
+    this.providerService.tbkGetSecondaryStatus(this.providerId).subscribe({
+      next: (res) => {
+        this.tbkStatus = res?.tbk?.status || null;
+        this.tbkCode = res?.tbk?.code || null;
+        this.tbkLoading = false;
+      },
+      error: (err) => {
+        this.tbkLoading = false;
+        this.tbkError = 'No se pudo cargar el estado TBK';
+      }
+    });
+  }
+
+  onTbkCreate() {
+    if (!this.providerId || this.tbkLoading) return;
+    this.tbkLoading = true;
+    this.tbkError = null;
+    this.providerService.tbkCreateSecondary(this.providerId).subscribe({
+      next: (res) => {
+        this.tbkCode = res?.codigo || null;
+        this.tbkStatus = this.tbkCode ? 'active' : (this.tbkStatus || 'pending');
+        this.tbkLoading = false;
+        alert('Comercio secundario creado en TBK');
+      },
+      error: (err) => {
+        this.tbkLoading = false;
+        this.tbkError = 'Error creando comercio secundario';
+      }
+    });
+  }
+
+  onTbkStatus() { this.fetchTbkStatus(); }
+
+  onTbkDelete() {
+    if (!this.providerId || !this.tbkCode || this.tbkLoading) return;
+    const confirmDel = confirm('¿Dar de baja el comercio secundario en TBK?');
+    if (!confirmDel) return;
+    this.tbkLoading = true;
+    this.tbkError = null;
+    this.providerService.tbkDeleteSecondary(this.providerId, this.tbkCode).subscribe({
+      next: () => {
+        this.tbkLoading = false;
+        this.tbkStatus = 'restricted';
+        alert('Comercio secundario dado de baja');
+      },
+      error: () => {
+        this.tbkLoading = false;
+        this.tbkError = 'Error dando de baja comercio secundario';
+      }
     });
   }
 }

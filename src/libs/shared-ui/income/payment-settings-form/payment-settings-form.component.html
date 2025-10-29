@@ -122,6 +122,25 @@
       </ul>
     </div>
   </div>
+
+  <!-- Transbank Onboarding (Comercio Secundario) -->
+  <div class="metric-card" style="margin-top:16px;">
+    <h3>Transbank Webpay Mall</h3>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap: wrap; margin-bottom:8px;">
+      <button class="save-payment-btn" type="button" (click)="onTbkCreate()" [disabled]="tbkLoading">Crear Comercio Secundario</button>
+      <button class="save-payment-btn" type="button" (click)="onTbkStatus()" [disabled]="tbkLoading">Actualizar Estado</button>
+      <button class="save-payment-btn" type="button" (click)="onTbkDelete()" [disabled]="tbkLoading || !tbkCode">Dar de baja</button>
+      <span *ngIf="tbkLoading">Cargando...</span>
+      <span *ngIf="tbkStatus" class="chip" [ngStyle]="{
+        'background': tbkStatus==='active' ? '#dcfce7' : (tbkStatus==='pending' ? '#fef9c3' : '#fee2e2'),
+        'color': tbkStatus==='active' ? '#166534' : (tbkStatus==='pending' ? '#92400e' : '#991b1b'),
+        'padding':'4px 8px', 'border-radius':'999px', 'font-size':'12px'
+      }">Estado: {{ tbkStatus }}</span>
+      <span *ngIf="tbkCode" style="font-size:12px; color:#334155;">Código: {{ tbkCode }}</span>
+    </div>
+    <div *ngIf="tbkError" style="color:#b91c1c;">{{ tbkError }}</div>
+    <p style="margin:0; color:#475569; font-size:13px;">Crea y administra tu comercio secundario directamente desde Adomi para poder recibir pagos con Webpay Mall.</p>
+  </div>
 </div>
 
 

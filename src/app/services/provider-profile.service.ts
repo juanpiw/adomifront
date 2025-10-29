@@ -583,4 +583,32 @@ export class ProviderProfileService {
       { headers: this.getHeaders() }
     );
   }
+
+  // ============================================
+  // TRANSBANK ONBOARDING (Comercio Secundario)
+  // ============================================
+
+  tbkCreateSecondary(providerId: number): Observable<{ success: boolean; codigo: string }>{
+    return this.http.post<{ success: boolean; codigo: string }>(
+      `${this.apiUrl}/providers/${providerId}/tbk/secondary/create`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  tbkGetSecondaryStatus(providerId: number): Observable<{ success: boolean; tbk: { status: string; code: string | null; remote?: any } }>{
+    return this.http.get<{ success: boolean; tbk: { status: string; code: string | null; remote?: any } }>(
+      `${this.apiUrl}/providers/${providerId}/tbk/secondary/status`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  tbkDeleteSecondary(providerId: number, code: string, reason: string = 'baja_solicitada'):
+    Observable<{ success: boolean }>{
+    const params = reason ? `?reason=${encodeURIComponent(reason)}` : '';
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/providers/${providerId}/tbk/secondary/${encodeURIComponent(code)}${params}`,
+      { headers: this.getHeaders() }
+    );
+  }
 }
