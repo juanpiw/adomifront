@@ -37,7 +37,7 @@
   </div>
 
   <div class="pc-actions">
-    <button class="pc-btn primary" (click)="onContactarClick()">Contactar</button>
+    <button class="pc-btn primary" (click)="onContactarClick()" [disabled]="data.mostrarPagar" title="{{ data.mostrarPagar ? 'Disponible luego del pago' : '' }}">Contactar</button>
     <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>
     <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
     <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="onPagarClick()">Pagar</button>

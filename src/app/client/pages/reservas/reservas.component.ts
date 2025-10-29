@@ -340,7 +340,9 @@ export class ClientReservasComponent implements OnInit {
               console.log('[RESERVAS][TRACE] isPaid=true; verification code requested for appointment', a.id);
             }
             return card;
-          });
+          })
+          // Quitar de Próximas si ya está pagada (queda visible en Pagadas/Realizadas)
+          .filter(c => !c.successHighlight);
 
         // Todas las próximas pendientes
         this.pendientesList = upcoming
@@ -375,7 +377,7 @@ export class ClientReservasComponent implements OnInit {
         }));
         this.canceladasClienteList = [];
 
-        // Realizadas/Pagadas: incluir completadas o con payment_status='paid/succeeded/completed'
+        // Pagadas/Realizadas: incluir completadas o pagadas
         const isPaidStatus = (s: any) => ['paid','succeeded','completed'].includes(String(s || ''));
         const realizadasAll = list
           .filter(r => r.status === 'completed' || isPaidStatus((r as any).payment_status))
