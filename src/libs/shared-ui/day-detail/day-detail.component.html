@@ -53,6 +53,7 @@
           <p *ngIf="appointment.notes" class="day-detail__appointment-notes">
             {{ appointment.notes }}
           </p>
+          <div *ngIf="appointment.paymentMethod==='cash'" class="day-detail__payment-chip">Pago en efectivo</div>
           <div *ngIf="appointment.status === 'confirmed'" class="day-detail__appointment-status" 
                [style.background-color]="getStatusColor('confirmed')"
                style="margin-top:6px;">
@@ -63,6 +64,22 @@
                style="margin-top:4px;">
             {{ getPaymentStatusText(appointment.paymentStatus) }}
           </div>
+
+          <div *ngIf="appointment.closureState === 'pending_close'" class="day-detail__closure">
+            <div class="day-detail__closure-badge">Pendiente de cierre mutuo</div>
+            <p class="day-detail__closure-text">
+              Resuelve antes de {{ appointment.closureDueAt ? (appointment.closureDueAt | date:'dd/MM HH:mm') : '24h' }}.
+            </p>
+            <div *ngIf="appointment.closureProviderAction === 'none'" class="day-detail__closure-actions">
+              <button class="day-detail__closure-btn day-detail__closure-btn--primary" (click)="onVerifyClosure($event, appointment)">Ingresar código</button>
+              <button class="day-detail__closure-btn" (click)="onClosureAction($event, appointment, 'no_show')">Cliente no asistió</button>
+              <button class="day-detail__closure-btn" (click)="onClosureAction($event, appointment, 'issue')">Reportar problema</button>
+            </div>
+            <p *ngIf="appointment.closureProviderAction !== 'none'" class="day-detail__closure-note">
+              Registraste: {{ getClosureProviderActionLabel(appointment.closureProviderAction) }}.
+            </p>
+          </div>
+
           <div class="day-detail__appointment-actions">
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
             <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>

@@ -36,6 +36,11 @@ export class AdminPagosComponent implements OnInit {
   refundPayRow: any = null;
   refundPayRef: string = '';
   refundPayFile: File | null = null;
+  cashSummary: any = null;
+  cashDebts: any[] = [];
+  cashSummaryLoading = false;
+  cashLoading = false;
+  cashFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -81,6 +86,13 @@ export class AdminPagosComponent implements OnInit {
           this.adminApi.listRefunds(this.adminSecret, token).subscribe((r: any) => {
             this.refunds = r?.data || [];
           });
+          if (this.gateway === 'cash') {
+            this.loadAdminCashSummary();
+            this.loadAdminCashCommissions(this.cashFilter);
+          } else {
+            this.cashSummary = null;
+            this.cashDebts = [];
+          }
         } else {
           this.error = 'Respuesta inválida';
         }
@@ -90,6 +102,47 @@ export class AdminPagosComponent implements OnInit {
         this.error = err?.error?.error || 'Error cargando pagos';
       }
     });
+  }
+
+  private loadAdminCashSummary() {
+    const token = this.session.getAccessToken();
+    this.cashSummaryLoading = true;
+    this.adminApi.cashSummary(this.adminSecret, token).subscribe({
+      next: (res: any) => {
+        this.cashSummaryLoading = false;
+        this.cashSummary = res?.summary || null;
+      },
+      error: () => {
+        this.cashSummaryLoading = false;
+        this.cashSummary = null;
+      }
+    });
+  }
+
+  private loadAdminCashCommissions(filter: 'all'|'pending'|'overdue'|'paid' = this.cashFilter) {
+    const token = this.session.getAccessToken();
+    this.cashLoading = true;
+    this.cashFilter = filter;
+    this.adminApi.cashCommissions(this.adminSecret, token, filter).subscribe({
+      next: (res: any) => {
+        this.cashLoading = false;
+        this.cashDebts = res?.data || [];
+      },
+      error: () => {
+        this.cashLoading = false;
+        this.cashDebts = [];
+      }
+    });
+  }
+
+  setCashFilterAdmin(filter: 'all'|'pending'|'overdue'|'paid') {
+    if (this.cashFilter === filter && !this.cashLoading) return;
+    this.loadAdminCashCommissions(filter);
+  }
+
+  refreshAdminCash() {
+    this.loadAdminCashSummary();
+    this.loadAdminCashCommissions(this.cashFilter);
   }
 
   exportCsv() {
@@ -143,6 +196,10 @@ export class AdminPagosComponent implements OnInit {
     const g = String(gw).toLowerCase();
     if (g === 'tbk' || g === 'stripe' || g === 'cash' || g === '') {
       this.gateway = g as any;
+      if (this.gateway !== 'cash') {
+        this.cashSummary = null;
+        this.cashDebts = [];
+      }
       this.load();
     }
   }

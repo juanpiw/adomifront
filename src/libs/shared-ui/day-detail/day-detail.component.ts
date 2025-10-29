@@ -13,6 +13,11 @@ export interface DayAppointment {
   type: 'appointment' | 'break' | 'blocked';
   notes?: string;
   paymentStatus?: 'unpaid' | 'paid';
+  paymentMethod?: 'card' | 'cash' | null;
+  closureState?: 'none' | 'pending_close' | 'resolved' | 'in_review';
+  closureDueAt?: string | null;
+  closureProviderAction?: 'none' | 'code_entered' | 'no_show' | 'issue';
+  closureClientAction?: 'none' | 'ok' | 'no_show' | 'issue';
 }
 
 @Component({
@@ -35,6 +40,8 @@ export class DayDetailComponent {
   @Output() confirmAppointment = new EventEmitter<string>();
   @Output() deleteAppointment = new EventEmitter<string>();
   @Output() cobrarEnEfectivo = new EventEmitter<string>();
+  @Output() closureAction = new EventEmitter<{ id: string; action: 'no_show'|'issue' }>();
+  @Output() verifyClosure = new EventEmitter<string>();
 
   isModalOpen: boolean = false;
 
@@ -97,6 +104,16 @@ export class DayDetailComponent {
     this.deleteAppointment.emit(appointment.id);
   }
 
+  onClosureAction(event: Event, appointment: DayAppointment, action: 'no_show'|'issue') {
+    event.stopPropagation();
+    this.closureAction.emit({ id: appointment.id, action });
+  }
+
+  onVerifyClosure(event: Event, appointment: DayAppointment) {
+    event.stopPropagation();
+    this.verifyClosure.emit(appointment.id);
+  }
+
   onNewAppointment() {
     this.isModalOpen = true;
     if (this.selectedDate) {
@@ -156,6 +173,19 @@ export class DayDetailComponent {
   getPaymentStatusColor(payment?: string): string {
     if (payment === 'paid') return '#10b981';
     return '#f59e0b';
+  }
+
+  getClosureProviderActionLabel(action?: string | null): string {
+    switch (action) {
+      case 'code_entered':
+        return 'Código ingresado';
+      case 'no_show':
+        return 'Cliente no asistió';
+      case 'issue':
+        return 'Problema reportado';
+      default:
+        return 'Sin acción';
+    }
   }
 
   getTypeIcon(type: string): string {

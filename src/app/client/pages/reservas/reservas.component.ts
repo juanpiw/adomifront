@@ -118,7 +118,7 @@ import { FavoritesService } from '../../../services/favorites.service';
         <div class="pay-modal__cash-limit-icon">💳</div>
         <div class="pay-modal__cash-limit-content">
           <div class="pay-modal__cash-limit-title">Solo pago con tarjeta</div>
-          <div class="pay-modal__cash-limit-text">Por el momento no podemos procesar pagos en efectivo de $150.000 o más. Este servicio debe pagarse con tarjeta.</div>
+          <div class="pay-modal__cash-limit-text">Por el momento no podemos procesar pagos en efectivo de {{ cashCapCurrency }} o más. Este servicio debe pagarse con tarjeta.</div>
         </div>
       </div>
       <div *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-pref-pill" [class.pay-pref-pill--cash]="clientPaymentPref==='cash'" [class.pay-pref-pill--card]="clientPaymentPref==='card'">
@@ -127,8 +127,14 @@ import { FavoritesService } from '../../../services/favorites.service';
       <p *ngIf="!isCurrentAppointmentOverCashLimit()" style="margin:8px 0 0;color:#475569;">Puedes cambiarlo para esta reserva.</p>
     </div>
     <div class="pay-modal__actions">
-      <button *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-modal__btn" (click)="payWithCash()">Pagar en Efectivo</button>
-      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()">Pagar con Tarjeta</button>
+      <button *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-modal__btn" (click)="payWithCash()" [disabled]="payModalLoading || isCurrentAppointmentOverCashLimit()">
+        <span *ngIf="!payModalLoading">Pagar en Efectivo</span>
+        <span *ngIf="payModalLoading">Procesando...</span>
+      </button>
+      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()" [disabled]="payModalLoading">
+        <span *ngIf="!payModalLoading">Pagar con Tarjeta</span>
+        <span *ngIf="payModalLoading">Procesando...</span>
+      </button>
     </div>
   </div>
   `,
@@ -204,6 +210,13 @@ export class ClientReservasComponent implements OnInit {
   clientPaymentPref: 'card'|'cash'|null = null;
   showPayMethodModal = false;
   payModalApptId: number | null = null;
+  cashCap = 150000;
+  private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  payModalLoading = false;
+
+  get cashCapCurrency(): string {
+    return this.clpFormatter.format(this.cashCap);
+  }
 
   ngOnInit(): void {
     this.validateProfile();
@@ -325,7 +338,9 @@ export class ClientReservasComponent implements OnInit {
               successHighlight: isPaid,
               precio: Number(a.price || 30000), // Valor por defecto para testing
               paymentPreference: (a as any).payment_method || null,
-              verification_code: (a as any).verification_code || undefined
+              verification_code: (a as any).verification_code || undefined,
+              cashCap: this.cashCap,
+              cashCapLabel: this.cashCapCurrency
             };
 
             if (isPaid) {
@@ -470,20 +485,40 @@ export class ClientReservasComponent implements OnInit {
     return diff <= 0 ? 1 : diff;
   }
 
+  private setCashCapFromResponse(value: any): void {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric <= 0) {
+      return;
+    }
+    this.cashCap = Math.round(numeric);
+    this.applyCashCapToCards();
+  }
+
+  private applyCashCapToCards(): void {
+    this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+      { ...card, cashCap: this.cashCap, cashCapLabel: this.cashCapCurrency } as any
+    ));
+  }
+
   onPagar(appointmentId: number) {
     this.payModalApptId = appointmentId || null;
     this.showPayMethodModal = true;
     // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
   }
-  closePayModal(){ this.showPayMethodModal = false; this.payModalApptId = null; }
+  closePayModal(){
+    this.showPayMethodModal = false;
+    this.payModalApptId = null;
+    this.payModalLoading = false;
+  }
   
   isCurrentAppointmentOverCashLimit(): boolean {
     if (!this.payModalApptId) return false;
     const appointment = this.proximasConfirmadas.find(a => a.appointmentId === this.payModalApptId);
-    return appointment?.precio ? appointment.precio > 150000 : false;
+    return appointment?.precio ? appointment.precio > this.cashCap : false;
   }
   payWithCard(){
-    if (!this.payModalApptId) return;
+    if (!this.payModalApptId || this.payModalLoading) return;
+    this.payModalLoading = true;
     const apptId = this.payModalApptId;
     console.log('[RESERVAS] payWithCard clicked for appt:', apptId);
     this.payments.tbkCreateMallTransaction({
@@ -491,6 +526,8 @@ export class ClientReservasComponent implements OnInit {
       client_reference: `appt-${apptId}`
     }).subscribe({
       next: (resp) => {
+        this.payModalLoading = false;
+        this.closePayModal();
         console.log('[RESERVAS] tbkCreateMallTransaction resp:', resp);
         if (resp?.success && resp?.url && resp?.token) {
           try {
@@ -516,32 +553,39 @@ export class ClientReservasComponent implements OnInit {
         }
       },
       error: (err) => {
+        this.payModalLoading = false;
         console.error('[RESERVAS] Error creando transacción TBK', err);
       }
     });
   }
   payWithCash(){
-    if (!this.payModalApptId) { this.closePayModal(); return; }
+    if (!this.payModalApptId || this.payModalLoading) { return; }
     const apptId = this.payModalApptId;
+    this.payModalLoading = true;
     // Marcar la cita como pago en efectivo y obtener código
     this.payments.selectCash(apptId).subscribe({
       next: (res) => {
+        this.setCashCapFromResponse((res as any)?.cashCap);
+        const code = String((res as any)?.code || '').trim();
         // Buscar datos para enriquecer notificación
         const card = (this.proximasConfirmadas || []).find(c => c.appointmentId === apptId);
         const serviceName = card?.titulo ? String(card.titulo).split(' con ')[0] : 'Tu servicio';
         const fecha = card?.fecha || '';
         const hora = card?.hora || '';
+        const messageSuffix = code ? ` Entrega el código ${code} al profesional.` : '';
         this.notifications.createNotification({
           type: 'system',
           profile: 'client',
           title: `Pago en efectivo: ${serviceName}`,
-          message: `Pagarás en efectivo al finalizar. Fecha: ${fecha} • Hora: ${hora}. Lleva el monto exacto y entrega el código al proveedor.`,
+          message: `Pagarás en efectivo al finalizar. Fecha: ${fecha} • Hora: ${hora}.${messageSuffix}`,
           priority: 'low',
           actions: []
         });
         // Refrescar tarjeta: marcar efectivo y pedir/actualizar código desde backend
         this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
-          card.appointmentId === apptId ? { ...card, paymentPreference: 'cash', mostrarPagar: false, verification_code: (res as any)?.code || (card as any).verification_code } as any : card
+          card.appointmentId === apptId
+            ? { ...card, paymentPreference: 'cash', mostrarPagar: false, verification_code: code || (card as any).verification_code, cashCap: this.cashCap, cashCapLabel: this.cashCapCurrency } as any
+            : card
         ));
         // Forzar obtener código (endpoint de cliente)
         this.appointments.getVerificationCode(apptId).subscribe({
@@ -554,14 +598,19 @@ export class ClientReservasComponent implements OnInit {
           },
           error: () => {}
         });
+        this.clientPaymentPref = 'cash';
+        this.payModalLoading = false;
+        this.closePayModal();
+        this.loadAppointments();
       },
       error: (err) => {
+        this.payModalLoading = false;
         console.error('[RESERVAS] Error seleccionando efectivo', err);
         const errorMessage = err?.error?.error || 'No pudimos seleccionar pago en efectivo. Intenta nuevamente.';
+        this.setCashCapFromResponse(err?.error?.cashCap);
         this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: errorMessage, priority: 'high', actions: [] });
       }
     });
-    this.closePayModal();
   }
 
   onContactar(appointmentId?: number | null) {

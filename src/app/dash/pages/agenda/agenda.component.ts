@@ -142,6 +142,9 @@ export class DashAgendaComponent implements OnInit {
   cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'paid' }>= [];
   cashTotal = 0;
   cashOverdueTotal = 0;
+  cashSummaryLoading = false;
+  cashLoading = false;
+  cashTableFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
 
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
@@ -210,7 +213,7 @@ export class DashAgendaComponent implements OnInit {
 
     // Inicializar pestaña cash
     this.loadCashSummary();
-    this.loadCashCommissions();
+    this.loadCashCommissions(this.cashTableFilter);
   }
 
   // Cargar citas del mes
@@ -251,6 +254,7 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private loadCashSummary() {
+    this.cashSummaryLoading = true;
     this.http.get<any>(`${this.baseUrl}/provider/cash/summary`, { headers: this.headers() }).subscribe({
       next: (res) => {
         if (res?.success && res.summary) {
@@ -263,13 +267,16 @@ export class DashAgendaComponent implements OnInit {
           if (cashIdx >= 0) this.dashboardMetrics[cashIdx] = { ...this.dashboardMetrics[cashIdx], value: this.cashTotal > 0 ? 1 : 0 } as any;
         }
       },
-      error: () => {}
+      error: () => { this.cashSummaryLoading = false; },
+      complete: () => { this.cashSummaryLoading = false; }
     });
   }
 
-  private loadCashCommissions(status?: 'pending'|'overdue'|'paid') {
+  private loadCashCommissions(filter: 'all'|'pending'|'overdue'|'paid' = this.cashTableFilter) {
+    this.cashLoading = true;
+    this.cashTableFilter = filter;
     const params: any = {};
-    if (status) params.status = status;
+    if (filter && filter !== 'all') params.status = filter;
     this.http.get<any>(`${this.baseUrl}/provider/cash/commissions`, { headers: this.headers(), params }).subscribe({
       next: (res) => {
         const rows = Array.isArray(res?.data) ? res.data : [];
@@ -282,8 +289,21 @@ export class DashAgendaComponent implements OnInit {
           status: r.status
         }));
       },
-      error: () => {}
+      error: () => { this.cashLoading = false; },
+      complete: () => { this.cashLoading = false; }
     });
+  }
+
+  setCashFilter(filter: 'all'|'pending'|'overdue'|'paid') {
+    if (this.cashTableFilter === filter && !this.cashLoading) {
+      return;
+    }
+    this.loadCashCommissions(filter);
+  }
+
+  refreshCash() {
+    this.loadCashSummary();
+    this.loadCashCommissions(this.cashTableFilter);
   }
 
   private togglePaidAwaitingPanel() {
@@ -388,9 +408,13 @@ export class DashAgendaComponent implements OnInit {
           if (idx >= 0) this.dashboardMetrics[idx] = { ...this.dashboardMetrics[idx], value: this.paidAwaitingAppointments.length };
           // Actualizar métricas y listados de efectivo (resumen y tabla)
           this.loadCashSummary();
-          this.loadCashCommissions();
+          this.loadCashCommissions(this.cashTableFilter);
           // Refrescar métricas de ingresos (para actualizar "Citas pagadas en efectivo")
           this.refreshEarnings();
+          if (this.selectedDate) {
+            const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+            this.loadDay(iso);
+          }
           this.isVerificationModalOpen = false;
           this.selectedPaidAppointment = null;
           alert('✅ Servicio verificado. El pago será liberado próximamente.');
@@ -700,8 +724,65 @@ export class DashAgendaComponent implements OnInit {
       status: a.status as any,
       paymentStatus: (a.payment_status === 'completed' || a.payment_status === 'paid' || a.payment_status === 'succeeded') ? 'paid' : 'unpaid',
       type: 'appointment',
-      notes: a.notes || ''
+      notes: a.notes || '',
+      paymentMethod: (a as any).payment_method || null,
+      closureState: ((a as any).closure_state || 'none') as any,
+      closureDueAt: (a as any).closure_due_at || null,
+      closureProviderAction: ((a as any).closure_provider_action || 'none') as any,
+      closureClientAction: ((a as any).closure_client_action || 'none') as any
     };
+  }
+
+  onClosureAction(event: { id: string; action: 'no_show'|'issue' }) {
+    const appointmentId = Number(event?.id);
+    if (!appointmentId) return;
+    let notes: string | undefined;
+    if (event.action === 'issue') {
+      const reason = prompt('Describe el problema detectado en esta cita:');
+      if (!reason) {
+        return;
+      }
+      notes = reason;
+    }
+    this.loading = true;
+    this.appointments.submitClosureAction(appointmentId, event.action, notes).subscribe({
+      next: (resp) => {
+        this.loading = false;
+        if (!resp?.success) {
+          alert(resp?.error || 'No se pudo registrar la acción.');
+          return;
+        }
+        if (this.selectedDate) {
+          const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+          this.loadDay(iso);
+        }
+        this.loadPaidAwaiting();
+        alert('Acción registrada.');
+      },
+      error: () => {
+        this.loading = false;
+        alert('No se pudo registrar la acción.');
+      }
+    });
+  }
+
+  onVerifyClosure(appointmentId: string) {
+    const id = Number(appointmentId);
+    if (!id) return;
+    const appointment = this.dayAppointments.find(a => String(a.id) === String(appointmentId));
+    if (!appointment) {
+      this.openVerifyModal({ id, client_name: '', service_name: '', payment_method: 'cash', date: '', start_time: '', amount: 0 });
+      return;
+    }
+    this.openVerifyModal({
+      id,
+      client_name: appointment.clientName,
+      service_name: appointment.title,
+      date: this.selectedDate ? `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}` : '',
+      start_time: appointment.time,
+      amount: 0,
+      payment_method: appointment.paymentMethod || 'cash'
+    });
   }
 
   private diffMinutes(start: string, end: string): number {
@@ -797,7 +878,7 @@ export class DashAgendaComponent implements OnInit {
     }
     if (view === 'cash') {
       this.loadCashSummary();
-      this.loadCashCommissions();
+      this.loadCashCommissions(this.cashTableFilter);
     }
   }
 }

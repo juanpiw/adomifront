@@ -28,11 +28,11 @@
     </div>
   </div>
   <!-- Advertencia de límite de efectivo -->
-  <div *ngIf="data.mostrarPagar && data.precio && data.precio > 150000" class="pc-cash-limit-warning">
+  <div *ngIf="data.mostrarPagar && data.precio && data.precio > (data.cashCap ?? 150000)" class="pc-cash-limit-warning">
     <div class="pc-cash-limit-warning__icon">💳</div>
     <div class="pc-cash-limit-warning__content">
       <div class="pc-cash-limit-warning__title">Solo pago con tarjeta</div>
-      <div class="pc-cash-limit-warning__text">Por el momento no podemos procesar pagos en efectivo de $150.000 o más. Este servicio debe pagarse con tarjeta.</div>
+      <div class="pc-cash-limit-warning__text">Por el momento no podemos procesar pagos en efectivo de {{ data.cashCapLabel || ('$' + ((data.cashCap ?? 150000) | number:'1.0-0')) }} o más. Este servicio debe pagarse con tarjeta.</div>
     </div>
   </div>
 

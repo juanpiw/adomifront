@@ -173,6 +173,14 @@ export class AppointmentsService {
     );
   }
 
+  submitClosureAction(appointmentId: number, action: 'code_entered'|'no_show'|'issue', notes?: string): Observable<{ success: boolean; error?: string }>{
+    return this.http.post<{ success: boolean; error?: string }>(
+      `${this.api}/appointments/${appointmentId}/closure/provider-action`,
+      { action, notes: notes || null },
+      { headers: this.headers() }
+    );
+  }
+
   /**
    * Obtener código de verificación de una cita (CLIENTE)
    */

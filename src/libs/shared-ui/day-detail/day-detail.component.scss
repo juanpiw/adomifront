@@ -213,6 +213,77 @@
   }
 }
 
+.day-detail__payment-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.day-detail__closure {
+  background: #f8fafc;
+  border: 1px dashed #cbd5f5;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.day-detail__closure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #4338ca;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.day-detail__closure-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.day-detail__closure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.day-detail__closure-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #1f2937;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.day-detail__closure-btn--primary {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+.day-detail__closure-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #334155;
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

@@ -30,6 +30,19 @@ export class AdminPaymentsService {
     return this.http.get<any>(`${this.baseUrl}/admin/payments/summary${qs}`, { headers: this.headers(secret, token) });
   }
 
+  cashSummary(secret: string, token: string | null) {
+    return this.http.get<any>(`${this.baseUrl}/admin/cash/summary`, { headers: this.headers(secret, token) });
+  }
+
+  cashCommissions(secret: string, token: string | null, status: 'all'|'pending'|'overdue'|'paid' = 'pending') {
+    const params: string[] = [];
+    if (status && status !== 'all') {
+      params.push(`status=${encodeURIComponent(status)}`);
+    }
+    const qs = params.length ? ('?' + params.join('&')) : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/cash/commissions${qs}`, { headers: this.headers(secret, token) });
+  }
+
   pendingCount(secret: string, token: string | null) {
     return this.http.get<any>(`${this.baseUrl}/admin/payments/pending-count`, { headers: this.headers(secret, token) });
   }

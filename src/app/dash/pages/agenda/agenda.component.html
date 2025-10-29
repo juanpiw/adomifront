@@ -119,7 +119,9 @@
         (espacioBloqueado)="onEspacioBloqueado($event)"
         (confirmAppointment)="onConfirmAppointment(+$any($event))"
         (deleteAppointment)="onDeleteAppointment(+$any($event))"
-        (cobrarEnEfectivo)="onCobrarEnEfectivo($event)">
+        (cobrarEnEfectivo)="onCobrarEnEfectivo($event)"
+        (closureAction)="onClosureAction($event)"
+        (verifyClosure)="onVerifyClosure($event)">
         <ng-template #appointmentActionsTemplate let-appointment="appointment">
           <button *ngIf="appointment.status === 'scheduled'"
                   class="day-detail__action-btn day-detail__action-btn--confirm"
@@ -162,13 +164,47 @@
       <div class="cash-summary">
         <div class="cash-summary__amount">
           <div class="cash-summary__label">Total Adeudado</div>
-          <div class="cash-summary__value">${{ cashTotal | number:'1.0-0' }}</div>
-          <div class="cash-summary__overdue" *ngIf="cashOverdueTotal>0">Vencido: ${{ cashOverdueTotal | number:'1.0-0' }}</div>
+          <div class="cash-summary__value">
+            <ng-container *ngIf="!cashSummaryLoading; else summaryLoading">
+              {{ cashTotal | currency:'CLP':'symbol':'1.0-0':'es-CL' }}
+            </ng-container>
+          </div>
+          <div class="cash-summary__overdue" *ngIf="!cashSummaryLoading && cashOverdueTotal>0">Vencido: {{ cashOverdueTotal | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</div>
         </div>
-        <button class="cash-summary__pay" [disabled]="cashTotal===0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="margin-right:8px"><path d="M21 7H3V5h18v2zm0 4H3V9h18v2zm0 6H3v-2h18v2z"/></svg>
-          Pagar Total Adeudado
-        </button>
+        <div class="cash-summary__actions">
+          <button class="cash-summary__refresh" type="button" (click)="refreshCash()" [disabled]="cashSummaryLoading || cashLoading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 19a9 9 0 0014.1-2.1M19 5a9 9 0 00-14.1 2.1" />
+            </svg>
+            Actualizar
+          </button>
+          <button class="cash-summary__pay" type="button" [disabled]="cashTotal===0 || cashSummaryLoading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M21 7H3V5h18v2zm0 4H3V9h18v2zm0 6H3v-2h18v2z"/></svg>
+            Pagar Total Adeudado
+          </button>
+        </div>
+      </div>
+
+      <ng-template #summaryLoading>
+        <span class="cash-summary__loading">Cargando…</span>
+      </ng-template>
+
+      <div class="cash-controls">
+        <div class="cash-filters">
+          <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='pending'" (click)="setCashFilter('pending')">
+            Pendientes
+          </button>
+          <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='overdue'" (click)="setCashFilter('overdue')">
+            Vencidas
+          </button>
+          <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='paid'" (click)="setCashFilter('paid')">
+            Pagadas
+          </button>
+          <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='all'" (click)="setCashFilter('all')">
+            Todas
+          </button>
+        </div>
       </div>
 
       <table class="cash-table">
@@ -181,25 +217,40 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let d of cashDebts">
-            <td>
-              <div class="cash-table__slot">{{ d.time }} – {{ d.client }}</div>
-              <div class="cash-table__date">{{ d.date | date:'dd/MM/yyyy' }}</div>
-            </td>
-            <td>
-              ${{ d.commission | number:'1.0-0' }}
-            </td>
-            <td>{{ d.dueDate | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <span class="badge" [ngClass]="{
-                'badge--pending': d.status==='pending',
-                'badge--overdue': d.status==='overdue',
-                'badge--paid': d.status==='paid'
-              }">
-                {{ d.status==='pending' ? 'Pendiente' : (d.status==='overdue' ? 'Vencida' : 'Pagada') }}
-              </span>
-            </td>
-          </tr>
+          <ng-container *ngIf="cashLoading">
+            <tr>
+              <td colspan="4" class="cash-table__loading">
+                <span class="cash-spinner"></span>
+                Cargando comisiones…
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="!cashLoading && cashDebts.length === 0">
+            <tr>
+              <td colspan="4" class="cash-table__empty">
+                No tienes comisiones en este estado.
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="!cashLoading && cashDebts.length > 0">
+            <tr *ngFor="let d of cashDebts">
+              <td>
+                <div class="cash-table__slot">{{ d.time }} – {{ d.client }}</div>
+                <div class="cash-table__date">{{ d.date | date:'dd/MM/yyyy' }}</div>
+              </td>
+              <td>{{ d.commission | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</td>
+              <td>{{ d.dueDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'badge--pending': d.status==='pending',
+                  'badge--overdue': d.status==='overdue',
+                  'badge--paid': d.status==='paid'
+                }">
+                  {{ d.status==='pending' ? 'Pendiente' : (d.status==='overdue' ? 'Vencida' : 'Pagada') }}
+                </span>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
     </div>
