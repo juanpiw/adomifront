@@ -135,16 +135,21 @@ export class ProviderProfileService {
   /**
    * Actualizar información básica del perfil
    */
-  updateBasicInfo(info: Partial<BasicInfo>): Observable<any> {
+  updateBasicInfo(info: Partial<BasicInfo & { bank_name: string, bank_account: string, account_holder: string, account_rut: string, account_type: string }>): Observable<any> {
     const payload = {
       full_name: info.fullName,
       professional_title: info.professionalTitle,
       main_commune: info.mainCommune,
-      main_region: info.mainRegion || null, // Permitir null si no se proporciona
-      years_experience: info.yearsExperience
+      main_region: info.mainRegion || null,
+      years_experience: info.yearsExperience,
+      bank_name: info.bank_name,
+      bank_account: info.bank_account,
+      account_holder: info.account_holder,
+      account_rut: info.account_rut,
+      account_type: info.account_type
     };
 
-    console.log('[ProviderProfileService] Enviando datos básicos:', payload);
+    console.log('[ProviderProfileService] Enviando datos básicos y bancarios:', payload);
 
     return this.http.put(
       `${this.apiUrl}/provider/profile`,

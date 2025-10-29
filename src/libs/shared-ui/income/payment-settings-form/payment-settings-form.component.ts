@@ -71,17 +71,9 @@ export class PaymentSettingsFormComponent implements OnInit {
         bank_account: this.paymentSettings.accountNumber,
         account_holder: this.paymentSettings.holderName,
         account_rut: this.paymentSettings.rutHolder
-      } as any;
-      this.providerService.updateBasicInfo({} as any).subscribe({
-        next: () => {},
-        error: () => {},
-      });
-      // Usar el endpoint directo para campos bancarios (PUT /provider/profile)
-      this.providerService['http'].put(
-        `${this.providerService['apiUrl']}/provider/profile`,
-        payload,
-        { headers: (this.providerService as any).getHeaders() }
-      ).subscribe({
+      };
+
+      this.providerService.updateBasicInfo(payload).subscribe({
         next: () => {
           this.isSaving = false;
           this.showSuccessMessage = true;

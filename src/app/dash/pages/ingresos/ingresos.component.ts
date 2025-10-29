@@ -181,6 +181,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     console.log('Configuración de pagos guardada:', settings);
     this.paymentSettings = settings;
     // Aquí se podría mostrar un mensaje de éxito
+    this.refreshProfileData();
   }
 
   onPaymentSettingsChanged(settings: PaymentSettings) {
@@ -324,6 +325,15 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         this.evaluateKycReadiness(profile, this.currentUser);
         this.loadIncomeGoal();
         void this.loadTbkStatus();
+        
+        // Cargar datos bancarios en el formulario
+        this.paymentSettings = {
+          accountType: this.normalizeAccountType(profile.account_type),
+          bankName: profile.bank_name || '',
+          accountNumber: profile.bank_account || '',
+          holderName: profile.account_holder || '',
+          rutHolder: profile.account_rut || ''
+        };
       },
       error: (error) => {
         console.error('[DASH_INGRESOS] Error cargando perfil para TBK:', error);
@@ -350,6 +360,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       error: (err) => {
         const message = err?.error?.error || err?.message || 'No se pudo obtener la meta de ingresos';
         this.goalSaveError = message;
+        this.incomeGoalLoading = false;
       },
       complete: () => {
         this.incomeGoalLoading = false;
@@ -607,5 +618,31 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       remoteStatus: remote?.estado || remote?.status || null
     });
     return shops;
+  }
+
+  private refreshProfileData() {
+    this.providerProfile.getProfile().pipe(take(1)).subscribe(profile => {
+      this.currentProfile = profile;
+      this.evaluateKycReadiness(profile, this.currentUser);
+      
+      this.paymentSettings = {
+        accountType: this.normalizeAccountType(profile.account_type),
+        bankName: profile.bank_name || '',
+        accountNumber: profile.bank_account || '',
+        holderName: profile.account_holder || '',
+        rutHolder: profile.account_rut || ''
+      };
+    });
+  }
+
+  private normalizeAccountType(value: any): 'corriente' | 'vista' | 'ahorro' {
+    const allowed: Array<'corriente' | 'vista' | 'ahorro'> = ['corriente', 'vista', 'ahorro'];
+    if (typeof value === 'string') {
+      const lowered = value.toLowerCase() as 'corriente' | 'vista' | 'ahorro';
+      if (allowed.includes(lowered)) {
+        return lowered;
+      }
+    }
+    return 'corriente';
   }
 }
