@@ -19,82 +19,95 @@
     
     <!-- Pestaña: Resumen de Ingresos -->
     <div *ngIf="activeTab === 'resumen'" class="tab-panel">
-      <section class="tbk-onboarding-card">
-        <header class="tbk-card-header">
-          <div class="tbk-card-title">
-            <h2>Transbank Webpay Mall</h2>
-            <p>Activa tu comercio secundario para recibir depósitos directos desde Adomi.</p>
+      <section class="tbk-card">
+        <div class="tbk-card__header">
+          <div class="tbk-card__title">
+            <h3>Transbank Webpay Mall</h3>
+            <p>Crea y administra tus comercios secundarios directamente desde Adomi.</p>
           </div>
-          <span class="tbk-status-chip" [ngClass]="tbkStatus">{{ tbkStatusLabel }}</span>
-        </header>
+          <div class="tbk-card__chips" *ngIf="!tbkSectionLoading">
+            <span class="chip" [ngClass]="chipClass(tbkStatus)">Estado: {{ tbkStatusLabel }}</span>
+            <span *ngIf="tbkSecondaryCode" class="chip chip--neutral">Código Mall: {{ tbkSecondaryCode }}</span>
+          </div>
+        </div>
 
-        <div *ngIf="tbkSectionLoading" class="tbk-loading">
-          <span class="tbk-spinner"></span>
+        <div *ngIf="tbkSectionLoading" class="tbk-card__loader">
+          <span class="spinner"></span>
           <span>Consultando estado en Transbank…</span>
         </div>
 
-        <ng-container *ngIf="!tbkSectionLoading">
-          <div *ngIf="tbkError" class="tbk-error">
-            {{ tbkError }}
-          </div>
-
-          <div class="tbk-status-overview">
+        <div *ngIf="!tbkSectionLoading" class="tbk-card__body">
+          <div class="tbk-card__meta">
             <div>
-              <span class="label">Código secundario</span>
-              <span class="value">{{ tbkSecondaryCode || '—' }}</span>
-            </div>
-            <div>
-              <span class="label">Última actualización</span>
-              <span class="value">{{ tbkLastUpdated ? (tbkLastUpdated | date:'short') : '—' }}</span>
+              <span class="meta-label">Última actualización</span>
+              <span class="meta-value">{{ tbkLastUpdated ? (tbkLastUpdated | date:'short') : '—' }}</span>
             </div>
             <div *ngIf="tbkRemoteStatusLabel">
-              <span class="label">Estado TBK</span>
-              <span class="value">{{ tbkRemoteStatusLabel }}</span>
+              <span class="meta-label">Estado TBK</span>
+              <span class="meta-value">{{ tbkRemoteStatusLabel }}</span>
             </div>
           </div>
 
-          <div *ngIf="!tbkKycReady" class="tbk-warning">
-            <h3>Completa estos datos antes de solicitar el alta:</h3>
+          <div *ngIf="tbkError" class="tbk-card__error">{{ tbkError }}</div>
+
+          <div *ngIf="!tbkKycReady" class="tbk-card__alert">
+            <h4>Completa estos datos antes de solicitar el alta:</h4>
             <ul>
               <li *ngFor="let item of tbkKycMissing">{{ item }}</li>
             </ul>
-            <a routerLink="/dash/perfil" class="tbk-link">Ir a completar mi perfil</a>
+            <a routerLink="/dash/perfil">Ir a completar mi perfil</a>
           </div>
 
-          <div class="tbk-actions">
-            <button
-              type="button"
-              class="tbk-btn primary"
-              (click)="onCreateTbkSecondary()"
-              [disabled]="!tbkKycReady || !showCreateButton || tbkActionLoading">
-              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'create'; else createLabel">Procesando…</span>
-              <ng-template #createLabel>Crear comercio secundario</ng-template>
-            </button>
+          <hr class="tbk-card__divider" />
 
-            <button
-              type="button"
-              class="tbk-btn"
-              (click)="onRefreshTbkStatus()"
-              [disabled]="!showRefreshButton || tbkActionLoading">
-              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'refresh'; else refreshLabel">Actualizando…</span>
-              <ng-template #refreshLabel>Actualizar estado</ng-template>
-            </button>
-
-            <button
-              type="button"
-              class="tbk-btn danger"
-              (click)="onRevokeTbkSecondary()"
-              [disabled]="!showRevokeButton || tbkActionLoading">
-              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'revoke'; else revokeLabel">Procesando…</span>
-              <ng-template #revokeLabel>Solicitar baja</ng-template>
+          <div class="tbk-card__section-header">
+            <h4>Mis Comercios Secundarios</h4>
+            <button type="button" class="tbk-btn tbk-btn--primary" (click)="openTbkModal()" [disabled]="!tbkCanCreate || !tbkKycReady || tbkActionLoading">
+              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'create'; else createBtnLabel">Crear Comercio Secundario</span>
+              <ng-template #createBtnLabel>Crear Comercio Secundario</ng-template>
             </button>
           </div>
 
-          <details *ngIf="tbkRemote" class="tbk-remote-details">
-            <summary>Ver respuesta completa de TBK</summary>
-            <pre>{{ tbkRemote | json }}</pre>
-          </details>
-        </ng-container>
+          <div class="tbk-table-wrapper" *ngIf="tbkSecondaryShops.length; else tbkEmptyState">
+            <table class="tbk-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Código</th>
+                  <th>Estado</th>
+                  <th class="text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let shop of tbkSecondaryShops">
+                  <td>{{ shop.name }}</td>
+                  <td>{{ shop.code }}</td>
+                  <td>
+                    <span class="chip" [ngClass]="chipClass(shop.status)">{{ shop.status | titlecase }}</span>
+                  </td>
+                  <td class="actions">
+                    <button type="button" class="link" (click)="onRefreshTbkStatus()" [disabled]="tbkActionLoading">
+                      <span *ngIf="tbkActionLoading && tbkCurrentAction === 'refresh'; else refreshLabel">Actualizando…</span>
+                      <ng-template #refreshLabel>Actualizar</ng-template>
+                    </button>
+                    <button type="button" class="link link--danger" (click)="onRevokeTbkSecondary()" [disabled]="tbkActionLoading">
+                      <span *ngIf="tbkActionLoading && tbkCurrentAction === 'revoke'; else revokeLabel">Procesando…</span>
+                      <ng-template #revokeLabel>Dar de baja</ng-template>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #tbkEmptyState>
+            <div class="tbk-empty">
+              <div class="tbk-empty__icon">🏬</div>
+              <h5>Sin comercios secundarios</h5>
+              <p>Crea tu primer comercio para comenzar a procesar pagos con Webpay Mall.</p>
+            </div>
+          </ng-template>
+        </div>
       </section>
 
       <ui-financial-kpis 
@@ -129,4 +142,53 @@
     </div>
     
   </div>
+</div>
+
+<!-- Modal de Creación de Comercio Secundario -->
+<div *ngIf="tbkModalOpen" class="tbk-modal" role="dialog" aria-modal="true">
+  <div class="tbk-modal__backdrop" (click)="closeTbkModal()"></div>
+  <div class="tbk-modal__content">
+    <form [formGroup]="tbkForm" (ngSubmit)="submitTbkForm()">
+      <div class="tbk-modal__header">
+        <div class="tbk-modal__icon">🏦</div>
+        <div>
+          <h3>Registrar tu comercio en Transbank</h3>
+          <p>Serás redirigido al portal seguro de Transbank para ingresar tu información legal y bancaria.</p>
+        </div>
+      </div>
+
+      <div class="tbk-modal__body">
+        <label>
+          Nombre de tu Comercio o Servicio
+          <input type="text" formControlName="commerceName" placeholder="Ej. Juan Pérez Plomería" />
+          <small>Este es el nombre que verán tus clientes.</small>
+        </label>
+        <div class="error" *ngIf="tbkForm.get('commerceName')?.touched && tbkForm.get('commerceName')?.invalid">
+          Ingresa un nombre válido (mínimo 3 caracteres).
+        </div>
+
+        <label>
+          Email de contacto
+          <input type="email" formControlName="commerceEmail" placeholder="juan.perez@email.com" />
+          <small>Aquí recibirás las notificaciones de Transbank.</small>
+        </label>
+        <div class="error" *ngIf="tbkForm.get('commerceEmail')?.touched && tbkForm.get('commerceEmail')?.invalid">
+          Ingresa un correo válido.
+        </div>
+      </div>
+
+      <div class="tbk-modal__footer">
+        <button type="button" class="tbk-btn tbk-btn--secondary" (click)="closeTbkModal()">Cancelar</button>
+        <button type="submit" class="tbk-btn tbk-btn--primary" [disabled]="tbkActionLoading">
+          <span *ngIf="tbkActionLoading && tbkCurrentAction === 'create'; else modalSubmitLabel">Conectando…</span>
+          <ng-template #modalSubmitLabel>Continuar a Transbank</ng-template>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast de notificaciones -->
+<div class="tbk-toast" [class.tbk-toast--visible]="tbkToastVisible">
+  {{ tbkToastMessage }}
 </div>

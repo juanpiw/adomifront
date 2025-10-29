@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { 
@@ -21,7 +21,8 @@ import { FinancesService } from '../../../services/finances.service';
 import { AuthService, AuthUser } from '../../../auth/services/auth.service';
 import { ProviderProfileService, ProviderProfile } from '../../../services/provider-profile.service';
 import { take } from 'rxjs/operators';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription, timer } from 'rxjs';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
 
@@ -37,16 +38,18 @@ type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
     PaymentSettingsFormComponent,
     IncomeGoalsComponent,
     TimeFilterComponent,
-    RouterLink
+    RouterLink,
+    ReactiveFormsModule
   ],
   templateUrl: './ingresos.component.html',
   styleUrls: ['./ingresos.component.scss']
 })
-export class DashIngresosComponent implements OnInit {
+export class DashIngresosComponent implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute) {}
   private finances = inject(FinancesService);
   private auth = inject(AuthService);
   private providerProfile = inject(ProviderProfileService);
+  private fb = inject(FormBuilder);
   activeTab = 'resumen';
   selectedTimeFilter = 'month';
   currentDateRange: { startDate: Date; endDate: Date } = {
@@ -56,6 +59,7 @@ export class DashIngresosComponent implements OnInit {
   private providerId: number | null = null;
   private currentUser: AuthUser | null = null;
   private currentProfile: ProviderProfile | null = null;
+  private toastSubscription?: Subscription;
   tbkStatus: TbkStatus = 'none';
   tbkSecondaryCode: string | null = null;
   tbkRemote: Record<string, any> | null = null;
@@ -66,6 +70,15 @@ export class DashIngresosComponent implements OnInit {
   tbkKycReady = false;
   tbkKycMissing: string[] = [];
   tbkCurrentAction: 'status' | 'create' | 'refresh' | 'revoke' | null = null;
+  tbkModalOpen = false;
+  tbkPendingShopName: string | null = null;
+  tbkToastMessage: string | null = null;
+  tbkToastVisible = false;
+  tbkSecondaryShops: Array<{ name: string; code: string; status: TbkStatus; remoteStatus?: string | null }> = [];
+  tbkForm = this.fb.group({
+    commerceName: ['', [Validators.required, Validators.minLength(3)]],
+    commerceEmail: ['', [Validators.required, Validators.email]]
+  });
   
   // Datos de KPIs financieros
   financialKPIs: FinancialKPIs = {
@@ -204,6 +217,10 @@ export class DashIngresosComponent implements OnInit {
     
     // Recargar datos con el nuevo rango de fechas
     this.loadFinancialData();
+  }
+
+  ngOnDestroy(): void {
+    this.toastSubscription?.unsubscribe();
   }
 
   private loadFinancialData() {
@@ -368,10 +385,14 @@ export class DashIngresosComponent implements OnInit {
       this.tbkSecondaryCode = tbk.code || null;
       this.tbkRemote = tbk.remote || null;
       this.tbkLastUpdated = new Date();
+      this.tbkSecondaryShops = this.buildSecondaryShops(tbk);
     } catch (error: any) {
       console.error('[DASH_INGRESOS] Error consultando estado TBK:', error);
       const detail = error?.error?.error || error?.error?.details || error?.message || 'Error consultando estado TBK';
       this.tbkError = typeof detail === 'string' ? detail : 'Error consultando estado TBK';
+      if (error?.status === 409) {
+        this.showToast('Ya existe un comercio secundario registrado para este proveedor.');
+      }
     } finally {
       if (manageLoading) {
         this.tbkActionLoading = false;
@@ -382,7 +403,7 @@ export class DashIngresosComponent implements OnInit {
   }
 
   async onCreateTbkSecondary() {
-    if (!this.providerId || !this.tbkKycReady || this.tbkActionLoading) return;
+    if (!this.providerId || this.tbkActionLoading) return;
     this.tbkCurrentAction = 'create';
     this.tbkActionLoading = true;
     this.tbkError = null;
@@ -390,10 +411,16 @@ export class DashIngresosComponent implements OnInit {
     try {
       await firstValueFrom(this.providerProfile.tbkCreateSecondary(this.providerId));
       await this.loadTbkStatus('status', false);
+      this.showToast('Solicitud enviada a Transbank.');
     } catch (error: any) {
       console.error('[DASH_INGRESOS] Error creando comercio secundario TBK:', error);
       const detail = error?.error?.error || error?.error?.details || error?.message || 'Error creando comercio secundario';
-      this.tbkError = typeof detail === 'string' ? detail : 'Error creando comercio secundario';
+      if (error?.status === 409) {
+        this.showToast('Ya cuentas con un comercio secundario activo.');
+        await this.loadTbkStatus('status', false);
+      } else {
+        this.tbkError = typeof detail === 'string' ? detail : 'Error creando comercio secundario';
+      }
     } finally {
       this.tbkActionLoading = false;
       this.tbkCurrentAction = null;
@@ -442,22 +469,85 @@ export class DashIngresosComponent implements OnInit {
     }
   }
 
-  get showCreateButton(): boolean {
-    return this.tbkStatus === 'none' || !this.tbkSecondaryCode;
-  }
-
-  get showRefreshButton(): boolean {
-    return !!this.tbkSecondaryCode;
-  }
-
-  get showRevokeButton(): boolean {
-    return !!this.tbkSecondaryCode && (this.tbkStatus === 'active' || this.tbkStatus === 'restricted');
-  }
-
   get tbkRemoteStatusLabel(): string | null {
     if (!this.tbkRemote) return null;
     const remote = this.tbkRemote as any;
-    return remote.status || remote.estado || remote.state || null;
+    return remote.status || remote.estado || remote.state || remote?.comercio?.estado || null;
   }
-}
+
+  get tbkCanCreate(): boolean {
+    return !this.tbkSecondaryCode || this.tbkStatus === 'none';
+  }
+
+  openTbkModal() {
+    if (!this.tbkCanCreate) {
+      this.showToast('Ya cuentas con un comercio secundario activo.');
+      return;
+    }
+    const presetName = this.currentProfile?.full_name || this.currentUser?.name || '';
+    const presetEmail = this.currentUser?.email || '';
+    this.tbkForm.reset({
+      commerceName: presetName,
+      commerceEmail: presetEmail
+    });
+    this.tbkModalOpen = true;
+  }
+
+  closeTbkModal() {
+    this.tbkModalOpen = false;
+    this.tbkForm.reset();
+  }
+
+  submitTbkForm() {
+    if (this.tbkForm.invalid) {
+      this.tbkForm.markAllAsTouched();
+      return;
+    }
+    this.tbkPendingShopName = this.tbkForm.value.commerceName || null;
+    this.onCreateTbkSecondary().finally(() => this.closeTbkModal());
+  }
+
+  showToast(message: string) {
+    this.tbkToastMessage = message;
+    this.tbkToastVisible = true;
+    this.toastSubscription?.unsubscribe();
+    this.toastSubscription = timer(3000).subscribe(() => {
+      this.tbkToastVisible = false;
+    });
+  }
+
+  onCancelTbkRequest(shop: { code: string }) {
+    this.showToast(`Contacta a soporte para gestionar la baja de ${shop.code}.`);
+  }
+
+  chipClass(status: string): string {
+    switch ((status || '').toLowerCase()) {
+      case 'active':
+      case 'autorizado':
+        return 'chip--success';
+      case 'restricted':
+      case 'rechazado':
+        return 'chip--danger';
+      case 'pending':
+      case 'pendiente de inscripción':
+        return 'chip--warning';
+      default:
+        return 'chip--neutral';
+    }
+  }
+
+  private buildSecondaryShops(tbk: any): Array<{ name: string; code: string; status: TbkStatus; remoteStatus?: string | null }> {
+    const shops: Array<{ name: string; code: string; status: TbkStatus; remoteStatus?: string | null }> = [];
+    const code = tbk?.code || this.tbkSecondaryCode;
+    if (!code) return shops;
+    const remote = tbk?.remote || this.tbkRemote || {};
+    const name = remote?.razonSocial || remote?.nombreFantasia || this.currentProfile?.full_name || this.currentUser?.name || 'Comercio registrado';
+    shops.push({
+      name,
+      code,
+      status: (tbk?.status || 'active') as TbkStatus,
+      remoteStatus: remote?.estado || remote?.status || null
+    });
+    return shops;
+  }
 }
