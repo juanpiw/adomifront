@@ -93,6 +93,9 @@
           <span *ngIf="isSettingGoal">Estableciendo...</span>
         </button>
       </div>
+      <div class="goal-error" *ngIf="goalError">
+        {{ goalError }}
+      </div>
     </form>
   </div>
 </div>

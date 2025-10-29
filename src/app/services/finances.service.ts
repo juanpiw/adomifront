@@ -25,6 +25,15 @@ export interface FinanceTransactionDto {
   client_name?: string;
 }
 
+export interface ProviderIncomeGoalDto {
+  id?: number;
+  amount: number;
+  period: 'mensual' | 'trimestral';
+  setDate: string;
+  currentIncome: number;
+  progress: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FinancesService {
   private http = inject(HttpClient);
@@ -53,6 +62,21 @@ export class FinancesService {
     return this.http.get<{ success: boolean; transactions: FinanceTransactionDto[]; total: number }>(
       `${this.base}/provider/finances/transactions`,
       { headers: this.headers(), params }
+    );
+  }
+
+  getIncomeGoal(providerId: number): Observable<{ success: boolean; goal: ProviderIncomeGoalDto | null }>{
+    return this.http.get<{ success: boolean; goal: ProviderIncomeGoalDto | null }>(
+      `${this.base}/providers/${providerId}/income-goals/current`,
+      { headers: this.headers() }
+    );
+  }
+
+  setIncomeGoal(providerId: number, payload: { amount: number; period: 'mensual' | 'trimestral' }): Observable<{ success: boolean; goal: ProviderIncomeGoalDto | null }>{
+    return this.http.post<{ success: boolean; goal: ProviderIncomeGoalDto | null }>(
+      `${this.base}/providers/${providerId}/income-goals`,
+      payload,
+      { headers: this.headers() }
     );
   }
 }

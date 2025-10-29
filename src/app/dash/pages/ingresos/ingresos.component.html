@@ -114,7 +114,25 @@
         [kpis]="financialKPIs"
         (viewDetailsClicked)="onViewDetailsClicked()">
       </ui-financial-kpis>
-      
+
+      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoader">
+        <ui-income-goals
+          [currentGoal]="currentGoal"
+          [currentIncome]="currentIncome"
+          [savingGoal]="savingIncomeGoal"
+          [goalError]="goalSaveError"
+          (goalSet)="onGoalSet($event)"
+          (goToSummary)="onGoToSummary()">
+        </ui-income-goals>
+      </ng-container>
+
+      <ng-template #incomeGoalLoader>
+        <div class="goal-loader metric-card">
+          <div class="goal-loader__spinner"></div>
+          <p>Cargando metas de ingresos...</p>
+        </div>
+      </ng-template>
+
       <ui-transactions-table 
         [transactions]="transactions"
         (viewAllClicked)="onViewAllTransactions()"
@@ -133,12 +151,16 @@
     
     <!-- Pestaña: Metas de Ingreso -->
     <div *ngIf="activeTab === 'metas'" class="tab-panel">
-      <ui-income-goals 
-        [currentGoal]="currentGoal"
-        [currentIncome]="currentIncome"
-        (goalSet)="onGoalSet($event)"
-        (goToSummary)="onGoToSummary()">
-      </ui-income-goals>
+      <ng-container *ngIf="!incomeGoalLoading; else incomeGoalLoader">
+        <ui-income-goals 
+          [currentGoal]="currentGoal"
+          [currentIncome]="currentIncome"
+          [savingGoal]="savingIncomeGoal"
+          [goalError]="goalSaveError"
+          (goalSet)="onGoalSet($event)"
+          (goToSummary)="onGoToSummary()">
+        </ui-income-goals>
+      </ng-container>
     </div>
     
   </div>

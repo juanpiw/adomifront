@@ -23,6 +23,7 @@ import { ProviderProfileService, ProviderProfile } from '../../../services/provi
 import { take } from 'rxjs/operators';
 import { firstValueFrom, Subscription, timer } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ProviderIncomeGoalDto } from '../../../services/finances.service';
 
 type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
 
@@ -134,17 +135,11 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   };
   
   // Meta actual
-  currentGoal: IncomeGoal | null = {
-    id: 1,
-    amount: 3000000,
-    period: 'mensual',
-    setDate: '2025-10-01',
-    currentProgress: 71.7,
-    isCompleted: false
-  };
-  
-  // Ingresos actuales para calcular progreso
-  currentIncome = 2150000;
+  currentGoal: IncomeGoal | null = null;
+  currentIncome = 0;
+  incomeGoalLoading = false;
+  goalSaveError: string | null = null;
+  savingIncomeGoal = false;
 
   ngOnInit() {
     // Leer query parameters para configurar el filtro automáticamente
@@ -193,9 +188,30 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   }
 
   onGoalSet(goal: IncomeGoal) {
-    console.log('Meta establecida:', goal);
-    this.currentGoal = goal;
-    // Aquí se podría mostrar un mensaje de éxito
+    if (!this.providerId) return;
+    this.savingIncomeGoal = true;
+    this.goalSaveError = null;
+
+    this.finances.setIncomeGoal(this.providerId, {
+      amount: Number(goal.amount),
+      period: goal.period || 'mensual'
+    }).subscribe({
+      next: (resp) => {
+        if (resp.goal) {
+          this.applyIncomeGoal(resp.goal);
+          this.showToast('Meta de ingresos actualizada.');
+        }
+      },
+      error: (err) => {
+        const message = err?.error?.error || err?.message || 'No se pudo guardar la meta de ingresos';
+        this.goalSaveError = message;
+        this.showToast(message);
+        this.savingIncomeGoal = false;
+      },
+      complete: () => {
+        this.savingIncomeGoal = false;
+      }
+    });
   }
 
   onGoToSummary() {
@@ -306,6 +322,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
           this.providerId = profile?.provider_id || profile?.id || null;
         }
         this.evaluateKycReadiness(profile, this.currentUser);
+        this.loadIncomeGoal();
         void this.loadTbkStatus();
       },
       error: (error) => {
@@ -314,6 +331,42 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         this.tbkSectionLoading = false;
       }
     });
+  }
+
+  private loadIncomeGoal() {
+    if (!this.providerId) return;
+    this.incomeGoalLoading = true;
+    this.goalSaveError = null;
+
+    this.finances.getIncomeGoal(this.providerId).subscribe({
+      next: (resp) => {
+        if (resp.goal) {
+          this.applyIncomeGoal(resp.goal);
+        } else {
+          this.currentGoal = null;
+          this.currentIncome = 0;
+        }
+      },
+      error: (err) => {
+        const message = err?.error?.error || err?.message || 'No se pudo obtener la meta de ingresos';
+        this.goalSaveError = message;
+      },
+      complete: () => {
+        this.incomeGoalLoading = false;
+      }
+    });
+  }
+
+  private applyIncomeGoal(goal: ProviderIncomeGoalDto) {
+    this.currentIncome = Number(goal.currentIncome || 0);
+    this.currentGoal = {
+      id: goal.id,
+      amount: Number(goal.amount || 0),
+      period: goal.period,
+      setDate: goal.setDate,
+      currentProgress: Number(goal.progress || 0),
+      isCompleted: Number(goal.progress || 0) >= 100
+    };
   }
 
   private async ensureCurrentUser(): Promise<AuthUser | null> {

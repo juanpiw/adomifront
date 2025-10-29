@@ -426,6 +426,26 @@
   }
 }
 
+.goal-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+  color: #475569;
+
+  &__spinner {
+    width: 28px;
+    height: 28px;
+    border: 4px solid #cbd5f5;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
 .tab-content {
   .tab-panel {
     animation: fadeIn 0.3s ease-in-out;
