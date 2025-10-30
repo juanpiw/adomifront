@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardResumenComponent, DashboardMetric } from '../../../../libs/shared-ui/dashboard-resumen/dashboard-resumen.component';
 import { CalendarMensualComponent, CalendarEvent } from '../../../../libs/shared-ui/calendar-mensual/calendar-mensual.component';
@@ -16,8 +16,7 @@ import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-d-agenda',
@@ -217,9 +216,9 @@ export class DashAgendaComponent implements OnInit {
       // Refrescar lista de pagadas esperando verificación
       this.loadPaidAwaiting();
       // Refrescar día seleccionado para que muestre "Pagada"
-      if (this.selectedDate) {
-        const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
-        console.log('💰 [AGENDA] Refrescando citas del día por pago:', iso);
+        if (this.selectedDate) {
+          const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+          console.log('💰 [AGENDA] Refrescando citas del día por pago:', iso);
         this.loadDay(iso);
       }
     });
@@ -523,8 +522,8 @@ export class DashAgendaComponent implements OnInit {
                 value: cashPaidCount
               } as any;
             }
-            // Actualiza "Deuda a la aplicación" si backend expone métrica de comisiones cash (fallback: 0)
-            const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
+        // Actualiza "Deuda a la aplicación" si backend expone métrica de comisiones cash (fallback: 0)
+        const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
             if (debtIdx >= 0) {
               const cashDebt = Number((resp.summary as any).cashCommissionDebt || 0);
               this.dashboardMetrics[debtIdx] = {
@@ -670,7 +669,7 @@ export class DashAgendaComponent implements OnInit {
             const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
             this.loadDay(iso);
           }
-          alert('✅ Cobro en efectivo registrado.');
+          alert('? Cobro en efectivo registrado.');
         } else {
           alert('No se pudo registrar el cobro en efectivo.');
         }
@@ -688,7 +687,7 @@ export class DashAgendaComponent implements OnInit {
   }
   
   /**
-   * 🔔 Actualizar contador de citas programadas pendientes
+   * ?? Actualizar contador de citas programadas pendientes
    */
   private updateScheduledCount(): void {
     const scheduledCount = this.calendarEvents.filter(e => e.status === 'scheduled').length;
@@ -708,7 +707,7 @@ export class DashAgendaComponent implements OnInit {
       const idx = this.calendarEvents.findIndex(e => e.id === String(a.id));
       if (idx >= 0) this.calendarEvents[idx] = ev; else this.calendarEvents.push(ev);
       
-      // 🔔 Recalcular contador de citas programadas
+      // ?? Recalcular contador de citas programadas
       this.updateScheduledCount();
     }
     if (a.status === 'cancelled') {
@@ -744,7 +743,7 @@ export class DashAgendaComponent implements OnInit {
     this.calendarEvents = this.calendarEvents.filter(e => e.id !== String(id));
     this.dayAppointments = this.dayAppointments.filter(d => d.id !== String(id));
     
-    // 🔔 Recalcular contador
+    // ?? Recalcular contador
     this.updateScheduledCount();
   }
 
@@ -831,8 +830,8 @@ export class DashAgendaComponent implements OnInit {
     this.appointments.submitClosureAction(appointmentId, event.action, notes).subscribe({
       next: (resp) => {
         this.loading = false;
-        if (!resp?.success) {
-          alert(resp?.error || 'No se pudo registrar la acción.');
+          if (!resp?.success) {
+            alert(resp?.error || 'No se pudo registrar la acción.');
           return;
         }
         if (this.selectedDate) {
@@ -840,11 +839,11 @@ export class DashAgendaComponent implements OnInit {
           this.loadDay(iso);
         }
         this.loadPaidAwaiting();
-        alert('Acción registrada.');
+          alert('Acción registrada.');
       },
       error: () => {
         this.loading = false;
-        alert('No se pudo registrar la acción.');
+          alert('No se pudo registrar la acción.');
       }
     });
   }
@@ -920,8 +919,8 @@ export class DashAgendaComponent implements OnInit {
     this.availabilityService.getWeekly().subscribe({
       next: (resp) => {
         const existing = resp?.blocks || [];
-        const dayNameToEnum: Record<string, any> = {
-          'Lunes': 'monday', 'Martes': 'tuesday', 'Miércoles': 'wednesday', 'Jueves': 'thursday', 'Viernes': 'friday', 'Sábado': 'saturday', 'Domingo': 'sunday'
+    const dayNameToEnum: Record<string, any> = {
+      'Lunes': 'monday', 'Martes': 'tuesday', 'Miércoles': 'wednesday', 'Jueves': 'thursday', 'Viernes': 'friday', 'Sábado': 'saturday', 'Domingo': 'sunday'
         };
 
         const tasks: Array<Promise<any>> = [];
@@ -973,3 +972,5 @@ export class DashAgendaComponent implements OnInit {
     }
   }
 }
+
+

@@ -39,7 +39,6 @@ type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
     PaymentSettingsFormComponent,
     IncomeGoalsComponent,
     TimeFilterComponent,
-    RouterLink,
     ReactiveFormsModule
   ],
   templateUrl: './ingresos.component.html',
