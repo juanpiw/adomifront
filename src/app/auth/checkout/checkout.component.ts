@@ -287,7 +287,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     try {
       const payload: any = {
         event,
-        email: metadata?.email || this.tempUserData?.email || null,
+        email: metadata?.['email'] || this.tempUserData?.email || null,
         providerId: this.registeredUserId,
         promoCode: this.promoCode,
         metadata

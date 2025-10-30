@@ -278,24 +278,12 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   referralEmailSuccess = false;
   private referralCopyTimeout: any;
   private referralLinkCache: string | null = null;
-  private get locationDisplayLabel(): string | null {
+  get locationDisplayLabel(): string | null {
     if (this.selectedLocation) return this.selectedLocation;
     if (this.selectedLocationId) {
       const match = this.locations.find(loc => (loc as any).id === this.selectedLocationId || loc.commune === this.selectedLocationId);
       if (match) {
         return match.commune ? `${match.commune}, ${match.region}` : match.region;
-      }
-    }
-    return null;
-  }
-  private selectedLocationLabel: string | null = null;
-  private selectedLocationLabel: string | null = null;
-  private get selectedLocationLabel(): string | null {
-    if (this.selectedLocation) return this.selectedLocation;
-    if (this.selectedLocationId) {
-      const match = this.locations.find(loc => loc.commune === this.selectedLocationId || loc.region === this.selectedLocationId);
-      if (match) {
-        return match ? `${match.commune}, ${match.region}` : this.selectedLocationId;
       }
     }
     return null;
