@@ -32,11 +32,81 @@
 
   <!-- Plans grid -->
   <div *ngIf="!loading && !error" class="plans-grid">
+    <!-- Founder Promo Card -->
+    <div class="plan-card founder-card" [class.selected]="isPromoActive()">
+      <div class="founder-ribbon">¡LIMITADO!</div>
+      <div class="plan-header">
+        <h3>Fundador</h3>
+        <div class="founder-tag">Acceso exclusivo</div>
+      </div>
+
+      <div class="plan-price">
+        <span class="price">{{ formatPrice(0) }}</span>
+        <span class="interval">/mes</span>
+      </div>
+
+      <p class="plan-description">
+        Obtén lanzamiento preferente con la comunidad Adomi. Cupos limitados y beneficios especiales durante los primeros meses.
+      </p>
+
+      <ul class="plan-features">
+        <li *ngFor="let feature of (promoPlan?.features?.length ? promoPlan?.features : founderFeatures)">{{ feature }}</li>
+      </ul>
+
+      <div class="plan-limits">
+        <div class="limit">
+          <span class="label">Servicios:</span>
+          <span class="value">{{ founderServicesLimitLabel }}</span>
+        </div>
+        <div class="limit">
+          <span class="label">Reservas:</span>
+          <span class="value">{{ founderBookingsLimitLabel }}</span>
+        </div>
+      </div>
+
+      <div class="promo-input-group" [class.active]="isPromoActive()">
+        <input 
+          type="text" 
+          placeholder="Ingresa tu código Fundador" 
+          [(ngModel)]="promoCode"
+          [disabled]="promoDisabled || isPromoActive()"
+        />
+        <button 
+          class="btn-apply"
+          (click)="applyPromoCode()"
+          [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
+        >
+          {{ promoLoading ? 'Validando…' : 'Validar código' }}
+        </button>
+        <button 
+          class="btn-clear"
+          *ngIf="isPromoActive()"
+          type="button"
+          (click)="clearPromo()"
+        >
+          Quitar código
+        </button>
+      </div>
+
+      <div class="promo-status" *ngIf="promoSuccess">
+        <span class="success">{{ promoSuccess }}</span>
+      </div>
+      <div class="promo-status" *ngIf="promoError">
+        <span class="error">{{ promoError }}</span>
+      </div>
+      <div class="promo-meta" *ngIf="isPromoActive() && promoMeta">
+        <span *ngIf="promoMeta?.max_duration_months">Incluye {{ promoMeta?.max_duration_months }} meses gratuitos.</span>
+        <span *ngIf="promoMeta?.expires_at">Canje válido hasta {{ promoMeta?.expires_at | date:'shortDate' }}.</span>
+      </div>
+    </div>
+
+    <!-- Regular Plans -->
     <div 
       *ngFor="let plan of getCurrentPlans()" 
       class="plan-card"
       [class.selected]="selectedPlan?.id === plan.id"
       [class.recommended]="isPlanRecommended(plan)"
+      [class.disabled]="isPromoActive()"
       (click)="selectPlan(plan)"
     >
       <div class="plan-header">
@@ -76,7 +146,7 @@
       [disabled]="!selectedPlan"
       (click)="continueToPayment()"
     >
-      Continuar al Pago
+      {{ isPromoActive() ? 'Continuar' : 'Continuar al Pago' }}
     </button>
   </div>
 </div>

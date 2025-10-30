@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StripeService, StripeError } from '../../services/stripe.service';
 import { AuthService } from '../services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 interface Plan {
   id: number;
@@ -16,6 +17,8 @@ interface Plan {
   features: string[];
   max_services: number;
   max_bookings: number;
+  isPromo?: boolean;
+  promoCode?: string;
 }
 
 interface TempUserData {
@@ -45,6 +48,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   loading = false;
   error: string | null = null;
   stripeError: string | null = null;
+  promoCode: string | null = null;
+  registeredUserId: number | null = null;
 
   private http = inject(HttpClient);
   private router = inject(Router);
@@ -67,6 +72,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     try { this.tempUserData = JSON.parse(tempData); console.log('[CHECKOUT] tempUserData:', this.tempUserData); } catch (e) { console.error('[CHECKOUT] Error parseando tempUserData:', e); }
     try { this.selectedPlan = JSON.parse(planData); console.log('[CHECKOUT] selectedPlan:', this.selectedPlan); } catch (e) { console.error('[CHECKOUT] Error parseando selectedPlan:', e); }
+
+    this.promoCode = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined'
+      ? sessionStorage.getItem('promoCode')
+      : null;
+
+    if (!this.promoCode && (this.selectedPlan as any)?.promoCode) {
+      this.promoCode = (this.selectedPlan as any).promoCode;
+    }
 
     // Si ya hay token (p.ej., login con Google), no intentamos registrar de nuevo
     const token = this.authService.getAccessToken();
@@ -93,14 +106,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.stripeError = null;
 
     try {
-      // Si NO hay token y tenemos datos temporales, primero registrar al usuario
       const hasToken = !!this.authService.getAccessToken();
       if (!hasToken && this.tempUserData) {
         console.log('[CHECKOUT] No hay token. Registrando usuario primero...');
         await this.registerUserFirst();
       }
 
-      // Crear sesión de checkout
+      const isPromoFlow = !!(this.selectedPlan as any)?.isPromo || !!this.promoCode;
+      if (isPromoFlow) {
+        await this.applyPromoSubscription();
+        return;
+      }
+
       console.log('[CHECKOUT] Creando sesión de Stripe para planId:', this.selectedPlan.id);
       this.http.post<CheckoutResponse>(`${environment.apiBaseUrl}/stripe/create-checkout-session`, {
         planId: this.selectedPlan.id
@@ -108,7 +125,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         next: async (response) => {
           console.log('[CHECKOUT] Respuesta create-checkout-session:', response);
           if (response.ok && response.sessionId) {
-            // Usar Stripe Service para redirigir
             const result = await this.stripeService.redirectToCheckout({
               sessionId: response.sessionId,
               successUrl: `${window.location.origin}/auth/payment-success?session_id={CHECKOUT_SESSION_ID}`,
@@ -117,7 +133,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
             if (!result.success && result.error) {
               console.error('[CHECKOUT] redirectToCheckout error:', result.error);
-              // Manejar tanto StripeError como string
               if (typeof result.error === 'string') {
                 this.stripeError = result.error;
               } else {
@@ -144,69 +159,145 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  async registerUserFirst() {
-    return new Promise<void>((resolve, reject) => {
-      if (!this.tempUserData) {
-        resolve();
+  private async registerUserFirst() {
+    if (!this.tempUserData) {
+      return;
+    }
+
+    const safePassword = (this.tempUserData.password && this.tempUserData.password.length >= 8)
+      ? this.tempUserData.password
+      : this.generateRandomPassword(16);
+    this.tempUserData.password = safePassword;
+    const registrationEmail = this.tempUserData.email;
+
+    try {
+      const response: any = await firstValueFrom(
+        this.authService.register({
+          email: this.tempUserData.email,
+          password: safePassword,
+          role: this.tempUserData.role || 'provider',
+          name: this.tempUserData.name || this.tempUserData.email?.split('@')[0] || 'Usuario'
+        })
+      );
+
+      const data = response?.data || response;
+      if (!response?.success && !data?.success) {
+        throw new Error(response?.error || data?.error || 'Registro fallido');
+      }
+
+      const registeredUser = data?.user || response?.user;
+      this.registeredUserId = registeredUser?.id ?? null;
+      this.tempUserData = null;
+
+      if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('tempUserData');
+      }
+
+      this.trackFunnelEvent('registration_completed', {
+        provider_id: this.registeredUserId,
+        promo_code: this.promoCode || null,
+        email: registrationEmail
+      });
+    } catch (error: any) {
+      const message = String(error?.error?.error || error?.message || '').toLowerCase();
+      if (message.includes('exists') || message.includes('ya existe') || message.includes('duplicate')) {
+        console.warn('[CHECKOUT] Email ya existe (registroUserFirst), intentando continuar');
+        this.tempUserData = null;
+        try {
+          if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+            sessionStorage.removeItem('tempUserData');
+          }
+        } catch {}
+        return;
+      }
+      this.error = 'Error al registrar usuario. Inténtalo nuevamente.';
+      this.loading = false;
+      throw error;
+    }
+  }
+
+  private async applyPromoSubscription() {
+    if (!this.promoCode) {
+      this.error = 'Código promocional no disponible.';
+      this.loading = false;
+      return;
+    }
+
+    let providerId: number | null = this.authService.getCurrentUser()?.id || this.registeredUserId;
+
+    if (!providerId) {
+      try {
+        const resp: any = await firstValueFrom(this.authService.getCurrentUserInfo());
+        providerId = resp?.data?.user?.id || resp?.user?.id || null;
+      } catch (error) {
+        console.error('[CHECKOUT] No se pudo obtener el usuario actual:', error);
+      }
+    }
+
+    if (!providerId) {
+      this.error = 'No pudimos confirmar tu cuenta. Por favor inicia sesión nuevamente.';
+      this.loading = false;
+      return;
+    }
+
+    try {
+      const token = this.authService.getAccessToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response: any = await firstValueFrom(
+        this.http.post(`${environment.apiBaseUrl}/subscriptions/promo/apply`, {
+          providerId,
+          code: this.promoCode
+        }, { headers })
+      );
+
+      if (!response?.ok) {
+        this.error = response?.error || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
+        this.loading = false;
         return;
       }
 
-      // Asegurar contraseña válida para el registro (fallback si viene desde Google sin password)
-      const safePassword = (this.tempUserData.password && this.tempUserData.password.length >= 8)
-        ? this.tempUserData.password
-        : this.generateRandomPassword(16);
-      this.tempUserData.password = safePassword;
+      try {
+        await firstValueFrom(this.authService.getCurrentUserInfo());
+      } catch (err) {
+        console.warn('[CHECKOUT] No se pudo refrescar /auth/me después de aplicar promo', err);
+      }
 
-      this.http.post(`${environment.apiBaseUrl}/auth/register`, {
-        email: this.tempUserData.email,
-        password: safePassword,
-        name: this.tempUserData.name || this.tempUserData.email?.split('@')[0] || 'Usuario',
-        role: this.tempUserData.role || 'provider'
-      }).subscribe({
-        next: (response: any) => {
-          if (response.success) {
-            console.log('[CHECKOUT] Usuario registrado exitosamente');
-            // Limpiar datos temporales
-            if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
-              sessionStorage.removeItem('tempUserData');
-            }
-            resolve();
-          } else {
-            console.error('[CHECKOUT] Error en registro:', response.error);
-            // Si el error es de email duplicado, continuamos sin bloquear
-            const message = String(response.error || '').toLowerCase();
-            if (message.includes('exists') || message.includes('ya existe') || message.includes('duplicate')) {
-              console.warn('[CHECKOUT] Email ya existe, continuando con checkout');
-              if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
-                sessionStorage.removeItem('tempUserData');
-              }
-              resolve();
-              return;
-            }
-            this.error = response.error || 'Error al registrar usuario';
-            this.loading = false;
-            reject(response.error);
-          }
-        },
-        error: (error) => {
-          console.error('[CHECKOUT] Error en registro:', error);
-          const message = String(error?.error?.error || error?.message || '').toLowerCase();
-          if (message.includes('exists') || message.includes('ya existe') || message.includes('duplicate')) {
-            console.warn('[CHECKOUT] Email ya existe (desde error), continuando con checkout');
-            try {
-              if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
-                sessionStorage.removeItem('tempUserData');
-              }
-            } catch {}
-            resolve();
-            return;
-          }
-          this.error = 'Error al registrar usuario. Inténtalo nuevamente.';
-          this.loading = false;
-          reject(error);
-        }
+      this.cleanupSessionStorage();
+      this.loading = false;
+      this.router.navigateByUrl('/dash/home');
+    } catch (error: any) {
+      console.error('[CHECKOUT] Error aplicando promo:', error);
+      const message = error?.error?.error || error?.message || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
+      this.error = message;
+      this.loading = false;
+    }
+  }
+
+  private cleanupSessionStorage() {
+    try {
+      if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('tempUserData');
+        sessionStorage.removeItem('selectedPlan');
+        sessionStorage.removeItem('promoCode');
+      }
+    } catch {}
+  }
+
+  private trackFunnelEvent(event: string, metadata?: Record<string, any>) {
+    try {
+      const payload: any = {
+        event,
+        email: metadata?.email || this.tempUserData?.email || null,
+        providerId: this.registeredUserId,
+        promoCode: this.promoCode,
+        metadata
+      };
+      this.http.post(`${environment.apiBaseUrl}/subscriptions/funnel/event`, payload).subscribe({
+        error: (err) => console.warn('[CHECKOUT] No se pudo registrar evento de funnel', err)
       });
-    });
+    } catch (err) {
+      console.warn('[CHECKOUT] Error interno trackFunnelEvent', err);
+    }
   }
 
   // Genera una contraseña segura

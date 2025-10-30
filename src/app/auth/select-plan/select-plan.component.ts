@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -16,6 +17,10 @@ interface Plan {
   max_bookings: number;
   // id de origen cuando derivamos (mensual <-> anual)
   sourceId?: number;
+  isPromo?: boolean;
+  promoCode?: string;
+  duration_months?: number;
+  commission_rate?: number;
 }
 
 interface TempUserData {
@@ -25,10 +30,24 @@ interface TempUserData {
   role: 'client' | 'provider';
 }
 
+interface PromoValidationResponse {
+  ok: boolean;
+  plan?: Plan;
+  promo?: {
+    code: string;
+    label?: string;
+    message?: string;
+    expires_at?: string;
+    max_duration_months?: number;
+    remaining_spots?: number;
+  };
+  error?: string;
+}
+
 @Component({
   selector: 'app-select-plan',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './select-plan.component.html',
   styleUrls: ['./select-plan.component.scss']
 })
@@ -43,6 +62,24 @@ export class SelectPlanComponent implements OnInit {
   isAnnualBilling = true; // Por defecto anual
   monthlyPlans: Plan[] = [];
   annualPlans: Plan[] = [];
+
+  // Promo / Fundador state
+  promoCode: string = '';
+  promoLoading = false;
+  promoError: string | null = null;
+  promoSuccess: string | null = null;
+  promoPlan: Plan | null = null;
+  promoMeta: PromoValidationResponse['promo'] | null = null;
+  founderFeatures: string[] = [
+    '3 meses sin comisión de plataforma',
+    'Prioridad en búsquedas locales',
+    'Soporte directo del equipo Adomi',
+    'Acceso a nuevas funciones beta'
+  ];
+  private readonly founderDefaults = {
+    services: 10,
+    bookings: 50
+  };
 
   private http = inject(HttpClient);
   private router = inject(Router);
@@ -103,6 +140,9 @@ export class SelectPlanComponent implements OnInit {
     }
     
     this.loadPlans();
+    this.trackFunnelEvent('view_plan', {
+      billing: this.isAnnualBilling ? 'annual' : 'monthly'
+    });
   }
 
   loadPlans() {
@@ -153,11 +193,19 @@ export class SelectPlanComponent implements OnInit {
   }
 
   selectPlan(plan: Plan) {
+    if (this.isPromoActive()) {
+      console.log('[SELECT_PLAN] Ignorando selección de plan porque hay promo activa');
+      return;
+    }
     console.log('[SELECT_PLAN] Plan seleccionado:', plan);
     this.selectedPlan = plan;
   }
 
   toggleBilling() {
+    if (this.isPromoActive()) {
+      console.log('[SELECT_PLAN] Toggle billing bloqueado porque hay promo activa');
+      return;
+    }
     console.log('[SELECT_PLAN] Toggle billing. Estado previo isAnnualBilling:', this.isAnnualBilling);
     this.isAnnualBilling = !this.isAnnualBilling;
     this.selectedPlan = null; // Limpiar selección al cambiar
@@ -199,6 +247,11 @@ export class SelectPlanComponent implements OnInit {
     // Guardar plan seleccionado temporalmente
     if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
       sessionStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
+      if (this.isPromoActive() && this.promoMeta?.code) {
+        sessionStorage.setItem('promoCode', this.promoMeta.code);
+      } else {
+        sessionStorage.removeItem('promoCode');
+      }
       console.log('[SELECT_PLAN] selectedPlan guardado en sessionStorage');
     }
     
@@ -220,5 +273,116 @@ export class SelectPlanComponent implements OnInit {
 
   isPlanRecommended(plan: Plan): boolean {
     return plan.name.toLowerCase().includes('premium');
+  }
+
+  // Promo helpers
+  get promoDisabled(): boolean {
+    return this.promoLoading;
+  }
+
+  isPromoActive(): boolean {
+    return !!this.promoPlan && !!this.promoMeta && !!this.selectedPlan?.isPromo;
+  }
+
+  get founderServicesLimitLabel(): string {
+    const maxServices = this.promoPlan?.max_services ?? this.founderDefaults.services;
+    if (!maxServices || maxServices === 999) return 'Ilimitados';
+    return `${maxServices}`;
+  }
+
+  get founderBookingsLimitLabel(): string {
+    const maxBookings = this.promoPlan?.max_bookings ?? this.founderDefaults.bookings;
+    if (!maxBookings || maxBookings === 9999) return 'Ilimitadas';
+    return `${maxBookings}/mes`;
+  }
+
+  private trackFunnelEvent(event: string, metadata?: Record<string, any>) {
+    try {
+      const payload: any = {
+        event,
+        email: this.tempUserData?.email || null,
+        promoCode: this.promoMeta?.code || (this.promoCode ? this.promoCode.toUpperCase() : null),
+        metadata
+      };
+      this.http.post(`${environment.apiBaseUrl}/subscriptions/funnel/event`, payload).subscribe({
+        error: (err) => console.warn('[SELECT_PLAN] No se pudo registrar evento de funnel', err)
+      });
+    } catch (err) {
+      console.warn('[SELECT_PLAN] Error interno trackFunnelEvent', err);
+    }
+  }
+
+  async applyPromoCode() {
+    const trimmed = this.promoCode.trim();
+    if (!trimmed) {
+      this.promoError = 'Ingresa un código válido';
+      return;
+    }
+
+    this.promoLoading = true;
+    this.promoError = null;
+    this.promoSuccess = null;
+
+    this.http.post<PromoValidationResponse>(`${environment.apiBaseUrl}/plans/validate-code`, {
+      code: trimmed,
+      billing: this.isAnnualBilling ? 'year' : 'month'
+    }).subscribe({
+      next: (response) => {
+        if (response.ok && response.plan && response.promo) {
+          this.promoPlan = {
+            ...response.plan,
+            isPromo: true,
+            promoCode: response.promo.code,
+            price: 0,
+            interval: 'month',
+            features: response.plan.features || []
+          };
+          this.promoMeta = response.promo;
+          this.selectedPlan = this.promoPlan;
+          this.promoSuccess = response.promo.message || 'Código aplicado. ¡Bienvenido al plan Fundador!';
+          this.promoError = null;
+          console.log('[SELECT_PLAN] Promo aplicada:', this.promoMeta, this.promoPlan);
+          this.trackFunnelEvent('promo_validated', {
+            duration_months: response.plan.duration_months || null,
+            max_services: response.plan.max_services,
+            max_bookings: response.plan.max_bookings
+          });
+        } else {
+          this.promoError = response.error || 'No pudimos validar este código. Verifica e intenta nuevamente.';
+          this.resetPromoState();
+        }
+        this.promoLoading = false;
+      },
+      error: (error) => {
+        console.error('[SELECT_PLAN] Error validando código promo:', error);
+        const message = error?.error?.error || error?.error?.message || error?.message;
+        this.promoError = message || 'No pudimos validar este código. Verifica e intenta nuevamente.';
+        this.resetPromoState();
+        this.promoLoading = false;
+      }
+    });
+  }
+
+  clearPromo() {
+    this.promoCode = '';
+    this.promoLoading = false;
+    this.promoError = null;
+    this.promoSuccess = null;
+    this.promoMeta = null;
+    this.promoPlan = null;
+    if (this.selectedPlan?.isPromo) {
+      this.selectedPlan = null;
+    }
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('promoCode');
+    }
+  }
+
+  private resetPromoState() {
+    this.promoPlan = null;
+    this.promoMeta = null;
+    if (this.selectedPlan?.isPromo) {
+      this.selectedPlan = null;
+    }
   }
 }
