@@ -699,6 +699,13 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
           this.loading = false;
           this.updateMapPanelTitle();
+          console.log('[EXPLORAR] 🔍 Render state post-search', {
+            searchTerm: this.searchTerm,
+            sanitized: this.validatedTerm?.sanitized,
+            searchTermInvalidReason: this.searchTermInvalidReason,
+            filteredProviders: this.filteredProviders.length,
+            filteredServices: this.filteredServices.length
+          });
         },
         error: (error) => {
           console.error('[EXPLORAR] ❌ Error aplicando filtros básicos:', error);
@@ -736,6 +743,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
             normalized: validation.normalized
           };
           this.searchTermInvalidReason = '';
+          console.log('[EXPLORAR] ✅ Término validado', this.validatedTerm);
           const filters = { ...baseFilters, search: validation.sanitized };
           performSearch(filters);
         },
