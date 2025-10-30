@@ -30,6 +30,7 @@ export class PaymentsService {
       { headers: this.headers() }
     ).pipe(
       tap((resp) => {
+        console.log('[TRACE][PAYMENTS_SERVICE] refreshCashSummary response', resp);
         if (resp?.success) {
           this.cashSummarySubject.next(resp.summary || null);
         }

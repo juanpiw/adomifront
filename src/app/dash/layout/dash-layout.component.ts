@@ -76,6 +76,7 @@ export class DashLayoutComponent implements OnInit {
     const user = this.sessionService.getUser();
     if (user && user.role === 'provider') {
       this.payments.cashSummary$.subscribe((summary) => {
+        console.log('[TRACE][TOPBAR] cashSummary$ emission', summary);
         if (summary && summary.last_debt && ['pending', 'overdue'].includes(summary.last_debt.status)) {
           const amount = Number(summary.last_debt.commission_amount || 0);
           if (amount > 0) {
