@@ -189,18 +189,19 @@ import { finalize } from 'rxjs/operators';
             <p class="text-gray-600">Ingresa al menos 2 caracteres para buscar un servicio.</p>
           </div>
 
-          <ui-referral-invite-empty
-            *ngIf="!searchTermInvalidReason"
-            [searchTerm]="validatedTerm?.sanitized || searchTerm"
-            [locationLabel]="selectedLocation || null"
-            [shareDisabled]="referralLoadingChannel !== null"
-            [loadingChannel]="referralLoadingChannel"
-            [copySuccess]="referralCopySuccess"
-            [emailSuccess]="referralEmailSuccess"
-            (whatsapp)="onReferralShare('whatsapp')"
-            (copy)="onReferralShare('copy')"
-            (emailInvite)="onReferralEmail($event)">
-          </ui-referral-invite-empty>
+        <ui-referral-invite-empty
+          *ngIf="!searchTermInvalidReason"
+          class="referral-section"
+          [searchTerm]="validatedTerm?.sanitized || searchTerm"
+          [locationLabel]="locationDisplayLabel"
+          [shareDisabled]="referralLoadingChannel !== null"
+          [loadingChannel]="referralLoadingChannel"
+          [copySuccess]="referralCopySuccess"
+          [emailSuccess]="referralEmailSuccess"
+          (whatsapp)="onReferralShare('whatsapp')"
+          (copy)="onReferralShare('copy')"
+          (emailInvite)="onReferralEmail($event)">
+        </ui-referral-invite-empty>
         </ng-container>
 
         <ng-template #genericNoResults>
@@ -277,6 +278,28 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   referralEmailSuccess = false;
   private referralCopyTimeout: any;
   private referralLinkCache: string | null = null;
+  private get locationDisplayLabel(): string | null {
+    if (this.selectedLocation) return this.selectedLocation;
+    if (this.selectedLocationId) {
+      const match = this.locations.find(loc => (loc as any).id === this.selectedLocationId || loc.commune === this.selectedLocationId);
+      if (match) {
+        return match.commune ? `${match.commune}, ${match.region}` : match.region;
+      }
+    }
+    return null;
+  }
+  private selectedLocationLabel: string | null = null;
+  private selectedLocationLabel: string | null = null;
+  private get selectedLocationLabel(): string | null {
+    if (this.selectedLocation) return this.selectedLocation;
+    if (this.selectedLocationId) {
+      const match = this.locations.find(loc => loc.commune === this.selectedLocationId || loc.region === this.selectedLocationId);
+      if (match) {
+        return match ? `${match.commune}, ${match.region}` : this.selectedLocationId;
+      }
+    }
+    return null;
+  }
 
   ngOnInit() {
     console.log('[EXPLORAR] ngOnInit iniciado');
