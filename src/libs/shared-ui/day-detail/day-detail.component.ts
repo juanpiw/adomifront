@@ -18,6 +18,8 @@ export interface DayAppointment {
   closureDueAt?: string | null;
   closureProviderAction?: 'none' | 'code_entered' | 'no_show' | 'issue';
   closureClientAction?: 'none' | 'ok' | 'no_show' | 'issue';
+  cancelledBy?: 'client' | 'provider' | 'system' | null;
+  cancellationReason?: string | null;
 }
 
 @Component({

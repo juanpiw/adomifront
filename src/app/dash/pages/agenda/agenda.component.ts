@@ -14,6 +14,10 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
+import { of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-d-agenda',
@@ -445,18 +449,32 @@ export class DashAgendaComponent implements OnInit {
     if (!this.selectedPaidAppointment) return;
     this.verifying = true;
     this.verificationError = '';
-    this.appointments.verifyCompletion(this.selectedPaidAppointment.id, code).subscribe({
+    const appointmentId = this.selectedPaidAppointment.id;
+    const isCash = String(this.selectedPaidAppointment.payment_method || '').toLowerCase() === 'cash';
+
+    const verify$ = isCash
+      ? this.appointments.verifyCashCode(appointmentId, code).pipe(
+          switchMap(cashResp => {
+            if (!cashResp?.success) {
+              return of({ success: false, error: cashResp?.error || 'No se pudo registrar el pago en efectivo.' });
+            }
+            return this.appointments.verifyCompletion(appointmentId, code);
+          }),
+          catchError(err => of({ success: false, error: err?.error?.error || 'Error al registrar el pago en efectivo.' }))
+        )
+      : this.appointments.verifyCompletion(appointmentId, code).pipe(
+          catchError(err => of({ success: false, error: err?.error?.error || 'Error al verificar.' }))
+        );
+
+    verify$.subscribe({
       next: (resp: any) => {
         this.verifying = false;
         if (resp?.success) {
-          // Quitar de la lista local y cerrar modal
           this.paidAwaitingAppointments = this.paidAwaitingAppointments.filter(p => p.id !== this.selectedPaidAppointment!.id);
           const idx = this.dashboardMetrics.findIndex(m => m.label === 'Citas por Pagar (esperan código)');
           if (idx >= 0) this.dashboardMetrics[idx] = { ...this.dashboardMetrics[idx], value: this.paidAwaitingAppointments.length };
-          // Actualizar métricas y listados de efectivo (resumen y tabla)
           this.loadCashSummary();
           this.loadCashCommissions(this.cashTableFilter);
-          // Refrescar métricas de ingresos (para actualizar "Citas pagadas en efectivo")
           this.refreshEarnings();
           if (this.selectedDate) {
             const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
@@ -624,7 +642,7 @@ export class DashAgendaComponent implements OnInit {
       this.dayAppointments[idx] = { ...this.dayAppointments[idx], status: 'cancelled' as any };
     }
 
-    this.appointments.updateStatus(id, 'cancelled' as any).subscribe({
+    this.appointments.updateStatus(id, 'cancelled' as any, { reason: 'Cancelado por proveedor desde agenda' }).subscribe({
       next: (resp) => {
         if (resp?.success && (resp as any).appointment) {
           this.onRealtimeUpsert((resp as any).appointment);
@@ -692,6 +710,22 @@ export class DashAgendaComponent implements OnInit {
       
       // 🔔 Recalcular contador de citas programadas
       this.updateScheduledCount();
+    }
+    if (a.status === 'cancelled') {
+      try {
+        this.notifications.setUserProfile('provider');
+        const cancelledBy = (a as any)?.cancelled_by === 'client' ? 'cliente' : ((a as any)?.cancelled_by === 'provider' ? 'ti' : 'el sistema');
+        const reason = (a as any)?.cancellation_reason ? ` Motivo: ${(a as any).cancellation_reason}` : '';
+        this.notifications.createNotification({
+          type: 'appointment',
+          profile: 'provider',
+          title: 'Cita cancelada',
+          message: `La cita #${a.id} fue cancelada por ${cancelledBy}.${reason}`,
+          priority: 'high',
+          actions: ['view'],
+          metadata: { appointmentId: String(a.id), status: 'cancelled' }
+        });
+      } catch {}
     }
     
     // Si el día seleccionado coincide, refrescar listado del día
@@ -776,7 +810,9 @@ export class DashAgendaComponent implements OnInit {
       closureState: ((a as any).closure_state || 'none') as any,
       closureDueAt: (a as any).closure_due_at || null,
       closureProviderAction: ((a as any).closure_provider_action || 'none') as any,
-      closureClientAction: ((a as any).closure_client_action || 'none') as any
+      closureClientAction: ((a as any).closure_client_action || 'none') as any,
+      cancelledBy: ((a as any).cancelled_by || null) as any,
+      cancellationReason: (a as any).cancellation_reason || null
     };
   }
 

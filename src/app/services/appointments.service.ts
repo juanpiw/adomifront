@@ -56,13 +56,24 @@ export class AppointmentsService {
   }
 
   // Update status only
-  updateStatus(id: number, status: 'scheduled'|'confirmed'|'completed'|'cancelled'):
-    Observable<{ success: boolean; appointment: AppointmentDto }>{
+  updateStatus(
+    id: number,
+    status: 'scheduled'|'confirmed'|'completed'|'cancelled',
+    options?: { reason?: string }
+  ): Observable<{ success: boolean; appointment: AppointmentDto }>{
+    const payload: any = { status };
+    if (options?.reason) {
+      payload.reason = options.reason;
+    }
     return this.http.patch<{ success: boolean; appointment: AppointmentDto }>(
       `${this.api}/appointments/${id}/status`,
-      { status },
+      payload,
       { headers: this.headers() }
     );
+  }
+
+  cancelAppointment(id: number, reason?: string): Observable<{ success: boolean; appointment: AppointmentDto }>{
+    return this.updateStatus(id, 'cancelled', { reason });
   }
 
   // Create appointment
@@ -169,6 +180,22 @@ export class AppointmentsService {
     }>(
       `${this.api}/appointments/${appointmentId}/verify-completion`,
       { verification_code: code },
+      { headers: this.headers() }
+    );
+  }
+
+  verifyCashCode(appointmentId: number, code: string): Observable<{
+    success: boolean;
+    payment_id?: number;
+    error?: string;
+  }> {
+    return this.http.post<{
+      success: boolean;
+      payment_id?: number;
+      error?: string;
+    }>(
+      `${this.api}/appointments/${appointmentId}/cash/verify-code`,
+      { code },
       { headers: this.headers() }
     );
   }

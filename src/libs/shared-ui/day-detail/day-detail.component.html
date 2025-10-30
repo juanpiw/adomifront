@@ -53,6 +53,10 @@
           <p *ngIf="appointment.notes" class="day-detail__appointment-notes">
             {{ appointment.notes }}
           </p>
+          <div *ngIf="appointment.status === 'cancelled'" class="day-detail__cancelled-message">
+            Cancelada {{ appointment.cancelledBy === 'client' ? 'por el cliente' : (appointment.cancelledBy === 'provider' ? 'por ti' : 'automáticamente') }}
+            <span *ngIf="appointment.cancellationReason"> • {{ appointment.cancellationReason }}</span>
+          </div>
           <div *ngIf="appointment.paymentMethod==='cash'" class="day-detail__payment-chip">Pago en efectivo</div>
           <div *ngIf="appointment.status === 'confirmed'" class="day-detail__appointment-status" 
                [style.background-color]="getStatusColor('confirmed')"
@@ -80,10 +84,9 @@
             </p>
           </div>
 
-          <div class="day-detail__appointment-actions">
+          <div class="day-detail__appointment-actions" *ngIf="appointment.status !== 'cancelled'">
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
             <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>
-            
           </div>
         </div>
       </div>

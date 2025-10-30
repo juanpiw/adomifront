@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReservasTabsComponent } from '../../../../libs/shared-ui/reservas/reservas-tabs.component';
 import { ProximaCitaCardComponent, ProximaCitaData } from '../../../../libs/shared-ui/reservas/proxima-cita-card.component';
@@ -21,7 +22,7 @@ import { FavoritesService } from '../../../services/favorites.service';
 @Component({ 
   selector:'app-c-reservas', 
   standalone:true, 
-  imports:[CommonModule, ReservasTabsComponent, ProximaCitaCardComponent, PendienteCardComponent, ReservaPasadaCardComponent, CanceladaClienteCardComponent, CanceladaProfesionalCardComponent, ReviewModalComponent, ProfileRequiredModalComponent],
+  imports:[CommonModule, FormsModule, ReservasTabsComponent, ProximaCitaCardComponent, PendienteCardComponent, ReservaPasadaCardComponent, CanceladaClienteCardComponent, CanceladaProfesionalCardComponent, ReviewModalComponent, ProfileRequiredModalComponent],
   template:`
   <!-- Modal de Perfil Requerido -->
   <app-profile-required-modal 
@@ -46,6 +47,7 @@ import { FavoritesService } from '../../../services/favorites.service';
           (pagar)="onPagar($event)"
           (pedirDevolucion)="onRefund($event)"
           (contactar)="onContactar(p.appointmentId)"
+          (cancelar)="openCancelModal($event)"
           style="margin-bottom:12px;">
         </ui-proxima-cita-card>
       </ng-container>
@@ -137,6 +139,30 @@ import { FavoritesService } from '../../../services/favorites.service';
       </button>
     </div>
   </div>
+
+  <!-- Modal cancelar cita -->
+  <div *ngIf="showCancelModal" class="cancel-modal__backdrop" (click)="closeCancelModal()"></div>
+  <div *ngIf="showCancelModal" class="cancel-modal__container">
+    <div class="cancel-modal__header">
+      <h4>Cancelar cita</h4>
+      <button class="cancel-modal__close" (click)="closeCancelModal()">✕</button>
+    </div>
+    <div class="cancel-modal__body">
+      <p class="cancel-modal__warning">¿Seguro que deseas cancelar esta cita? Una vez cancelada el horario quedará disponible nuevamente.</p>
+      <label class="cancel-modal__label">Escribe <strong>CANCELAR</strong> para confirmar</label>
+      <input [(ngModel)]="cancelModalConfirm" class="cancel-modal__input" placeholder="CANCELAR" autocomplete="off" />
+      <label class="cancel-modal__label" style="margin-top:12px;">Motivo (opcional)</label>
+      <textarea [(ngModel)]="cancelModalReason" class="cancel-modal__textarea" rows="3" placeholder="Cuéntale al profesional el motivo"></textarea>
+      <div *ngIf="cancelModalError" class="cancel-modal__error">{{ cancelModalError }}</div>
+    </div>
+    <div class="cancel-modal__actions">
+      <button class="cancel-modal__btn" (click)="closeCancelModal()" [disabled]="cancelModalLoading">Mantener cita</button>
+      <button class="cancel-modal__btn cancel-modal__btn--danger" (click)="confirmCancel()" [disabled]="cancelModalLoading">
+        <span *ngIf="!cancelModalLoading">Cancelar cita</span>
+        <span *ngIf="cancelModalLoading">Cancelando...</span>
+      </button>
+    </div>
+  </div>
   `,
   styles:[`
     .reservas-page{padding:24px}
@@ -158,6 +184,19 @@ import { FavoritesService } from '../../../services/favorites.service';
     .pay-modal__cash-limit-content{flex:1}
     .pay-modal__cash-limit-title{font-weight:700;color:#92400e;margin-bottom:4px}
     .pay-modal__cash-limit-text{color:#b45309;font-size:14px;line-height:1.4}
+    .cancel-modal__backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:92}
+    .cancel-modal__container{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:420px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(15,23,42,.25);z-index:93;overflow:hidden;display:flex;flex-direction:column}
+    .cancel-modal__header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+    .cancel-modal__close{background:transparent;border:none;font-size:18px;cursor:pointer;color:#64748b}
+    .cancel-modal__body{padding:16px;display:flex;flex-direction:column;gap:10px}
+    .cancel-modal__warning{margin:0;color:#0f172a;font-weight:600;font-size:14px}
+    .cancel-modal__label{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em}
+    .cancel-modal__input{padding:10px;border:1px solid #cbd5f5;border-radius:8px;font-weight:700;text-transform:uppercase}
+    .cancel-modal__textarea{padding:10px;border:1px solid #e2e8f0;border-radius:8px;resize:vertical;min-height:90px}
+    .cancel-modal__error{color:#b91c1c;font-weight:600;font-size:12px}
+    .cancel-modal__actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #e2e8f0;background:#f8fafc}
+    .cancel-modal__btn{padding:8px 12px;border-radius:8px;border:1px solid #cbd5f5;background:#fff;color:#1f2937;font-weight:700;cursor:pointer}
+    .cancel-modal__btn--danger{background:#ef4444;border-color:#ef4444;color:#fff}
   `]
 })
 export class ClientReservasComponent implements OnInit {
@@ -213,6 +252,14 @@ export class ClientReservasComponent implements OnInit {
   cashCap = 150000;
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   payModalLoading = false;
+
+  // Cancel modal state
+  showCancelModal = false;
+  cancelModalAppointmentId: number | null = null;
+  cancelModalConfirm = '';
+  cancelModalReason = '';
+  cancelModalError: string | null = null;
+  cancelModalLoading = false;
 
   get cashCapCurrency(): string {
     return this.clpFormatter.format(this.cashCap);
@@ -383,14 +430,23 @@ export class ClientReservasComponent implements OnInit {
           estado: past[1].status === 'confirmed' ? 'Confirmada' : 'Por confirmar'
         } : null;
 
-        // Canceladas (placeholder: todas como canceladas por proveedor)
-        this.canceladasProfesionalList = cancelled.map(c => ({
-          avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
-          titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
-          fecha: this.formatDate(c.date),
-          pillText: 'Cancelada por proveedor'
-        }));
-        this.canceladasClienteList = [];
+        this.canceladasClienteList = cancelled
+          .filter(c => String((c as any).cancelled_by || 'client') === 'client')
+          .map(c => ({
+            avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
+            titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
+            fecha: this.formatDate(c.date),
+            estadoPill: (c as any).cancellation_reason ? `Motivo: ${(c as any).cancellation_reason}` : undefined
+          }));
+
+        this.canceladasProfesionalList = cancelled
+          .filter(c => String((c as any).cancelled_by || 'provider') !== 'client')
+          .map(c => ({
+            avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
+            titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
+            fecha: this.formatDate(c.date),
+            pillText: (c as any).cancellation_reason ? `Motivo: ${(c as any).cancellation_reason}` : 'Cancelada por el profesional'
+          }));
 
         // Pagadas/Realizadas: incluir completadas o pagadas
         const isPaidStatus = (s: any) => ['paid','succeeded','completed'].includes(String(s || ''));
@@ -510,6 +566,25 @@ export class ClientReservasComponent implements OnInit {
     this.payModalApptId = null;
     this.payModalLoading = false;
   }
+
+  openCancelModal(appointmentId: number | undefined | null) {
+    if (!appointmentId) {
+      return;
+    }
+    this.cancelModalAppointmentId = Number(appointmentId);
+    this.cancelModalConfirm = '';
+    this.cancelModalReason = '';
+    this.cancelModalError = null;
+    this.cancelModalLoading = false;
+    this.showCancelModal = true;
+  }
+
+  closeCancelModal() {
+    this.showCancelModal = false;
+    this.cancelModalAppointmentId = null;
+    this.cancelModalLoading = false;
+    this.cancelModalError = null;
+  }
   
   isCurrentAppointmentOverCashLimit(): boolean {
     if (!this.payModalApptId) return false;
@@ -555,6 +630,44 @@ export class ClientReservasComponent implements OnInit {
       error: (err) => {
         this.payModalLoading = false;
         console.error('[RESERVAS] Error creando transacción TBK', err);
+      }
+    });
+  }
+  confirmCancel(){
+    if (!this.cancelModalAppointmentId || this.cancelModalLoading) {
+      return;
+    }
+    if (this.cancelModalConfirm.trim().toLowerCase() !== 'cancelar') {
+      this.cancelModalError = 'Debes escribir CANCELAR para confirmar.';
+      return;
+    }
+    this.cancelModalLoading = true;
+    this.cancelModalError = null;
+    const reason = this.cancelModalReason?.trim() || undefined;
+    const appointmentId = this.cancelModalAppointmentId;
+    this.appointments.cancelAppointment(appointmentId, reason).subscribe({
+      next: (resp) => {
+        this.cancelModalLoading = false;
+        if (resp?.success) {
+          this.notifications.setUserProfile('client');
+          this.notifications.createNotification({
+            type: 'appointment',
+            profile: 'client',
+            title: 'Cita cancelada',
+            message: 'Tu cita se canceló correctamente.',
+            priority: 'high',
+            actions: ['view'],
+            metadata: { appointmentId: String(appointmentId) }
+          });
+          this.closeCancelModal();
+          this.loadAppointments();
+        } else {
+          this.cancelModalError = 'No pudimos cancelar la cita. Intenta nuevamente.';
+        }
+      },
+      error: (err) => {
+        this.cancelModalLoading = false;
+        this.cancelModalError = err?.error?.error || 'No pudimos cancelar la cita. Intenta nuevamente.';
       }
     });
   }
