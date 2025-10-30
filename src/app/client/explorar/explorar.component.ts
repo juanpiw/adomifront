@@ -512,11 +512,9 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.searchError = '';
     this.searchTermInvalidReason = '';
-    this.validatedTerm = null;
 
     const price = this.getPriceRange(this.selectedPriceRange);
     const baseFilters: SearchFilters = {
-      search: this.selectedService,
       location: this.selectedLocationId,
       price_min: price.min === null ? undefined : price.min,
       price_max: price.max === null ? undefined : price.max,
@@ -525,58 +523,116 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     };
 
     const hasDateTime = !!(this.selectedDateTime && (this.selectedDateTime.value || this.selectedDateTime.type));
+    const termForValidation = (this.selectedService || this.searchTerm || '').trim();
 
-    const sub$ = hasDateTime
-      ? this.searchService.searchAvailableProviders({
-          date: this.getDateISO(this.selectedDateTime),
-          start: this.getStartTime(this.selectedDateTime),
-          end: this.getEndTime(this.selectedDateTime),
-          location: this.selectedLocationId || '',
-          category: this.selectedService || '',
-          limit: 20,
-          offset: 0,
-          is_now: this.isNowFilter(this.selectedDateTime)
-        })
-      : (this.searchService.searchAll(baseFilters) as any);
-
-    (sub$ as any).subscribe({
-      next: (results: any) => {
-        if (hasDateTime) {
-          console.log('[EXPLORAR] ✅ Filtros aplicados (disponibilidad):', { providers: results.data.length });
-          this.filteredProviders = results.data;
-          this.filteredServices = [];
-        } else {
-          console.log('[EXPLORAR] ✅ Filtros aplicados:', {
-            providers: results.providers.data.length,
-            services: results.services.data.length
-          });
-          // Anotar precio mínimo si viene lista de servicios en el payload
-          this.filteredProviders = results.providers.data.map((p: any) => {
-            let minPrice: number | undefined = undefined;
-            if (Array.isArray(p.services) && p.services.length > 0) {
-              try {
-                const prices = p.services.map((s: any) => Number(s.price)).filter((n: number) => Number.isFinite(n));
-                if (prices.length > 0) minPrice = Math.min(...prices);
-              } catch {}
-            }
-            return { ...p, min_price: minPrice };
-          });
-          this.filteredServices = results.services.data;
-        }
-
-        // Update map markers based on filtered results
-        this.generateMapMarkers();
-        this.generateProfessionalCards();
-        this.generateMapCardMarkers();
-
-        this.loading = false;
-      },
-      error: (error: any) => {
-        console.error('[EXPLORAR] ❌ Error aplicando filtros:', error);
-        this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
-        this.loading = false;
+    const runSearch = (sanitizedTerm?: string) => {
+      const searchTerm = sanitizedTerm || (termForValidation || '');
+      const filters: SearchFilters = { ...baseFilters };
+      if (searchTerm) {
+        filters.search = searchTerm;
       }
-    });
+
+      const request$ = hasDateTime
+        ? this.searchService.searchAvailableProviders({
+            date: this.getDateISO(this.selectedDateTime),
+            start: this.getStartTime(this.selectedDateTime),
+            end: this.getEndTime(this.selectedDateTime),
+            location: this.selectedLocationId || '',
+            category: searchTerm,
+            limit: 20,
+            offset: 0,
+            is_now: this.isNowFilter(this.selectedDateTime)
+          })
+        : (this.searchService.searchAll(filters) as any);
+
+      (request$ as any).subscribe({
+        next: (results: any) => {
+          if (hasDateTime) {
+            console.log('[EXPLORAR] ✅ Filtros aplicados (disponibilidad):', { providers: results.data.length });
+            this.filteredProviders = results.data;
+            this.filteredServices = [];
+            this.providers = [...this.filteredProviders];
+            this.services = [];
+          } else {
+            console.log('[EXPLORAR] ✅ Filtros aplicados:', {
+              providers: results.providers.data.length,
+              services: results.services.data.length
+            });
+            this.providers = results.providers.data;
+            this.services = results.services.data;
+            this.filteredProviders = this.providers.map((p: any) => {
+              let minPrice: number | undefined = undefined;
+              if (Array.isArray(p.services) && p.services.length > 0) {
+                try {
+                  const prices = p.services.map((s: any) => Number(s.price)).filter((n: number) => Number.isFinite(n));
+                  if (prices.length > 0) minPrice = Math.min(...prices);
+                } catch {}
+              }
+              return { ...p, min_price: minPrice };
+            });
+            this.filteredServices = this.services;
+          }
+
+          this.generateMapMarkers();
+          this.generateProfessionalCards();
+          this.generateMapCardMarkers();
+
+          this.loading = false;
+          console.log('[EXPLORAR] 🔍 Estado post búsqueda avanzada', {
+            searchInput: this.searchTerm,
+            sanitizedTerm: sanitizedTerm || null,
+            filteredProviders: this.filteredProviders.length,
+            filteredServices: this.filteredServices.length,
+            searchTermInvalidReason: this.searchTermInvalidReason || null
+          });
+        },
+        error: (error: any) => {
+          console.error('[EXPLORAR] ❌ Error aplicando filtros:', error);
+          this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
+          this.loading = false;
+        }
+      });
+    };
+
+    if (termForValidation) {
+      this.searchService.validateSearchTerm(termForValidation).subscribe({
+        next: (validation) => {
+          if (!validation.ok) {
+            this.validatedTerm = null;
+            this.searchTermInvalidReason = (validation.reason as any) || 'too_short';
+            this.filteredProviders = [];
+            this.filteredServices = [];
+            this.mapMarkers = [];
+            this.mapCardMarkers = [];
+            this.professionalCards = [];
+            this.highlightedProfessional = null;
+            this.loading = false;
+            console.warn('[EXPLORAR] ⚠️ Término inválido (avanzado)', {
+              original: termForValidation,
+              reason: this.searchTermInvalidReason
+            });
+            return;
+          }
+
+          this.validatedTerm = {
+            sanitized: validation.sanitized,
+            normalized: validation.normalized
+          };
+          this.searchTermInvalidReason = '';
+          runSearch(validation.sanitized);
+        },
+        error: (error) => {
+          console.error('[EXPLORAR] ❌ Error validando término (avanzado):', error);
+          this.searchError = 'No pudimos validar tu búsqueda. Intenta nuevamente.';
+          this.loading = false;
+        }
+      });
+      return;
+    }
+
+    this.validatedTerm = null;
+    this.searchTermInvalidReason = '';
+    runSearch();
   }
 
   // Helper único para convertir el rango de precio del UI a min/max
