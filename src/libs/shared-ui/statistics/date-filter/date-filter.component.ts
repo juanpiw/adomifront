@@ -50,7 +50,7 @@ export class DateFilterComponent implements OnInit {
       startDate: startDate.toISOString().split('T')[0],
       endDate: now.toISOString().split('T')[0]
     };
-    this.periodLabel = this.computeLabel(this.range.startDate, this.range.endDate);
+    this.periodLabel = this.computeLabel(this.range.startDate, this.range.endDate ?? this.range.startDate);
   }
 
   onApplyFilter() {

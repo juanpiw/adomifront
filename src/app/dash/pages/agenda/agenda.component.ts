@@ -146,6 +146,21 @@ export class DashAgendaComponent implements OnInit {
   cashSummaryLoading = false;
   cashLoading = false;
   cashTableFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
+  cashSummary: {
+    total_due: number;
+    overdue_due: number;
+    pending_count: number;
+    overdue_count: number;
+    paid_count: number;
+    last_debt: {
+      id: number;
+      commission_amount: number;
+      currency: string;
+      status: string | null;
+      due_date: string | null;
+      created_at: string | null;
+    } | null;
+  } | null = null;
 
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
