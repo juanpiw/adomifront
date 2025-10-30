@@ -2,7 +2,9 @@
 <div class="services-chart metric-card">
   <h3>Servicios Más Populares</h3>
   <div class="chart-container">
-    <canvas id="servicesChart" class="h-80"></canvas>
+    <div *ngIf="loading" class="chart-placeholder">Cargando datos...</div>
+    <div *ngIf="!loading && (!services || !services.length)" class="chart-placeholder">Aún no hay servicios con reservas completadas.</div>
+    <canvas *ngIf="!loading && services?.length" #servicesCanvas class="h-80"></canvas>
   </div>
 </div>
 

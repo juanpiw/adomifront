@@ -1,50 +1,60 @@
 <div class="kpi-cards">
-  
-  <!-- KPI 1: Ingresos Totales -->
   <div class="kpi-card metric-card">
-    <p class="kpi-label">Ingresos Totales (6M)</p>
-    <p class="kpi-value text-indigo-600">$3.150.000</p>
-    <p class="kpi-trend text-green-500">
-      <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-      </svg>
-      +15% Vs Periodo Anterior
+    <p class="kpi-label">Ingresos Totales ({{ rangeLabel || 'Periodo actual' }})</p>
+    <p class="kpi-value text-indigo-600">
+      <ng-container *ngIf="!loading && summary; else incomePlaceholder">
+        {{ formatCurrency(summary.totalIncome) }}
+      </ng-container>
+    </p>
+    <p class="kpi-trend text-slate-500">
+      Basado en pagos completados
     </p>
   </div>
-  
-  <!-- KPI 2: Citas Realizadas -->
+
   <div class="kpi-card metric-card">
     <p class="kpi-label">Citas Realizadas</p>
-    <p class="kpi-value text-teal-600">128</p>
-    <p class="kpi-trend text-red-500">
-      <svg class="w-4 h-4 mr-1 inline transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-      </svg>
-      -3% Vs Periodo Anterior
+    <p class="kpi-value text-teal-600">
+      <ng-container *ngIf="!loading && summary; else appointmentsPlaceholder">
+        {{ summary.completedAppointments | number:'1.0-0' }}
+      </ng-container>
+    </p>
+    <p class="kpi-trend text-slate-500">
+      Servicios completados en el rango seleccionado
     </p>
   </div>
 
-  <!-- KPI 3: Valoración Promedio -->
   <div class="kpi-card metric-card">
     <p class="kpi-label">Valoración Promedio</p>
-    <p class="kpi-value text-yellow-500">4.8</p>
-    <p class="kpi-trend text-green-500">
+    <p class="kpi-value text-yellow-500">
+      <ng-container *ngIf="!loading && summary && summary.reviewsCount > 0; else ratingPlaceholder">
+        {{ summary.averageRating | number:'1.1-2' }}
+      </ng-container>
+    </p>
+    <p class="kpi-trend text-green-500" *ngIf="summary && summary.reviewsCount > 0; else ratingMeta">
       ⭐⭐⭐⭐⭐
-      (Basado en 110 Reseñas)
+      ({{ summary.reviewsCount }} reseñas)
     </p>
   </div>
 
-  <!-- KPI 4: Clientes Recurrentes -->
   <div class="kpi-card metric-card">
     <p class="kpi-label">Clientes Recurrentes</p>
-    <p class="kpi-value text-purple-600">65%</p>
+    <p class="kpi-value text-purple-600">
+      <ng-container *ngIf="!loading && summary && summary.totalClients > 0; else recurringPlaceholder">
+        {{ formatPercent(summary.recurringRate) }}
+      </ng-container>
+    </p>
     <p class="kpi-trend text-green-500">
-      <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-      </svg>
       Meta: 70%
     </p>
   </div>
 </div>
+
+<ng-template #incomePlaceholder>—</ng-template>
+<ng-template #appointmentsPlaceholder>—</ng-template>
+<ng-template #ratingPlaceholder>—</ng-template>
+<ng-template #ratingMeta>
+  <span class="kpi-trend text-slate-400">Sin reseñas recientes</span>
+</ng-template>
+<ng-template #recurringPlaceholder>—</ng-template>
 
 

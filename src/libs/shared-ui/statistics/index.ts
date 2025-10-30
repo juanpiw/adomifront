@@ -9,13 +9,9 @@ export interface KpiItem {
 export interface ReviewItem {
   clientName: string;
   rating: number; // 1..5
-  comment: string;
-  date: string; // ISO date
-}
-
-export interface ChartSeries {
-  label: string;
-  data: number[];
+  comment?: string | null;
+  date?: string;
+  serviceName?: string | null;
 }
 
 // Components

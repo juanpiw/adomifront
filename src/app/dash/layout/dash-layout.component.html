@@ -80,6 +80,7 @@
   <main class="content">
     <app-topbar 
       [config]="topbarConfig"
+      [cashNotice]="cashNotice"
       (hamburgerClick)="isCollapsed = !isCollapsed"
       (helpClick)="onHelpClick($event)"
       (notificationClick)="onNotificationClick()"

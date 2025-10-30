@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/services/auth.service';
 
@@ -9,6 +10,7 @@ export class PaymentsService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private base = environment.apiBaseUrl;
+  private cashSummarySubject = new BehaviorSubject<any | null>(null);
 
   private headers(): HttpHeaders {
     const token = this.auth.getAccessToken();
@@ -16,6 +18,23 @@ export class PaymentsService {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     });
+  }
+
+  get cashSummary$(): Observable<any | null> {
+    return this.cashSummarySubject.asObservable();
+  }
+
+  refreshCashSummary(): Observable<{ success: boolean; summary: any }> {
+    return this.http.get<{ success: boolean; summary: any }>(
+      `${this.base}/provider/cash/summary`,
+      { headers: this.headers() }
+    ).pipe(
+      tap((resp) => {
+        if (resp?.success) {
+          this.cashSummarySubject.next(resp.summary || null);
+        }
+      })
+    );
   }
 
   createCheckoutSession(appointmentId: number): Observable<{ success: boolean; url: string }>{

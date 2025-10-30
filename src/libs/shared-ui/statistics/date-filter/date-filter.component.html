@@ -1,5 +1,5 @@
 <div class="date-filter">
-  <h2>Datos: Últimos 6 Meses</h2>
+  <h2>Datos: {{ periodLabel }}</h2>
   <div class="filter-controls">
     <select class="date-select" (change)="onPeriodChange($any($event.target).value)">
       <option value="6-months">Últimos 6 Meses</option>

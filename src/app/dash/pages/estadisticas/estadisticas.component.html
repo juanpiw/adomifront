@@ -6,16 +6,32 @@
     (rangeChange)="onDateRangeChange($event)">
   </ui-date-filter>
   
-  <ui-kpi-cards></ui-kpi-cards>
+  <div *ngIf="error" class="analytics-error">{{ error }}</div>
+  
+  <ui-kpi-cards 
+    [summary]="summary"
+    [rangeLabel]="rangeLabel"
+    [loading]="loading">
+  </ui-kpi-cards>
   
   <!-- Gráficos en grid -->
   <div class="charts-grid">
-    <ui-revenue-chart></ui-revenue-chart>
-    <ui-services-chart></ui-services-chart>
+    <ui-revenue-chart 
+      [series]="timeseries"
+      [group]="timeseriesGroup"
+      [loading]="loading">
+    </ui-revenue-chart>
+    <ui-services-chart 
+      [services]="services"
+      [loading]="loading">
+    </ui-services-chart>
   </div>
   
   <!-- Tabla de reseñas -->
-  <ui-reviews-table></ui-reviews-table>
+  <ui-reviews-table 
+    [reviews]="reviews"
+    [loading]="loading">
+  </ui-reviews-table>
 </div>
 
 

@@ -13,6 +13,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-d-agenda',
@@ -152,6 +153,10 @@ export class DashAgendaComponent implements OnInit {
   private notifications = inject(NotificationService);
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl;
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  private updatingFromQuery = false;
 
   private currentProviderId: number | null = null;
 
@@ -161,6 +166,15 @@ export class DashAgendaComponent implements OnInit {
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
   ngOnInit() {
+    this.route.queryParamMap.subscribe((params) => {
+      const viewParam = (params.get('view') || '').toLowerCase();
+      if (['dashboard', 'calendar', 'cash', 'config'].includes(viewParam)) {
+        this.updatingFromQuery = true;
+        this.setView(viewParam as 'dashboard' | 'calendar' | 'cash' | 'config');
+        this.updatingFromQuery = false;
+      }
+    });
+
     this.loadDashboardData();
     this.refreshEarnings();
     this.loadPaidAwaiting();
@@ -255,16 +269,25 @@ export class DashAgendaComponent implements OnInit {
 
   private loadCashSummary() {
     this.cashSummaryLoading = true;
-    this.http.get<any>(`${this.baseUrl}/provider/cash/summary`, { headers: this.headers() }).subscribe({
+    this.payments.refreshCashSummary().subscribe({
       next: (res) => {
         if (res?.success && res.summary) {
           this.cashTotal = Number(res.summary.total_due || 0);
           this.cashOverdueTotal = Number(res.summary.overdue_due || 0);
-          // Actualiza tarjeta "Deuda a la aplicación"
+          this.cashSummary = {
+            total_due: this.cashTotal,
+            overdue_due: this.cashOverdueTotal,
+            pending_count: Number(res.summary.pending_count || 0),
+            overdue_count: Number(res.summary.overdue_count || 0),
+            paid_count: Number(res.summary.paid_count || 0),
+            last_debt: res.summary.last_debt || null
+          };
           const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
           if (debtIdx >= 0) this.dashboardMetrics[debtIdx] = { ...this.dashboardMetrics[debtIdx], value: `$${this.cashTotal.toLocaleString('es-CL')}` } as any;
           const cashIdx = this.dashboardMetrics.findIndex(m => m.label === 'Citas pagadas en efectivo');
           if (cashIdx >= 0) this.dashboardMetrics[cashIdx] = { ...this.dashboardMetrics[cashIdx], value: this.cashTotal > 0 ? 1 : 0 } as any;
+        } else {
+          this.cashSummary = null;
         }
       },
       error: () => { this.cashSummaryLoading = false; },
@@ -872,7 +895,15 @@ export class DashAgendaComponent implements OnInit {
 
   // Navegación
   setView(view: 'dashboard' | 'calendar' | 'cash' | 'config') {
+    if (this.currentView === view) return;
     this.currentView = view;
+    if (!this.updatingFromQuery) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { view },
+        queryParamsHandling: 'merge'
+      }).catch(() => {});
+    }
     if (view === 'calendar' && this.selectedDate) {
       this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
     }

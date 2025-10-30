@@ -12,9 +12,15 @@
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="loading">
+          <td colspan="4" class="placeholder">Cargando reseñas...</td>
+        </tr>
+        <tr *ngIf="!loading && (!reviews || !reviews.length)">
+          <td colspan="4" class="placeholder">Aún no hay reseñas en este período.</td>
+        </tr>
         <tr *ngFor="let review of reviews">
           <td class="client-name">{{ review.clientName }}</td>
-          <td class="service-name">{{ review.serviceName }}</td>
+          <td class="service-name">{{ review.serviceName || '—' }}</td>
           <td class="rating">
             <span class="rating-value">{{ review.rating }}</span>
             <div class="stars">
@@ -22,7 +28,7 @@
                     [class]="'star star-' + star">⭐</span>
             </div>
           </td>
-          <td class="comment">{{ review.comment }}</td>
+          <td class="comment">{{ review.comment || 'Sin comentarios adicionales.' }}</td>
         </tr>
       </tbody>
     </table>

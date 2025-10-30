@@ -16,6 +16,7 @@ import { AppointmentsService, AppointmentDto } from '../../services/appointments
 import { NotificationService } from '../../../libs/shared-ui/notifications/services/notification.service';
 import { NotificationsService } from '../../services/notifications.service';
 import { AdminPaymentsService } from '../pages/admin-pagos/admin-payments.service';
+import { PaymentsService } from '../../services/payments.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -35,6 +36,7 @@ export class DashLayoutComponent implements OnInit {
   pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
   hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
   adminPendingCount: number = 0;
+  cashNotice: { amount: number; currency: string; dueDateLabel?: string; status?: string } | null = null;
   
   get isAdmin(): boolean {
     try {
@@ -64,11 +66,33 @@ export class DashLayoutComponent implements OnInit {
   private notifications = inject(NotificationService);
   private pushNotifications = inject(NotificationsService);
   private adminPayments = inject(AdminPaymentsService);
+  private payments = inject(PaymentsService);
 
   ngOnInit() {
     this.loadPlanInfo();
     this.loadProviderProfile();
     this.initializeNotifications();
+
+    const user = this.sessionService.getUser();
+    if (user && user.role === 'provider') {
+      this.payments.cashSummary$.subscribe((summary) => {
+        if (summary && summary.last_debt && ['pending', 'overdue'].includes(summary.last_debt.status)) {
+          const amount = Number(summary.last_debt.commission_amount || 0);
+          if (amount > 0) {
+            this.cashNotice = {
+              amount,
+              currency: summary.last_debt.currency || 'CLP',
+              dueDateLabel: summary.last_debt.due_date ? this.formatDueDateLabel(summary.last_debt.due_date) : undefined,
+              status: summary.last_debt.status
+            };
+            return;
+          }
+        }
+        this.cashNotice = null;
+      });
+
+      this.payments.refreshCashSummary().subscribe({ error: () => {} });
+    }
 
     // Inicializar estado online desde localStorage (fallback: true)
     try {
@@ -364,6 +388,16 @@ export class DashLayoutComponent implements OnInit {
       return date.toLocaleDateString('es-CL', options);
     } catch {
       return dateString;
+    }
+  }
+
+  private formatDueDateLabel(due: string): string {
+    try {
+      const date = new Date(due);
+      const formatter = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long' });
+      return formatter.format(date);
+    } catch {
+      return due;
     }
   }
 

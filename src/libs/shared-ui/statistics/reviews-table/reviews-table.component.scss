@@ -96,6 +96,12 @@
             text-overflow: ellipsis;
             white-space: nowrap;
           }
+
+          &.placeholder {
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
+          }
         }
       }
     }

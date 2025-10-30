@@ -29,6 +29,22 @@
   </div>
 </div>
 
+<div *ngIf="cashNotice" class="topbar-banner">
+  <div class="topbar-banner__icon">
+    <ui-icon name="alert-triangle"></ui-icon>
+  </div>
+  <div class="topbar-banner__content">
+    <span class="topbar-banner__title">Ingresa la comisión de tu último cobro en efectivo</span>
+    <span class="topbar-banner__subtitle">
+      Monto pendiente: ${{ cashNotice?.amount | number:'1.0-0' }}
+      <span *ngIf="cashNotice?.dueDateLabel"> • Vence el {{ cashNotice?.dueDateLabel }}</span>
+    </span>
+  </div>
+  <button type="button" class="topbar-banner__action" (click)="onCashNoticeClick()">
+    Ir a Pagos en Efectivo
+  </button>
+</div>
+
 <!-- Modal de Búsqueda Global -->
 <ui-global-search-modal
   [isOpen]="isSearchModalOpen"

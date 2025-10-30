@@ -37,6 +37,7 @@ export class TopbarComponent implements OnInit {
     helpContext: 'general',
     userProfile: 'client'
   };
+  @Input() cashNotice: { amount: number; currency?: string; dueDateLabel?: string; status?: string } | null = null;
 
   @Output() helpClick = new EventEmitter<string>();
   @Output() hamburgerClick = new EventEmitter<void>();
@@ -91,5 +92,9 @@ export class TopbarComponent implements OnInit {
     if (suggestion.link) {
       this.router.navigateByUrl(suggestion.link);
     }
+  }
+
+  onCashNoticeClick(): void {
+    this.router.navigate(['/dash/agenda'], { queryParams: { view: 'cash' } });
   }
 }

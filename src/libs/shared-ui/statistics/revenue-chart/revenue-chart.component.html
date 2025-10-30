@@ -2,7 +2,9 @@
 <div class="revenue-chart metric-card lg:col-span-2">
   <h3>Evolución de Ingresos y Citas</h3>
   <div class="chart-container">
-    <canvas id="revenueChart" class="h-80"></canvas>
+    <div *ngIf="loading" class="chart-placeholder">Cargando datos...</div>
+    <div *ngIf="!loading && (!series || !series.length)" class="chart-placeholder">Aún no hay datos en este rango.</div>
+    <canvas *ngIf="!loading && series?.length" #revenueCanvas class="h-80"></canvas>
   </div>
 </div>
 

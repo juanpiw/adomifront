@@ -16,6 +16,19 @@
     canvas {
       height: 100%;
     }
+
+    .chart-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      background: #f8fafc;
+      color: #64748b;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 0 12px;
+    }
   }
 }
 
