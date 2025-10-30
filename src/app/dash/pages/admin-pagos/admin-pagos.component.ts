@@ -41,6 +41,20 @@ export class AdminPagosComponent implements OnInit {
   cashSummaryLoading = false;
   cashLoading = false;
   cashFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
+  founderGenerating = false;
+  founderSending = false;
+  founderCode: string | null = null;
+  founderPromoInfo: { id?: number | null; code?: string; expires_at?: string | null; duration_months?: number | null; max_redemptions?: number | null } | null = null;
+  founderSuccess: string | null = null;
+  founderErrorMsg: string | null = null;
+  founderRecipientEmail = '';
+  founderRecipientName = '';
+  founderCustomMessage = '';
+  founderDurationMonths: number | null = null;
+  founderExpiryMonths: number | null = 6;
+  founderNotes: string = '';
+  founderEmailStatus: 'idle' | 'sent' | 'error' = 'idle';
+  founderEmailErrorDetail: string | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -143,6 +157,134 @@ export class AdminPagosComponent implements OnInit {
   refreshAdminCash() {
     this.loadAdminCashSummary();
     this.loadAdminCashCommissions(this.cashFilter);
+  }
+
+  private resetFounderMessages() {
+    this.founderSuccess = null;
+    this.founderErrorMsg = null;
+    this.founderEmailStatus = 'idle';
+    this.founderEmailErrorDetail = null;
+  }
+
+  resetFounderForm() {
+    this.founderCode = null;
+    this.founderPromoInfo = null;
+    this.founderRecipientEmail = '';
+    this.founderRecipientName = '';
+    this.founderCustomMessage = '';
+    this.founderDurationMonths = null;
+    this.founderExpiryMonths = 6;
+    this.founderNotes = '';
+    this.resetFounderMessages();
+  }
+
+  generateFounderCode() {
+    this.resetFounderMessages();
+    if (!this.adminSecret) {
+      this.founderErrorMsg = 'Primero debes ingresar el ADMIN_PANEL_SECRET.';
+      return;
+    }
+
+    this.founderGenerating = true;
+    const token = this.session.getAccessToken();
+    const payload: any = {};
+
+    if (this.founderDurationMonths && this.founderDurationMonths > 0) {
+      payload.durationMonths = this.founderDurationMonths;
+    }
+    if (this.founderExpiryMonths && this.founderExpiryMonths > 0) {
+      payload.expiryMonths = this.founderExpiryMonths;
+    }
+    if (this.founderNotes && this.founderNotes.trim().length) {
+      payload.notes = this.founderNotes.trim();
+    }
+    if (this.founderRecipientEmail && this.founderRecipientEmail.trim().length) {
+      payload.recipientEmail = this.founderRecipientEmail.trim().toLowerCase();
+    }
+
+    this.adminApi.generateFounderCode(this.adminSecret, token, payload).subscribe({
+      next: (res) => {
+        this.founderGenerating = false;
+        if (res?.ok && res?.promo?.code) {
+          this.founderCode = res.promo.code;
+          this.founderPromoInfo = res.promo;
+          this.founderSuccess = 'Código Fundador generado correctamente.';
+          this.founderEmailStatus = 'idle';
+        } else {
+          this.founderErrorMsg = res?.error || 'No fue posible generar el código.';
+        }
+      },
+      error: (err) => {
+        this.founderGenerating = false;
+        this.founderErrorMsg = err?.error?.error || 'No fue posible generar el código.';
+      }
+    });
+  }
+
+  async copyFounderCode() {
+    if (!this.founderCode) return;
+    this.resetFounderMessages();
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(this.founderCode);
+        this.founderSuccess = 'Código copiado al portapapeles.';
+      } else {
+        this.founderErrorMsg = 'El portapapeles no está disponible.';
+      }
+    } catch (error) {
+      this.founderErrorMsg = 'No se pudo copiar el código.';
+    }
+  }
+
+  sendFounderCode() {
+    this.resetFounderMessages();
+    if (!this.founderCode) {
+      this.founderErrorMsg = 'Genera un código antes de enviar el correo.';
+      return;
+    }
+
+    const email = this.founderRecipientEmail?.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      this.founderErrorMsg = 'Ingresa un correo electrónico válido.';
+      return;
+    }
+
+    this.founderSending = true;
+    const token = this.session.getAccessToken();
+    const payload = {
+      code: this.founderCode,
+      recipientEmail: email,
+      recipientName: this.founderRecipientName?.trim() || null,
+      message: this.founderCustomMessage?.trim() || null
+    };
+
+    this.adminApi.sendFounderCode(this.adminSecret, token, payload).subscribe({
+      next: (res) => {
+        this.founderSending = false;
+        if (res?.ok) {
+          if (res.emailSent) {
+            this.founderSuccess = 'Correo enviado correctamente.';
+            this.founderEmailStatus = 'sent';
+            this.founderEmailErrorDetail = null;
+          } else {
+            this.founderEmailStatus = 'error';
+            this.founderEmailErrorDetail = res?.emailError || 'No fue posible enviar el correo. Verifica la configuración SMTP.';
+            this.founderErrorMsg = this.founderEmailErrorDetail;
+          }
+        } else {
+          this.founderEmailStatus = 'error';
+          this.founderEmailErrorDetail = res?.error || 'No fue posible enviar el correo.';
+          this.founderErrorMsg = this.founderEmailErrorDetail;
+        }
+      },
+      error: (err) => {
+        this.founderSending = false;
+        this.founderEmailStatus = 'error';
+        this.founderEmailErrorDetail = err?.error?.error || 'No fue posible enviar el correo.';
+        this.founderErrorMsg = this.founderEmailErrorDetail;
+      }
+    });
   }
 
   exportCsv() {

@@ -132,6 +132,85 @@
     <button class="btn-primary" (click)="setSecretAndLoad()">Acceder</button>
   </div>
 
+  <section *ngIf="adminSecret" class="founder-card">
+    <div class="founder-card__header">
+      <div>
+        <h3>Plan Fundador · Generador de códigos</h3>
+        <p>Emite un código exclusivo y envíalo por correo al profesional invitado.</p>
+      </div>
+      <button type="button" class="founder-card__reset" (click)="resetFounderForm()" *ngIf="founderCode">Limpiar</button>
+    </div>
+
+    <div class="founder-card__content">
+      <div class="founder-card__column">
+        <h4>1. Configura la promoción</h4>
+        <div class="founder-card__field">
+          <label>Duración promocional (meses)</label>
+          <input type="number" min="1" [(ngModel)]="founderDurationMonths" placeholder="Usar valor del plan" />
+        </div>
+        <div class="founder-card__field">
+          <label>Vigencia del código (meses)</label>
+          <input type="number" min="1" [(ngModel)]="founderExpiryMonths" placeholder="6" />
+        </div>
+        <div class="founder-card__field">
+          <label>Notas internas (opcional)</label>
+          <textarea rows="3" [(ngModel)]="founderNotes" placeholder="Contexto de la invitación, campaña, cupo, etc."></textarea>
+        </div>
+        <div class="founder-card__actions">
+          <button type="button" class="btn-primary" (click)="generateFounderCode()" [disabled]="founderGenerating">
+            {{ founderGenerating ? 'Generando…' : 'Generar código' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="founder-card__column" [class.founder-card__column--disabled]="!founderCode">
+        <h4>2. Comparte el código</h4>
+
+        <div class="founder-card__code" *ngIf="founderCode; else codePlaceholder">
+          <span>{{ founderCode }}</span>
+          <button type="button" (click)="copyFounderCode()">Copiar</button>
+        </div>
+        <ng-template #codePlaceholder>
+          <div class="founder-card__code founder-card__code--empty">Genera un código para continuar.</div>
+        </ng-template>
+
+        <div class="founder-card__field">
+          <label>Nombre de la persona</label>
+          <input type="text" [(ngModel)]="founderRecipientName" [disabled]="!founderCode" placeholder="Ej: Carla Pérez" />
+        </div>
+        <div class="founder-card__field">
+          <label>Correo electrónico</label>
+          <input type="email" [(ngModel)]="founderRecipientEmail" [disabled]="!founderCode" placeholder="fundador@correo.com" />
+        </div>
+        <div class="founder-card__field">
+          <label>Mensaje personal (opcional)</label>
+          <textarea rows="3" [(ngModel)]="founderCustomMessage" [disabled]="!founderCode" placeholder="Mensaje breve para acompañar la invitación."></textarea>
+        </div>
+        <div class="founder-card__actions">
+          <button type="button" class="btn-primary" (click)="sendFounderCode()" [disabled]="!founderCode || founderSending">
+            {{ founderSending ? 'Enviando…' : 'Enviar correo' }}
+          </button>
+        </div>
+
+        <div class="founder-card__meta" *ngIf="founderPromoInfo">
+          <p><strong>Duración:</strong> {{ founderPromoInfo?.duration_months || '—' }} meses · <strong>Cupos:</strong> {{ founderPromoInfo?.max_redemptions || 1 }}</p>
+          <p *ngIf="founderPromoInfo?.expires_at">
+            <strong>Vence el:</strong> {{ founderPromoInfo?.expires_at | date:'dd/MM/yyyy' }}
+          </p>
+          <p *ngIf="founderEmailStatus === 'sent'" class="founder-card__status founder-card__status--success">
+            Correo enviado a {{ founderRecipientEmail }}.
+          </p>
+          <p *ngIf="founderEmailStatus === 'error'" class="founder-card__status founder-card__status--error">
+            {{ founderEmailErrorDetail }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="founderSuccess" class="founder-card__message founder-card__message--success">{{ founderSuccess }}</div>
+    <div *ngIf="founderErrorMsg" class="founder-card__message founder-card__message--error">{{ founderErrorMsg }}</div>
+  </section>
+
   <div *ngIf="error" class="error-message">{{ error }}</div>
   <div *ngIf="loading">Cargando...</div>
 

@@ -54,6 +54,35 @@ export class AdminPaymentsService {
   decideRefund(secret: string, token: string | null, id: number, decision: 'approved'|'denied'|'cancelled', notes?: string) {
     return this.http.post<any>(`${this.baseUrl}/admin/refunds/${id}/decision`, { decision, notes }, { headers: this.headers(secret, token) });
   }
+
+  generateFounderCode(secret: string, token: string | null, payload: {
+    durationMonths?: number | null;
+    expiryMonths?: number | null;
+    expiresAt?: string | null;
+    maxRedemptions?: number | null;
+    notes?: string | null;
+    recipientEmail?: string | null;
+    code?: string | null;
+  }) {
+    const body = {
+      action: 'generate',
+      ...payload
+    };
+    return this.http.post<any>(`${this.baseUrl}/subscriptions/admin/founder-code`, body, { headers: this.headers(secret, token) });
+  }
+
+  sendFounderCode(secret: string, token: string | null, payload: {
+    code: string;
+    recipientEmail: string;
+    recipientName?: string | null;
+    message?: string | null;
+  }) {
+    const body = {
+      action: 'send',
+      ...payload
+    };
+    return this.http.post<any>(`${this.baseUrl}/subscriptions/admin/founder-code`, body, { headers: this.headers(secret, token) });
+  }
 }
 
 
