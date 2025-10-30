@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -12,13 +12,16 @@ import { ProfileRequiredModalComponent } from '../../../libs/shared-ui/profile-r
 import { ProfileValidationService } from '../../services/profile-validation.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { SearchService, SearchFilters, Provider, Service, Category, Location } from '../../services/search.service';
+import { NotificationService } from '../../../libs/shared-ui/notifications/services/notification.service';
+import { UiReferralInviteEmptyComponent } from '../../../libs/shared-ui/referrals/referral-invite-empty.component';
+import { finalize } from 'rxjs/operators';
 
 // Interfaces moved to search.service.ts
 
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent, ProfileRequiredModalComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent, ProfileRequiredModalComponent, UiReferralInviteEmptyComponent],
   template: `
     <!-- Modal de Perfil Requerido -->
     <app-profile-required-modal 
@@ -169,25 +172,60 @@ import { SearchService, SearchFilters, Provider, Service, Category, Location } f
       </section>
 
       <!-- No Results -->
-      <div *ngIf="!loading && filteredProviders.length === 0 && filteredServices.length === 0" class="no-results text-center py-12">
-        <ui-icon name="search" class="w-16 h-16 text-gray-400 mx-auto mb-4"></ui-icon>
-        <h3 class="text-xl font-bold text-gray-800 mb-2">No se encontraron resultados</h3>
-        <p class="text-gray-600 mb-6">Intenta ajustar tus filtros de búsqueda</p>
-        <button (click)="clearFilters()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
-          Limpiar Filtros
-        </button>
-      </div>
+      <ng-container *ngIf="!loading && filteredProviders.length === 0 && filteredServices.length === 0">
+        <ng-container *ngIf="searchTerm; else genericNoResults">
+          <div *ngIf="searchTermInvalidReason === 'offensive'" class="no-results invalid-term text-center py-10">
+            <ui-icon name="alert-triangle" class="w-12 h-12 text-amber-500 mx-auto mb-3"></ui-icon>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Este término no es válido</h3>
+            <p class="text-gray-600 mb-4">Por favor, intenta con otra palabra más adecuada.</p>
+            <button (click)="clearFilters()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
+              Limpiar búsqueda
+            </button>
+          </div>
+
+          <div *ngIf="searchTermInvalidReason === 'too_short'" class="no-results invalid-term text-center py-10">
+            <ui-icon name="type" class="w-12 h-12 text-indigo-500 mx-auto mb-3"></ui-icon>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Tu búsqueda es muy corta</h3>
+            <p class="text-gray-600">Ingresa al menos 2 caracteres para buscar un servicio.</p>
+          </div>
+
+          <ui-referral-invite-empty
+            *ngIf="!searchTermInvalidReason"
+            [searchTerm]="validatedTerm?.sanitized || searchTerm"
+            [locationLabel]="selectedLocation || null"
+            [shareDisabled]="referralLoadingChannel !== null"
+            [loadingChannel]="referralLoadingChannel"
+            [copySuccess]="referralCopySuccess"
+            [emailSuccess]="referralEmailSuccess"
+            (whatsapp)="onReferralShare('whatsapp')"
+            (copy)="onReferralShare('copy')"
+            (emailInvite)="onReferralEmail($event)">
+          </ui-referral-invite-empty>
+        </ng-container>
+
+        <ng-template #genericNoResults>
+          <div class="no-results text-center py-12">
+            <ui-icon name="search" class="w-16 h-16 text-gray-400 mx-auto mb-4"></ui-icon>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">No se encontraron resultados</h3>
+            <p class="text-gray-600 mb-6">Intenta ajustar tus filtros de búsqueda</p>
+            <button (click)="clearFilters()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
+              Limpiar Filtros
+            </button>
+          </div>
+        </ng-template>
+      </ng-container>
     </div>
   `,
   styleUrls: ['./explorar.component.scss']
 })
-export class ExplorarComponent implements OnInit {
+export class ExplorarComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private profileValidation = inject(ProfileValidationService);
   private auth = inject(AuthService);
   private searchService = inject(SearchService);
+  private notifications = inject(NotificationService);
 
   // User data
   user: any = null;
@@ -232,6 +270,13 @@ export class ExplorarComponent implements OnInit {
   // State
   loading: boolean = false;
   searchError: string = '';
+  validatedTerm: { sanitized: string; normalized: string } | null = null;
+  searchTermInvalidReason: '' | 'too_short' | 'offensive' = '';
+  referralLoadingChannel: 'email' | 'whatsapp' | 'copy' | null = null;
+  referralCopySuccess = false;
+  referralEmailSuccess = false;
+  private referralCopyTimeout: any;
+  private referralLinkCache: string | null = null;
 
   ngOnInit() {
     console.log('[EXPLORAR] ngOnInit iniciado');
@@ -259,6 +304,12 @@ export class ExplorarComponent implements OnInit {
       this.loadLocations();
       this.loadData(); // Cargar datos reales
       this.updateMapPanelTitle();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.referralCopyTimeout) {
+      clearTimeout(this.referralCopyTimeout);
     }
   }
 
@@ -336,6 +387,11 @@ export class ExplorarComponent implements OnInit {
     console.log('[EXPLORAR] Cargando datos reales...');
     this.loading = true;
     this.searchError = '';
+    this.searchTermInvalidReason = '';
+    this.validatedTerm = null;
+    this.referralLinkCache = null;
+    this.referralCopySuccess = false;
+    this.referralEmailSuccess = false;
 
     const filters: SearchFilters = {
       limit: 20,
@@ -455,6 +511,8 @@ export class ExplorarComponent implements OnInit {
     console.log('[EXPLORAR] Aplicando filtros avanzados...');
     this.loading = true;
     this.searchError = '';
+    this.searchTermInvalidReason = '';
+    this.validatedTerm = null;
 
     const price = this.getPriceRange(this.selectedPriceRange);
     const baseFilters: SearchFilters = {
@@ -600,46 +658,99 @@ export class ExplorarComponent implements OnInit {
     console.log('[EXPLORAR] Aplicando filtros básicos...');
     this.loading = true;
     this.searchError = '';
+    this.referralCopySuccess = false;
+    this.referralEmailSuccess = false;
+    if (this.referralCopyTimeout) {
+      clearTimeout(this.referralCopyTimeout);
+      this.referralCopyTimeout = null;
+    }
+    this.referralLinkCache = null;
 
-    const filters: SearchFilters = {
-      search: this.searchTerm,
+    const baseFilters: SearchFilters = {
+      search: '',
       category: this.selectedCategory,
       location: this.selectedLocation,
       limit: 20,
       offset: 0
     };
 
-    // Agregar filtros de precio si están definidos
     if (this.selectedPriceRange) {
       const priceRange = this.parsePriceRange(this.selectedPriceRange);
-      if (priceRange.min !== undefined) filters.price_min = priceRange.min;
-      if (priceRange.max !== undefined) filters.price_max = priceRange.max;
+      if (priceRange.min !== undefined) baseFilters.price_min = priceRange.min;
+      if (priceRange.max !== undefined) baseFilters.price_max = priceRange.max;
     }
 
-    this.searchService.searchAll(filters).subscribe({
-      next: (results) => {
-        console.log('[EXPLORAR] ✅ Filtros básicos aplicados:', {
-          providers: results.providers.data.length,
-          services: results.services.data.length
-        });
+    const performSearch = (filters: SearchFilters) => {
+      this.searchService.searchAll(filters).subscribe({
+        next: (results) => {
+          console.log('[EXPLORAR] ✅ Filtros básicos aplicados:', {
+            providers: results.providers.data.length,
+            services: results.services.data.length
+          });
 
-        this.filteredProviders = results.providers.data;
-        this.filteredServices = results.services.data;
+          this.providers = results.providers.data;
+          this.services = results.services.data;
+          this.filteredProviders = [...results.providers.data];
+          this.filteredServices = [...results.services.data];
 
-        // Update map markers based on filtered results
-        this.generateMapMarkers();
-        this.generateProfessionalCards();
-        this.generateMapCardMarkers();
+          this.generateMapMarkers();
+          this.generateProfessionalCards();
+          this.generateMapCardMarkers();
 
-        this.loading = false;
-        this.updateMapPanelTitle();
-      },
-      error: (error) => {
-        console.error('[EXPLORAR] ❌ Error aplicando filtros básicos:', error);
-        this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
-        this.loading = false;
-      }
-    });
+          this.loading = false;
+          this.updateMapPanelTitle();
+        },
+        error: (error) => {
+          console.error('[EXPLORAR] ❌ Error aplicando filtros básicos:', error);
+          this.searchError = 'Error al aplicar filtros. Intenta nuevamente.';
+          this.loading = false;
+        }
+      });
+    };
+
+    const term = (this.searchTerm || '').trim();
+    if (term) {
+      this.searchService.validateSearchTerm(term).subscribe({
+        next: (validation) => {
+          if (!validation.ok) {
+            this.validatedTerm = null;
+            this.searchTermInvalidReason = (validation.reason as any) || 'too_short';
+            if (this.searchTermInvalidReason === 'too_short') {
+              this.searchError = 'Ingresa al menos 2 caracteres para buscar.';
+            } else {
+              this.searchError = '';
+            }
+            this.filteredProviders = [];
+            this.filteredServices = [];
+            this.professionalCards = [];
+            this.mapCardMarkers = [];
+            this.mapMarkers = [];
+            this.highlightedProfessional = null;
+            this.loading = false;
+            this.updateMapPanelTitle();
+            return;
+          }
+
+          this.validatedTerm = {
+            sanitized: validation.sanitized,
+            normalized: validation.normalized
+          };
+          this.searchTermInvalidReason = '';
+          const filters = { ...baseFilters, search: validation.sanitized };
+          performSearch(filters);
+        },
+        error: (error) => {
+          console.error('[EXPLORAR] ❌ Error validando término de búsqueda:', error);
+          this.searchError = 'No pudimos validar tu búsqueda. Intenta nuevamente.';
+          this.loading = false;
+        }
+      });
+      return;
+    }
+
+    this.validatedTerm = null;
+    this.searchTermInvalidReason = '';
+    performSearch(baseFilters);
   }
 
   private parsePriceRange(range: string): { min?: number; max?: number } {
@@ -682,10 +793,175 @@ export class ExplorarComponent implements OnInit {
     this.selectedLocationId = '';
     this.selectedDateTime = null;
     this.searchError = '';
+    this.validatedTerm = null;
+    this.searchTermInvalidReason = '';
+    this.referralLinkCache = null;
+    this.referralCopySuccess = false;
+    this.referralEmailSuccess = false;
+    if (this.referralCopyTimeout) {
+      clearTimeout(this.referralCopyTimeout);
+      this.referralCopyTimeout = null;
+    }
+    this.referralLoadingChannel = null;
     
     // Recargar datos sin filtros
     this.loadData();
     this.updateMapPanelTitle();
+  }
+
+  onReferralShare(channel: 'whatsapp' | 'copy') {
+    if (!this.validatedTerm) {
+      this.pushNotification('Agrega un servicio para invitar', 'Busca un servicio específico y vuelve a intentarlo.');
+      return;
+    }
+
+    if (this.referralLoadingChannel) {
+      return;
+    }
+
+    this.referralLoadingChannel = channel;
+    this.referralCopySuccess = false;
+    this.referralEmailSuccess = false;
+
+    const payload = {
+      searchTerm: this.validatedTerm.sanitized,
+      channel,
+      source: 'explore-empty' as const,
+      locationLabel: this.selectedLocation || ''
+    };
+
+    this.searchService.sendReferralInvite(payload)
+      .pipe(finalize(() => {
+        this.referralLoadingChannel = null;
+      }))
+      .subscribe({
+        next: (resp) => {
+          const link = resp.referralLink || this.buildReferralLinkFallback(this.validatedTerm!.normalized, channel);
+          this.referralLinkCache = link;
+
+          if (channel === 'whatsapp') {
+            if (isPlatformBrowser(this.platformId)) {
+              const message = this.buildWhatsappMessage(link);
+              window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            }
+            this.pushNotification('Listo para compartir', 'Abre WhatsApp y envía la invitación.');
+          } else {
+            if (isPlatformBrowser(this.platformId) && typeof navigator !== 'undefined' && navigator.clipboard) {
+              navigator.clipboard.writeText(this.buildCopyMessage(link)).then(() => {
+                this.referralCopySuccess = true;
+                this.scheduleCopyReset();
+                this.pushNotification('Enlace copiado', 'Pega el mensaje en tu red favorita.');
+              }).catch(() => {
+                this.pushNotification('No se pudo copiar', `Comparte este enlace: ${link}`, 'high');
+              });
+            } else {
+              this.pushNotification('Comparte este enlace', link, 'medium');
+            }
+          }
+        },
+        error: () => {
+          this.pushNotification('No se pudo generar la invitación', 'Inténtalo nuevamente en unos minutos.', 'high');
+        }
+      });
+  }
+
+  onReferralEmail(email: string) {
+    if (!this.validatedTerm) {
+      this.pushNotification('Agrega un servicio para invitar', 'Busca un servicio específico y vuelve a intentarlo.');
+      return;
+    }
+
+    this.referralLoadingChannel = 'email';
+    this.referralEmailSuccess = false;
+    this.referralCopySuccess = false;
+    if (this.referralCopyTimeout) {
+      clearTimeout(this.referralCopyTimeout);
+      this.referralCopyTimeout = null;
+    }
+
+    this.searchService.sendReferralInvite({
+      searchTerm: this.validatedTerm.sanitized,
+      channel: 'email',
+      inviteeEmail: email,
+      source: 'explore-empty',
+      locationLabel: this.selectedLocation || ''
+    })
+    .pipe(finalize(() => {
+      this.referralLoadingChannel = null;
+    }))
+    .subscribe({
+      next: (resp) => {
+        if (resp.referralLink) {
+          this.referralLinkCache = resp.referralLink;
+        }
+        if (resp.emailSent) {
+          this.referralEmailSuccess = true;
+          this.pushNotification('Invitación enviada', 'Le avisaremos a tu contacto por correo.');
+        } else {
+          this.pushNotification('No se pudo enviar el correo', 'Comparte el enlace manualmente mientras configuramos el correo.', 'medium');
+        }
+      },
+      error: () => {
+        this.pushNotification('No pudimos enviar el correo', 'Inténtalo nuevamente más tarde.', 'high');
+      }
+    });
+  }
+
+  private buildWhatsappMessage(link: string): string {
+    const service = this.validatedTerm?.sanitized || this.searchTerm || 'este servicio';
+    const location = this.selectedLocation ? ` en ${this.selectedLocation}` : '';
+    return `Estoy buscando "${service}"${location} en AdomiApp y aún no tenemos profesionales. ¡Súmate y ofrece tus servicios aquí! ${link}`;
+  }
+
+  private buildCopyMessage(link: string): string {
+    return this.buildWhatsappMessage(link);
+  }
+
+  private buildReferralLinkFallback(normalizedTerm: string, channel: 'email' | 'whatsapp' | 'copy'): string {
+    const slug = normalizedTerm.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'servicio';
+    const base = this.publicAppUrl();
+    const params = new URLSearchParams({
+      ref: 'explore-empty',
+      term: slug,
+      utm_source: 'referral',
+      utm_medium: channel,
+      utm_campaign: 'explore-empty'
+    });
+    return `${base}/auth/register?${params.toString()}`;
+  }
+
+  private publicAppUrl(): string {
+    if (isPlatformBrowser(this.platformId)) {
+      return window.location.origin;
+    }
+    return 'https://adomiapp.com';
+  }
+
+  private scheduleCopyReset() {
+    if (this.referralCopyTimeout) {
+      clearTimeout(this.referralCopyTimeout);
+    }
+    this.referralCopyTimeout = setTimeout(() => {
+      this.referralCopySuccess = false;
+    }, 2500);
+  }
+
+  private pushNotification(title: string, message: string, priority: 'low' | 'medium' | 'high' = 'low') {
+    try {
+      if (typeof this.notifications.setUserProfile === 'function') {
+        this.notifications.setUserProfile('client');
+      }
+      this.notifications.createNotification({
+        type: 'system',
+        profile: 'client',
+        title,
+        message,
+        priority,
+        actions: []
+      });
+    } catch (error) {
+      console.warn('[EXPLORAR] No se pudo mostrar notificación:', error);
+    }
   }
 
   formatPrice(price: number): string {

@@ -525,6 +525,22 @@ h3 {
   }
 }
 
+.no-results.invalid-term {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+
+  p {
+    color: #9a3412;
+    margin-bottom: 1rem;
+  }
+
+  button {
+    margin-top: 0.5rem;
+  }
+}
+
 // Responsive design
 @media (min-width: 768px) {
   .grid {

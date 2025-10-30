@@ -250,4 +250,28 @@ export class SearchService {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
     });
   }
+
+  validateSearchTerm(term: string): Observable<{ ok: boolean; sanitized: string; normalized: string; reason?: string | null }> {
+    return this.http.post<{ ok: boolean; sanitized: string; normalized: string; reason?: string | null }>(
+      `${this.apiUrl}/client/search/validate-term`,
+      { term },
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}`
+        }
+      }
+    );
+  }
+
+  sendReferralInvite(payload: { searchTerm: string; channel: 'email' | 'whatsapp' | 'copy'; inviteeEmail?: string; source?: string; locationLabel?: string }): Observable<{ ok: boolean; referralLink?: string; emailSent?: boolean }> {
+    return this.http.post<{ ok: boolean; referralLink?: string; emailSent?: boolean }>(
+      `${this.apiUrl}/client/referrals/invite`,
+      payload,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}`
+        }
+      }
+    );
+  }
 }
