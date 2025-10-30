@@ -96,7 +96,6 @@
       </div>
       <div class="promo-meta" *ngIf="isPromoActive() && promoMeta">
         <span *ngIf="promoMeta.max_duration_months">Incluye {{ promoMeta.max_duration_months }} meses gratuitos.</span>
-        <span *ngIf="promoMeta.expires_at">Canje válido hasta {{ promoMeta.expires_at | date:'shortDate' }}.</span>
       </div>
     </div>
 

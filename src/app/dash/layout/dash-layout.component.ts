@@ -297,10 +297,25 @@ export class DashLayoutComponent implements OnInit {
           if (response.ok && response.currentPlan) {
             this.planInfo = response.currentPlan;
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
+
+            const isFounder = (response.currentPlan.name || '').toLowerCase().includes('fundador');
+            this.topbarConfig = {
+              ...this.topbarConfig,
+              planBadge: isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null
+            };
+          } else {
+            this.topbarConfig = {
+              ...this.topbarConfig,
+              planBadge: null
+            };
           }
         },
         error: (error) => {
           console.error('Error loading plan info:', error);
+          this.topbarConfig = {
+            ...this.topbarConfig,
+            planBadge: null
+          };
         }
       });
     }

@@ -17,6 +17,10 @@ export interface TopbarConfig {
   searchValue?: string;
   helpContext?: string; // Contexto de ayuda (ej: 'dashboard', 'explorar', 'perfil')
   userProfile?: UserProfile; // Perfil del usuario para notificaciones
+  planBadge?: {
+    label: string;
+    variant?: 'founder' | 'default';
+  } | null;
 }
 
 @Component({
@@ -35,7 +39,8 @@ export class TopbarComponent implements OnInit {
     searchPlaceholder: '¿Necesitas ayuda?',
     searchValue: '',
     helpContext: 'general',
-    userProfile: 'client'
+    userProfile: 'client',
+    planBadge: null
   };
   @Input() cashNotice: { amount: number; currency?: string; dueDateLabel?: string; status?: string } | null = null;
 

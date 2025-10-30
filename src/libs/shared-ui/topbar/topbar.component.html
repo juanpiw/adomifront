@@ -1,10 +1,19 @@
 <div class="topbar elevated" [class.topbar--hidden-mobile-conversaciones]="isConversacionesRoute">
-  <input 
-    *ngIf="config.showSearch"
-    class="search" 
-    [placeholder]="config.searchPlaceholder"
-    readonly
-    (click)="onHelpClick()" />
+  <div class="topbar__info">
+    <input 
+      *ngIf="config.showSearch"
+      class="search" 
+      [placeholder]="config.searchPlaceholder"
+      readonly
+      (click)="onHelpClick()" />
+
+    <span 
+      *ngIf="config.planBadge"
+      class="plan-badge"
+      [ngClass]="{'plan-badge--founder': config.planBadge?.variant === 'founder'}">
+      {{ config.planBadge?.label }}
+    </span>
+  </div>
   
   <div class="actions">
     <button 
