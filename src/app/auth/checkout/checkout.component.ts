@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StripeService, StripeError } from '../../services/stripe.service';
 import { AuthService } from '../services/auth.service';
@@ -242,12 +242,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     try {
       const token = this.authService.getAccessToken();
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+      const httpOptions = headers ? { headers } : {};
       const response: any = await firstValueFrom(
         this.http.post(`${environment.apiBaseUrl}/subscriptions/promo/apply`, {
           providerId,
           code: this.promoCode
-        }, { headers })
+        }, httpOptions)
       );
 
       if (!response?.ok) {
