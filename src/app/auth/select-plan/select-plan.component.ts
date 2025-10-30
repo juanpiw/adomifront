@@ -72,6 +72,7 @@ export class SelectPlanComponent implements OnInit {
   promoPlan: Plan | null = null;
   promoMeta: PromoValidationResponse['promo'] | null = null;
   promoActivating = false;
+  accountSwitchInProgress = false;
   founderFeatures: string[] = [
     '3 meses sin comisión de plataforma',
     'Prioridad en búsquedas locales',
@@ -146,6 +147,9 @@ export class SelectPlanComponent implements OnInit {
     this.trackFunnelEvent('view_plan', {
       billing: this.isAnnualBilling ? 'annual' : 'monthly'
     });
+
+    const currentUser = this.authService.getCurrentUser();
+    this.accountSwitchInProgress = !!(currentUser?.account_switch_in_progress || currentUser?.pending_role === 'provider');
   }
 
   loadPlans() {

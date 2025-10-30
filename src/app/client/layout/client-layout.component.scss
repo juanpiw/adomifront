@@ -331,6 +331,79 @@
   width: 100%;
 }
 
+.switch-account-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1300;
+  padding: 16px;
+}
+
+.switch-account-modal {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 20px;
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 32px;
+  box-shadow: 0 40px 80px rgba(15, 23, 42, 0.25);
+  color: #1e293b;
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 12px;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  ul {
+    margin: 0 0 16px 18px;
+    padding: 0;
+    color: #334155;
+    line-height: 1.6;
+  }
+}
+
+.switch-account-warning {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #312e81;
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.switch-account-alert {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.switch-account-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  button {
+    min-width: 120px;
+  }
+}
+
 .rail-toggle { 
   width: 44px; 
   height: 32px; 

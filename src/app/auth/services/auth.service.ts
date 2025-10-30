@@ -25,6 +25,11 @@ export interface AuthUser {
   name: string | null;
   active_plan_id?: number;
   profile_photo_url?: string | null;
+  pending_role?: 'client' | 'provider' | null;
+  account_switch_in_progress?: boolean;
+  account_switch_started_at?: string | null;
+  account_switched_at?: string | null;
+  account_switch_source?: string | null;
 }
 
 export interface AuthResponse {
@@ -188,6 +193,28 @@ export class AuthService {
     const user = this.authStateSubject.value;
     console.log('[AUTH] 👤 getCurrentUser llamado, usuario actual:', user);
     return user;
+  }
+
+  switchAccountToProvider(): Observable<{ ok: boolean }> {
+    return this.http.post<{ ok: boolean }>(`${this.baseUrl}/account/switch-to-provider`, {}, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      tap(() => {
+        const current = this.authStateSubject.value;
+        if (current) {
+          const updated: AuthUser = {
+            ...current,
+            pending_role: 'provider',
+            account_switch_in_progress: true,
+            account_switch_started_at: new Date().toISOString()
+          };
+          this.authStateSubject.next(updated);
+          if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+            localStorage.setItem('adomi_user', JSON.stringify(updated));
+          }
+        }
+      })
+    );
   }
 
   // Registro de usuario

@@ -49,6 +49,9 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   unreadTotal = 0;
   appointmentBadge = 0;
   private subs: Subscription[] = [];
+  switchModalVisible = false;
+  switchLoading = false;
+  switchError: string | null = null;
 
   ngOnInit() {
     // Initialize collapsed state based on screen size
@@ -168,26 +171,54 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   }
 
   switchToProvider(): void {
-    try {
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('providerOnboarding', '1');
+    this.switchError = null;
+    this.switchModalVisible = true;
+  }
+
+  closeSwitchModal(): void {
+    if (this.switchLoading) return;
+    this.switchModalVisible = false;
+  }
+
+  confirmSwitchToProvider(): void {
+    if (this.switchLoading) return;
+    this.switchError = null;
+    this.switchLoading = true;
+
+    this.auth.switchAccountToProvider().subscribe({
+      next: async () => {
+        try {
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('providerOnboarding', '1');
+          }
+          if (typeof localStorage !== 'undefined') {
+            const raw = localStorage.getItem('adomi_user');
+            if (raw && raw !== 'null' && raw !== 'undefined') {
+              try {
+                const u = JSON.parse(raw);
+                u.intendedRole = 'provider';
+                u.pending_role = 'provider';
+                u.mode = 'register';
+                localStorage.setItem('adomi_user', JSON.stringify(u));
+              } catch {}
+            }
+          }
+        } catch {}
+
+        // Refrescar usuario para reflejar pending_role
+        this.auth.getCurrentUserInfo().subscribe({ next: () => {}, error: () => {} });
+
+        this.switchLoading = false;
+        this.switchModalVisible = false;
+        this.router.navigateByUrl('/auth/select-plan');
+        this.onNav();
+      },
+      error: (err) => {
+        this.switchLoading = false;
+        const message = err?.error?.error || err?.message || 'No pudimos preparar el cambio de cuenta. Intenta nuevamente.';
+        this.switchError = message;
       }
-      // Refuerza intención en localStorage para reconstrucción de flujo
-      if (typeof localStorage !== 'undefined') {
-        const raw = localStorage.getItem('adomi_user');
-        if (raw && raw !== 'null' && raw !== 'undefined') {
-          try {
-            const u = JSON.parse(raw);
-            u.intendedRole = 'provider';
-            u.pending_role = 'provider';
-            u.mode = 'register';
-            localStorage.setItem('adomi_user', JSON.stringify(u));
-          } catch {}
-        }
-      }
-    } catch {}
-    this.router.navigateByUrl('/auth/select-plan');
-    this.onNav();
+    });
   }
 
   private loadClientData() {

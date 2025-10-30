@@ -93,3 +93,25 @@
     </div>
   </main>
 </div>
+
+<div class="switch-account-backdrop" *ngIf="switchModalVisible">
+  <div class="switch-account-modal">
+    <h3>¿Quieres cambiar tu cuenta a proveedor?</h3>
+    <p>Al continuar iniciarás el proceso para ofrecer servicios en Adomi. Ten en cuenta:</p>
+    <ul>
+      <li>Se cerrarán tus vistas de cliente y deberás completar el perfil profesional.</li>
+      <li>Necesitarás seleccionar un plan (puedes usar un código Fundador si tienes uno).</li>
+      <li>Tus reservas activas como cliente permanecerán, pero ya no podrás crear nuevas.</li>
+    </ul>
+    <p class="switch-account-warning">Este cambio es reversible solo desde soporte. Asegúrate antes de continuar.</p>
+
+    <div class="switch-account-alert" *ngIf="switchError">{{ switchError }}</div>
+
+    <div class="switch-account-actions">
+      <button type="button" class="btn-secondary" (click)="closeSwitchModal()" [disabled]="switchLoading">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="confirmSwitchToProvider()" [disabled]="switchLoading">
+        {{ switchLoading ? 'Preparando cambio...' : 'Continuar' }}
+      </button>
+    </div>
+  </div>
+</div>
