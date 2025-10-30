@@ -2,8 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../services/auth.service';
 
 interface Plan {
   id: number;
@@ -70,6 +71,7 @@ export class SelectPlanComponent implements OnInit {
   promoSuccess: string | null = null;
   promoPlan: Plan | null = null;
   promoMeta: PromoValidationResponse['promo'] | null = null;
+  promoActivating = false;
   founderFeatures: string[] = [
     '3 meses sin comisión de plataforma',
     'Prioridad en búsquedas locales',
@@ -83,6 +85,7 @@ export class SelectPlanComponent implements OnInit {
 
   private http = inject(HttpClient);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   ngOnInit() {
     console.log('[SELECT_PLAN] Init');
@@ -339,7 +342,7 @@ export class SelectPlanComponent implements OnInit {
           };
           this.promoMeta = response.promo;
           this.selectedPlan = this.promoPlan;
-          this.promoSuccess = response.promo.message || 'Código aplicado. ¡Bienvenido al plan Fundador!';
+          this.promoSuccess = 'Código validado. Activando Plan Fundador...';
           this.promoError = null;
           console.log('[SELECT_PLAN] Promo aplicada:', this.promoMeta, this.promoPlan);
           this.trackFunnelEvent('promo_validated', {
@@ -347,6 +350,7 @@ export class SelectPlanComponent implements OnInit {
             max_services: response.plan.max_services,
             max_bookings: response.plan.max_bookings
           });
+          this.activatePromoPlan();
         } else {
           this.promoError = response.error || 'No pudimos validar este código. Verifica e intenta nuevamente.';
           this.resetPromoState();
@@ -370,6 +374,7 @@ export class SelectPlanComponent implements OnInit {
     this.promoSuccess = null;
     this.promoMeta = null;
     this.promoPlan = null;
+    this.promoActivating = false;
     if (this.selectedPlan?.isPromo) {
       this.selectedPlan = null;
     }
@@ -381,8 +386,63 @@ export class SelectPlanComponent implements OnInit {
   private resetPromoState() {
     this.promoPlan = null;
     this.promoMeta = null;
+    this.promoActivating = false;
     if (this.selectedPlan?.isPromo) {
       this.selectedPlan = null;
     }
+  }
+
+  private activatePromoPlan() {
+    if (!this.promoPlan?.promoCode) {
+      console.warn('[SELECT_PLAN] No promoCode para activar plan');
+      return;
+    }
+
+    const token = this.authService.getAccessToken();
+    const currentUser = this.authService.getCurrentUser();
+    const providerId = currentUser?.id;
+
+    if (!token || !providerId) {
+      console.warn('[SELECT_PLAN] No token o providerId disponible, manteniendo flujo manual');
+      this.promoSuccess = 'Código aplicado. Inicia sesión nuevamente para activarlo.';
+      return;
+    }
+
+    this.promoActivating = true;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    this.http.post(`${environment.apiBaseUrl}/subscriptions/promo/apply`, {
+      providerId,
+      code: this.promoPlan.promoCode
+    }, { headers }).subscribe({
+      next: async (response: any) => {
+        if (response?.ok) {
+          this.promoSuccess = 'Plan Fundador activado. Te estamos llevando a tu panel...';
+          this.promoError = null;
+          try {
+            await this.authService.getCurrentUserInfo().toPromise();
+          } catch (err) {
+            console.warn('[SELECT_PLAN] No se pudo refrescar /auth/me tras aplicar promo', err);
+          }
+          setTimeout(() => {
+            this.router.navigateByUrl('/dash/home');
+          }, 600);
+        } else {
+          this.promoError = response?.error || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
+          this.promoSuccess = null;
+        }
+        this.promoActivating = false;
+      },
+      error: (error) => {
+        console.error('[SELECT_PLAN] Error activando promo inmediatamente:', error);
+        const message = error?.error?.error || error?.message || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
+        this.promoError = message;
+        this.promoSuccess = null;
+        this.promoActivating = false;
+      }
+    });
   }
 }

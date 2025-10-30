@@ -139,13 +139,14 @@
 
   <!-- Action buttons -->
   <div *ngIf="!loading && !error" class="actions">
-    <button class="btn-secondary" (click)="goBack()">Volver</button>
+    <button class="btn-secondary" (click)="goBack()" [disabled]="promoActivating">Volver</button>
     <button 
       class="btn-primary" 
+      *ngIf="!isPromoActive()"
       [disabled]="!selectedPlan"
       (click)="continueToPayment()"
     >
-      {{ isPromoActive() ? 'Continuar' : 'Continuar al Pago' }}
+      Continuar al Pago
     </button>
   </div>
 </div>
