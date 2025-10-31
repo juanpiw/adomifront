@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
@@ -23,6 +23,8 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
 import { AppointmentsService } from '../../../services/appointments.service';
 import { PaymentsService } from '../../../services/payments.service';
+import { TbkOnboardingService, TbkOnboardingState } from '../../../services/tbk-onboarding.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-d-home',
@@ -39,16 +41,20 @@ import { PaymentsService } from '../../../services/payments.service';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class DashHomeComponent implements OnInit {
+export class DashHomeComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private providerProfile = inject(ProviderProfileService);
   private appointmentsService = inject(AppointmentsService);
   private paymentsService = inject(PaymentsService);
+  private tbkOnboarding = inject(TbkOnboardingService);
   
   constructor(private router: Router) {}
   
   // Estado online/offline
   isOnline: boolean = true;
+  showTbkUrgentBanner = false;
+  tbkState: TbkOnboardingState | null = null;
+  private tbkStateSub?: Subscription;
 
   // Datos para el header
   headerData: HeaderData = {
@@ -61,6 +67,12 @@ export class DashHomeComponent implements OnInit {
     this.loadPendingRequests();
     this.loadNextAppointment();
     this.loadEarningsData();
+    this.initializeTbkBanner();
+  }
+
+  ngOnDestroy(): void {
+    this.tbkStateSub?.unsubscribe();
+    this.tbkStateSub = undefined;
   }
 
   private loadProviderName() {
@@ -348,6 +360,12 @@ export class DashHomeComponent implements OnInit {
     });
   }
 
+  goToTbkSetup(): void {
+    this.router.navigate(['/dash/ingresos'], {
+      queryParams: { section: 'tbk' }
+    });
+  }
+
   onAcceptClick(data: SolicitudData) {
     console.log('Aceptar solicitud:', data);
     // Los modales se manejan automáticamente en el componente
@@ -391,5 +409,18 @@ export class DashHomeComponent implements OnInit {
     this.isOnline = isOnline;
     console.log('Estado cambiado a:', isOnline ? 'Online' : 'Offline');
     // TODO: Implementar lógica para actualizar estado en el backend
+  }
+
+  private initializeTbkBanner(): void {
+    if (!this.tbkStateSub) {
+      this.tbkStateSub = this.tbkOnboarding.state$.subscribe((state) => {
+        this.tbkState = state;
+        this.showTbkUrgentBanner = state?.status === 'none';
+      });
+    }
+
+    void this.tbkOnboarding.refreshStatus().catch((error) => {
+      console.warn('[DASH_HOME] No se pudo refrescar el estado TBK:', error);
+    });
   }
 }

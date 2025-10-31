@@ -9,6 +9,61 @@
 
 }
 
+.tbk-alert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid #dc2626;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 12px 24px -12px rgba(220, 38, 38, 0.45);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #b91c1c;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #7f1d1d;
+  }
+
+  &__cta {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    border-radius: 9999px;
+    background: #dc2626;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: #b91c1c;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .dash-home {

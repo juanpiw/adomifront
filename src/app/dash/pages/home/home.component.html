@@ -12,6 +12,17 @@
 <div class="container-pro">
 
     <div class="container-pro-1">
+        <section *ngIf="showTbkUrgentBanner" class="tbk-alert" role="alert">
+          <div class="tbk-alert__content">
+            <h3 class="tbk-alert__title">Activa Webpay Mall para recibir pagos con tarjeta</h3>
+            <p class="tbk-alert__text">
+              Completa la configuración de Transbank para evitar bloqueos en tus reservas y asegúrate de que tus clientes puedan pagarte.
+            </p>
+          </div>
+          <button type="button" class="tbk-alert__cta" (click)="goToTbkSetup()">
+            Configurar ahora
+          </button>
+        </section>
         <!-- Dashboard Components -->
         <app-inicio-solicitudes 
         [data]="solicitudesData"

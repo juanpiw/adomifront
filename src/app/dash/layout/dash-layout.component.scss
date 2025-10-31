@@ -3,6 +3,88 @@
   radial-gradient(ellipse 80% 50% at 50% 120%, rgba(255,0,119,0.06), transparent);
 }
 .dash-layout.sidebar-collapsed { grid-template-columns: 72px 1fr; }
+.tbk-blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(8px);
+  }
+
+  &__modal {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+    margin: 1rem;
+    padding: 2.25rem 2rem;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #fef2f2 0%, #fff 70%);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    box-shadow: 0 30px 70px -25px rgba(248, 113, 113, 0.55);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__icon {
+    font-size: 2rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #991b1b;
+  }
+
+  &__message {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #7f1d1d;
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    border: none;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px -12px rgba(220, 38, 38, 0.5);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &__helper {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #b91c1c;
+  }
+}
 .sidebar { display:grid; grid-template-columns: 72px 240px; position: relative; z-index: 3; transition: grid-template-columns .25s ease; }
 .sidebar.collapsed { grid-template-columns: 72px 0px; }
 .rail { background: linear-gradient(180deg, #0b1220, #151c2f); color:#e5e7eb; padding:12px 8px; display:flex; flex-direction:column; gap:8px; align-items:center; border-right:1px solid rgba(255,255,255,0.08); }

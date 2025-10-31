@@ -24,6 +24,18 @@
 </div>
 
 <div class="dash-layout" [class.sidebar-collapsed]="isCollapsed">
+  <div class="tbk-blocker" *ngIf="tbkBlockingActive">
+    <div class="tbk-blocker__backdrop"></div>
+    <div class="tbk-blocker__modal">
+      <div class="tbk-blocker__icon">⚠️</div>
+      <h3 class="tbk-blocker__title">Activa tus pagos con Webpay Mall</h3>
+      <p class="tbk-blocker__message">
+        Para aceptar reservas pagadas necesitas crear tu comercio secundario en Transbank. Este paso es obligatorio para continuar operando en Adomi.
+      </p>
+      <button type="button" class="tbk-blocker__cta" (click)="onForceTbkSetup()">Ir a configurar ahora</button>
+      <p class="tbk-blocker__helper">Te enviaremos directamente a la sección de ingresos para completar el registro.</p>
+    </div>
+  </div>
   <aside class="sidebar" [class.collapsed]="isCollapsed">
     <div class="rail">
       <button class="rail-toggle" (click)="isCollapsed = !isCollapsed" title="Contraer/Expandir">

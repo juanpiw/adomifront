@@ -19,6 +19,7 @@ import { AdminPaymentsService } from '../pages/admin-pagos/admin-payments.servic
 import { PaymentsService } from '../../services/payments.service';
 import { Subscription } from 'rxjs';
 import { ProviderVerificationService, VerificationStatus } from '../../services/provider-verification.service';
+import { TbkOnboardingService, TbkOnboardingState } from '../../services/tbk-onboarding.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -73,16 +74,21 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private adminPayments = inject(AdminPaymentsService);
   private payments = inject(PaymentsService);
   private providerVerification = inject(ProviderVerificationService);
+  private tbkOnboarding = inject(TbkOnboardingService);
 
   private pushMessageSub?: Subscription;
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
   private topbarPlanBadge: TopbarConfig['planBadge'] = null;
   private topbarVerificationBadge: TopbarConfig['verificationBadge'] = null;
+  private tbkStateSub?: Subscription;
 
   verificationStatus: VerificationStatus = 'none';
   verificationRejectionReason: string | null = null;
   verificationBanner: { message: string; variant: 'info' | 'warning' | 'danger'; actionLabel?: string; actionLink?: string } | null = null;
   showVerificationPrompt = false;
+  tbkState: TbkOnboardingState | null = null;
+  tbkBlockingActive = false;
+  private currentUrl: string | null = null;
 
   ngOnInit() {
     try {
@@ -97,6 +103,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     this.loadProviderProfile();
     this.loadVerificationState();
     this.initializeNotifications();
+    this.initializeTbkOnboarding();
 
     const user = this.sessionService.getUser();
     if (user && user.role === 'provider') {
@@ -216,8 +223,14 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     }
 
     // Al navegar al chat o agenda, limpiar badges
+    this.currentUrl = this.router.url;
+    this.evaluateTbkBlocking();
+
     this.router.events.subscribe((ev: any) => {
       if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
+        this.currentUrl = ev.urlAfterRedirects;
+        this.evaluateTbkBlocking();
+
         if (ev.urlAfterRedirects.includes('/dash/mensajes')) {
           this.unreadTotal = 0;
         }
@@ -591,6 +604,35 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  private initializeTbkOnboarding(): void {
+    if (!this.tbkStateSub) {
+      this.tbkStateSub = this.tbkOnboarding.state$.subscribe((state) => {
+        this.tbkState = state;
+        this.evaluateTbkBlocking();
+      });
+    }
+
+    void this.tbkOnboarding.refreshStatus().catch((error) => {
+      console.warn('[DASH_LAYOUT] No se pudo refrescar el estado TBK:', error);
+    });
+  }
+
+  onForceTbkSetup(): void {
+    this.router.navigate(['/dash/ingresos'], {
+      queryParams: { section: 'tbk', onboarding: '1' }
+    });
+  }
+
+  private evaluateTbkBlocking(): void {
+    const shouldBlock = this.tbkOnboarding.requiresBlocking();
+    this.tbkBlockingActive = shouldBlock && !this.isOnTbkSetupRoute();
+  }
+
+  private isOnTbkSetupRoute(): boolean {
+    const url = this.currentUrl || this.router.url || '';
+    return url.includes('/dash/ingresos');
+  }
+
   ngOnDestroy(): void {
     this.pushMessageSub?.unsubscribe();
     this.pushMessageSub = undefined;
@@ -598,6 +640,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       clearInterval(this.unreadIntervalId);
       this.unreadIntervalId = null;
     }
+    this.tbkStateSub?.unsubscribe();
+    this.tbkStateSub = undefined;
   }
   
   private loadUnreadNotificationsCount(): void {

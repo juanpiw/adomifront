@@ -24,6 +24,7 @@ import { take } from 'rxjs/operators';
 import { firstValueFrom, Subscription, timer } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProviderIncomeGoalDto } from '../../../services/finances.service';
+import { TbkOnboardingService } from '../../../services/tbk-onboarding.service';
 
 type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
 
@@ -50,6 +51,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private providerProfile = inject(ProviderProfileService);
   private fb = inject(FormBuilder);
+  private tbkOnboarding = inject(TbkOnboardingService);
   activeTab = 'resumen';
   selectedTimeFilter = 'month';
   currentDateRange: { startDate: Date; endDate: Date } = {
@@ -449,6 +451,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       this.tbkRemote = tbk.remote || null;
       this.tbkLastUpdated = new Date();
       this.tbkSecondaryShops = this.buildSecondaryShops(tbk);
+      this.tbkOnboarding.updateStatus(this.tbkStatus, this.tbkSecondaryCode);
     } catch (error: any) {
       console.error('[DASH_INGRESOS] Error consultando estado TBK:', error);
       const detail = error?.error?.error || error?.error?.details || error?.message || 'Error consultando estado TBK';
@@ -456,6 +459,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       if (error?.status === 409) {
         this.showToast('Ya existe un comercio secundario registrado para este proveedor.');
       }
+      this.tbkOnboarding.updateStatus('none', null);
     } finally {
       if (manageLoading) {
         this.tbkActionLoading = false;
