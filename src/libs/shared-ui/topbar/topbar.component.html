@@ -8,10 +8,10 @@
       (click)="onHelpClick()" />
 
     <span 
-      *ngIf="config.planBadge"
+      *ngIf="config.planBadge as planBadge"
       class="plan-badge"
-      [ngClass]="{'plan-badge--founder': config.planBadge?.variant === 'founder'}">
-      {{ config.planBadge?.label }}
+      [ngClass]="{'plan-badge--founder': planBadge.variant === 'founder'}">
+      {{ planBadge.label }}
     </span>
 
     <ng-container *ngIf="config.verificationBadge as vb">
