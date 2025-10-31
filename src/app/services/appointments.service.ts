@@ -19,6 +19,12 @@ export interface AppointmentDto {
   payment_status?: 'pending'|'completed'|'failed'|'refunded'|'paid'|'succeeded';
   payment_method?: 'card'|'cash'|null;
   verification_code?: string | null;
+  client_location?: string | null;
+  client_location_label?: string | null;
+  client_address?: string | null;
+  client_commune?: string | null;
+  client_region?: string | null;
+  client_phone?: string | null;
 }
 
 export interface TimeSlotDto {
@@ -114,6 +120,14 @@ export class AppointmentsService {
     return this.http.put<{ success: boolean; appointment: AppointmentDto }>(
       `${this.api}/appointments/${id}`,
       patch,
+      { headers: this.headers() }
+    );
+  }
+
+  updateLocation(id: number, location: string | null): Observable<{ success: boolean; appointment: AppointmentDto }>{
+    return this.http.put<{ success: boolean; appointment: AppointmentDto }>(
+      `${this.api}/appointments/${id}/location`,
+      { location },
       { headers: this.headers() }
     );
   }

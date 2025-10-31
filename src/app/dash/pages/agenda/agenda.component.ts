@@ -227,7 +227,8 @@ export class DashAgendaComponent implements OnInit {
       try {
         const title = 'Nueva cita por confirmar';
         const who = (a as any).client_name ? ` de ${(a as any).client_name}` : '';
-        const msg = `Tienes una nueva cita${who} el ${a.date} a las ${a.start_time.slice(0,5)}`;
+        const locationLabel = ((a as any).client_location_label || (a as any).client_location) as string | undefined;
+        const msg = `Tienes una nueva cita${who} el ${a.date} a las ${a.start_time.slice(0,5)}` + (locationLabel ? ` • 📍 ${locationLabel}` : '');
         this.notifications.setUserProfile('provider');
         this.notifications.createNotification({
           type: 'appointment',
@@ -236,7 +237,7 @@ export class DashAgendaComponent implements OnInit {
           message: msg,
           priority: 'high',
           actions: ['view'],
-          metadata: { appointmentId: String(a.id), clientName: (a as any).client_name }
+          metadata: { appointmentId: String(a.id), clientName: (a as any).client_name, location: locationLabel || null }
         });
       } catch {}
     });
@@ -577,28 +578,72 @@ export class DashAgendaComponent implements OnInit {
   }
 
   onConfirmAppointment(appointmentId: number) {
-    // Optimistic UI: marcar como confirmada de inmediato
     const index = this.dayAppointments.findIndex(a => Number(a.id) === Number(appointmentId));
-    const prev = index >= 0 ? { ...this.dayAppointments[index] } : null;
-    if (index >= 0) {
-      this.dayAppointments[index] = { ...this.dayAppointments[index], status: 'confirmed' as any };
+    const appointment = index >= 0 ? this.dayAppointments[index] : null;
+
+    const performConfirmation = () => {
+      const prev = index >= 0 ? { ...this.dayAppointments[index] } : null;
+      if (index >= 0) {
+        this.dayAppointments[index] = { ...this.dayAppointments[index], status: 'confirmed' as any };
+      }
+
+      this.appointments.updateStatus(appointmentId, 'confirmed' as any).subscribe({
+        next: (resp) => {
+          if (resp?.success && (resp as any).appointment) {
+            this.onRealtimeUpsert((resp as any).appointment);
+          } else if (prev && index >= 0) {
+            this.dayAppointments[index] = prev;
+          }
+        },
+        error: (err) => {
+          console.error('Error confirmando cita', err);
+          if (prev && index >= 0) this.dayAppointments[index] = prev;
+        }
+      });
+    };
+
+    if (appointment) {
+      const hasLocation = Boolean((appointment.locationLabel || '').trim().length);
+      if (!hasLocation) {
+        const next = prompt('Antes de confirmar, ingresa la dirección donde realizarás esta cita:', appointment.clientAddress || '');
+        if (next === null) {
+          return;
+        }
+        const trimmed = next.trim();
+        if (!trimmed.length) {
+          alert('Debes ingresar una dirección para confirmar la cita.');
+          return;
+        }
+
+        this.appointments.updateLocation(appointmentId, trimmed).subscribe({
+          next: (resp) => {
+            if (!resp?.success || !(resp as any).appointment) {
+              alert('No se pudo actualizar la dirección de la cita.');
+              return;
+            }
+            const updated = (resp as any).appointment as AppointmentDto;
+            this.onRealtimeUpsert(updated);
+            if (index >= 0) {
+              this.dayAppointments[index] = {
+                ...this.dayAppointments[index],
+                locationLabel: (updated as any).client_location_label || (updated as any).client_location || trimmed,
+                clientAddress: (updated as any).client_address ?? null,
+                clientCommune: (updated as any).client_commune ?? null,
+                clientRegion: (updated as any).client_region ?? null
+              };
+            }
+            performConfirmation();
+          },
+          error: (err) => {
+            console.error('Error actualizando dirección antes de confirmar', err);
+            alert(err?.error?.error || 'No se pudo actualizar la dirección de la cita.');
+          }
+        });
+        return;
+      }
     }
 
-    this.appointments.updateStatus(appointmentId, 'confirmed' as any).subscribe({
-      next: (resp) => {
-        if (resp?.success && (resp as any).appointment) {
-          // Sincronizar con payload real del backend (también llegará por socket)
-          this.onRealtimeUpsert((resp as any).appointment);
-        } else if (prev && index >= 0) {
-          // Revertir si no fue exitoso
-          this.dayAppointments[index] = prev;
-        }
-      },
-      error: (err) => {
-        console.error('Error confirmando cita', err);
-        if (prev && index >= 0) this.dayAppointments[index] = prev;
-      }
-    });
+    performConfirmation();
   }
 
   onNewAppointmentForDay(date: Date) {
@@ -800,7 +845,7 @@ export class DashAgendaComponent implements OnInit {
       time: a.start_time.slice(0, 5),
       duration: this.diffMinutes(a.start_time, a.end_time),
       clientName: a.client_name || '',
-      clientPhone: '',
+      clientPhone: ((a as any).client_phone || '') as string,
       status: a.status as any,
       paymentStatus: (a.payment_status === 'completed' || a.payment_status === 'paid' || a.payment_status === 'succeeded') ? 'paid' : 'unpaid',
       type: 'appointment',
@@ -811,7 +856,11 @@ export class DashAgendaComponent implements OnInit {
       closureProviderAction: ((a as any).closure_provider_action || 'none') as any,
       closureClientAction: ((a as any).closure_client_action || 'none') as any,
       cancelledBy: ((a as any).cancelled_by || null) as any,
-      cancellationReason: (a as any).cancellation_reason || null
+      cancellationReason: (a as any).cancellation_reason || null,
+      locationLabel: ((a as any).client_location_label || (a as any).client_location || '') as string,
+      clientAddress: ((a as any).client_address ?? null) as string | null,
+      clientCommune: ((a as any).client_commune ?? null) as string | null,
+      clientRegion: ((a as any).client_region ?? null) as string | null
     };
   }
 
@@ -864,6 +913,49 @@ export class DashAgendaComponent implements OnInit {
       start_time: appointment.time,
       amount: 0,
       payment_method: appointment.paymentMethod || 'cash'
+    });
+  }
+
+  onUpdateAppointmentLocation(appointment: DayAppointment) {
+    const appointmentId = Number(appointment?.id);
+    if (!appointmentId) {
+      return;
+    }
+
+    const currentLocation = appointment.locationLabel || '';
+    const promptLabel = currentLocation
+      ? 'Confirma o actualiza la dirección donde realizarás esta cita:'
+      : 'Ingresa la dirección donde realizarás esta cita:';
+    const nextValue = prompt(promptLabel, currentLocation);
+    if (nextValue === null) {
+      return;
+    }
+
+    const trimmed = nextValue.trim();
+
+    this.appointments.updateLocation(appointmentId, trimmed.length ? trimmed : null).subscribe({
+      next: (resp) => {
+        if (!resp?.success || !(resp as any).appointment) {
+          alert('No se pudo actualizar la dirección de la cita.');
+          return;
+        }
+        const updated = (resp as any).appointment as AppointmentDto;
+        this.onRealtimeUpsert(updated);
+        const idx = this.dayAppointments.findIndex(a => Number(a.id) === appointmentId);
+        if (idx >= 0) {
+          this.dayAppointments[idx] = {
+            ...this.dayAppointments[idx],
+            locationLabel: (updated as any).client_location_label || (updated as any).client_location || (trimmed.length ? trimmed : ''),
+            clientAddress: (updated as any).client_address ?? null,
+            clientCommune: (updated as any).client_commune ?? null,
+            clientRegion: (updated as any).client_region ?? null
+          };
+        }
+      },
+      error: (err) => {
+        console.error('Error actualizando dirección de cita', err);
+        alert(err?.error?.error || 'No se pudo actualizar la dirección de la cita.');
+      }
     });
   }
 

@@ -44,6 +44,16 @@
         <div class="day-detail__appointment-content">
           <h4 class="day-detail__appointment-title">{{ appointment.title }}</h4>
           <p class="day-detail__appointment-client">{{ appointment.clientName }}</p>
+          <p *ngIf="appointment.locationLabel" class="day-detail__appointment-location">
+            <span class="day-detail__appointment-location-icon">📍</span>
+            <span class="day-detail__appointment-location-text">{{ appointment.locationLabel }}</span>
+            <button type="button" class="day-detail__location-edit" (click)="onEditLocation($event, appointment)">Cambiar dirección</button>
+          </p>
+          <p *ngIf="!appointment.locationLabel" class="day-detail__appointment-location day-detail__appointment-location--empty">
+            <span class="day-detail__appointment-location-icon">📍</span>
+            <span class="day-detail__appointment-location-text">Dirección no registrada</span>
+            <button type="button" class="day-detail__location-edit" (click)="onEditLocation($event, appointment)">Agregar dirección</button>
+          </p>
           <p *ngIf="appointment.clientPhone" class="day-detail__appointment-phone">
             📞 {{ appointment.clientPhone }}
           </p>

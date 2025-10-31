@@ -121,7 +121,8 @@
         (deleteAppointment)="onDeleteAppointment(+$any($event))"
         (cobrarEnEfectivo)="onCobrarEnEfectivo($event)"
         (closureAction)="onClosureAction($event)"
-        (verifyClosure)="onVerifyClosure($event)">
+        (verifyClosure)="onVerifyClosure($event)"
+        (updateLocation)="onUpdateAppointmentLocation($event)">
         <ng-template #appointmentActionsTemplate let-appointment="appointment">
           <button *ngIf="appointment.status === 'scheduled'"
                   class="day-detail__action-btn day-detail__action-btn--confirm"

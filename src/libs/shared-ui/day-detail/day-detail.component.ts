@@ -20,6 +20,10 @@ export interface DayAppointment {
   closureClientAction?: 'none' | 'ok' | 'no_show' | 'issue';
   cancelledBy?: 'client' | 'provider' | 'system' | null;
   cancellationReason?: string | null;
+  locationLabel?: string;
+  clientAddress?: string | null;
+  clientCommune?: string | null;
+  clientRegion?: string | null;
 }
 
 @Component({
@@ -44,6 +48,7 @@ export class DayDetailComponent {
   @Output() cobrarEnEfectivo = new EventEmitter<string>();
   @Output() closureAction = new EventEmitter<{ id: string; action: 'no_show'|'issue' }>();
   @Output() verifyClosure = new EventEmitter<string>();
+  @Output() updateLocation = new EventEmitter<DayAppointment>();
 
   isModalOpen: boolean = false;
 
@@ -114,6 +119,11 @@ export class DayDetailComponent {
   onVerifyClosure(event: Event, appointment: DayAppointment) {
     event.stopPropagation();
     this.verifyClosure.emit(appointment.id);
+  }
+
+  onEditLocation(event: Event, appointment: DayAppointment) {
+    event.stopPropagation();
+    this.updateLocation.emit(appointment);
   }
 
   onNewAppointment() {
