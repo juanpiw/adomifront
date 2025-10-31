@@ -27,7 +27,11 @@ export class NotificationService {
   public events$ = this.eventsSubject.asObservable();
 
   private currentProfile: UserProfile = 'client';
-  private notifications: Notification[] = [];
+  private notificationsByProfile: Record<UserProfile, Notification[]> = {
+    client: [],
+    provider: [],
+    admin: []
+  };
   private events: NotificationEvent[] = [];
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
@@ -86,6 +90,61 @@ export class NotificationService {
     this.configSubject.next(config);
   }
 
+  setNotifications(profile: UserProfile, notifications: Notification[]): void {
+    const enriched = notifications.map(n => this.enrichNotification(n));
+    const existingLocal = (this.notificationsByProfile[profile] || []).filter(n => !this.isBackendNotification(n));
+
+    const merged = [...enriched];
+    existingLocal.forEach(localNotification => {
+      if (this.isDuplicateOfBackend(localNotification, enriched)) {
+        return;
+      }
+      if (!merged.some(n => n.id === localNotification.id)) {
+        merged.push(localNotification);
+      }
+    });
+
+    this.setProfileNotifications(profile, merged);
+  }
+
+  enrichNotification(notification: Notification): Notification {
+    const defaults = this.getNotificationDefaults(notification.type);
+
+    const normalizeDate = (value?: Date | string): Date | undefined => {
+      if (!value) return undefined;
+      if (value instanceof Date) return value;
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? undefined : parsed;
+    };
+
+    const createdAt = normalizeDate(notification.createdAt) || new Date();
+    const updatedAt = normalizeDate(notification.updatedAt);
+    const readAt = normalizeDate(notification.readAt);
+
+    return {
+      ...defaults,
+      ...notification,
+      createdAt,
+      updatedAt,
+      readAt
+    };
+  }
+
+  private setProfileNotifications(profile: UserProfile, notifications: Notification[]): void {
+    const sorted = [...notifications].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    this.notificationsByProfile[profile] = sorted;
+    if (profile === this.currentProfile) {
+      this.notificationsSubject.next(this.getProfileNotifications());
+      this.updateUnreadCountValue(profile);
+    }
+  }
+
+  private updateUnreadCountValue(profile: UserProfile = this.currentProfile): void {
+    if (profile !== this.currentProfile) return;
+    const unreadCount = this.notificationsByProfile[profile].filter(n => n.status === 'unread').length;
+    this.unreadCountSubject.next(unreadCount);
+  }
+
   private getDefaultEnabledTypes(): NotificationType[] {
     const baseTypes: NotificationType[] = ['system', 'security'];
     
@@ -105,10 +164,8 @@ export class NotificationService {
   private initializeNotifications(): void { /* removido demo */ }
 
   private loadNotifications(): void {
-    // En una implementación real, esto cargaría desde una API
-    // Por ahora, filtramos las notificaciones por perfil
-    const profileNotifications = this.notifications.filter(n => n.profile === this.currentProfile);
-    this.notificationsSubject.next(profileNotifications);
+    this.notificationsSubject.next(this.getProfileNotifications());
+    this.updateUnreadCountValue();
   }
 
   // Crear nueva notificación
@@ -116,7 +173,7 @@ export class NotificationService {
     console.log('🔔 [NOTIFICATION_SERVICE] ==================== CREAR NOTIFICACIÓN ====================');
     console.log('🔔 [NOTIFICATION_SERVICE] Template:', template);
     
-    const notification: Notification = {
+    const notification = this.enrichNotification({
       id: this.generateId(),
       type: template.type,
       title: template.title,
@@ -129,18 +186,14 @@ export class NotificationService {
       actions: template.actions,
       metadata: template.metadata,
       ...this.getNotificationDefaults(template.type)
-    };
+    });
 
     console.log('🔔 [NOTIFICATION_SERVICE] Notificación creada:', notification);
 
-    this.notifications.push(notification);
-    this.notificationsSubject.next(this.getProfileNotifications());
-    
-    // ✅ Actualizar contador de no leídas
-    const unreadCount = this.getProfileNotifications().filter(n => n.status === 'unread').length;
-    this.unreadCountSubject.next(unreadCount);
-    console.log('🔔 [NOTIFICATION_SERVICE] ✅ Contador actualizado a:', unreadCount);
-    
+    const profile = notification.profile;
+    const existing = this.notificationsByProfile[profile] || [];
+    this.setProfileNotifications(profile, [notification, ...existing]);
+
     this.emitEvent('created', notification);
     
     return notification;
@@ -148,82 +201,97 @@ export class NotificationService {
 
   // Marcar como leída
   markAsRead(notificationId: string): void {
-    const notification = this.notifications.find(n => n.id === notificationId);
-    if (notification && notification.status === 'unread') {
-      notification.status = 'read';
-      notification.readAt = new Date();
-      notification.updatedAt = new Date();
-      
-      this.notificationsSubject.next(this.getProfileNotifications());
-      
-      // ✅ Actualizar contador de no leídas
-      const unreadCount = this.getProfileNotifications().filter(n => n.status === 'unread').length;
-      this.unreadCountSubject.next(unreadCount);
-      console.log('🔔 [NOTIFICATION_SERVICE] ✅ Notificación marcada como leída. Contador:', unreadCount);
-      
-      this.emitEvent('read', notification);
-    }
+    const profile = this.currentProfile;
+    const list = [...(this.notificationsByProfile[profile] || [])];
+    const index = list.findIndex(n => n.id === notificationId);
+    if (index === -1) return;
+
+    const target = list[index];
+    if (target.status !== 'unread') return;
+
+    const updated: Notification = {
+      ...target,
+      status: 'read',
+      readAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    list[index] = updated;
+    this.setProfileNotifications(profile, list);
+    this.emitEvent('read', updated);
   }
 
   // Marcar todas como leídas
   markAllAsRead(): void {
-    const unreadNotifications = this.notifications.filter(n => 
-      n.profile === this.currentProfile && n.status === 'unread'
-    );
-
-    unreadNotifications.forEach(notification => {
-      notification.status = 'read';
-      notification.readAt = new Date();
-      notification.updatedAt = new Date();
+    const profile = this.currentProfile;
+    const list = (this.notificationsByProfile[profile] || []).map(notification => {
+      if (notification.status !== 'unread') {
+        return notification;
+      }
+      return {
+        ...notification,
+        status: 'read',
+        readAt: new Date(),
+        updatedAt: new Date()
+      } as Notification;
     });
 
-    this.notificationsSubject.next(this.getProfileNotifications());
-    
-    // ✅ Actualizar contador a 0
-    this.unreadCountSubject.next(0);
-    console.log('🔔 [NOTIFICATION_SERVICE] ✅ Todas las notificaciones marcadas como leídas. Contador: 0');
-    
-    unreadNotifications.forEach(n => this.emitEvent('read', n));
+    this.setProfileNotifications(profile, list);
+    this.emitEvent('read_all');
   }
 
   // Archivar notificación
   archiveNotification(notificationId: string): void {
-    const notification = this.notifications.find(n => n.id === notificationId);
-    if (notification) {
-      notification.status = 'archived';
-      notification.updatedAt = new Date();
-      
-      this.notificationsSubject.next(this.getProfileNotifications());
-      this.emitEvent('archived', notification);
-    }
+    const profile = this.currentProfile;
+    const list = [...(this.notificationsByProfile[profile] || [])];
+    const index = list.findIndex(n => n.id === notificationId);
+    if (index === -1) return;
+
+    const updated: Notification = {
+      ...list[index],
+      status: 'archived',
+      updatedAt: new Date()
+    };
+
+    list[index] = updated;
+    this.setProfileNotifications(profile, list);
+    this.emitEvent('archived', updated);
   }
 
   // Eliminar notificación
   deleteNotification(notificationId: string): void {
-    const notification = this.notifications.find(n => n.id === notificationId);
-    if (notification) {
-      notification.status = 'deleted';
-      notification.updatedAt = new Date();
-      
-      this.notificationsSubject.next(this.getProfileNotifications());
-      this.emitEvent('deleted', notification);
-    }
+    const profile = this.currentProfile;
+    const list = [...(this.notificationsByProfile[profile] || [])];
+    const index = list.findIndex(n => n.id === notificationId);
+    if (index === -1) return;
+
+    const updated: Notification = {
+      ...list[index],
+      status: 'deleted',
+      updatedAt: new Date()
+    };
+
+    list[index] = updated;
+    this.setProfileNotifications(profile, list);
+    this.emitEvent('deleted', updated);
   }
 
   // Ejecutar acción en notificación
   executeAction(notificationId: string, action: string): void {
-    const notification = this.notifications.find(n => n.id === notificationId);
-    if (notification) {
-      // Aquí se ejecutaría la lógica específica de la acción
-      console.log(`Ejecutando acción ${action} en notificación ${notificationId}`);
-      
-      // Marcar como leída si no lo está
-      if (notification.status === 'unread') {
-        this.markAsRead(notificationId);
-      }
-      
-      this.emitEvent('action_taken', notification);
+    const profile = this.currentProfile;
+    const list = [...(this.notificationsByProfile[profile] || [])];
+    const index = list.findIndex(n => n.id === notificationId);
+    if (index === -1) return;
+
+    const notification = list[index];
+
+    console.log(`Ejecutando acción ${action} en notificación ${notificationId}`);
+
+    if (notification.status === 'unread') {
+      this.markAsRead(notificationId);
     }
+
+    this.emitEvent('action_taken', notification);
   }
 
   // ===== CONSULTAS =====
@@ -293,9 +361,45 @@ export class NotificationService {
   // ===== MÉTODOS PRIVADOS =====
 
   private getProfileNotifications(): Notification[] {
-    return this.notifications.filter(n => 
-      n.profile === this.currentProfile && n.status !== 'deleted'
-    );
+    const list = this.notificationsByProfile[this.currentProfile] || [];
+    return list.filter(n => n.status !== 'deleted').map(n => ({ ...n }));
+  }
+
+  private isBackendNotification(notification: Notification): boolean {
+    return this.getBackendNotificationIdFromNotification(notification) !== null;
+  }
+
+  private getBackendNotificationIdFromNotification(notification: Notification): number | null {
+    const rawId = notification.metadata?.backendId ?? notification.metadata?.notificationId ?? notification.id;
+    const id = Number(rawId);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private isDuplicateOfBackend(localNotification: Notification, backendNotifications: Notification[]): boolean {
+    const backendId = this.getBackendNotificationIdFromNotification(localNotification);
+    if (backendId) {
+      return backendNotifications.some(n => this.getBackendNotificationIdFromNotification(n) === backendId);
+    }
+
+    const localAppointment = localNotification.metadata?.appointmentId || localNotification.metadata?.appointment_id;
+    if (localAppointment) {
+      const normalized = String(localAppointment);
+      return backendNotifications.some(n => {
+        const backendAppointment = n.metadata?.appointmentId || n.metadata?.appointment_id;
+        return backendAppointment && String(backendAppointment) === normalized;
+      });
+    }
+
+    const localPayment = localNotification.metadata?.paymentId || localNotification.metadata?.payment_id;
+    if (localPayment) {
+      const normalized = String(localPayment);
+      return backendNotifications.some(n => {
+        const backendPayment = n.metadata?.paymentId || n.metadata?.payment_id;
+        return backendPayment && String(backendPayment) === normalized;
+      });
+    }
+
+    return false;
   }
 
   private getNotificationDefaults(type: NotificationType): Partial<Notification> {
@@ -324,15 +428,15 @@ export class NotificationService {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
-  private emitEvent(type: NotificationEvent['type'], notification: Notification): void {
+  private emitEvent(type: NotificationEvent['type'], notification?: Notification): void {
     const event: NotificationEvent = {
       type,
       notification,
       timestamp: new Date()
     };
-    
+
     this.events.push(event);
-    this.eventsSubject.next(this.events);
+    this.eventsSubject.next([...this.events]);
   }
 
   // ===== NOTIFICACIONES DE EJEMPLO =====

@@ -140,8 +140,8 @@ export interface NotificationStats {
 
 // Eventos del sistema de notificaciones
 export interface NotificationEvent {
-  type: 'created' | 'read' | 'archived' | 'deleted' | 'action_taken';
-  notification: Notification;
+  type: 'created' | 'read' | 'read_all' | 'archived' | 'deleted' | 'action_taken';
+  notification?: Notification;
   timestamp: Date;
   userId?: string;
 }

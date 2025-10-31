@@ -1,9 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
+import { Observable, BehaviorSubject, Subject, firstValueFrom, Subscription } from 'rxjs';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/services/auth.service';
+import { NotificationService } from '../../libs/shared-ui/notifications/services/notification.service';
+import { Notification, NotificationEvent, NotificationPriority, NotificationStatus, NotificationType, UserProfile } from '../../libs/shared-ui/notifications/models/notification.model';
 
 type MessagingModule = typeof import('firebase/messaging');
 type Messaging = import('firebase/messaging').Messaging;
@@ -14,6 +16,7 @@ type Messaging = import('firebase/messaging').Messaging;
 export class NotificationsService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private notificationState = inject(NotificationService);
   private apiBase = environment.apiBaseUrl;
 
   private permissionSubject = new BehaviorSubject<NotificationPermission>('default');
@@ -30,6 +33,9 @@ export class NotificationsService {
   private serviceWorkerBridgeAttached = false;
   private currentTokenKey = 'notifications:fcm-token';
   private currentToken: string | null = null;
+  private notificationEventsSub?: Subscription;
+  private currentProfile: UserProfile = 'client';
+  private bulkReadInProgress = false;
 
   constructor() {
     this.checkPermission();
@@ -326,6 +332,9 @@ export class NotificationsService {
       if (title || body) {
         this.showLocalNotification(title, body, payload.notification?.icon);
       }
+      this.syncInAppNotifications(this.currentProfile).catch(error => {
+        console.warn('[NOTIFICATIONS_SERVICE] 🔔 Error actualizando notificaciones tras push:', error);
+      });
     });
 
     this.foregroundListenerAttached = true;
@@ -354,6 +363,158 @@ export class NotificationsService {
     this.serviceWorkerBridgeAttached = true;
   }
 
+  private resolveUserProfile(role?: string | null): UserProfile {
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'provider') return 'provider';
+    if (normalized === 'admin') return 'admin';
+    return 'client';
+  }
+
+  private async syncInAppNotifications(profile: UserProfile): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.http.get<{ ok: boolean; notifications: any[]; unreadCount?: number }>(
+        `${this.apiBase}/notifications`,
+        { headers: this.authHeaders(), params: { limit: '50', offset: '0' } }
+      ));
+
+      if (!response?.ok) {
+        return;
+      }
+
+      const items = Array.isArray(response.notifications) ? response.notifications : [];
+      const mapped = items.map(item => this.mapBackendNotification(item, profile));
+      this.notificationState.setNotifications(profile, mapped);
+
+      if (typeof response.unreadCount === 'number') {
+        this.notificationState.updateUnreadCount(response.unreadCount);
+      }
+    } catch (error) {
+      console.error('[NOTIFICATIONS_SERVICE] 🔔 Error sincronizando notificaciones in-app:', error);
+    }
+  }
+
+  private mapBackendNotification(raw: any, profile: UserProfile): Notification {
+    const type = this.mapNotificationType(raw?.type);
+    let metadata: Record<string, any> | undefined;
+
+    if (raw?.data) {
+      try {
+        const parsed = JSON.parse(raw.data);
+        if (parsed && typeof parsed === 'object') {
+          metadata = parsed;
+        }
+      } catch (error) {
+        console.warn('[NOTIFICATIONS_SERVICE] 🔔 No se pudo parsear metadata de notificación:', error);
+      }
+    }
+
+    const priority = this.mapNotificationPriority(metadata?.priority);
+    const createdAt = raw?.created_at ? new Date(raw.created_at) : new Date();
+    const status: NotificationStatus = raw?.is_read ? 'read' : 'unread';
+    const backendId = raw?.id;
+    const link = metadata?.link || metadata?.url || undefined;
+
+    const notification: Notification = {
+      id: backendId ? String(backendId) : this.generateLocalId(),
+      type,
+      title: raw?.title || 'Notificación',
+      message: raw?.body || raw?.message || '',
+      description: metadata?.description || undefined,
+      priority,
+      status,
+      profile,
+      createdAt,
+      updatedAt: createdAt,
+      metadata: {
+        ...metadata,
+        backendId,
+        notificationId: backendId
+      },
+      link,
+      actions: Array.isArray(metadata?.actions) ? metadata.actions : []
+    };
+
+    return this.notificationState.enrichNotification(notification);
+  }
+
+  private mapNotificationType(value: any): NotificationType {
+    const normalized = String(value || '').toLowerCase();
+    const allowed: NotificationType[] = ['appointment', 'reminder', 'payment', 'rating', 'system', 'message', 'verification', 'promotion', 'security', 'booking', 'availability', 'income', 'service', 'profile', 'support'];
+    return allowed.includes(normalized as NotificationType) ? (normalized as NotificationType) : 'system';
+  }
+
+  private mapNotificationPriority(value: any): NotificationPriority {
+    const normalized = String(value || '').toLowerCase();
+    const allowed: NotificationPriority[] = ['low', 'medium', 'high', 'urgent'];
+    return allowed.includes(normalized as NotificationPriority) ? (normalized as NotificationPriority) : 'medium';
+  }
+
+  private generateLocalId(): string {
+    return `${Date.now().toString(36)}${Math.random().toString(36).substring(2)}`;
+  }
+
+  private ensureNotificationEventBridge(): void {
+    if (this.notificationEventsSub) {
+      return;
+    }
+
+    this.notificationEventsSub = this.notificationState.events$.subscribe((event: NotificationEvent) => {
+      if (!event) {
+        return;
+      }
+
+      switch (event.type) {
+        case 'read':
+          if (!event.notification) return;
+          this.handleReadEvent(event.notification);
+          break;
+        case 'read_all':
+          this.handleBulkReadEvent();
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  private async handleReadEvent(notification: Notification): Promise<void> {
+    if (this.bulkReadInProgress) {
+      return;
+    }
+
+    const backendId = this.getBackendNotificationId(notification);
+    if (!backendId) {
+      return;
+    }
+
+    try {
+      await firstValueFrom(this.markAsRead(backendId));
+    } catch (error) {
+      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Error marcando notificación como leída en backend:', error);
+    }
+  }
+
+  private async handleBulkReadEvent(): Promise<void> {
+    if (this.bulkReadInProgress) {
+      return;
+    }
+
+    this.bulkReadInProgress = true;
+    try {
+      await firstValueFrom(this.markAllAsRead());
+    } catch (error) {
+      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Error marcando todas las notificaciones como leídas en backend:', error);
+    } finally {
+      this.bulkReadInProgress = false;
+    }
+  }
+
+  private getBackendNotificationId(notification: Notification): number | null {
+    const rawId = notification.metadata?.backendId ?? notification.metadata?.notificationId ?? notification.id;
+    const id = Number(rawId);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
   /**
    * Inicializar notificaciones para el usuario actual
    */
@@ -368,6 +529,10 @@ export class NotificationsService {
       return;
     }
 
+    const profile = this.resolveUserProfile(user.role);
+    this.currentProfile = profile;
+    this.notificationState.setUserProfile(profile);
+
     const permission = this.checkPermission();
     console.log('[NOTIFICATIONS_SERVICE] 🔔 Permiso actual:', permission);
 
@@ -381,6 +546,8 @@ export class NotificationsService {
 
     await this.setupForegroundListener();
     this.setupServiceWorkerBridge();
+    await this.syncInAppNotifications(profile);
+    this.ensureNotificationEventBridge();
   }
 
   /**
