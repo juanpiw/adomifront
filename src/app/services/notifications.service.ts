@@ -7,6 +7,7 @@ import { AuthService } from '../auth/services/auth.service';
 
 type MessagingModule = typeof import('firebase/messaging');
 type Messaging = import('firebase/messaging').Messaging;
+
 @Injectable({
   providedIn: 'root'
 })
