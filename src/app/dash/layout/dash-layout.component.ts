@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
@@ -17,6 +17,7 @@ import { NotificationService } from '../../../libs/shared-ui/notifications/servi
 import { NotificationsService } from '../../services/notifications.service';
 import { AdminPaymentsService } from '../pages/admin-pagos/admin-payments.service';
 import { PaymentsService } from '../../services/payments.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dash-layout',
@@ -25,7 +26,7 @@ import { PaymentsService } from '../../services/payments.service';
   templateUrl: './dash-layout.component.html',
   styleUrls: ['./dash-layout.component.scss']
 })
-export class DashLayoutComponent implements OnInit {
+export class DashLayoutComponent implements OnInit, OnDestroy {
   isCollapsed = false;
   planInfo: PlanInfo | null = null;
   showPlanAlert = false;
@@ -68,6 +69,9 @@ export class DashLayoutComponent implements OnInit {
   private pushNotifications = inject(NotificationsService);
   private adminPayments = inject(AdminPaymentsService);
   private payments = inject(PaymentsService);
+
+  private pushMessageSub?: Subscription;
+  private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
     this.loadPlanInfo();
@@ -426,16 +430,33 @@ export class DashLayoutComponent implements OnInit {
       console.log('[DASH_LAYOUT] Inicializando notificaciones push...');
       await this.pushNotifications.initializeForUser();
       console.log('[DASH_LAYOUT] Notificaciones push inicializadas');
+
+      if (!this.pushMessageSub) {
+        this.pushMessageSub = this.pushNotifications.foregroundMessages$.subscribe(() => {
+          this.loadUnreadNotificationsCount();
+        });
+      }
       
       // Cargar contador de notificaciones in-app
       this.loadUnreadNotificationsCount();
       
       // Actualizar cada 30 segundos
-      setInterval(() => {
-        this.loadUnreadNotificationsCount();
-      }, 30000);
+      if (!this.unreadIntervalId) {
+        this.unreadIntervalId = setInterval(() => {
+          this.loadUnreadNotificationsCount();
+        }, 30000);
+      }
     } catch (error) {
       console.error('[DASH_LAYOUT] Error inicializando notificaciones:', error);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.pushMessageSub?.unsubscribe();
+    this.pushMessageSub = undefined;
+    if (this.unreadIntervalId) {
+      clearInterval(this.unreadIntervalId);
+      this.unreadIntervalId = null;
     }
   }
   
