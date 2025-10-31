@@ -211,6 +211,91 @@
     <div *ngIf="founderErrorMsg" class="founder-card__message founder-card__message--error">{{ founderErrorMsg }}</div>
   </section>
 
+  <section *ngIf="adminSecret" class="verification-card">
+    <div class="verification-card__header">
+      <div>
+        <h3>Verificación de identidad</h3>
+        <p>Revisa los documentos de los proveedores y aprueba o rechaza según corresponda.</p>
+      </div>
+      <div class="verification-card__filters">
+        <button type="button" class="verification-card__filter" [class.verification-card__filter--active]="verificationFilter==='pending'" (click)="setVerificationFilter('pending')">Pendientes</button>
+        <button type="button" class="verification-card__filter" [class.verification-card__filter--active]="verificationFilter==='approved'" (click)="setVerificationFilter('approved')">Aprobadas</button>
+        <button type="button" class="verification-card__filter" [class.verification-card__filter--active]="verificationFilter==='rejected'" (click)="setVerificationFilter('rejected')">Rechazadas</button>
+        <button type="button" class="verification-card__filter" [class.verification-card__filter--active]="verificationFilter==='all'" (click)="setVerificationFilter('all')">Todas</button>
+      </div>
+    </div>
+
+    <div *ngIf="verificationError" class="error-message">{{ verificationError }}</div>
+    <div *ngIf="verificationLoading" class="verification-card__loading">
+      <span class="spinner"></span>
+      Cargando solicitudes...
+    </div>
+
+    <table *ngIf="!verificationLoading && verificationRequests.length" class="table verification-table">
+      <thead>
+        <tr>
+          <th>Proveedor</th>
+          <th>Documento</th>
+          <th>Archivos</th>
+          <th>Estado</th>
+          <th>Notas internas</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of verificationRequests">
+          <td>
+            <div class="verification-table__provider">{{ req.full_name || req.provider_name || req.provider_email }}</div>
+            <div class="verification-table__muted">ID #{{ req.provider_id }}</div>
+            <div class="verification-table__muted">{{ req.provider_email }}</div>
+          </td>
+          <td>
+            <div><strong>{{ req.document_type | uppercase }}</strong> · Nº {{ req.document_number || '—' }}</div>
+            <div class="verification-table__muted">Actualizado: {{ req.updated_at | date:'short' }}</div>
+            <div *ngIf="req.rejection_reason" class="verification-table__badge verification-table__badge--error">Último rechazo: {{ req.rejection_reason }}</div>
+          </td>
+          <td>
+            <div class="verification-table__links">
+              <a *ngIf="req.front_document_url" [href]="req.front_document_url" target="_blank" rel="noopener">Anverso</a>
+              <a *ngIf="req.back_document_url" [href]="req.back_document_url" target="_blank" rel="noopener">Reverso</a>
+              <a *ngIf="req.selfie_url" [href]="req.selfie_url" target="_blank" rel="noopener">Selfie</a>
+              <span *ngIf="!req.front_document_url && !req.back_document_url" class="verification-table__muted">Sin archivos</span>
+            </div>
+          </td>
+          <td>
+            <span class="verification-table__status" [ngClass]="{
+              'verification-table__status--pending': req.status==='pending',
+              'verification-table__status--approved': req.status==='approved',
+              'verification-table__status--rejected': req.status==='rejected'
+            }">{{ req.status }}</span>
+            <div *ngIf="req.is_verified" class="verification-table__badge verification-table__badge--success">Perfil verificado</div>
+          </td>
+          <td>
+            <textarea rows="3" placeholder="Agregar nota interna" [(ngModel)]="verificationNotes[req.id]"></textarea>
+          </td>
+          <td>
+            <div class="verification-table__actions" *ngIf="req.status === 'pending'; else verificationReadonly">
+              <input type="text" class="verification-table__input" placeholder="Motivo de rechazo" [(ngModel)]="verificationRejectReasons[req.id]">
+              <div class="verification-table__buttons">
+                <button type="button" class="btn-primary" [disabled]="verificationProcessing[req.id]" (click)="approveVerification(req)">
+                  {{ verificationProcessing[req.id] ? 'Aprobando…' : 'Aprobar' }}
+                </button>
+                <button type="button" class="btn-danger" [disabled]="verificationProcessing[req.id]" (click)="rejectVerification(req)">
+                  {{ verificationProcessing[req.id] ? 'Rechazando…' : 'Rechazar' }}
+                </button>
+              </div>
+            </div>
+            <ng-template #verificationReadonly>
+              <div class="verification-table__muted">Revisada</div>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="!verificationLoading && verificationRequests.length === 0" class="verification-table__empty">No hay solicitudes en este estado.</p>
+  </section>
+
   <div *ngIf="error" class="error-message">{{ error }}</div>
   <div *ngIf="loading">Cargando...</div>
 

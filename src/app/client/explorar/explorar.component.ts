@@ -126,6 +126,10 @@ import { finalize } from 'rxjs/operators';
               <div class="ml-4">
                 <p class="font-bold text-lg text-gray-900">{{ provider.name }}</p>
                 <p class="text-sm text-gray-500">{{ provider.profession }}</p>
+                <div class="verified-badge" *ngIf="provider.is_verified" title="Identidad validada por el equipo de Adomi">
+                  <ui-icon name="shield-check" class="w-3.5 h-3.5 mr-1"></ui-icon>
+                  Identidad verificada
+                </div>
                 <p class="text-xs text-gray-500 flex items-center mt-1" *ngIf="provider.location">
                   <ui-icon name="map-pin" class="w-3 h-3 mr-1"></ui-icon>
                   {{ provider.location }}
@@ -1134,7 +1138,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       location: provider.location,
       price: this.services.find(s => s.provider?.id === provider.id || s.provider_id === provider.id)?.price?.toString() || 'Consultar',
       isHighlighted: provider.id === 1, // Highlight first provider
-      isOnline: (provider as any).is_online === true
+      isOnline: (provider as any).is_online === true,
+      isVerified: (provider as any).is_verified === true
     }));
 
     // Set highlighted professional (first one)

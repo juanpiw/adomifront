@@ -99,6 +99,26 @@
   margin: 0;
 }
 
+.professional-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+
+  ui-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+}
+
 .favorite-button {
   background: none;
   border: none;

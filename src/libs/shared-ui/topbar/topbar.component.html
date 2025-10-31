@@ -13,6 +13,36 @@
       [ngClass]="{'plan-badge--founder': config.planBadge?.variant === 'founder'}">
       {{ config.planBadge?.label }}
     </span>
+
+    <ng-container *ngIf="config.verificationBadge as vb">
+      <button
+        *ngIf="vb.link; else verificationLabel"
+        type="button"
+        class="verification-badge verification-badge--clickable"
+        [ngClass]="{
+          'verification-badge--verified': vb.variant === 'verified',
+          'verification-badge--pending': vb.variant === 'pending',
+          'verification-badge--rejected': vb.variant === 'rejected'
+        }"
+        [title]="vb.tooltip || vb.label"
+        (click)="navigateTo(vb.link)">
+        <ui-icon name="shield-check"></ui-icon>
+        {{ vb.label }}
+      </button>
+      <ng-template #verificationLabel>
+        <span
+          class="verification-badge"
+          [ngClass]="{
+            'verification-badge--verified': vb.variant === 'verified',
+            'verification-badge--pending': vb.variant === 'pending',
+            'verification-badge--rejected': vb.variant === 'rejected'
+          }"
+          [title]="vb.tooltip || vb.label">
+          <ui-icon name="shield-check"></ui-icon>
+          {{ vb.label }}
+        </span>
+      </ng-template>
+    </ng-container>
   </div>
   
   <div class="actions">

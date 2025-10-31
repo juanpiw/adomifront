@@ -30,6 +30,8 @@ export interface AuthUser {
   account_switch_started_at?: string | null;
   account_switched_at?: string | null;
   account_switch_source?: string | null;
+  is_verified?: boolean;
+  verification_status?: 'none' | 'pending' | 'approved' | 'rejected' | string | null;
 }
 
 export interface AuthResponse {

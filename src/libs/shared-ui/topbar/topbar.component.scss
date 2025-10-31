@@ -116,6 +116,68 @@
   }
 }
 
+.verification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
+
+  ui-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  &--verified {
+    color: #0f766e;
+    background: rgba(13, 148, 136, 0.12);
+    border-color: rgba(13, 148, 136, 0.18);
+
+    ui-icon {
+      color: #0f766e;
+    }
+  }
+
+  &--pending {
+    color: #92400e;
+    background: rgba(251, 191, 36, 0.18);
+    border-color: rgba(217, 119, 6, 0.22);
+
+    ui-icon {
+      color: #b45309;
+    }
+  }
+
+  &--rejected {
+    color: #b91c1c;
+    background: rgba(248, 113, 113, 0.18);
+    border-color: rgba(239, 68, 68, 0.25);
+
+    ui-icon {
+      color: #b91c1c;
+    }
+  }
+
+  &--clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 999px;
+    border-width: 1px;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
+    }
+  }
+}
+
 .topbar-banner {
   display: flex;
   align-items: center;

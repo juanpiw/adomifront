@@ -69,6 +69,27 @@
   margin-top: 2px;
 }
 
+.user-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  background: #dbebff;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+
+  svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    color: #2563eb;
+  }
+}
+
 /* --- Descripción (texto oscuro para legibilidad) --- */
 .card-description {
   color: #334155; /* slate-700 */

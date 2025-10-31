@@ -18,6 +18,7 @@ import { NotificationsService } from '../../services/notifications.service';
 import { AdminPaymentsService } from '../pages/admin-pagos/admin-payments.service';
 import { PaymentsService } from '../../services/payments.service';
 import { Subscription } from 'rxjs';
+import { ProviderVerificationService, VerificationStatus } from '../../services/provider-verification.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -55,7 +56,9 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     showSettings: true,
     searchPlaceholder: '¿Necesitas ayuda con el dashboard?',
     helpContext: 'dashboard',
-    userProfile: 'provider'
+    userProfile: 'provider',
+    planBadge: null,
+    verificationBadge: null
   };
 
   private planService = inject(PlanService);
@@ -69,23 +72,30 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private pushNotifications = inject(NotificationsService);
   private adminPayments = inject(AdminPaymentsService);
   private payments = inject(PaymentsService);
+  private providerVerification = inject(ProviderVerificationService);
 
   private pushMessageSub?: Subscription;
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
+  private topbarPlanBadge: TopbarConfig['planBadge'] = null;
+  private topbarVerificationBadge: TopbarConfig['verificationBadge'] = null;
+
+  verificationStatus: VerificationStatus = 'none';
+  verificationRejectionReason: string | null = null;
+  verificationBanner: { message: string; variant: 'info' | 'warning' | 'danger'; actionLabel?: string; actionLink?: string } | null = null;
+  showVerificationPrompt = false;
 
   ngOnInit() {
     try {
       if (this.sessionService.isFounder()) {
         this.isFounderAccount = true;
-        this.topbarConfig = {
-          ...this.topbarConfig,
-          planBadge: { label: 'Cuenta Fundador', variant: 'founder' }
-        };
+        this.topbarPlanBadge = { label: 'Cuenta Fundador', variant: 'founder' };
+        this.refreshTopbarBadges();
       }
     } catch {}
 
     this.loadPlanInfo();
     this.loadProviderProfile();
+    this.loadVerificationState();
     this.initializeNotifications();
 
     const user = this.sessionService.getUser();
@@ -265,6 +275,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.providerAvatarUrl = profile.profile_photo_url ? 
             `${environment.apiBaseUrl}${profile.profile_photo_url}` : null;
           this.isOnline = profile.is_online ?? null;
+          this.isFounderAccount = this.isFounderAccount || false;
+          this.evaluateVerificationStatus(profile.verification_status as VerificationStatus | undefined, this.verificationRejectionReason);
           console.log('[DASH_LAYOUT] Datos actualizados desde backend:', { 
             name: this.providerName, 
             avatar: this.providerAvatarUrl,
@@ -282,6 +294,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
               this.providerName = user.name || this.providerName;
               this.providerAvatarUrl = user.profile_photo_url ? 
                 `${environment.apiBaseUrl}${user.profile_photo_url}` : this.providerAvatarUrl;
+              this.evaluateVerificationStatus((user as any)?.verification_status as VerificationStatus | undefined, this.verificationRejectionReason);
               console.log('[DASH_LAYOUT] Datos desde fallback:', { name: this.providerName, avatar: this.providerAvatarUrl });
             }
           },
@@ -318,25 +331,19 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             const derivedFounder = this.sessionService.isFounder();
             const isFounder = planName.includes('fundador') || planName.includes('founder') || planType.includes('fundador') || planType.includes('founder') || derivedFounder;
             this.isFounderAccount = isFounder;
-            this.topbarConfig = {
-              ...this.topbarConfig,
-              planBadge: isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null
-            };
+            this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
+            this.refreshTopbarBadges();
           } else {
             this.isFounderAccount = false;
-            this.topbarConfig = {
-              ...this.topbarConfig,
-              planBadge: null
-            };
+            this.topbarPlanBadge = null;
+            this.refreshTopbarBadges();
           }
         },
         error: (error) => {
           console.error('Error loading plan info:', error);
           this.isFounderAccount = false;
-          this.topbarConfig = {
-            ...this.topbarConfig,
-            planBadge: null
-          };
+          this.topbarPlanBadge = null;
+          this.refreshTopbarBadges();
         }
       });
     }
@@ -409,6 +416,126 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         queryParams: { tab: 'configuracion' }
       });
     }
+  }
+
+  private loadVerificationState(): void {
+    this.providerVerification.getStatus().subscribe({
+      next: (payload) => {
+        const status = (payload.profile?.verification_status as VerificationStatus | undefined) || (payload.verification?.status as VerificationStatus | undefined) || 'none';
+        this.verificationRejectionReason = payload.verification?.rejection_reason || null;
+        this.evaluateVerificationStatus(status, this.verificationRejectionReason);
+      },
+      error: () => {
+        this.evaluateVerificationStatus('none', null);
+      }
+    });
+  }
+
+  private evaluateVerificationStatus(status: VerificationStatus | undefined, rejectionReason: string | null) {
+    if (!status) status = 'none';
+    this.verificationStatus = status;
+    this.verificationRejectionReason = rejectionReason;
+
+    const hasDismissed = typeof localStorage !== 'undefined' && localStorage.getItem('provider:verificationPromptDismissed') === 'true';
+    this.showVerificationPrompt = (status === 'none' || status === 'rejected') && !hasDismissed;
+
+    if (status === 'pending') {
+      this.verificationBanner = {
+        message: 'Estamos revisando tus documentos. Te avisaremos cuando la verificación esté lista.',
+        variant: 'info',
+        actionLabel: 'Ver estado',
+        actionLink: '/dash/perfil?tab=verificacion'
+      };
+    } else if (status === 'rejected') {
+      this.verificationBanner = {
+        message: 'Tu verificación fue rechazada. Sube nuevamente tus documentos para generar confianza.',
+        variant: 'warning',
+        actionLabel: 'Reintentar verificación',
+        actionLink: '/dash/perfil?tab=verificacion'
+      };
+    } else if (status === 'approved') {
+      this.verificationBanner = null;
+    } else {
+      this.verificationBanner = {
+        message: 'Completa la verificación de identidad para destacar tu perfil con clientes.',
+        variant: 'info',
+        actionLabel: 'Iniciar verificación',
+        actionLink: '/dash/perfil?tab=verificacion'
+      };
+    }
+
+    this.updateVerificationBadge();
+  }
+
+  private updateVerificationBadge() {
+    if (this.verificationStatus === 'approved') {
+      this.topbarVerificationBadge = {
+        label: 'Identidad verificada',
+        variant: 'verified',
+        tooltip: 'Tus clientes verán la insignia de identidad verificada',
+        link: '/dash/perfil?tab=verificacion'
+      };
+    } else if (this.verificationStatus === 'pending') {
+      this.topbarVerificationBadge = {
+        label: 'Verificación en proceso',
+        variant: 'pending',
+        tooltip: 'Nuestro equipo está revisando tus documentos',
+        link: '/dash/perfil?tab=verificacion'
+      };
+    } else if (this.verificationStatus === 'rejected') {
+      this.topbarVerificationBadge = {
+        label: 'Verificación rechazada',
+        variant: 'rejected',
+        tooltip: 'Vuelve a subir tus documentos para completar la verificación',
+        link: '/dash/perfil?tab=verificacion'
+      };
+    } else {
+      this.topbarVerificationBadge = {
+        label: 'Verificar identidad',
+        variant: 'pending',
+        tooltip: 'Completa la verificación para mejorar tu reputación',
+        link: '/dash/perfil?tab=verificacion'
+      };
+    }
+
+    this.refreshTopbarBadges();
+  }
+
+  private refreshTopbarBadges() {
+    this.topbarConfig = {
+      ...this.topbarConfig,
+      planBadge: this.topbarPlanBadge,
+      verificationBadge: this.topbarVerificationBadge
+    };
+  }
+
+  dismissVerificationPrompt() {
+    this.showVerificationPrompt = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('provider:verificationPromptDismissed', 'true');
+      }
+    } catch {}
+  }
+
+  goToVerification() {
+    this.dismissVerificationPrompt();
+    this.router.navigate(['/dash/perfil'], { queryParams: { tab: 'verificacion' } });
+  }
+
+  onVerificationBannerAction() {
+    if (!this.verificationBanner?.actionLink) {
+      this.router.navigate(['/dash/perfil'], { queryParams: { tab: 'verificacion' } });
+      return;
+    }
+    const link = this.verificationBanner.actionLink;
+    if (link.startsWith('http')) {
+      if (typeof window !== 'undefined') {
+        window.open(link, '_blank');
+      }
+      return;
+    }
+    this.router.navigateByUrl(link);
   }
 
   /**

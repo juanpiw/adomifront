@@ -113,6 +113,14 @@ export class SessionService {
     return user?.role === 'client';
   }
 
+  isIdentityVerified(): boolean {
+    return !!this.getCurrentUser()?.is_verified;
+  }
+
+  getVerificationStatus(): AuthUser['verification_status'] {
+    return this.getCurrentUser()?.verification_status || 'none';
+  }
+
   // Obtener información completa del usuario
   getUserInfo(): AuthUser | null {
     return this.getCurrentUser();

@@ -12,6 +12,7 @@ export interface Professional {
   icon?: string;
   iconColor?: 'pink' | 'orange' | 'lime' | 'blue' | 'teal' | 'red';
   isFavorite?: boolean;
+  isVerified?: boolean;
 }
 
 @Component({

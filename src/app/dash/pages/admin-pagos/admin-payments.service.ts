@@ -83,6 +83,23 @@ export class AdminPaymentsService {
     };
     return this.http.post<any>(`${this.baseUrl}/subscriptions/admin/founder-code`, body, { headers: this.headers(secret, token) });
   }
+
+  listVerifications(secret: string, token: string | null, status?: string) {
+    const params: string[] = [];
+    if (status) {
+      params.push(`status=${encodeURIComponent(status)}`);
+    }
+    const qs = params.length ? `?${params.join('&')}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/verification/requests${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  approveVerification(secret: string, token: string | null, id: number, notes?: string) {
+    return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/approve`, { notes }, { headers: this.headers(secret, token) });
+  }
+
+  rejectVerification(secret: string, token: string | null, id: number, reason: string, notes?: string) {
+    return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/reject`, { reason, notes }, { headers: this.headers(secret, token) });
+  }
 }
 
 

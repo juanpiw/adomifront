@@ -1,31 +1,73 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { UiButtonComponent } from '../ui-button/ui-button.component';
+import { ProviderVerificationService, ProviderVerificationRecord, VerificationStatus, SubmitVerificationPayload } from '../../../app/services/provider-verification.service';
 
 @Component({
   selector: 'app-verificacion-perfil',
   standalone: true,
-  imports: [CommonModule, UiButtonComponent],
+  imports: [CommonModule, FormsModule, UiButtonComponent],
   templateUrl: './verificacion-perfil.component.html',
   styleUrls: ['./verificacion-perfil.component.scss']
 })
 export class VerificacionPerfilComponent implements OnInit {
   currentStep = 1;
-  selectedFiles: { front: File | null; back: File | null } = { front: null, back: null };
-  uploadStatus: { front: boolean; back: boolean } = { front: false, back: false };
+  selectedFiles: { front: File | null; back: File | null; selfie: File | null } = { front: null, back: null, selfie: null };
+  previews: { front: string | null; back: string | null; selfie: string | null } = { front: null, back: null, selfie: null };
+  uploadStatus: { front: boolean; back: boolean; selfie: boolean } = { front: false, back: false, selfie: false };
   isUploading = false;
+  statusLoading = false;
   uploadError = '';
-  verificationStatus: 'none' | 'pending' | 'approved' | 'rejected' = 'none';
+  statusError: string | null = null;
+  verificationStatus: VerificationStatus = 'none';
+  verificationRecord: ProviderVerificationRecord | null = null;
+  rejectionReason: string | null = null;
+  documentNumber: string = '';
+
+  private verificationService = inject(ProviderVerificationService);
 
   ngOnInit() {
-    // TODO: Cargar estado de verificación existente
     this.loadVerificationStatus();
   }
 
   loadVerificationStatus() {
-    // TODO: Implementar carga de estado desde backend
-    // Por ahora simulamos que no hay verificación
-    this.verificationStatus = 'none';
+    this.statusLoading = true;
+    this.statusError = null;
+
+    this.verificationService.getStatus()
+      .pipe(finalize(() => { this.statusLoading = false; }))
+      .subscribe({
+        next: (response) => {
+          this.verificationRecord = response?.verification || null;
+          const profileStatus = response?.profile?.verification_status as VerificationStatus | undefined;
+          const recordStatus = (this.verificationRecord?.status as VerificationStatus) || 'none';
+          this.verificationStatus = profileStatus || recordStatus || 'none';
+          this.documentNumber = this.verificationRecord?.document_number || '';
+          this.rejectionReason = this.verificationRecord?.rejection_reason || null;
+
+          if (this.verificationStatus === 'pending') {
+            this.currentStep = 3;
+          } else if (this.verificationStatus === 'approved') {
+            this.currentStep = 3;
+          } else if (this.verificationStatus === 'rejected') {
+            this.currentStep = 2;
+          } else {
+            this.currentStep = 1;
+          }
+
+          // Reset local selections when status comes from backend
+          this.resetSelections(false);
+        },
+        error: (error) => {
+          console.error('[VERIFICACION] Error cargando estado', error);
+          this.statusError = 'No se pudo obtener el estado de verificación. Intenta nuevamente más tarde.';
+          this.verificationStatus = 'none';
+          this.verificationRecord = null;
+        }
+      });
   }
 
   onFileSelected(event: Event, side: 'front' | 'back') {
@@ -51,24 +93,39 @@ export class VerificacionPerfilComponent implements OnInit {
     }
   }
 
-  showFilePreview(file: File, side: 'front' | 'back') {
+  onSelfieSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        this.uploadError = 'La selfie debe ser una imagen válida.';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.uploadError = 'La selfie debe ser menor a 5MB.';
+        return;
+      }
+      this.selectedFiles.selfie = file;
+      this.uploadStatus.selfie = true;
+      this.uploadError = '';
+      this.showFilePreview(file, 'selfie');
+    }
+  }
+
+  showFilePreview(file: File, side: 'front' | 'back' | 'selfie') {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
-      const iconElement = document.getElementById(`icon-${side}`);
-      const textElement = document.getElementById(`text-${side}`);
-      
-      if (iconElement && textElement) {
-        iconElement.innerHTML = `
-          <img src="${result}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">
-        `;
-        textElement.textContent = 'Imagen seleccionada';
-      }
+      this.previews[side] = result;
     };
     reader.readAsDataURL(file);
   }
 
   async uploadDocuments() {
+    if (!this.documentNumber || !this.documentNumber.trim()) {
+      this.uploadError = 'Ingresa el número de tu documento.';
+      return;
+    }
     if (!this.selectedFiles.front || !this.selectedFiles.back) {
       this.uploadError = 'Por favor selecciona ambas imágenes';
       return;
@@ -78,15 +135,22 @@ export class VerificacionPerfilComponent implements OnInit {
     this.uploadError = '';
 
     try {
-      // TODO: Implementar upload real con VerificationService
-      // Simulamos el upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const payload: SubmitVerificationPayload = {
+        documentNumber: this.documentNumber.trim(),
+        frontFile: this.selectedFiles.front as File,
+        backFile: this.selectedFiles.back as File,
+        selfieFile: this.selectedFiles.selfie
+      };
+
+      await firstValueFrom(this.verificationService.submit(payload));
+
       this.verificationStatus = 'pending';
       this.goToStep(3);
+      this.resetSelections();
+      this.loadVerificationStatus();
     } catch (error: any) {
       console.error('Error al subir documentos:', error);
-      this.uploadError = error.message || 'Error al subir documentos';
+      this.uploadError = error?.error?.error || error.message || 'Error al subir documentos';
     } finally {
       this.isUploading = false;
     }
@@ -103,16 +167,16 @@ export class VerificacionPerfilComponent implements OnInit {
   }
 
   onFinishProcess() {
-    // TODO: Implementar lógica de finalización
-    console.log('Proceso de verificación completado');
+    this.currentStep = 3;
   }
 
   startVerification() {
+    this.resetSelections();
     this.goToStep(2);
   }
 
   get canUpload(): boolean {
-    return this.uploadStatus.front && this.uploadStatus.back && !this.isUploading;
+    return !!this.documentNumber && this.uploadStatus.front && this.uploadStatus.back && !this.isUploading;
   }
 
   get hasVerification(): boolean {
@@ -129,6 +193,16 @@ export class VerificacionPerfilComponent implements OnInit {
 
   get isRejected(): boolean {
     return this.verificationStatus === 'rejected';
+  }
+
+  private resetSelections(clearDocumentNumber: boolean = true) {
+    this.selectedFiles = { front: null, back: null, selfie: null };
+    this.uploadStatus = { front: false, back: false, selfie: false };
+    this.previews = { front: null, back: null, selfie: null };
+    if (clearDocumentNumber && !this.verificationRecord?.document_number) {
+      this.documentNumber = '';
+    }
+    this.uploadError = '';
   }
 }
 

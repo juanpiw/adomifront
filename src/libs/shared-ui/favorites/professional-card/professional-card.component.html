@@ -8,6 +8,10 @@
       <div class="professional-details">
         <h3 class="professional-name">{{ professional.name }}</h3>
         <p class="professional-role">{{ professional.role }}</p>
+        <div class="professional-verified" *ngIf="professional.isVerified" title="Identidad verificada">
+          <ui-icon name="shield-check"></ui-icon>
+          Verificado
+        </div>
       </div>
     </div>
     <button 

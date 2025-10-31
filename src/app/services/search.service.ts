@@ -36,6 +36,8 @@ export interface Provider {
   experience_years: number;
   is_online: boolean;
   is_favorite?: boolean;
+  is_verified?: boolean;
+  verification_status?: string;
   services: Service[];
 }
 

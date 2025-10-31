@@ -21,6 +21,12 @@ export interface TopbarConfig {
     label: string;
     variant?: 'founder' | 'default';
   } | null;
+  verificationBadge?: {
+    label: string;
+    variant?: 'verified' | 'pending' | 'rejected';
+    tooltip?: string;
+    link?: string;
+  } | null;
 }
 
 @Component({
@@ -40,7 +46,8 @@ export class TopbarComponent implements OnInit {
     searchValue: '',
     helpContext: 'general',
     userProfile: 'client',
-    planBadge: null
+    planBadge: null,
+    verificationBadge: null
   };
   @Input() cashNotice: { amount: number; currency?: string; dueDateLabel?: string; status?: string } | null = null;
 
@@ -101,5 +108,16 @@ export class TopbarComponent implements OnInit {
 
   onCashNoticeClick(): void {
     this.router.navigate(['/dash/agenda'], { queryParams: { view: 'cash' } });
+  }
+
+  navigateTo(link?: string | null): void {
+    if (!link) return;
+    if (link.startsWith('http')) {
+      if (typeof window !== 'undefined') {
+        window.open(link, '_blank');
+      }
+      return;
+    }
+    this.router.navigateByUrl(link);
   }
 }

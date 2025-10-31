@@ -9,6 +9,12 @@
       <div class="user-details">
         <h2 class="user-name">{{ user.name }}</h2>
         <p class="user-profession">{{ user.profession }}</p>
+        @if (user.isVerified) {
+          <span class="user-verified-badge" title="Identidad verificada">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a2.742 2.742 0 00-3.857-3.897l-.23.23a4.505 4.505 0 00-6.37 0l-.25-.224a2.742 2.742 0 00-3.856 3.897l.224.25a4.505 4.505 0 000 6.37l-.224.25a2.742 2.742 0 003.856 3.897l.25-.225a4.505 4.505 0 006.37 0l.23.23a2.742 2.742 0 003.857-3.897l-.23-.23a4.505 4.505 0 000-6.37l.23-.23zm-3.704 2.68a.75.75 0 10-1.125-.99L9 9.393l-1.375-1.55a.75.75 0 10-1.125.99l1.938 2.187a.75.75 0 001.125 0l3.437-3.187z" clip-rule="evenodd"/></svg>
+            Verificado
+          </span>
+        }
         @if (user.location) {
           <p class="user-location">{{ user.location }}</p>
         }

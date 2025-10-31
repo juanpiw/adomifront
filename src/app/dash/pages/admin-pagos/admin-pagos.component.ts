@@ -55,6 +55,13 @@ export class AdminPagosComponent implements OnInit {
   founderNotes: string = '';
   founderEmailStatus: 'idle' | 'sent' | 'error' = 'idle';
   founderEmailErrorDetail: string | null = null;
+  verificationRequests: any[] = [];
+  verificationLoading = false;
+  verificationError: string | null = null;
+  verificationFilter: 'all' | 'pending' | 'approved' | 'rejected' = 'pending';
+  verificationNotes: Record<number, string> = {};
+  verificationRejectReasons: Record<number, string> = {};
+  verificationProcessing: Record<number, boolean> = {};
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -107,6 +114,7 @@ export class AdminPagosComponent implements OnInit {
             this.cashSummary = null;
             this.cashDebts = [];
           }
+          this.loadVerificationRequests(this.verificationFilter);
         } else {
           this.error = 'Respuesta inválida';
         }
@@ -152,6 +160,73 @@ export class AdminPagosComponent implements OnInit {
   setCashFilterAdmin(filter: 'all'|'pending'|'overdue'|'paid') {
     if (this.cashFilter === filter && !this.cashLoading) return;
     this.loadAdminCashCommissions(filter);
+  }
+
+  private loadVerificationRequests(filter: 'all' | 'pending' | 'approved' | 'rejected') {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.verificationLoading = true;
+    this.verificationError = null;
+    const statusParam = filter === 'all' ? undefined : filter;
+    this.adminApi.listVerifications(this.adminSecret, token, statusParam).subscribe({
+      next: (res: any) => {
+        this.verificationLoading = false;
+        if (res?.success) {
+          this.verificationRequests = res.data || [];
+        } else {
+          this.verificationError = res?.error || 'No fue posible cargar las verificaciones.';
+        }
+      },
+      error: (err: any) => {
+        this.verificationLoading = false;
+        this.verificationError = err?.error?.error || 'No fue posible cargar las verificaciones.';
+      }
+    });
+  }
+
+  setVerificationFilter(filter: 'all' | 'pending' | 'approved' | 'rejected') {
+    if (this.verificationFilter === filter && !this.verificationLoading) return;
+    this.verificationFilter = filter;
+    this.loadVerificationRequests(filter);
+  }
+
+  approveVerification(request: any) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    const notes = (this.verificationNotes[request.id] || '').trim();
+    this.verificationProcessing[request.id] = true;
+    this.adminApi.approveVerification(this.adminSecret, token, Number(request.id), notes || undefined).subscribe({
+      next: () => {
+        delete this.verificationProcessing[request.id];
+        this.loadVerificationRequests(this.verificationFilter);
+      },
+      error: (err) => {
+        delete this.verificationProcessing[request.id];
+        alert(err?.error?.error || 'No se pudo aprobar la verificación.');
+      }
+    });
+  }
+
+  rejectVerification(request: any) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    const reason = (this.verificationRejectReasons[request.id] || '').trim();
+    if (!reason) {
+      alert('Debes ingresar un motivo de rechazo.');
+      return;
+    }
+    const notes = (this.verificationNotes[request.id] || '').trim();
+    this.verificationProcessing[request.id] = true;
+    this.adminApi.rejectVerification(this.adminSecret, token, Number(request.id), reason, notes || undefined).subscribe({
+      next: () => {
+        delete this.verificationProcessing[request.id];
+        this.loadVerificationRequests(this.verificationFilter);
+      },
+      error: (err) => {
+        delete this.verificationProcessing[request.id];
+        alert(err?.error?.error || 'No se pudo rechazar la verificación.');
+      }
+    });
   }
 
   refreshAdminCash() {

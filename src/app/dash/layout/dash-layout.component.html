@@ -6,6 +6,23 @@
   (dismiss)="onPlanAlertDismiss()">
 </plan-upgrade-alert>
 
+<div class="verification-modal-backdrop" *ngIf="showVerificationPrompt">
+  <div class="verification-modal">
+    <div class="verification-modal__icon">
+      <ui-icon name="shield-check"></ui-icon>
+    </div>
+    <h3>Verifica tu identidad</h3>
+    <p>Sube tu cédula para mostrar la insignia de confianza en tu perfil y aumentar tus conversiones.</p>
+    <p *ngIf="verificationRejectionReason" class="verification-modal__reason">
+      Último intento: {{ verificationRejectionReason }}
+    </p>
+    <div class="verification-modal__actions">
+      <button type="button" class="btn-primary" (click)="goToVerification()">Iniciar verificación</button>
+      <button type="button" class="btn-secondary" (click)="dismissVerificationPrompt()">Más tarde</button>
+    </div>
+  </div>
+</div>
+
 <div class="dash-layout" [class.sidebar-collapsed]="isCollapsed">
   <aside class="sidebar" [class.collapsed]="isCollapsed">
     <div class="rail">
@@ -88,6 +105,16 @@
       (settingsClick)="onSettingsClick()">
     </app-topbar>
     <div class="main-slot">
+      <div *ngIf="verificationBanner" class="verification-banner" [ngClass]="{
+        'verification-banner--info': verificationBanner?.variant === 'info',
+        'verification-banner--warning': verificationBanner?.variant === 'warning',
+        'verification-banner--danger': verificationBanner?.variant === 'danger'
+      }">
+        <div class="verification-banner__message">{{ verificationBanner?.message }}</div>
+        <button *ngIf="verificationBanner?.actionLabel" type="button" (click)="onVerificationBannerAction()">
+          {{ verificationBanner?.actionLabel }}
+        </button>
+      </div>
       <router-outlet></router-outlet>
     </div>
   </main>
