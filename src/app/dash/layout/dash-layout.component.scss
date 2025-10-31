@@ -158,6 +158,21 @@
   margin: 2px 0 0 0;
 }
 
+.user-sub-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+.founder-badge {
+  background: #4338ca;
+  color: white;
+}
+
 /* Punto de estado sobre el avatar en user-summary */
 .status-dot { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 9999px; background: #9CA3AF; }
 .status-dot.online { background: #10B981; }

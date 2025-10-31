@@ -37,6 +37,7 @@ export class DashLayoutComponent implements OnInit {
   hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
   adminPendingCount: number = 0;
   cashNotice: { amount: number; currency: string; dueDateLabel?: string; status?: string } | null = null;
+  isFounderAccount: boolean = false;
   
   get isAdmin(): boolean {
     try {
@@ -299,11 +300,13 @@ export class DashLayoutComponent implements OnInit {
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
 
             const isFounder = (response.currentPlan.name || '').toLowerCase().includes('fundador');
+            this.isFounderAccount = isFounder;
             this.topbarConfig = {
               ...this.topbarConfig,
               planBadge: isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null
             };
           } else {
+            this.isFounderAccount = false;
             this.topbarConfig = {
               ...this.topbarConfig,
               planBadge: null
@@ -312,6 +315,7 @@ export class DashLayoutComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error loading plan info:', error);
+          this.isFounderAccount = false;
           this.topbarConfig = {
             ...this.topbarConfig,
             planBadge: null

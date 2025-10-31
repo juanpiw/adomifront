@@ -51,6 +51,7 @@
         <div class="user-info">
           <div class="user-name">{{ providerName || 'Usuario' }}</div>
           <div class="user-sub">Cuenta de profesional</div>
+          <div *ngIf="isFounderAccount" class="user-sub-badge founder-badge">Fundador</div>
         </div>
       </div>
       <!-- Switch de estado online -->
