@@ -14,7 +14,7 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 
@@ -452,7 +452,14 @@ export class DashAgendaComponent implements OnInit {
     const appointmentId = this.selectedPaidAppointment.id;
     const isCash = String(this.selectedPaidAppointment.payment_method || '').toLowerCase() === 'cash';
 
-    const verify$ = isCash
+    type VerificationResponse = {
+      success: boolean;
+      error?: string;
+      remainingAttempts?: number;
+      paymentId?: number | null;
+    };
+
+    const verification$: Observable<VerificationResponse> = isCash
       ? this.appointments.verifyCashCode(appointmentId, code).pipe(
           map(cashResp => {
             if (!cashResp?.success) {
@@ -463,10 +470,16 @@ export class DashAgendaComponent implements OnInit {
           catchError(err => of({ success: false, error: err?.error?.error || 'Error al registrar el pago en efectivo.' }))
         )
       : this.appointments.verifyCompletion(appointmentId, code).pipe(
+          map(resp => ({
+            success: !!resp?.success,
+            error: resp?.error,
+            remainingAttempts: (resp as any)?.remainingAttempts,
+            paymentId: (resp as any)?.payment_id ?? null
+          })),
           catchError(err => of({ success: false, error: err?.error?.error || 'Error al verificar.' }))
         );
 
-    verify$.subscribe({
+    verification$.subscribe({
       next: (resp: any) => {
         this.verifying = false;
         if (resp?.success) {
