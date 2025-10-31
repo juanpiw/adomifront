@@ -408,18 +408,18 @@ export class NotificationsService {
       }
     }
 
-    const priority = this.mapNotificationPriority(metadata?.priority);
+    const priority = this.mapNotificationPriority(metadata?.['priority']);
     const createdAt = raw?.created_at ? new Date(raw.created_at) : new Date();
     const status: NotificationStatus = raw?.is_read ? 'read' : 'unread';
     const backendId = raw?.id;
-    const link = metadata?.link || metadata?.url || undefined;
+    const link = (metadata?.['link'] ?? metadata?.['url']) || undefined;
 
     const notification: Notification = {
       id: backendId ? String(backendId) : this.generateLocalId(),
       type,
       title: raw?.title || 'Notificación',
       message: raw?.body || raw?.message || '',
-      description: metadata?.description || undefined,
+      description: metadata?.['description'] || undefined,
       priority,
       status,
       profile,
@@ -431,7 +431,7 @@ export class NotificationsService {
         notificationId: backendId
       },
       link,
-      actions: Array.isArray(metadata?.actions) ? metadata.actions : []
+      actions: Array.isArray(metadata?.['actions']) ? metadata['actions'] : []
     };
 
     return this.notificationState.enrichNotification(notification);
@@ -458,15 +458,20 @@ export class NotificationsService {
       return;
     }
 
-    this.notificationEventsSub = this.notificationState.events$.subscribe((event: NotificationEvent) => {
-      if (!event) {
+    this.notificationEventsSub = this.notificationState.events$.subscribe((events: NotificationEvent[]) => {
+      if (!Array.isArray(events) || events.length === 0) {
         return;
       }
 
-      switch (event.type) {
+      const latest = events[events.length - 1];
+      if (!latest) {
+        return;
+      }
+
+      switch (latest.type) {
         case 'read':
-          if (!event.notification) return;
-          this.handleReadEvent(event.notification);
+          if (!latest.notification) return;
+          this.handleReadEvent(latest.notification);
           break;
         case 'read_all':
           this.handleBulkReadEvent();
