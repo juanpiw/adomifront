@@ -27,6 +27,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // Suscribirse al contador de notificaciones no leídas
     this.subscriptions.push(
       this.notificationService.unreadCount$.subscribe(count => {
+        console.log('🔔 [NOTIFICATION_BELL] Contador actualizado:', count);
         this.unreadCount = count;
         this.hasUnreadNotifications = count > 0;
       })
@@ -38,6 +39,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   toggleNotifications(): void {
+    console.log('🔔 [NOTIFICATION_BELL] toggleNotifications, estado actual:', this.isOpen);
     this.toggle.emit();
   }
 

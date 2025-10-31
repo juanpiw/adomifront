@@ -38,6 +38,7 @@ export class NotificationService {
 
   constructor() {
     // Sin datos de demo; se inicializa configuración y se carga lista vacía
+    console.log('🔔 [NOTIFICATION_SERVICE] Constructor inicializado');
     this.loadConfiguration();
     this.notificationsSubject.next([]);
   }
@@ -53,9 +54,11 @@ export class NotificationService {
   // ===== CONFIGURACIÓN =====
   
   setUserProfile(profile: UserProfile): void {
+    console.log('🔔 [NOTIFICATION_SERVICE] setUserProfile llamado', { profileAnterior: this.currentProfile, nuevoPerfil: profile });
     this.currentProfile = profile;
     this.loadConfiguration();
     this.loadNotifications();
+    console.log('🔔 [NOTIFICATION_SERVICE] Perfil establecido, notificaciones actuales:', this.notificationsByProfile[profile]?.length || 0);
   }
 
   getCurrentProfile(): UserProfile {
@@ -63,6 +66,7 @@ export class NotificationService {
   }
 
   private loadConfiguration(): void {
+    console.log('🔔 [NOTIFICATION_SERVICE] Configurando perfil', this.currentProfile);
     const config: NotificationConfig = {
       profile: this.currentProfile,
       enabledTypes: this.getDefaultEnabledTypes(),
@@ -164,8 +168,10 @@ export class NotificationService {
   private initializeNotifications(): void { /* removido demo */ }
 
   private loadNotifications(): void {
+    console.log('🔔 [NOTIFICATION_SERVICE] loadNotifications ejecutado. Perfil:', this.currentProfile);
     this.notificationsSubject.next(this.getProfileNotifications());
     this.updateUnreadCountValue();
+    console.log('🔔 [NOTIFICATION_SERVICE] Después de loadNotifications -> total:', this.notificationsByProfile[this.currentProfile]?.length || 0, 'no leídas:', this.notificationsByProfile[this.currentProfile]?.filter(n => n.status === 'unread').length || 0);
   }
 
   // Crear nueva notificación

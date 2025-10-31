@@ -28,6 +28,7 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Configurar el perfil de usuario
+    console.log('🔔 [NOTIFICATION_CONTAINER] ngOnInit perfil:', this.userProfile);
     this.notificationService.setUserProfile(this.userProfile);
   }
 
@@ -46,14 +47,20 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
   }
 
   togglePanel(): void {
+    console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel antes:', this.isOpen);
     this.isOpen = !this.isOpen;
+    console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel después:', this.isOpen);
   }
 
   closePanel(): void {
+    if (this.isOpen) {
+      console.log('🔔 [NOTIFICATION_CONTAINER] closePanel cerrando panel');
+    }
     this.isOpen = false;
   }
 
   onNotificationClick(notification: Notification): void {
+    console.log('🔔 [NOTIFICATION_CONTAINER] onNotificationClick', notification?.id, notification?.title);
     this.closePanel();
     
     // Navegar si hay un enlace
@@ -66,15 +73,18 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
   }
 
   onMarkAsRead(notificationId: string): void {
+    console.log('🔔 [NOTIFICATION_CONTAINER] onMarkAsRead', notificationId);
     this.notificationService.markAsRead(notificationId);
   }
 
   onMarkAllAsRead(): void {
+    console.log('🔔 [NOTIFICATION_CONTAINER] onMarkAllAsRead');
     this.notificationService.markAllAsRead();
   }
 
   // Métodos para crear notificaciones de ejemplo (para testing)
   createSampleNotification(): void {
+    console.log('🔔 [NOTIFICATION_CONTAINER] createSampleNotification');
     this.notificationService.createNotification({
       type: 'appointment',
       profile: this.userProfile,
