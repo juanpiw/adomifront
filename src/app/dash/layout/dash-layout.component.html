@@ -118,13 +118,13 @@
     </app-topbar>
     <div class="main-slot">
       <div *ngIf="verificationBanner" class="verification-banner" [ngClass]="{
-        'verification-banner--info': verificationBanner?.variant === 'info',
-        'verification-banner--warning': verificationBanner?.variant === 'warning',
-        'verification-banner--danger': verificationBanner?.variant === 'danger'
+        'verification-banner--info': verificationBanner.variant === 'info',
+        'verification-banner--warning': verificationBanner.variant === 'warning',
+        'verification-banner--danger': verificationBanner.variant === 'danger'
       }">
-        <div class="verification-banner__message">{{ verificationBanner?.message }}</div>
-        <button *ngIf="verificationBanner?.actionLabel" type="button" (click)="onVerificationBannerAction()">
-          {{ verificationBanner?.actionLabel }}
+        <div class="verification-banner__message">{{ verificationBanner.message }}</div>
+        <button *ngIf="verificationBanner.actionLabel" type="button" (click)="onVerificationBannerAction()">
+          {{ verificationBanner.actionLabel }}
         </button>
       </div>
       <router-outlet></router-outlet>
