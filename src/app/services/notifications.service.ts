@@ -5,7 +5,7 @@ import { initializeApp, FirebaseApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/services/auth.service';
 import { NotificationService } from '../../libs/shared-ui/notifications/services/notification.service';
-import { Notification, NotificationEvent, NotificationPriority, NotificationStatus, NotificationType, UserProfile } from '../../libs/shared-ui/notifications/models/notification.model';
+import type { Notification, NotificationEvent, NotificationPriority, NotificationStatus, NotificationType, UserProfile } from '../../libs/shared-ui/notifications/models/notification.model';
 
 type MessagingModule = typeof import('firebase/messaging');
 type Messaging = import('firebase/messaging').Messaging;

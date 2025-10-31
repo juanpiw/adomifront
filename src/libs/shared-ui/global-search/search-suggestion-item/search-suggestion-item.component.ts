@@ -1,13 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { SearchSuggestion, SuggestionCategory } from '../models/search-suggestion.model';
 import { IconComponent, IconName } from '../../icon/icon.component';
 
 @Component({
   selector: 'ui-search-suggestion-item',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent],
+  imports: [CommonModule, IconComponent],
   templateUrl: './search-suggestion-item.component.html',
   styleUrls: ['./search-suggestion-item.component.scss']
 })
@@ -15,7 +15,15 @@ export class SearchSuggestionItemComponent {
   @Input() suggestion!: SearchSuggestion;
   @Output() click = new EventEmitter<SearchSuggestion>();
 
-  onSuggestionClick(): void {
+  constructor(private router: Router) {}
+
+  onSuggestionClick(event?: MouseEvent): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (this.suggestion?.link) {
+      this.router.navigateByUrl(this.suggestion.link);
+    }
     this.click.emit(this.suggestion);
   }
 

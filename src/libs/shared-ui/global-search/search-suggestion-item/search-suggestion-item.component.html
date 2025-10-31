@@ -1,8 +1,8 @@
 <!-- Item individual de sugerencia de búsqueda -->
-<a 
-  [routerLink]="suggestion.link" 
-  class="flex items-center p-3 hover:bg-slate-100 rounded-lg transition-colors group cursor-pointer"
-  (click)="onSuggestionClick()">
+<button
+  type="button"
+  class="suggestion-item"
+  (click)="onSuggestionClick($event)">
   
   <!-- Contenido de la sugerencia (izquierda) -->
   <div class="flex-1 mr-4">
@@ -26,4 +26,4 @@
       class="w-6 h-6">
     </ui-icon>
   </div>
-</a>
+</button>

@@ -71,6 +71,15 @@ export interface Notification {
     serviceId?: string;
     amount?: number;
     rating?: number;
+    backendId?: string | number;
+    notificationId?: string | number;
+    appointment_id?: string | number;
+    payment_id?: string | number;
+    priority?: NotificationPriority;
+    description?: string;
+    link?: string;
+    url?: string;
+    actions?: NotificationAction[];
     [key: string]: any;
   };
   
