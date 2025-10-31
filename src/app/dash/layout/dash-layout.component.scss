@@ -61,7 +61,6 @@
 
 /* Mobile layout */
 @media (max-width: 900px) {
-  .dash-layout {  }
   .sidebar { position: fixed; left: 0; top: 0; bottom: 0; grid-template-columns: 72px 220px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
   .dash-layout.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   .sidebar { transform: translateX(0); transition: transform .25s ease; }
@@ -159,18 +158,29 @@
 }
 
 .user-sub-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 6px;
   white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .founder-badge {
-  background: #4338ca;
+  background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
   color: white;
+  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.22);
+}
+
+.founder-badge::before {
+  content: '★';
+  font-size: 12px;
 }
 
 /* Punto de estado sobre el avatar en user-summary */

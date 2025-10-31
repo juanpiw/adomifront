@@ -15,7 +15,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 
 @Component({
@@ -454,11 +454,11 @@ export class DashAgendaComponent implements OnInit {
 
     const verify$ = isCash
       ? this.appointments.verifyCashCode(appointmentId, code).pipe(
-          switchMap(cashResp => {
+          map(cashResp => {
             if (!cashResp?.success) {
-              return of({ success: false, error: cashResp?.error || 'No se pudo registrar el pago en efectivo.' });
+              return { success: false, error: cashResp?.error || 'No se pudo registrar el pago en efectivo.' };
             }
-            return this.appointments.verifyCompletion(appointmentId, code);
+            return { success: true, paymentId: cashResp.payment_id ?? null };
           }),
           catchError(err => of({ success: false, error: err?.error?.error || 'Error al registrar el pago en efectivo.' }))
         )

@@ -74,6 +74,16 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
+    try {
+      if (this.sessionService.isFounder()) {
+        this.isFounderAccount = true;
+        this.topbarConfig = {
+          ...this.topbarConfig,
+          planBadge: { label: 'Cuenta Fundador', variant: 'founder' }
+        };
+      }
+    } catch {}
+
     this.loadPlanInfo();
     this.loadProviderProfile();
     this.initializeNotifications();
@@ -303,7 +313,10 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             this.planInfo = response.currentPlan;
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
 
-            const isFounder = (response.currentPlan.name || '').toLowerCase().includes('fundador');
+            const planName = String(response.currentPlan.name || '').toLowerCase();
+            const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
+            const derivedFounder = this.sessionService.isFounder();
+            const isFounder = planName.includes('fundador') || planName.includes('founder') || planType.includes('fundador') || planType.includes('founder') || derivedFounder;
             this.isFounderAccount = isFounder;
             this.topbarConfig = {
               ...this.topbarConfig,
