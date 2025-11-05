@@ -27,6 +27,7 @@
   <div class="tbk-blocker" *ngIf="tbkBlockingActive">
     <div class="tbk-blocker__backdrop"></div>
     <div class="tbk-blocker__modal">
+      <button type="button" class="tbk-blocker__close" (click)="dismissTbkBlocker()" aria-label="Cerrar">×</button>
       <div class="tbk-blocker__icon">⚠️</div>
       <h3 class="tbk-blocker__title">Activa tus pagos con Webpay Mall</h3>
       <p class="tbk-blocker__message">

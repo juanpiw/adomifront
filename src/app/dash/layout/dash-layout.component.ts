@@ -89,6 +89,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   tbkState: TbkOnboardingState | null = null;
   tbkBlockingActive = false;
   private currentUrl: string | null = null;
+  private readonly TBK_BLOCKER_DISMISSED_KEY = 'provider:tbkBlockerDismissed';
 
   ngOnInit() {
     try {
@@ -625,7 +626,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   private evaluateTbkBlocking(): void {
     const shouldBlock = this.tbkOnboarding.requiresBlocking();
-    this.tbkBlockingActive = shouldBlock && !this.isOnTbkSetupRoute();
+    let dismissed = false;
+    try {
+      dismissed = typeof localStorage !== 'undefined' && localStorage.getItem(this.TBK_BLOCKER_DISMISSED_KEY) === 'true';
+    } catch {}
+    this.tbkBlockingActive = shouldBlock && !dismissed && !this.isOnTbkSetupRoute();
   }
 
   private isOnTbkSetupRoute(): boolean {
@@ -642,6 +647,16 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     }
     this.tbkStateSub?.unsubscribe();
     this.tbkStateSub = undefined;
+  }
+
+  // Permite cerrar temporalmente el modal de TBK hasta próxima sesión/cambio de estado
+  dismissTbkBlocker(): void {
+    this.tbkBlockingActive = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(this.TBK_BLOCKER_DISMISSED_KEY, 'true');
+      }
+    } catch {}
   }
   
   private loadUnreadNotificationsCount(): void {
