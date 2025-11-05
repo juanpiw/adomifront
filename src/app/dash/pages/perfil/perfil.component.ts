@@ -16,6 +16,7 @@ import { SobreMiComponent } from '../../../../libs/shared-ui/sobre-mi/sobre-mi.c
 import { ProgressPerfilComponent } from '../../../../libs/shared-ui/progress-perfil/progress-perfil.component';
 import { SeccionFotosComponent } from '../../../../libs/shared-ui/seccion-fotos/seccion-fotos.component';
 import { PortafolioComponent, PortfolioImage } from '../../../../libs/shared-ui/portafolio/portafolio.component';
+import { PortfolioService } from '../../../services/portfolio.service';
 import { TabsPerfilComponent, TabType } from '../../../../libs/shared-ui/tabs-perfil/tabs-perfil.component';
 import { UbicacionDisponibilidadComponent, LocationSettings, CoverageZone } from '../../../../libs/shared-ui/ubicacion-disponibilidad/ubicacion-disponibilidad.component';
 import { HorarioDisponibilidadComponent, WeeklySchedule } from '../../../../libs/shared-ui/horario-disponibilidad/horario-disponibilidad.component';
@@ -58,6 +59,7 @@ import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/review
 export class DashPerfilComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private providerProfileService = inject(ProviderProfileService);
+  private portfolioService = inject(PortfolioService);
   private availabilityService = inject(ProviderAvailabilityService);
   private progressService = inject(ProfileProgressService);
 
@@ -656,24 +658,45 @@ export class DashPerfilComponent implements OnInit {
       const file = event.target?.files?.[0];
       if (!file) return;
 
-      // Validar tamaño (máx 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('❌ El archivo es muy grande. Máximo 5MB');
+      // Validar tamaño (máx 6MB por defecto, alineado con backend)
+      const maxMb = Number((window as any)?.PORTFOLIO_IMAGE_MAX_MB || 6);
+      if (file.size > maxMb * 1024 * 1024) {
+        alert(`❌ El archivo es muy grande. Máximo ${maxMb}MB`);
         return;
       }
 
-      // Subir al backend
-      console.log('[PERFIL] Subiendo imagen...', file.name);
-      this.providerProfileService.uploadPortfolioFile(file).subscribe({
-        next: (response) => {
-          console.log('[PERFIL] Imagen subida correctamente:', response);
-          alert('✅ Imagen agregada al portafolio');
-          // Recargar portafolio
-          this.providerProfileService.getPortfolio().subscribe();
+      console.log('[PERFIL] Firmando subida S3 para imagen...', file.name);
+      this.portfolioService.signUpload({ type: 'image', contentType: file.type, sizeBytes: file.size }).subscribe({
+        next: async (sig) => {
+          try {
+            // PUT a S3
+            const putResp = await fetch(sig.uploadUrl, { method: 'PUT', headers: sig.headers, body: file });
+            if (!putResp.ok) throw new Error(`PUT S3 failed: ${putResp.status}`);
+
+            // Finalizar en backend
+            this.portfolioService.finalizeUpload({ type: 'image', key: sig.key, url: sig.url, sizeBytes: file.size, mimeType: file.type }).subscribe({
+              next: () => {
+                alert('✅ Imagen agregada al portafolio');
+                // Refrescar lista
+                this.providerProfileService.getPortfolio().subscribe({
+                  next: (portfolio) => {
+                    this.portfolioImages = portfolio.map(p => ({ id: String(p.id), url: p.file_url, alt: p.title || 'Portfolio image', type: p.file_type }));
+                  }
+                });
+              },
+              error: (err) => {
+                console.error('[PERFIL] Error finalizando subida:', err);
+                alert('❌ Error al registrar la imagen');
+              }
+            });
+          } catch (e: any) {
+            console.error('[PERFIL] Error subiendo a S3', e);
+            alert('❌ Error subiendo a S3');
+          }
         },
         error: (err) => {
-          console.error('[PERFIL] Error al subir imagen:', err);
-          alert('❌ Error al subir imagen');
+          console.error('[PERFIL] Error firmando subida:', err);
+          alert('❌ No se pudo firmar la subida');
         }
       });
     };
