@@ -192,48 +192,53 @@
             </div>
 
             <!-- Portafolio -->
-            <div class="profile-preview__section" *ngIf="portfolioImages.length > 0">
-              <h3>Portafolio</h3>
-              <div class="portfolio-carousel">
-                <div class="portfolio-carousel__container" [style.transform]="'translateX(' + currentSlide * -100 + '%)'">
-                  <div *ngFor="let image of portfolioImages; let i = index" 
-                       class="portfolio-carousel__slide"
-                       [class.portfolio-carousel__slide--active]="i === currentSlide">
-                    <div class="portfolio-carousel__item">
-                      <img [src]="image.url" [alt]="image.alt">
-                      <div class="portfolio-carousel__overlay">
-                        <div class="portfolio-carousel__content">
-                          <h4>{{ image.alt }}</h4>
-                          <p>Ver detalles</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Controles del carrusel -->
-                <div class="portfolio-carousel__controls">
-                  <button class="portfolio-carousel__btn portfolio-carousel__btn--prev" 
-                          (click)="previousSlide()"
-                          [disabled]="currentSlide === 0">
-                    <ui-icon name="chevron-left"></ui-icon>
-                  </button>
-                  <button class="portfolio-carousel__btn portfolio-carousel__btn--next" 
-                          (click)="nextSlide()"
-                          [disabled]="currentSlide === portfolioImages.length - 1">
-                    <ui-icon name="chevron-right"></ui-icon>
-                  </button>
-                </div>
-                
-                <!-- Indicadores -->
-                <div class="portfolio-carousel__indicators">
-                  <button *ngFor="let image of portfolioImages; let i = index" 
-                          class="portfolio-carousel__indicator"
-                          [class.portfolio-carousel__indicator--active]="i === currentSlide"
-                          (click)="goToSlide(i)">
-                  </button>
-                </div>
+            <div class="profile-preview__section portfolio-preview" *ngIf="portfolioImages.length > 0">
+              <div class="portfolio-preview__header">
+                <h3>Portafolio</h3>
+                <button 
+                  *ngIf="portfolioImages.length > portfolioPreviewLimit"
+                  type="button"
+                  class="portfolio-preview__see-all"
+                  (click)="openPortfolioLightbox(0)">
+                  Ver todo el portafolio
+                </button>
               </div>
+
+              <div class="portfolio-gallery">
+                <button
+                  type="button"
+                  class="portfolio-gallery__card"
+                  *ngFor="let item of portfolioImages | slice:0:portfolioPreviewLimit; let i = index"
+                  (click)="openPortfolioLightbox(i)">
+                  <span class="portfolio-gallery__badge" [class.portfolio-gallery__badge--video]="item.type === 'video'">
+                    {{ item.type === 'video' ? 'Video' : 'Foto' }}
+                  </span>
+                  <ng-container [ngSwitch]="item.type">
+                    <img
+                      *ngSwitchCase="'image'"
+                      [src]="item.url"
+                      [alt]="item.alt"
+                      loading="lazy">
+                    <img
+                      *ngSwitchCase="'video'"
+                      [src]="item.thumbnailUrl || item.url"
+                      [alt]="item.alt"
+                      loading="lazy"
+                      class="portfolio-gallery__thumb">
+                  </ng-container>
+                  <div class="portfolio-gallery__overlay">
+                    <span>Ver detalle</span>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                *ngIf="portfolioImages.length > portfolioPreviewLimit"
+                type="button"
+                class="portfolio-preview__cta"
+                (click)="openPortfolioLightbox(0)">
+                Mostrar las {{ portfolioImages.length }} piezas
+              </button>
             </div>
 
             <!-- Botón de reserva -->
@@ -257,6 +262,58 @@
       </div>
     </div>
 
+  </div>
+
+  <div class="portfolio-lightbox" *ngIf="portfolioLightboxOpen" (click)="closePortfolioLightbox()">
+    <div class="portfolio-lightbox__dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="portfolio-lightbox__close" aria-label="Cerrar" (click)="closePortfolioLightbox()">×</button>
+
+      <button
+        type="button"
+        class="portfolio-lightbox__nav portfolio-lightbox__nav--prev"
+        (click)="previousPortfolioItem()"
+        [disabled]="portfolioImages.length <= 1"
+        aria-label="Anterior">
+        ‹
+      </button>
+
+      <div class="portfolio-lightbox__media" *ngIf="activePortfolioItem as activeItem">
+        <ng-container [ngSwitch]="activeItem.type">
+          <img *ngSwitchCase="'image'" [src]="activeItem.url" [alt]="activeItem.alt">
+          <video *ngSwitchCase="'video'" [src]="activeItem.url" controls autoplay playsinline>
+            Tu navegador no soporta la reproducción de video.
+          </video>
+        </ng-container>
+
+        <div class="portfolio-lightbox__meta">
+          <div class="portfolio-lightbox__meta-primary">
+            <span class="portfolio-lightbox__chip">{{ activeItem.type === 'video' ? 'Video' : 'Fotografía' }}</span>
+            <span class="portfolio-lightbox__index">{{ portfolioLightboxIndex + 1 }} / {{ portfolioImages.length }}</span>
+          </div>
+          <h4>{{ activeItem.alt }}</h4>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="portfolio-lightbox__nav portfolio-lightbox__nav--next"
+        (click)="nextPortfolioItem()"
+        [disabled]="portfolioImages.length <= 1"
+        aria-label="Siguiente">
+        ›
+      </button>
+
+      <div class="portfolio-lightbox__thumbs" *ngIf="portfolioImages.length > 1">
+        <button
+          type="button"
+          class="portfolio-lightbox__thumb"
+          *ngFor="let item of portfolioImages; let i = index"
+          [class.portfolio-lightbox__thumb--active]="i === portfolioLightboxIndex"
+          (click)="goToPortfolioItem(i)">
+          <img [src]="item.thumbnailUrl || item.url" [alt]="item.alt">
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal de crear/editar servicio -->

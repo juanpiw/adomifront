@@ -7,6 +7,8 @@ export interface PortfolioImage {
   url: string;
   alt: string;
   type: 'image' | 'video';
+  thumbnailUrl?: string | null;
+  order?: number;
 }
 
 @Component({

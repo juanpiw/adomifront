@@ -143,12 +143,16 @@ export class DashPerfilComponent implements OnInit {
     this.providerProfileService.getPortfolio().subscribe({
       next: (portfolio) => {
         console.log('[PERFIL] Portafolio cargado:', portfolio);
-        this.portfolioImages = portfolio.map(p => ({
-          id: String(p.id),
-          url: p.file_url,
-          alt: p.title || 'Portfolio image',
-          type: p.file_type
-        }));
+        this.portfolioImages = portfolio
+          .map(p => ({
+            id: String(p.id),
+            url: this.resolvePortfolioUrl(p.file_url),
+            alt: p.title || 'Portfolio image',
+            type: (p.file_type as 'image' | 'video') || 'image',
+            thumbnailUrl: this.resolvePortfolioUrl(p.thumbnail_url),
+            order: typeof p.order_index === 'number' ? p.order_index : undefined
+          }))
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       },
       error: (err) => {
         console.error('[PERFIL] Error al cargar portafolio:', err);
@@ -271,13 +275,17 @@ export class DashPerfilComponent implements OnInit {
     }
   ];
 
-  portfolioImages: PortfolioImage[] = [
+  portfolioImages: (PortfolioImage & { thumbnailUrl?: string | null; order?: number })[] = [
     { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo', type: 'image' },
     { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image' },
     { id: '3', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Peinado', alt: 'Peinado elegante', type: 'image' },
     { id: '4', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Maquillaje', alt: 'Maquillaje profesional', type: 'image' },
     { id: '5', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Manicura', alt: 'Manicura artística', type: 'image' }
   ];
+
+  portfolioPreviewLimit = 6;
+  portfolioLightboxOpen = false;
+  portfolioLightboxIndex = 0;
 
   profileProgress = 75;
 
@@ -300,13 +308,14 @@ export class DashPerfilComponent implements OnInit {
   savingPhotos = false;
   photosHasChanges = false;
 
-  // Estado del carrusel del portafolio
-  currentSlide = 0;
-
   // Estados de carga
   savingPublicProfile = false;
   savingBasicInfo = false;
   
+  get activePortfolioItem(): (PortfolioImage & { thumbnailUrl?: string | null; order?: number }) | null {
+    return this.portfolioImages[this.portfolioLightboxIndex] ?? null;
+  }
+
   // Estados de cambios por sección
   basicInfoHasChanges = false;
   
@@ -680,7 +689,16 @@ export class DashPerfilComponent implements OnInit {
                 // Refrescar lista
                 this.providerProfileService.getPortfolio().subscribe({
                   next: (portfolio) => {
-                    this.portfolioImages = portfolio.map(p => ({ id: String(p.id), url: p.file_url, alt: p.title || 'Portfolio image', type: p.file_type }));
+                    this.portfolioImages = portfolio
+                      .map(p => ({
+                        id: String(p.id),
+                        url: this.resolvePortfolioUrl(p.file_url),
+                        alt: p.title || 'Portfolio image',
+                        type: (p.file_type as 'image' | 'video') || 'image',
+                        thumbnailUrl: this.resolvePortfolioUrl(p.thumbnail_url),
+                        order: typeof p.order_index === 'number' ? p.order_index : undefined
+                      }))
+                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                   }
                 });
               },
@@ -1158,20 +1176,43 @@ export class DashPerfilComponent implements OnInit {
     }
   }
 
-  // Métodos para el carrusel del portafolio
-  nextSlide() {
-    if (this.currentSlide < this.portfolioImages.length - 1) {
-      this.currentSlide++;
+  openPortfolioLightbox(index: number) {
+    if (!this.portfolioImages.length) {
+      return;
     }
+    this.portfolioLightboxIndex = Math.max(0, Math.min(index, this.portfolioImages.length - 1));
+    this.portfolioLightboxOpen = true;
+    document.body.classList.add('portfolio-lightbox-open');
   }
 
-  previousSlide() {
-    if (this.currentSlide > 0) {
-      this.currentSlide--;
-    }
+  closePortfolioLightbox() {
+    this.portfolioLightboxOpen = false;
+    document.body.classList.remove('portfolio-lightbox-open');
   }
 
-  goToSlide(index: number) {
-    this.currentSlide = index;
+  nextPortfolioItem() {
+    if (!this.portfolioImages.length) return;
+    this.portfolioLightboxIndex = (this.portfolioLightboxIndex + 1) % this.portfolioImages.length;
+  }
+
+  previousPortfolioItem() {
+    if (!this.portfolioImages.length) return;
+    this.portfolioLightboxIndex = (this.portfolioLightboxIndex - 1 + this.portfolioImages.length) % this.portfolioImages.length;
+  }
+
+  goToPortfolioItem(index: number) {
+    if (index < 0 || index >= this.portfolioImages.length) return;
+    this.portfolioLightboxIndex = index;
+  }
+
+  private resolvePortfolioUrl(url?: string | null): string | null {
+    if (!url) return null;
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+    if (url.startsWith('/')) {
+      return `${environment.apiBaseUrl}${url}`;
+    }
+    return `${environment.apiBaseUrl}/${url}`;
   }
 }
