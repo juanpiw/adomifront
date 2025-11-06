@@ -20,34 +20,32 @@
       
       <!-- Left Content -->
       <div class="perfil-trabajador-left">
-        
-        <!-- Trust Stats -->
-        <app-trust-stats 
-          [data]="trustStatsData"
-          (ratingClick)="onRatingClick($event)"
-          (verificationClick)="onVerificationClick()">
-        </app-trust-stats>
-
-        <!-- Portfolio Section -->
-        <app-portfolio 
+        <section class="perfil-trabajador-section">
+          <!-- Portfolio Section -->
+          <app-portfolio 
           [data]="portfolioData"
           (itemClick)="onPortfolioItemClick($event)">
-        </app-portfolio>
+          </app-portfolio>
+        </section>
 
-        <!-- Reviews Section -->flujos-front
-        <app-reviews 
+        <!-- Reviews Section -->
+        <section class="perfil-trabajador-section">
+          <app-reviews 
           [data]="reviewsData"
           (reviewClick)="onReviewClick($event)"
           (showAllClick)="onShowAllReviewsClick()">
-        </app-reviews>
+          </app-reviews>
+        </section>
 
         <!-- FAQ Section -->
-        <app-faq 
+        <section class="perfil-trabajador-section">
+          <app-faq 
           [data]="faqData"
           (itemClick)="onFaqItemClick($event)"
           (itemToggle)="onFaqItemToggle($event)">
-        </app-faq>
-
+          </app-faq>
+        </section>
+ 
       </div>
 
       <!-- Right Sidebar - Booking Panel -->

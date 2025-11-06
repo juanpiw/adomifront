@@ -1,18 +1,56 @@
-<section class="profile-hero">
-  <div class="profile-hero__cover" [style.background-image]="'url(' + data.coverImage + ')'"></div>
-  <button *ngIf="data.hasVideo" class="profile-hero__play" (click)="onPlayVideoClick()">
-    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
-    </svg>
-  </button>
-  <div class="profile-hero__info">
-    <img [src]="data.avatar" 
-         [alt]="data.name" 
-         class="profile-hero__avatar"
-         (click)="onAvatarClick()">
-    <div class="profile-hero__text">
-      <h2 class="profile-hero__name">{{ data.name }}</h2>
-      <p class="profile-hero__title">{{ data.title }}</p>
+<section class="profile-hero" [class.profile-hero--has-cover]="!!data.coverImage">
+  <div class="profile-hero__backdrop" *ngIf="data.coverImage" [style.background-image]="'url(' + data.coverImage + ')'" ></div>
+  <div class="profile-hero__card">
+    <div class="profile-hero__media">
+      <div class="profile-hero__avatar-wrapper" (click)="onAvatarClick()">
+        <img [src]="data.avatar" [alt]="data.name" class="profile-hero__avatar" />
+        <span class="profile-hero__avatar-ring"></span>
+      </div>
+      <button *ngIf="data.hasVideo" class="profile-hero__video" (click)="onPlayVideoClick()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <span>Ver video</span>
+      </button>
+    </div>
+
+    <div class="profile-hero__body">
+      <div class="profile-hero__header">
+        <h1 class="profile-hero__name">{{ data.name }}</h1>
+        <p *ngIf="data.title" class="profile-hero__title">{{ data.title }}</p>
+        <div *ngIf="data.location" class="profile-hero__location">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+          </svg>
+          <span>{{ data.location }}</span>
+        </div>
+      </div>
+
+      <div class="profile-hero__stats">
+        <div *ngIf="data.rating !== null && data.rating !== undefined" class="profile-hero__stat">
+          <span class="profile-hero__icon profile-hero__icon--star">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+          </span>
+          <div class="profile-hero__stat-text">
+            <span class="profile-hero__stat-value">{{ data.rating | number:'1.1-1' }}</span>
+            <span class="profile-hero__stat-label">{{ data.reviewsCount || 0 }} reseñas</span>
+          </div>
+        </div>
+
+        <div *ngIf="data.isVerified" class="profile-hero__stat profile-hero__stat--verified">
+          <span class="profile-hero__icon profile-hero__icon--shield">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2l7 4v6c0 5-3.67 9.74-7 10-3.33-.26-7-5-7-10V6l7-4zm-1 13l5-5-1.41-1.41L11 11.17l-1.59-1.58L8 11l3 3z" />
+            </svg>
+          </span>
+          <div class="profile-hero__stat-text">
+            <span class="profile-hero__stat-value">{{ data.verifiedText || 'Profesional verificado' }}</span>
+            <span class="profile-hero__stat-label">Identidad revisada</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

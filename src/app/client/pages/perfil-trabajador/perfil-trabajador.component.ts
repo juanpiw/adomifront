@@ -11,7 +11,6 @@ import { ProfileHeroComponent, ProfileHeroData } from '../../../../libs/shared-u
 import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
 import { PortfolioComponent, PortfolioData, PortfolioItem } from '../../../../libs/shared-ui/portfolio/portfolio.component';
 import { ReviewsComponent, ReviewsData, Review } from '../../../../libs/shared-ui/reviews/reviews.component';
-import { TrustStatsComponent, TrustStatsData } from '../../../../libs/shared-ui/trust-stats/trust-stats.component';
 import { FaqComponent, FaqData, FaqItem } from '../../../../libs/shared-ui/faq/faq.component';
 
 @Component({
@@ -23,7 +22,6 @@ import { FaqComponent, FaqData, FaqItem } from '../../../../libs/shared-ui/faq/f
     BookingPanelComponent,
     PortfolioComponent,
     ReviewsComponent,
-    TrustStatsComponent,
     FaqComponent
   ],
   templateUrl: './perfil-trabajador.component.html',
@@ -66,13 +64,6 @@ export class PerfilTrabajadorComponent implements OnInit {
     title: 'Lo que dicen sus clientes',
     reviews: [],
     showAllButton: true
-  };
-
-  trustStatsData: TrustStatsData = {
-    rating: 0,
-    reviewsCount: 0,
-    isVerified: false,
-    verifiedText: 'Profesional Verificado'
   };
 
   faqData: FaqData = {
@@ -195,9 +186,14 @@ export class PerfilTrabajadorComponent implements OnInit {
     // Profile Hero Data
     this.profileHeroData = {
       name: this.workerData.name,
-      title: this.workerData.title,
+      title: this.workerData.title || '',
       avatar: this.resolveMediaUrl(this.workerData.avatar),
       coverImage: this.resolveMediaUrl(this.workerData.coverImage),
+      location: this.workerData.location || '',
+      rating: Number(this.workerData.rating || 0),
+      reviewsCount: Number(this.workerData.reviews || 0),
+      isVerified: !!this.workerData.verified,
+      verifiedText: this.workerData.verified ? 'Profesional Verificado' : 'Perfil en validación',
       hasVideo: false
     };
 
@@ -235,14 +231,6 @@ export class PerfilTrabajadorComponent implements OnInit {
         title: `Trabajo ${index + 1}`,
         description: `Descripción del trabajo ${index + 1}`
       }))
-    };
-
-    // Actualizar estadísticas de confianza desde backend
-    this.trustStatsData = {
-      rating: Number(this.workerData.rating || 0),
-      reviewsCount: Number(this.workerData.reviews || 0),
-      isVerified: this.workerData.verified,
-      verifiedText: 'Profesional Verificado'
     };
 
     // FAQ Data
