@@ -160,11 +160,11 @@
               </div>
               <div class="profile-preview__info">
                 <h1 class="profile-preview__name">{{ basicInfo.fullName }}</h1>
-                <p class="profile-preview__title">{{ basicInfo.professionalTitle }}</p>
-                <p class="profile-preview__location">{{ basicInfo.mainCommune }}</p>
+                <p class="profile-preview__title">{{ basicInfo.professionalTitle || 'Profesional independiente' }}</p>
+                <p class="profile-preview__location">{{ basicInfo.mainCommune || 'Comuna no especificada' }}</p>
                 <div class="profile-preview__rating">
-                  <span class="rating-stars">⭐⭐⭐⭐⭐</span>
-                  <span class="rating-text">4.9 (127 reseñas)</span>
+                  <span class="rating-stars">{{ ratingStars }}</span>
+                  <span class="rating-text">{{ ratingSummary }}</span>
                 </div>
               </div>
             </div>

@@ -194,6 +194,8 @@ export class DashPerfilComponent implements OnInit {
     };
 
     this.profileProgress = profile.profile_completion || 0;
+    this.ratingAverage = profile.rating_average != null ? Number(profile.rating_average) : null;
+    this.reviewCount = profile.review_count != null ? Number(profile.review_count) : 0;
     
     this.locationSettings = {
       ...this.locationSettings,
@@ -279,6 +281,8 @@ export class DashPerfilComponent implements OnInit {
   portfolioLightboxIndex = 0;
 
   profileProgress = 75;
+  ratingAverage: number | null = null;
+  reviewCount = 0;
 
   // Reseñas públicas para el preview
   publicReviewsData: ReviewsData = {
@@ -1208,6 +1212,22 @@ export class DashPerfilComponent implements OnInit {
       })
       .filter((item): item is PortfolioItemDisplay => !!item)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
+
+  get hasReviews(): boolean {
+    return (this.reviewCount ?? 0) > 0;
+  }
+
+  get ratingStars(): string {
+    const rating = Math.max(0, Math.min(5, Math.round((this.ratingAverage ?? 0))));
+    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  }
+
+  get ratingSummary(): string {
+    if (this.hasReviews) {
+      return `${(this.ratingAverage ?? 0).toFixed(1)} (${this.reviewCount} reseñas)`;
+    }
+    return 'Sin reseñas aún';
   }
 
   private resolvePortfolioUrl(url?: string | null): string | null {

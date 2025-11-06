@@ -21,6 +21,7 @@ export class VerificacionPerfilComponent implements OnInit {
   isUploading = false;
   statusLoading = false;
   uploadError = '';
+  feedbackMessage: { type: 'success' | 'error'; text: string } | null = null;
   statusError: string | null = null;
   verificationStatus: VerificationStatus = 'none';
   verificationRecord: ProviderVerificationRecord | null = null;
@@ -144,6 +145,7 @@ export class VerificacionPerfilComponent implements OnInit {
 
     this.isUploading = true;
     this.uploadError = '';
+    this.feedbackMessage = null;
 
     try {
       const startResponse = await firstValueFrom(this.verificationService.startRequest({
@@ -169,6 +171,10 @@ export class VerificacionPerfilComponent implements OnInit {
 
       await firstValueFrom(this.verificationService.submitRequest(this.verificationId));
 
+      this.feedbackMessage = {
+        type: 'success',
+        text: 'Tus documentos fueron enviados correctamente. Te avisaremos cuando se complete la revisión.'
+      };
       this.verificationStatus = 'pending';
       this.goToStep(3);
       this.resetSelections();
@@ -176,6 +182,10 @@ export class VerificacionPerfilComponent implements OnInit {
     } catch (error: any) {
       console.error('Error al subir documentos:', error);
       this.uploadError = error?.error?.error || error?.message || 'Error al subir documentos';
+      this.feedbackMessage = {
+        type: 'error',
+        text: this.uploadError
+      };
     } finally {
       this.isUploading = false;
     }
@@ -197,6 +207,7 @@ export class VerificacionPerfilComponent implements OnInit {
 
   startVerification() {
     this.resetSelections();
+    this.feedbackMessage = null;
     this.goToStep(2);
   }
 

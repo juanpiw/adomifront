@@ -9,6 +9,13 @@
     {{ statusError }}
   </div>
 
+  <div *ngIf="feedbackMessage && feedbackMessage.type === 'success'" class="verificacion-success">
+    {{ feedbackMessage.text }}
+  </div>
+  <div *ngIf="feedbackMessage && feedbackMessage.type === 'error'" class="verificacion-error">
+    {{ feedbackMessage.text }}
+  </div>
+
   <!-- Estado: Sin verificación -->
   <div *ngIf="!statusLoading && !hasVerification" class="verificacion-content">
     
@@ -141,7 +148,7 @@
       </div>
 
       <!-- Mensaje de error -->
-      <div *ngIf="uploadError" class="verificacion-error">
+      <div *ngIf="uploadError && !feedbackMessage" class="verificacion-error">
         {{ uploadError }}
       </div>
 
