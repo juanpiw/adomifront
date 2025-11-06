@@ -8,8 +8,92 @@
     
     <!-- Cuenta y Perfil -->
     <ui-account-profile-section 
+      [profileLinks]="accountLinks"
       (linkClicked)="onLinkClicked($event)">
     </ui-account-profile-section>
+
+    <!-- Panel Seguridad y Contraseña -->
+    <section
+      #securitySection
+      class="security-card"
+      *ngIf="showSecurityPanel">
+      <header class="security-card__header">
+        <div>
+          <h3>Seguridad y Contraseña</h3>
+          <p>Actualiza tu contraseña para mantener tu cuenta protegida.</p>
+        </div>
+        <button
+          type="button"
+          class="security-card__close"
+          (click)="onCloseSecurityPanel()">
+          ×
+        </button>
+      </header>
+
+      <form
+        class="security-form"
+        (ngSubmit)="submitSecurityForm()">
+        <div class="security-form__grid">
+          <label class="security-field">
+            <span class="security-field__label">Contraseña actual (opcional)</span>
+            <input
+              type="password"
+              autocomplete="current-password"
+              [(ngModel)]="securityForm.currentPassword"
+              name="currentPassword"
+              placeholder="Ingresa tu contraseña actual" />
+          </label>
+
+          <label class="security-field">
+            <span class="security-field__label">Nueva contraseña</span>
+            <input
+              type="password"
+              autocomplete="new-password"
+              [(ngModel)]="securityForm.newPassword"
+              name="newPassword"
+              required
+              minlength="6"
+              placeholder="Mínimo 6 caracteres" />
+          </label>
+
+          <label class="security-field">
+            <span class="security-field__label">Confirmar nueva contraseña</span>
+            <input
+              type="password"
+              autocomplete="new-password"
+              [(ngModel)]="securityForm.confirmPassword"
+              name="confirmPassword"
+              required
+              minlength="6"
+              placeholder="Repítela para confirmar" />
+          </label>
+        </div>
+
+        <div
+          class="security-feedback"
+          [class.security-feedback--success]="securityMessageType === 'success'"
+          [class.security-feedback--error]="securityMessageType === 'error'"
+          *ngIf="securityMessage">
+          {{ securityMessage }}
+        </div>
+
+        <div class="security-actions">
+          <button
+            type="submit"
+            class="security-actions__save"
+            [disabled]="securitySubmitting">
+            {{ securitySubmitting ? 'Guardando...' : 'Guardar contraseña' }}
+          </button>
+          <button
+            type="button"
+            class="security-actions__cancel"
+            (click)="onCloseSecurityPanel()"
+            [disabled]="securitySubmitting">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </section>
     
     <!-- Pagos y Facturación -->
     <ui-payments-billing-section 

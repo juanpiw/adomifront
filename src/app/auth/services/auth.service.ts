@@ -395,6 +395,22 @@ export class AuthService {
       );
   }
 
+  // Cambiar contraseña (usuario autenticado)
+  changePassword(newPassword: string, currentPassword?: string): Observable<{ success: boolean; message?: string; error?: string }> {
+    const payload: { newPassword: string; currentPassword?: string } = { newPassword };
+    if (currentPassword) {
+      payload.currentPassword = currentPassword;
+    }
+
+    return this.http.post<{ success: boolean; message?: string; error?: string }>(
+      `${this.baseUrl}/auth/change-password`,
+      payload,
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      catchError(error => this.handleError(error))
+    );
+  }
+
   // Manejo de errores
   private handleError(error: any): Observable<never> {
     console.error('AuthService Error:', error);
