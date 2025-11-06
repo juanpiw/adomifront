@@ -62,6 +62,13 @@ export class AdminPagosComponent implements OnInit {
   verificationNotes: Record<number, string> = {};
   verificationRejectReasons: Record<number, string> = {};
   verificationProcessing: Record<number, boolean> = {};
+  verificationSearch = '';
+  verificationDetail: any | null = null;
+  verificationDetailLoading = false;
+  verificationDetailError: string | null = null;
+  verificationLimit = 25;
+  verificationOffset = 0;
+  verificationPagination: { limit: number; offset: number; returned: number } | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -162,24 +169,39 @@ export class AdminPagosComponent implements OnInit {
     this.loadAdminCashCommissions(filter);
   }
 
-  private loadVerificationRequests(filter: 'all' | 'pending' | 'approved' | 'rejected') {
+  private loadVerificationRequests(filter: 'all' | 'pending' | 'approved' | 'rejected', offset: number = 0) {
     if (!this.adminSecret) return;
     const token = this.session.getAccessToken();
     this.verificationLoading = true;
     this.verificationError = null;
+    this.verificationDetail = null;
+    this.verificationDetailError = null;
+    this.verificationDetailLoading = false;
+
+    this.verificationOffset = Math.max(0, offset || 0);
     const statusParam = filter === 'all' ? undefined : filter;
-    this.adminApi.listVerifications(this.adminSecret, token, statusParam).subscribe({
+    const searchTerm = this.verificationSearch?.trim();
+
+    this.adminApi.listVerifications(this.adminSecret, token, {
+      status: statusParam,
+      limit: this.verificationLimit,
+      offset: this.verificationOffset,
+      search: searchTerm ? searchTerm : undefined
+    }).subscribe({
       next: (res: any) => {
         this.verificationLoading = false;
         if (res?.success) {
           this.verificationRequests = res.data || [];
+          this.verificationPagination = res.pagination || { limit: this.verificationLimit, offset: this.verificationOffset, returned: (res.data || []).length };
         } else {
           this.verificationError = res?.error || 'No fue posible cargar las verificaciones.';
+          this.verificationPagination = null;
         }
       },
       error: (err: any) => {
         this.verificationLoading = false;
         this.verificationError = err?.error?.error || 'No fue posible cargar las verificaciones.';
+        this.verificationPagination = null;
       }
     });
   }
@@ -187,7 +209,32 @@ export class AdminPagosComponent implements OnInit {
   setVerificationFilter(filter: 'all' | 'pending' | 'approved' | 'rejected') {
     if (this.verificationFilter === filter && !this.verificationLoading) return;
     this.verificationFilter = filter;
-    this.loadVerificationRequests(filter);
+    this.verificationOffset = 0;
+    this.loadVerificationRequests(filter, 0);
+  }
+
+  applyVerificationSearch() {
+    if (this.verificationLoading) return;
+    this.verificationOffset = 0;
+    this.loadVerificationRequests(this.verificationFilter, 0);
+  }
+
+  clearVerificationSearch() {
+    this.verificationSearch = '';
+    this.applyVerificationSearch();
+  }
+
+  nextVerificationPage() {
+    if (this.verificationLoading) return;
+    const nextOffset = this.verificationOffset + this.verificationLimit;
+    this.loadVerificationRequests(this.verificationFilter, nextOffset);
+  }
+
+  prevVerificationPage() {
+    if (this.verificationLoading) return;
+    const prevOffset = Math.max(0, this.verificationOffset - this.verificationLimit);
+    if (prevOffset === this.verificationOffset) return;
+    this.loadVerificationRequests(this.verificationFilter, prevOffset);
   }
 
   approveVerification(request: any) {
@@ -198,6 +245,7 @@ export class AdminPagosComponent implements OnInit {
     this.adminApi.approveVerification(this.adminSecret, token, Number(request.id), notes || undefined).subscribe({
       next: () => {
         delete this.verificationProcessing[request.id];
+        this.clearVerificationDetail();
         this.loadVerificationRequests(this.verificationFilter);
       },
       error: (err) => {
@@ -205,6 +253,43 @@ export class AdminPagosComponent implements OnInit {
         alert(err?.error?.error || 'No se pudo aprobar la verificación.');
       }
     });
+  }
+
+  viewVerificationDetail(request: any) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.verificationDetailLoading = true;
+    this.verificationDetailError = null;
+    this.verificationDetail = null;
+
+    this.adminApi.getVerificationDetail(this.adminSecret, token, Number(request.id)).subscribe({
+      next: (res: any) => {
+        this.verificationDetailLoading = false;
+        if (res?.success) {
+          this.verificationDetail = res.data;
+        } else {
+          this.verificationDetailError = res?.error || 'No fue posible obtener el detalle de la verificación.';
+        }
+      },
+      error: (err: any) => {
+        this.verificationDetailLoading = false;
+        this.verificationDetailError = err?.error?.error || 'No fue posible obtener el detalle de la verificación.';
+      }
+    });
+  }
+
+  refreshVerificationDetail() {
+    if (!this.verificationDetail?.id) {
+      this.verificationDetail = null;
+      return;
+    }
+    this.viewVerificationDetail({ id: this.verificationDetail.id });
+  }
+
+  clearVerificationDetail() {
+    this.verificationDetail = null;
+    this.verificationDetailError = null;
+    this.verificationDetailLoading = false;
   }
 
   rejectVerification(request: any) {
@@ -220,6 +305,7 @@ export class AdminPagosComponent implements OnInit {
     this.adminApi.rejectVerification(this.adminSecret, token, Number(request.id), reason, notes || undefined).subscribe({
       next: () => {
         delete this.verificationProcessing[request.id];
+        this.clearVerificationDetail();
         this.loadVerificationRequests(this.verificationFilter);
       },
       error: (err) => {

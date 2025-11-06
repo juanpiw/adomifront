@@ -5,20 +5,34 @@ import { environment } from '../../environments/environment';
 
 export type VerificationStatus = 'none' | 'pending' | 'approved' | 'rejected' | string;
 
+export interface ProviderVerificationFile {
+  id?: number;
+  type: 'front' | 'back' | 'selfie' | 'extra' | string;
+  key: string;
+  bucket?: string;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  checksum?: string | null;
+  uploadedAt?: string | null;
+  updatedAt?: string | null;
+  url?: string | null;
+}
+
 export interface ProviderVerificationRecord {
   id: number;
   provider_id: number;
   document_type: string;
   document_number: string;
-  front_document_url: string | null;
-  back_document_url: string | null;
-  selfie_url: string | null;
   status: VerificationStatus;
   rejection_reason?: string | null;
-  verification_notes?: string | null;
-  verified_at?: string | null;
+  review_notes?: string | null;
+  reviewed_by_admin_id?: number | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
+  metadata?: any;
   created_at?: string | null;
   updated_at?: string | null;
+  files?: ProviderVerificationFile[];
 }
 
 export interface ProviderVerificationStatusResponse {
@@ -30,12 +44,33 @@ export interface ProviderVerificationStatusResponse {
   };
 }
 
-export interface SubmitVerificationPayload {
+export interface StartVerificationPayload {
   documentNumber: string;
   documentType?: 'cedula' | 'pasaporte' | 'licencia';
-  frontFile: File;
-  backFile: File;
-  selfieFile?: File | null;
+}
+
+export interface SignVerificationFilePayload {
+  verificationId: number;
+  type: 'front' | 'back' | 'selfie' | 'extra';
+  contentType: string;
+  sizeBytes: number;
+}
+
+export interface SignVerificationFileResponse {
+  success: boolean;
+  uploadUrl: string;
+  headers: Record<string, string>;
+  key: string;
+  bucket: string;
+}
+
+export interface FinalizeVerificationFilePayload {
+  verificationId: number;
+  type: 'front' | 'back' | 'selfie' | 'extra';
+  key: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  checksum?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,19 +93,55 @@ export class ProviderVerificationService {
     });
   }
 
-  submit(payload: SubmitVerificationPayload): Observable<{ success: boolean; status: VerificationStatus }> {
-    const formData = new FormData();
-    formData.append('document_number', payload.documentNumber.trim());
-    formData.append('document_type', payload.documentType || 'cedula');
-    formData.append('document_front', payload.frontFile);
-    formData.append('document_back', payload.backFile);
-    if (payload.selfieFile) {
-      formData.append('document_selfie', payload.selfieFile);
-    }
+  startRequest(payload: StartVerificationPayload): Observable<{ success: boolean; verification: ProviderVerificationRecord }> {
+    const body = {
+      documentNumber: payload.documentNumber.trim(),
+      documentType: payload.documentType || 'cedula'
+    };
+    return this.http.post<{ success: boolean; verification: ProviderVerificationRecord }>(
+      `${this.baseUrl}/provider/verification/request`,
+      body,
+      { headers: this.authHeaders(true) }
+    );
+  }
 
-    return this.http.post<{ success: boolean; status: VerificationStatus }>(`${this.baseUrl}/provider/verification`, formData, {
-      headers: this.authHeaders(false)
-    });
+  signFile(payload: SignVerificationFilePayload): Observable<SignVerificationFileResponse> {
+    const body = {
+      verificationId: payload.verificationId,
+      type: payload.type,
+      contentType: payload.contentType,
+      sizeBytes: payload.sizeBytes
+    };
+    return this.http.post<SignVerificationFileResponse>(
+      `${this.baseUrl}/provider/verification/files/sign`,
+      body,
+      { headers: this.authHeaders(true) }
+    );
+  }
+
+  finalizeFile(payload: FinalizeVerificationFilePayload): Observable<{ success: boolean }> {
+    const body = {
+      verificationId: payload.verificationId,
+      type: payload.type,
+      key: payload.key,
+      mimeType: payload.mimeType,
+      sizeBytes: payload.sizeBytes,
+      checksum: payload.checksum
+    };
+    return this.http.post<{ success: boolean }>(
+      `${this.baseUrl}/provider/verification/files/finalize`,
+      body,
+      { headers: this.authHeaders(true) }
+    );
+  }
+
+  submitRequest(verificationId: number): Observable<{ success: boolean; status: VerificationStatus }> {
+    const body = { verificationId };
+    return this.http.post<{ success: boolean; status: VerificationStatus }>(
+      `${this.baseUrl}/provider/verification/submit`,
+      body,
+      { headers: this.authHeaders(true) }
+    );
   }
 }
 

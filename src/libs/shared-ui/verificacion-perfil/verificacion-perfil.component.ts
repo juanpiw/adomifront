@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { UiButtonComponent } from '../ui-button/ui-button.component';
-import { ProviderVerificationService, ProviderVerificationRecord, VerificationStatus, SubmitVerificationPayload } from '../../../app/services/provider-verification.service';
+import { ProviderVerificationService, ProviderVerificationRecord, VerificationStatus } from '../../../app/services/provider-verification.service';
 
 @Component({
   selector: 'app-verificacion-perfil',
@@ -26,6 +26,8 @@ export class VerificacionPerfilComponent implements OnInit {
   verificationRecord: ProviderVerificationRecord | null = null;
   rejectionReason: string | null = null;
   documentNumber: string = '';
+  documentType: 'cedula' | 'pasaporte' | 'licencia' = 'cedula';
+  verificationId: number | null = null;
 
   private verificationService = inject(ProviderVerificationService);
 
@@ -42,10 +44,14 @@ export class VerificacionPerfilComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.verificationRecord = response?.verification || null;
+          this.verificationId = this.verificationRecord?.id || null;
           const profileStatus = response?.profile?.verification_status as VerificationStatus | undefined;
           const recordStatus = (this.verificationRecord?.status as VerificationStatus) || 'none';
           this.verificationStatus = profileStatus || recordStatus || 'none';
           this.documentNumber = this.verificationRecord?.document_number || '';
+          if (this.verificationRecord?.document_type) {
+            this.documentType = this.verificationRecord.document_type as any;
+          }
           this.rejectionReason = this.verificationRecord?.rejection_reason || null;
 
           if (this.verificationStatus === 'pending') {
@@ -60,6 +66,7 @@ export class VerificacionPerfilComponent implements OnInit {
 
           // Reset local selections when status comes from backend
           this.resetSelections(false);
+          this.applyExistingFileStatus();
         },
         error: (error) => {
           console.error('[VERIFICACION] Error cargando estado', error);
@@ -126,8 +133,12 @@ export class VerificacionPerfilComponent implements OnInit {
       this.uploadError = 'Ingresa el número de tu documento.';
       return;
     }
-    if (!this.selectedFiles.front || !this.selectedFiles.back) {
-      this.uploadError = 'Por favor selecciona ambas imágenes';
+
+    const hasFront = !!this.selectedFiles.front || this.hasExistingFile('front');
+    const hasBack = !!this.selectedFiles.back || this.hasExistingFile('back');
+
+    if (!hasFront || !hasBack) {
+      this.uploadError = 'Debes subir ambos lados de tu documento';
       return;
     }
 
@@ -135,14 +146,28 @@ export class VerificacionPerfilComponent implements OnInit {
     this.uploadError = '';
 
     try {
-      const payload: SubmitVerificationPayload = {
+      const startResponse = await firstValueFrom(this.verificationService.startRequest({
         documentNumber: this.documentNumber.trim(),
-        frontFile: this.selectedFiles.front as File,
-        backFile: this.selectedFiles.back as File,
-        selfieFile: this.selectedFiles.selfie
-      };
+        documentType: this.documentType
+      }));
+      this.verificationRecord = startResponse?.verification || null;
+      this.verificationId = this.verificationRecord?.id || this.verificationId;
 
-      await firstValueFrom(this.verificationService.submit(payload));
+      if (!this.verificationId) {
+        throw new Error('No se pudo iniciar la solicitud de verificación. Intenta nuevamente.');
+      }
+
+      if (this.selectedFiles.front) {
+        await this.uploadAndFinalizeFile(this.verificationId, 'front', this.selectedFiles.front);
+      }
+      if (this.selectedFiles.back) {
+        await this.uploadAndFinalizeFile(this.verificationId, 'back', this.selectedFiles.back);
+      }
+      if (this.selectedFiles.selfie) {
+        await this.uploadAndFinalizeFile(this.verificationId, 'selfie', this.selectedFiles.selfie);
+      }
+
+      await firstValueFrom(this.verificationService.submitRequest(this.verificationId));
 
       this.verificationStatus = 'pending';
       this.goToStep(3);
@@ -150,7 +175,7 @@ export class VerificacionPerfilComponent implements OnInit {
       this.loadVerificationStatus();
     } catch (error: any) {
       console.error('Error al subir documentos:', error);
-      this.uploadError = error?.error?.error || error.message || 'Error al subir documentos';
+      this.uploadError = error?.error?.error || error?.message || 'Error al subir documentos';
     } finally {
       this.isUploading = false;
     }
@@ -193,6 +218,51 @@ export class VerificacionPerfilComponent implements OnInit {
 
   get isRejected(): boolean {
     return this.verificationStatus === 'rejected';
+  }
+
+  private hasExistingFile(type: 'front' | 'back' | 'selfie'): boolean {
+    return !!this.verificationRecord?.files?.some(file => file.type === type);
+  }
+
+  private applyExistingFileStatus(): void {
+    const files = this.verificationRecord?.files || [];
+    this.uploadStatus.front = files.some(f => f.type === 'front');
+    this.uploadStatus.back = files.some(f => f.type === 'back');
+    this.uploadStatus.selfie = files.some(f => f.type === 'selfie');
+  }
+
+  private async uploadAndFinalizeFile(verificationId: number, type: 'front' | 'back' | 'selfie', file: File | null): Promise<void> {
+    if (!file) {
+      return;
+    }
+
+    const signResponse = await firstValueFrom(this.verificationService.signFile({
+      verificationId,
+      type,
+      contentType: file.type || 'application/octet-stream',
+      sizeBytes: file.size
+    }));
+
+    const putResponse = await fetch(signResponse.uploadUrl, {
+      method: 'PUT',
+      headers: signResponse.headers,
+      body: file
+    });
+
+    if (!putResponse.ok) {
+      const errorText = await putResponse.text().catch(() => '');
+      throw new Error(`Error subiendo archivo ${type}. Código ${putResponse.status}${errorText ? ` - ${errorText}` : ''}`);
+    }
+
+    await firstValueFrom(this.verificationService.finalizeFile({
+      verificationId,
+      type,
+      key: signResponse.key,
+      mimeType: file.type,
+      sizeBytes: file.size
+    }));
+
+    this.uploadStatus[type] = true;
   }
 
   private resetSelections(clearDocumentNumber: boolean = true) {

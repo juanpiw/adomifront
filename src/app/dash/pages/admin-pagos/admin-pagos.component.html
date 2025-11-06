@@ -225,6 +225,12 @@
       </div>
     </div>
 
+    <div class="verification-card__controls">
+      <input type="text" class="verification-card__search-input" placeholder="Buscar por nombre, correo o documento" [(ngModel)]="verificationSearch" (keyup.enter)="applyVerificationSearch()">
+      <button type="button" class="verification-card__btn" (click)="applyVerificationSearch()">Buscar</button>
+      <button type="button" class="verification-card__link" *ngIf="verificationSearch" (click)="clearVerificationSearch()">Limpiar</button>
+    </div>
+
     <div *ngIf="verificationError" class="error-message">{{ verificationError }}</div>
     <div *ngIf="verificationLoading" class="verification-card__loading">
       <span class="spinner"></span>
@@ -251,16 +257,16 @@
           </td>
           <td>
             <div><strong>{{ req.document_type | uppercase }}</strong> · Nº {{ req.document_number || '—' }}</div>
+            <div class="verification-table__muted">Enviado: {{ req.submitted_at ? (req.submitted_at | date:'short') : '—' }}</div>
             <div class="verification-table__muted">Actualizado: {{ req.updated_at | date:'short' }}</div>
             <div *ngIf="req.rejection_reason" class="verification-table__badge verification-table__badge--error">Último rechazo: {{ req.rejection_reason }}</div>
           </td>
           <td>
-            <div class="verification-table__links">
-              <a *ngIf="req.front_document_url" [href]="req.front_document_url" target="_blank" rel="noopener">Anverso</a>
-              <a *ngIf="req.back_document_url" [href]="req.back_document_url" target="_blank" rel="noopener">Reverso</a>
-              <a *ngIf="req.selfie_url" [href]="req.selfie_url" target="_blank" rel="noopener">Selfie</a>
-              <span *ngIf="!req.front_document_url && !req.back_document_url" class="verification-table__muted">Sin archivos</span>
+            <div class="verification-table__files">
+              <span class="verification-table__badge verification-table__badge--file" *ngFor="let type of (req.file_types || [])">{{ type }}</span>
+              <span *ngIf="!req.file_types?.length" class="verification-table__muted">Sin archivos</span>
             </div>
+            <button type="button" class="verification-table__link" (click)="viewVerificationDetail(req)">Ver detalle</button>
           </td>
           <td>
             <span class="verification-table__status" [ngClass]="{
@@ -292,6 +298,53 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="verification-card__pagination" *ngIf="!verificationLoading && verificationRequests.length">
+      <button type="button" class="verification-card__btn" (click)="prevVerificationPage()" [disabled]="verificationLoading || verificationOffset === 0">Anterior</button>
+      <span>
+        Página {{ ((verificationOffset / verificationLimit) + 1) | number:'1.0-0' }} · Mostrando {{ verificationPagination?.returned || verificationRequests.length }} registros
+      </span>
+      <button type="button" class="verification-card__btn" (click)="nextVerificationPage()" [disabled]="verificationLoading || (verificationPagination?.returned || 0) < verificationLimit">Siguiente</button>
+    </div>
+
+    <div class="verification-detail" *ngIf="verificationDetail || verificationDetailLoading || verificationDetailError">
+      <div class="verification-detail__header">
+        <div>
+          <h4>Detalle solicitud #{{ verificationDetail?.id || '...' }}</h4>
+          <p *ngIf="verificationDetail" class="verification-table__muted">Estado: {{ verificationDetail.status }} · Proveedor #{{ verificationDetail.provider_id }}</p>
+        </div>
+        <div class="verification-detail__actions">
+          <button type="button" class="verification-card__link" (click)="refreshVerificationDetail()" [disabled]="verificationDetailLoading || !verificationDetail">Regenerar enlaces</button>
+          <button type="button" class="verification-card__link" (click)="clearVerificationDetail()">Cerrar</button>
+        </div>
+      </div>
+      <div *ngIf="verificationDetailLoading" class="verification-card__loading">
+        <span class="spinner"></span>
+        Generando enlaces...
+      </div>
+      <div *ngIf="verificationDetailError" class="error-message">{{ verificationDetailError }}</div>
+      <div *ngIf="verificationDetail && !verificationDetailLoading" class="verification-detail__content">
+        <div class="verification-detail__meta">
+          <div><strong>Documento:</strong> {{ verificationDetail.document_type | uppercase }} · {{ verificationDetail.document_number || '—' }}</div>
+          <div><strong>Enviado:</strong> {{ verificationDetail.submitted_at ? (verificationDetail.submitted_at | date:'short') : '—' }}</div>
+          <div><strong>Actualizado:</strong> {{ verificationDetail.updated_at | date:'short' }}</div>
+          <div *ngIf="verificationDetail.rejection_reason"><strong>Rechazo:</strong> {{ verificationDetail.rejection_reason }}</div>
+        </div>
+        <div class="verification-detail__files">
+          <div class="verification-detail__file" *ngFor="let file of verificationDetail.files">
+            <div class="verification-detail__file-header">
+              <strong>{{ file.type | uppercase }}</strong>
+              <span class="verification-table__muted">{{ file.mimeType || 'N/D' }} · {{ (file.sizeBytes || 0) / 1024 | number:'1.0-0' }} KB</span>
+            </div>
+            <div class="verification-detail__preview" *ngIf="file.url && file.mimeType?.startsWith('image/')">
+              <img [src]="file.url" alt="Documento {{ file.type }}" />
+            </div>
+            <a *ngIf="file.url" class="verification-detail__link" [href]="file.url" target="_blank" rel="noopener">Abrir en nueva pestaña</a>
+            <p *ngIf="!file.url" class="verification-table__muted">URL expirada. Regenera los enlaces.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <p *ngIf="!verificationLoading && verificationRequests.length === 0" class="verification-table__empty">No hay solicitudes en este estado.</p>
   </section>

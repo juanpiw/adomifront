@@ -84,13 +84,36 @@ export class AdminPaymentsService {
     return this.http.post<any>(`${this.baseUrl}/subscriptions/admin/founder-code`, body, { headers: this.headers(secret, token) });
   }
 
-  listVerifications(secret: string, token: string | null, status?: string) {
-    const params: string[] = [];
-    if (status) {
-      params.push(`status=${encodeURIComponent(status)}`);
+  listVerifications(
+    secret: string,
+    token: string | null,
+    options: { status?: string; limit?: number; offset?: number; search?: string; from?: string; to?: string } = {}
+  ) {
+    const params = new URLSearchParams();
+    if (options.status && options.status !== 'all') {
+      params.set('status', options.status);
     }
-    const qs = params.length ? `?${params.join('&')}` : '';
+    if (typeof options.limit === 'number') {
+      params.set('limit', String(options.limit));
+    }
+    if (typeof options.offset === 'number') {
+      params.set('offset', String(options.offset));
+    }
+    if (options.search) {
+      params.set('q', options.search);
+    }
+    if (options.from) {
+      params.set('from', options.from);
+    }
+    if (options.to) {
+      params.set('to', options.to);
+    }
+    const qs = params.toString() ? `?${params.toString()}` : '';
     return this.http.get<any>(`${this.baseUrl}/admin/verification/requests${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  getVerificationDetail(secret: string, token: string | null, id: number) {
+    return this.http.get<any>(`${this.baseUrl}/admin/verification/requests/${id}`, { headers: this.headers(secret, token) });
   }
 
   approveVerification(secret: string, token: string | null, id: number, notes?: string) {
