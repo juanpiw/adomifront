@@ -63,6 +63,31 @@ export class ClientConfiguracionComponent implements OnInit {
     }
   ];
 
+  supportLinks: SettingLink[] = [
+    {
+      id: 'faq',
+      label: 'Preguntas Frecuentes (FAQ)',
+      description: 'Encuentra respuestas rápidas',
+      action: 'navigate',
+      route: '/client/faq'
+    },
+    {
+      id: 'terms',
+      label: 'Términos y Condiciones',
+      description: 'Política de uso de la aplicación',
+      action: 'navigate',
+      route: '/client/terminos'
+    },
+    {
+      id: 'privacy',
+      label: 'Política de Privacidad',
+      description: 'Cómo manejamos tus datos',
+      action: 'navigate',
+      route: '/client/terminos',
+      queryParams: { tab: 'privacidad' }
+    }
+  ];
+
   paymentLinks: SettingLink[] = [
     {
       id: 'payment-methods',
@@ -88,6 +113,11 @@ export class ClientConfiguracionComponent implements OnInit {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
+  };
+  passwordVisibility: Record<'current' | 'new' | 'confirm', boolean> = {
+    current: false,
+    new: false,
+    confirm: false
   };
 
   constructor(
@@ -151,7 +181,7 @@ export class ClientConfiguracionComponent implements OnInit {
     switch (link.action) {
       case 'navigate':
         if (link.route) {
-          this.router.navigate([link.route]);
+          this.router.navigate([link.route], { queryParams: link.queryParams });
         }
         break;
       case 'logout':
@@ -177,7 +207,7 @@ export class ClientConfiguracionComponent implements OnInit {
     }
 
     if (link.route) {
-      this.router.navigate([link.route]);
+      this.router.navigate([link.route], { queryParams: link.queryParams });
     }
   }
 
@@ -229,6 +259,18 @@ export class ClientConfiguracionComponent implements OnInit {
         this.securityMessageType = 'error';
       }
     });
+  }
+
+  togglePasswordVisibility(field: 'current' | 'new' | 'confirm'): void {
+    this.passwordVisibility[field] = !this.passwordVisibility[field];
+  }
+
+  isPasswordVisible(field: 'current' | 'new' | 'confirm'): boolean {
+    return this.passwordVisibility[field];
+  }
+
+  passwordInputType(field: 'current' | 'new' | 'confirm'): 'text' | 'password' {
+    return this.passwordVisibility[field] ? 'text' : 'password';
   }
 
   private toggleSecurityPanel(show: boolean): void {

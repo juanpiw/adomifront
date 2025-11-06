@@ -35,6 +35,7 @@ export interface SettingLink {
   route?: string;
   url?: string;
   isDanger?: boolean;
+  queryParams?: Record<string, any>;
 }
 
 export interface SettingsSection {

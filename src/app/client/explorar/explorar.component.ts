@@ -1192,7 +1192,12 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
   onProfessionalBook(professional: ProfessionalCard) {
     console.log('Professional book:', professional);
-    // Handle booking - navigate to booking flow
+    const id = Number(professional.id);
+    if (!Number.isNaN(id)) {
+      this.viewProviderProfile(id);
+      return;
+    }
+    console.warn('[EXPLORAR] No se pudo navegar al perfil, id inválido:', professional.id);
   }
 
   onMapCardMarkerClick(marker: MapCardMarker) {

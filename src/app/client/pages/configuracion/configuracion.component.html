@@ -36,36 +36,81 @@
         <div class="security-form__grid">
           <label class="security-field">
             <span class="security-field__label">Contraseña actual (opcional)</span>
-            <input
-              type="password"
-              autocomplete="current-password"
-              [(ngModel)]="securityForm.currentPassword"
-              name="currentPassword"
-              placeholder="Ingresa tu contraseña actual" />
+            <div class="security-field__input-wrapper">
+              <input
+                [type]="passwordInputType('current')"
+                autocomplete="current-password"
+                [(ngModel)]="securityForm.currentPassword"
+                name="currentPassword"
+                placeholder="Ingresa tu contraseña actual" />
+              <button
+                type="button"
+                class="security-field__toggle"
+                (click)="togglePasswordVisibility('current')"
+                [attr.aria-pressed]="isPasswordVisible('current')"
+                aria-label="Mostrar u ocultar contraseña actual">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path *ngIf="!isPasswordVisible('current')" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                  <path *ngIf="!isPasswordVisible('current')" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                  <path *ngIf="isPasswordVisible('current')" d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.76 21.76 0 0 1 5.06-6.88"></path>
+                  <path *ngIf="isPasswordVisible('current')" d="M1 1l22 22"></path>
+                </svg>
+              </button>
+            </div>
           </label>
 
           <label class="security-field">
             <span class="security-field__label">Nueva contraseña</span>
-            <input
-              type="password"
-              autocomplete="new-password"
-              [(ngModel)]="securityForm.newPassword"
-              name="newPassword"
-              required
-              minlength="6"
-              placeholder="Mínimo 6 caracteres" />
+            <div class="security-field__input-wrapper">
+              <input
+                [type]="passwordInputType('new')"
+                autocomplete="new-password"
+                [(ngModel)]="securityForm.newPassword"
+                name="newPassword"
+                required
+                minlength="6"
+                placeholder="Mínimo 6 caracteres" />
+              <button
+                type="button"
+                class="security-field__toggle"
+                (click)="togglePasswordVisibility('new')"
+                [attr.aria-pressed]="isPasswordVisible('new')"
+                aria-label="Mostrar u ocultar nueva contraseña">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path *ngIf="!isPasswordVisible('new')" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                  <path *ngIf="!isPasswordVisible('new')" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                  <path *ngIf="isPasswordVisible('new')" d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.76 21.76 0 0 1 5.06-6.88"></path>
+                  <path *ngIf="isPasswordVisible('new')" d="M1 1l22 22"></path>
+                </svg>
+              </button>
+            </div>
           </label>
 
           <label class="security-field">
             <span class="security-field__label">Confirmar nueva contraseña</span>
-            <input
-              type="password"
-              autocomplete="new-password"
-              [(ngModel)]="securityForm.confirmPassword"
-              name="confirmPassword"
-              required
-              minlength="6"
-              placeholder="Repítela para confirmar" />
+            <div class="security-field__input-wrapper">
+              <input
+                [type]="passwordInputType('confirm')"
+                autocomplete="new-password"
+                [(ngModel)]="securityForm.confirmPassword"
+                name="confirmPassword"
+                required
+                minlength="6"
+                placeholder="Repítela para confirmar" />
+              <button
+                type="button"
+                class="security-field__toggle"
+                (click)="togglePasswordVisibility('confirm')"
+                [attr.aria-pressed]="isPasswordVisible('confirm')"
+                aria-label="Mostrar u ocultar confirmación de contraseña">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path *ngIf="!isPasswordVisible('confirm')" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                  <path *ngIf="!isPasswordVisible('confirm')" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                  <path *ngIf="isPasswordVisible('confirm')" d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.76 21.76 0 0 1 5.06-6.88"></path>
+                  <path *ngIf="isPasswordVisible('confirm')" d="M1 1l22 22"></path>
+                </svg>
+              </button>
+            </div>
           </label>
         </div>
 
@@ -118,6 +163,7 @@
     
     <!-- Soporte y Legal -->
     <ui-support-legal-section 
+      [supportLinks]="supportLinks"
       (linkClicked)="onLinkClicked($event)">
     </ui-support-legal-section>
     
