@@ -27,10 +27,20 @@
       </div>
 
       <!-- Sección de transacciones -->
-      <div class="pagos-section">
+      <div class="pagos-section" #transactionsSection>
+        <div class="transactions-status" *ngIf="transactionsLoading">
+          Cargando historial de pagos...
+        </div>
+        <div class="transactions-status transactions-status--error" *ngIf="!transactionsLoading && transactionsError">
+          {{ transactionsError }}
+        </div>
+        <div class="transactions-status transactions-status--empty" *ngIf="!transactionsLoading && !transactionsError && transactions.length === 0">
+          Aún no registras pagos.
+        </div>
         <ui-transactions-table
+          *ngIf="transactions.length > 0"
           [transactions]="transactions"
-          [showCount]="5">
+          [showCount]="transactions.length || 0">
         </ui-transactions-table>
       </div>
     </div>

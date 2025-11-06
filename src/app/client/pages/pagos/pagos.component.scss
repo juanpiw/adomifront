@@ -64,6 +64,20 @@
   }
 }
 
+.transactions-status {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: #334155;
+
+  &--error {
+    color: #b91c1c;
+  }
+
+  &--empty {
+    color: #64748b;
+  }
+}
+
 
 
 

@@ -165,6 +165,27 @@
   }
 }
 
+.preferences-feedback {
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+
+  &--success {
+    background: #ecfdf5;
+    border-color: #d1fae5;
+    color: #047857;
+  }
+
+  &--error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .configuracion-container {

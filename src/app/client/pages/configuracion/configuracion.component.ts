@@ -12,6 +12,7 @@ import {
   NotificationPreferences
 } from '../../../../libs/shared-ui/settings';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ClientSettingsService } from '../../services/client-settings.service';
 
 @Component({
   selector: 'app-client-configuracion',
@@ -35,6 +36,9 @@ export class ClientConfiguracionComponent implements OnInit {
     pushNotifications: true,
     promotionalEmails: false
   };
+  preferencesLoading = false;
+  preferencesMessage = '';
+  preferencesMessageType: 'success' | 'error' | 'info' | '' = '';
 
   accountLinks: SettingLink[] = [
     {
@@ -59,6 +63,23 @@ export class ClientConfiguracionComponent implements OnInit {
     }
   ];
 
+  paymentLinks: SettingLink[] = [
+    {
+      id: 'payment-methods',
+      label: 'Métodos de Pago',
+      description: 'Administra tus tarjetas guardadas',
+      action: 'navigate',
+      route: '/client/pagos'
+    },
+    {
+      id: 'payment-history',
+      label: 'Historial de Pagos',
+      description: 'Ver recibos y transacciones pasadas',
+      action: 'navigate',
+      route: '/client/pagos'
+    }
+  ];
+
   showSecurityPanel = false;
   securitySubmitting = false;
   securityMessage = '';
@@ -71,7 +92,8 @@ export class ClientConfiguracionComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private clientSettings: ClientSettingsService
   ) {}
 
   ngOnInit() {
@@ -79,12 +101,45 @@ export class ClientConfiguracionComponent implements OnInit {
   }
 
   onPreferenceChanged(event: {setting: string, value: boolean}) {
+    const key: 'promotionalEmails' | 'pushNotifications' =
+      event.setting === 'promotional-emails' ? 'promotionalEmails' : 'pushNotifications';
+    const previousValue = this.preferences[key];
+
     this.preferences = {
       ...this.preferences,
-      [event.setting]: event.value
+      [key]: event.value
     };
-    this.savePreferences();
-    this.showFeedback(`${this.getSettingLabel(event.setting)} ${event.value ? 'activado' : 'desactivado'}`);
+
+    this.persistPreferencesLocal(this.preferences);
+    this.preferencesLoading = true;
+    this.preferencesMessage = '';
+    this.preferencesMessageType = '';
+
+    this.clientSettings.updateNotificationPreferences({
+      pushNotifications: this.preferences.pushNotifications,
+      promotionalEmails: this.preferences.promotionalEmails
+    }).subscribe({
+      next: (response) => {
+        this.preferencesLoading = false;
+        if (response?.success && response.preferences) {
+          this.preferences = response.preferences;
+          this.persistPreferencesLocal(this.preferences);
+          this.preferencesMessage = `${this.getSettingLabel(event.setting)} ${event.value ? 'activado' : 'desactivado'}`;
+          this.preferencesMessageType = 'success';
+        } else {
+          this.preferences[key] = previousValue;
+          this.preferencesMessage = response?.error || 'No se pudo actualizar la preferencia.';
+          this.preferencesMessageType = 'error';
+        }
+      },
+      error: (error) => {
+        this.preferencesLoading = false;
+        this.preferences[key] = previousValue;
+        this.preferencesMessage = error?.message || 'No se pudo actualizar la preferencia.';
+        this.preferencesMessageType = 'error';
+        this.persistPreferencesLocal(this.preferences);
+      }
+    });
   }
 
   onLinkClicked(link: SettingLink) {
@@ -107,6 +162,22 @@ export class ClientConfiguracionComponent implements OnInit {
           window.open(link.url, '_blank');
         }
         break;
+    }
+  }
+
+  onPaymentLinkClicked(link: SettingLink) {
+    if (link.id === 'payment-methods') {
+      this.router.navigate(['/client/pagos'], { queryParams: { view: 'methods' } });
+      return;
+    }
+
+    if (link.id === 'payment-history') {
+      this.router.navigate(['/client/pagos'], { queryParams: { view: 'history' } });
+      return;
+    }
+
+    if (link.route) {
+      this.router.navigate([link.route]);
     }
   }
 
@@ -201,30 +272,53 @@ export class ClientConfiguracionComponent implements OnInit {
   }
 
   private loadPreferences() {
-    // Verificar si estamos en el navegador antes de acceder a localStorage
+    this.preferencesLoading = true;
+    this.preferencesMessage = '';
+    this.preferencesMessageType = '';
+
+    this.clientSettings.getNotificationPreferences().subscribe({
+      next: (response) => {
+        this.preferencesLoading = false;
+
+        if (response?.success && response.preferences) {
+          this.preferences = response.preferences;
+          this.persistPreferencesLocal(this.preferences);
+        } else {
+          this.applyPreferencesFromCache();
+          this.preferencesMessage = response?.error || 'No se pudieron obtener las preferencias. Mostrando valores locales.';
+          this.preferencesMessageType = 'error';
+        }
+      },
+      error: (error) => {
+        this.preferencesLoading = false;
+        this.applyPreferencesFromCache();
+        this.preferencesMessage = error?.message || 'No se pudieron obtener las preferencias. Mostrando valores locales.';
+        this.preferencesMessageType = 'error';
+      }
+    });
+  }
+
+  private applyPreferencesFromCache() {
     if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        const stored = localStorage.getItem('adomiSettings');
-        if (stored) {
+      const stored = localStorage.getItem('adomiSettings');
+      if (stored) {
+        try {
           const settings = JSON.parse(stored);
           this.preferences = {
             pushNotifications: settings['push-notifications'] ?? true,
             promotionalEmails: settings['promotional-emails'] ?? false
           };
-        }
-      } catch (error) {
-        console.error('Error al cargar preferencias:', error);
+        } catch {}
       }
     }
   }
 
-  private savePreferences() {
-    // Verificar si estamos en el navegador antes de acceder a localStorage
+  private persistPreferencesLocal(prefs: NotificationPreferences) {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const settings = {
-          'push-notifications': this.preferences.pushNotifications,
-          'promotional-emails': this.preferences.promotionalEmails
+          'push-notifications': prefs.pushNotifications,
+          'promotional-emails': prefs.promotionalEmails
         };
         localStorage.setItem('adomiSettings', JSON.stringify(settings));
       } catch (error) {

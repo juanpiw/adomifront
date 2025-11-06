@@ -97,7 +97,8 @@
     
     <!-- Pagos y Facturación -->
     <ui-payments-billing-section 
-      (linkClicked)="onLinkClicked($event)">
+      [paymentLinks]="paymentLinks"
+      (linkClicked)="onPaymentLinkClicked($event)">
     </ui-payments-billing-section>
     
     <!-- Preferencias y Notificaciones -->
@@ -105,6 +106,15 @@
       [preferences]="preferences"
       (preferenceChanged)="onPreferenceChanged($event)">
     </ui-preferences-notifications-section>
+    <div
+      class="preferences-feedback"
+      *ngIf="preferencesMessage"
+      [ngClass]="{
+        'preferences-feedback--success': preferencesMessageType === 'success',
+        'preferences-feedback--error': preferencesMessageType === 'error'
+      }">
+      {{ preferencesMessage }}
+    </div>
     
     <!-- Soporte y Legal -->
     <ui-support-legal-section 

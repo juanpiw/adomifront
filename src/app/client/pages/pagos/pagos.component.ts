@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   PaymentMethodsHeaderComponent,
@@ -13,6 +13,7 @@ import {
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-c-pagos',
@@ -29,58 +30,25 @@ import { AuthService } from '../../../auth/services/auth.service';
   styleUrls: ['./pagos.component.scss']
 })
 export class ClientPagosComponent implements OnInit {
+  @ViewChild('transactionsSection') transactionsSectionRef?: ElementRef<HTMLDivElement>;
+
   // Estado del modal
   showAddCardModal = false;
   // Evitar uso de inject() por compatibilidad con builder
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  constructor(
+    private http: HttpClient,
+    private auth: AuthService,
+    private route: ActivatedRoute
+  ) {}
   
   // Datos de las tarjetas
   cards: Card[] = [];
   paymentPreference: 'card'|'cash'|null = null;
 
   // Datos de transacciones
-  transactions: Transaction[] = [
-    {
-      id: '1',
-      date: '2024-01-15',
-      service: 'Soporte Técnico - PC',
-      totalAmount: 125000,
-      paymentMethod: 'Tarjeta',
-      commission: 18750
-    },
-    {
-      id: '2',
-      date: '2024-01-14',
-      service: 'Limpieza de Hogar',
-      totalAmount: 85000,
-      paymentMethod: 'Efectivo',
-      commission: 12750
-    },
-    {
-      id: '3',
-      date: '2024-01-13',
-      service: 'Corte de Cabello',
-      totalAmount: 45000,
-      paymentMethod: 'Tarjeta',
-      commission: 6750
-    },
-    {
-      id: '4',
-      date: '2024-01-12',
-      service: 'Reparación de Lavadora',
-      totalAmount: 180000,
-      paymentMethod: 'Tarjeta',
-      commission: 27000
-    },
-    {
-      id: '5',
-      date: '2024-01-11',
-      service: 'Clases de Yoga',
-      totalAmount: 60000,
-      paymentMethod: 'Efectivo',
-      commission: 9000
-    }
-  ];
+  transactions: Transaction[] = [];
+  transactionsLoading = false;
+  transactionsError = '';
 
   // Estado del saldo
   balance = 0;
@@ -89,28 +57,22 @@ export class ClientPagosComponent implements OnInit {
   ngOnInit() {
     this.loadPaymentData();
     this.fetchCards();
-    this.fetchCashSummary();
+    this.fetchTransactions();
+
+    this.route.queryParamMap.subscribe(params => {
+      const view = params.get('view');
+      if (view === 'history') {
+        setTimeout(() => this.scrollToTransactions(), 200);
+      } else if (view === 'methods') {
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 200);
+      }
+    });
   }
 
   private loadPaymentData() {
     // Simular carga de datos
     // En una aplicación real, esto vendría de un servicio
     this.calculateBalanceStatus();
-  }
-
-  private fetchCashSummary() {
-    console.log('[CLIENT_PAGOS] fetchCashSummary');
-    this.http.get<any>(`${environment.apiBaseUrl}/provider/cash/summary`, { headers: this.headers() }).subscribe({
-      next: (res: any) => {
-        const total = Number(res?.summary?.total_due || 0);
-        this.balance = total;
-        this.calculateBalanceStatus();
-        console.log('[CLIENT_PAGOS] cash summary ->', res?.summary);
-      },
-      error: (err) => {
-        console.warn('[CLIENT_PAGOS] cash summary error', err?.error || err);
-      }
-    });
   }
 
   private headers(): HttpHeaders {
@@ -137,6 +99,89 @@ export class ClientPagosComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  private fetchTransactions() {
+    this.transactionsLoading = true;
+    this.transactionsError = '';
+
+    this.http.get<any>(`${environment.apiBaseUrl}/client/payments/history?limit=100`, { headers: this.headers() }).subscribe({
+      next: (res: any) => {
+        this.transactionsLoading = false;
+        const rows = res?.transactions || [];
+        this.transactions = rows.map((row: any) => this.mapTransaction(row));
+      },
+      error: (err) => {
+        console.error('[CLIENT_PAGOS] Error al cargar historial de pagos:', err);
+        this.transactionsLoading = false;
+        this.transactionsError = err?.error?.error || err?.message || 'No se pudieron cargar las transacciones.';
+      }
+    });
+  }
+
+  private mapTransaction(row: any): Transaction {
+    const paymentMethod = this.normalizePaymentMethod(row?.paymentMethod || row?.payment_method);
+    const commission = Number(row?.commissionAmount ?? row?.commission_amount ?? 0);
+
+    const dateSource = this.resolveDateSource(row);
+    const date = dateSource.toISOString();
+
+    return {
+      id: String(row?.id || ''),
+      date,
+      service: row?.service || row?.service_name || 'Servicio reservado',
+      totalAmount: Number(row?.amount ?? row?.totalAmount ?? 0),
+      paymentMethod,
+      commission
+    };
+  }
+
+  private resolveDateSource(row: any): Date {
+    const paidAt = row?.paidAt || row?.paid_at || row?.created_at;
+    const appointmentDate = row?.appointmentDate || row?.appointment_date;
+    const appointmentTime = row?.appointmentTime || row?.appointment_time;
+
+    if (paidAt) {
+      const paidDate = new Date(paidAt);
+      if (!Number.isNaN(paidDate.getTime())) {
+        return paidDate;
+      }
+    }
+
+    if (appointmentDate) {
+      const dateString = appointmentTime
+        ? `${appointmentDate}T${appointmentTime}`
+        : `${appointmentDate}T00:00:00`;
+      const appointment = new Date(dateString);
+      if (!Number.isNaN(appointment.getTime())) {
+        return appointment;
+      }
+    }
+
+    return new Date();
+  }
+
+  private normalizePaymentMethod(method: string): string {
+    switch (method) {
+      case 'card':
+      case 'tarjeta':
+        return 'Tarjeta';
+      case 'cash':
+      case 'efectivo':
+        return 'Efectivo';
+      case 'transfer':
+        return 'Transferencia';
+      case 'wallet':
+        return 'Wallet';
+      default:
+        return method ? method.charAt(0).toUpperCase() + method.slice(1) : 'Otro';
+    }
+  }
+
+  private scrollToTransactions() {
+    if (this.transactionsSectionRef?.nativeElement) {
+      this.transactionsSectionRef.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   private calculateBalanceStatus() {
