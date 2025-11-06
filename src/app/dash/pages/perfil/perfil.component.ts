@@ -23,9 +23,10 @@ import { HorarioDisponibilidadComponent, WeeklySchedule } from '../../../../libs
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
 import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/verificacion-perfil.component';
-import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
+
+type PortfolioItemDisplay = PortfolioImage & { thumbnailUrl?: string | null; order?: number };
 
 @Component({
   selector: 'app-d-perfil',
@@ -49,7 +50,6 @@ import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/review
     HorarioDisponibilidadComponent,
     ExcepcionesFeriadosComponent,
     VerificacionPerfilComponent,
-    IconComponent,
     OnlineStatusSwitchComponent,
     ReviewsComponent
   ],
@@ -143,16 +143,7 @@ export class DashPerfilComponent implements OnInit {
     this.providerProfileService.getPortfolio().subscribe({
       next: (portfolio) => {
         console.log('[PERFIL] Portafolio cargado:', portfolio);
-        this.portfolioImages = portfolio
-          .map(p => ({
-            id: String(p.id),
-            url: this.resolvePortfolioUrl(p.file_url),
-            alt: p.title || 'Portfolio image',
-            type: (p.file_type as 'image' | 'video') || 'image',
-            thumbnailUrl: this.resolvePortfolioUrl(p.thumbnail_url),
-            order: typeof p.order_index === 'number' ? p.order_index : undefined
-          }))
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        this.portfolioImages = this.normalizePortfolioItems(portfolio);
       },
       error: (err) => {
         console.error('[PERFIL] Error al cargar portafolio:', err);
@@ -275,12 +266,12 @@ export class DashPerfilComponent implements OnInit {
     }
   ];
 
-  portfolioImages: (PortfolioImage & { thumbnailUrl?: string | null; order?: number })[] = [
-    { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo', type: 'image' },
-    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image' },
-    { id: '3', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Peinado', alt: 'Peinado elegante', type: 'image' },
-    { id: '4', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Maquillaje', alt: 'Maquillaje profesional', type: 'image' },
-    { id: '5', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Manicura', alt: 'Manicura artística', type: 'image' }
+  portfolioImages: PortfolioItemDisplay[] = [
+    { id: '1', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Corte+1', alt: 'Corte de pelo', type: 'image', thumbnailUrl: null, order: 0 },
+    { id: '2', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Coloraci%C3%B3n', alt: 'Coloración', type: 'image', thumbnailUrl: null, order: 1 },
+    { id: '3', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Peinado', alt: 'Peinado elegante', type: 'image', thumbnailUrl: null, order: 2 },
+    { id: '4', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Maquillaje', alt: 'Maquillaje profesional', type: 'image', thumbnailUrl: null, order: 3 },
+    { id: '5', url: 'https://placehold.co/400x300/ddd6fe/4338ca?text=Manicura', alt: 'Manicura artística', type: 'image', thumbnailUrl: null, order: 4 }
   ];
 
   portfolioPreviewLimit = 6;
@@ -312,7 +303,7 @@ export class DashPerfilComponent implements OnInit {
   savingPublicProfile = false;
   savingBasicInfo = false;
   
-  get activePortfolioItem(): (PortfolioImage & { thumbnailUrl?: string | null; order?: number }) | null {
+  get activePortfolioItem(): PortfolioItemDisplay | null {
     return this.portfolioImages[this.portfolioLightboxIndex] ?? null;
   }
 
@@ -689,16 +680,7 @@ export class DashPerfilComponent implements OnInit {
                 // Refrescar lista
                 this.providerProfileService.getPortfolio().subscribe({
                   next: (portfolio) => {
-                    this.portfolioImages = portfolio
-                      .map(p => ({
-                        id: String(p.id),
-                        url: this.resolvePortfolioUrl(p.file_url),
-                        alt: p.title || 'Portfolio image',
-                        type: (p.file_type as 'image' | 'video') || 'image',
-                        thumbnailUrl: this.resolvePortfolioUrl(p.thumbnail_url),
-                        order: typeof p.order_index === 'number' ? p.order_index : undefined
-                      }))
-                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+                    this.portfolioImages = this.normalizePortfolioItems(portfolio);
                   }
                 });
               },
@@ -799,12 +781,7 @@ export class DashPerfilComponent implements OnInit {
       this.providerProfileService.getPortfolio().subscribe({
         next: (portfolio) => {
           console.log('[PERFIL] Portafolio cargado para perfil público:', portfolio);
-          this.portfolioImages = portfolio.map(item => ({
-            id: item.id?.toString() || '0',
-            url: item.file_url,
-            alt: item.title || 'Portfolio image',
-            type: item.file_type
-          }));
+          this.portfolioImages = this.normalizePortfolioItems(portfolio);
         },
         error: (err) => {
           console.error('[PERFIL] Error al cargar portafolio para perfil público:', err);
@@ -1203,6 +1180,34 @@ export class DashPerfilComponent implements OnInit {
   goToPortfolioItem(index: number) {
     if (index < 0 || index >= this.portfolioImages.length) return;
     this.portfolioLightboxIndex = index;
+  }
+
+  private normalizePortfolioItems(portfolio: any[]): PortfolioItemDisplay[] {
+    const fallbackPrefix = `pf-${Date.now()}-`;
+    let counter = 0;
+
+    return (portfolio || [])
+      .map((item: any) => {
+        if (!item) return null;
+        const resolvedUrl = this.resolvePortfolioUrl(item.file_url);
+        if (!resolvedUrl) return null;
+
+        const type: 'image' | 'video' = item.file_type === 'video' ? 'video' : 'image';
+        const thumbnailUrl = this.resolvePortfolioUrl(item.thumbnail_url) || resolvedUrl;
+        const order = typeof item.order_index === 'number' ? item.order_index : undefined;
+        const id = item.id != null ? String(item.id) : `${fallbackPrefix}${counter++}`;
+
+        return {
+          id,
+          url: resolvedUrl,
+          alt: item.title || 'Portfolio image',
+          type,
+          thumbnailUrl,
+          order
+        } as PortfolioItemDisplay;
+      })
+      .filter((item): item is PortfolioItemDisplay => !!item)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   private resolvePortfolioUrl(url?: string | null): string | null {
