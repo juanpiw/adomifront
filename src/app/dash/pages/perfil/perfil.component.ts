@@ -1,7 +1,9 @@
 ﻿import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { ProviderProfileService, BasicInfo as ServiceBasicInfo } from '../../../services/provider-profile.service';
+import { firstValueFrom } from 'rxjs';
+import { ProviderProfileService, BasicInfo as ServiceBasicInfo, ProviderFaq } from '../../../services/provider-profile.service';
 import { ProfileProgressService } from '../../../services/profile-progress.service';
 import { environment } from '../../../../environments/environment';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
@@ -27,12 +29,21 @@ import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-s
 import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
 
 type PortfolioItemDisplay = PortfolioImage & { thumbnailUrl?: string | null; order?: number };
+interface EditableFaq extends Partial<ProviderFaq> {
+  id?: number;
+  question: string;
+  answer: string;
+  order_index: number;
+  isNew?: boolean;
+  dirty?: boolean;
+}
 
 @Component({
   selector: 'app-d-perfil',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     UiInputComponent,
     UiButtonComponent,
     AvatarUploaderComponent,
@@ -149,6 +160,9 @@ export class DashPerfilComponent implements OnInit {
         console.error('[PERFIL] Error al cargar portafolio:', err);
       }
     });
+
+    // Cargar preguntas frecuentes
+    this.loadFaqs();
 
     // Cargar zonas de cobertura
     this.providerProfileService.getCoverageZones().subscribe({
@@ -281,6 +295,12 @@ export class DashPerfilComponent implements OnInit {
   portfolioLightboxIndex = 0;
 
   profileProgress = 75;
+  faqs: EditableFaq[] = [];
+  faqLoading = false;
+  faqError: string | null = null;
+  faqSuccess: string | null = null;
+  faqInfo: string | null = null;
+  readonly faqMax = Number((environment as any)?.providerFaqMax || 6);
   ratingAverage: number | null = null;
   reviewCount = 0;
 
@@ -950,6 +970,178 @@ export class DashPerfilComponent implements OnInit {
         alert('❌ No se pudo guardar el punto de la zona');
       }
     });
+  }
+
+  private loadFaqs(): void {
+    this.faqLoading = true;
+    this.faqError = null;
+    this.faqSuccess = null;
+    this.faqInfo = null;
+    this.providerProfileService.getFaqs().subscribe({
+      next: (faqs) => {
+        this.faqLoading = false;
+        this.faqs = faqs.map((faq, index) => ({
+          ...faq,
+          question: faq.question || '',
+          answer: faq.answer || '',
+          order_index: index,
+          isNew: false,
+          dirty: false
+        }));
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar FAQs:', err);
+        this.faqLoading = false;
+        this.faqError = err?.error?.error || 'No se pudieron cargar las preguntas frecuentes.';
+      }
+    });
+  }
+
+  onAddFaq(): void {
+    if (this.faqs.length >= this.faqMax) {
+      this.faqError = `Sólo puedes registrar hasta ${this.faqMax} preguntas frecuentes.`;
+      return;
+    }
+    this.clearFaqMessages();
+    this.faqs = [
+      ...this.faqs,
+      {
+        question: '',
+        answer: '',
+        order_index: this.faqs.length,
+        isNew: true,
+        dirty: true
+      }
+    ];
+  }
+
+  onFaqChange(index: number): void {
+    this.clearFaqMessages();
+    const faq = this.faqs[index];
+    if (!faq) return;
+    faq.dirty = true;
+  }
+
+  async onSaveFaqs(): Promise<void> {
+    if (this.faqLoading) {
+      return;
+    }
+    this.faqLoading = true;
+    this.clearFaqMessages();
+
+    try {
+      const invalidEntry = this.faqs.find(faq => !faq.question?.trim() || !faq.answer?.trim());
+      if (invalidEntry) {
+        throw new Error('Todas las preguntas y respuestas deben estar completas.');
+      }
+
+      const createQueue = this.faqs.filter(faq => faq.isNew && !faq.id);
+      for (const faq of createQueue) {
+        const created = await firstValueFrom(
+          this.providerProfileService.createFaq(faq.question.trim(), faq.answer.trim())
+        );
+        faq.id = created.id;
+        faq.isNew = false;
+        faq.dirty = false;
+        faq.order_index = this.faqs.indexOf(faq);
+      }
+
+      const updateQueue = this.faqs.filter(faq => !faq.isNew && faq.dirty && faq.id);
+      for (const faq of updateQueue) {
+        await firstValueFrom(
+          this.providerProfileService.updateFaq(faq.id!, {
+            question: faq.question.trim(),
+            answer: faq.answer.trim()
+          })
+        );
+        faq.dirty = false;
+      }
+
+      const canReorder = this.faqs.every(faq => faq.id && !faq.isNew);
+      if (canReorder && this.faqs.length > 1) {
+        await firstValueFrom(
+          this.providerProfileService.reorderFaqs(
+            this.faqs.map(faq => ({ id: faq.id! }))
+          )
+        );
+      }
+
+      this.faqSuccess = 'Preguntas frecuentes guardadas correctamente.';
+      this.loadFaqs();
+    } catch (error: any) {
+      console.error('[PERFIL] Error guardando FAQs:', error);
+      this.faqError = error?.error?.error || error?.message || 'No se pudieron guardar las preguntas frecuentes.';
+    } finally {
+      this.faqLoading = false;
+    }
+  }
+
+  async onRemoveFaq(index: number): Promise<void> {
+    const faq = this.faqs[index];
+    if (!faq) {
+      return;
+    }
+    this.clearFaqMessages();
+
+    if (faq.isNew || !faq.id) {
+      this.faqs = this.faqs
+        .filter((_, idx) => idx !== index)
+        .map((item, idx) => ({ ...item, order_index: idx }));
+      return;
+    }
+
+    if (!confirm('¿Seguro que deseas eliminar esta pregunta frecuente?')) {
+      return;
+    }
+
+    this.faqLoading = true;
+    try {
+      await firstValueFrom(this.providerProfileService.deleteFaq(faq.id!));
+      this.faqSuccess = 'Pregunta eliminada correctamente.';
+      this.loadFaqs();
+    } catch (error: any) {
+      console.error('[PERFIL] Error eliminando FAQ:', error);
+      this.faqError = error?.error?.error || 'No se pudo eliminar la pregunta frecuente.';
+    } finally {
+      this.faqLoading = false;
+    }
+  }
+
+  moveFaq(index: number, direction: number): void {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= this.faqs.length) {
+      return;
+    }
+    this.clearFaqMessages();
+
+    const updated = [...this.faqs];
+    const [current] = updated.splice(index, 1);
+    updated.splice(newIndex, 0, current);
+    this.faqs = updated.map((faq, idx) => ({ ...faq, order_index: idx }));
+
+    const hasUnsaved = this.faqs.some(faq => faq.isNew || !faq.id);
+    if (hasUnsaved) {
+      this.faqInfo = 'Guarda las nuevas preguntas para fijar el orden definitivo.';
+      return;
+    }
+
+    this.providerProfileService.reorderFaqs(
+      this.faqs.map(faq => ({ id: faq.id! }))
+    ).subscribe({
+      next: () => {
+        this.faqSuccess = 'Orden actualizado.';
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error reordenando FAQs:', err);
+        this.faqError = err?.error?.error || 'No se pudo actualizar el orden de las preguntas.';
+      }
+    });
+  }
+
+  private clearFaqMessages(): void {
+    this.faqError = null;
+    this.faqSuccess = null;
+    this.faqInfo = null;
   }
 
   // Event handlers para horario

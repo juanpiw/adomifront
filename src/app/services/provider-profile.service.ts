@@ -48,6 +48,13 @@ export interface CoverageZone {
   is_primary?: boolean;
 }
 
+export interface ProviderFaq {
+  id: number;
+  question: string;
+  answer: string;
+  order_index: number;
+}
+
 export interface Availability {
   is_online: boolean;
   share_real_time_location: boolean;
@@ -97,12 +104,14 @@ export class ProviderProfileService {
   private servicesSubject = new BehaviorSubject<Service[]>([]);
   private portfolioSubject = new BehaviorSubject<PortfolioItem[]>([]);
   private coverageZonesSubject = new BehaviorSubject<CoverageZone[]>([]);
+  private faqsSubject = new BehaviorSubject<ProviderFaq[]>([]);
 
   // Observables públicos
   public profile$ = this.profileSubject.asObservable();
   public services$ = this.servicesSubject.asObservable();
   public portfolio$ = this.portfolioSubject.asObservable();
   public coverageZones$ = this.coverageZonesSubject.asObservable();
+  public faqs$ = this.faqsSubject.asObservable();
 
   constructor() {}
 
@@ -482,6 +491,62 @@ export class ProviderProfileService {
       `${this.apiUrl}/provider/coverage-zones/${zoneId}/primary`,
       {},
       { headers: this.getHeaders() }
+    );
+  }
+
+  // ============================================
+  // PREGUNTAS FRECUENTES
+  // ============================================
+
+  getFaqs(): Observable<ProviderFaq[]> {
+    return this.http.get<{ success: boolean; faqs: ProviderFaq[] }>(
+      `${this.apiUrl}/provider/faqs`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.faqs || []),
+      tap(faqs => this.faqsSubject.next(faqs))
+    );
+  }
+
+  createFaq(question: string, answer: string): Observable<ProviderFaq> {
+    const payload = { question, answer };
+    return this.http.post<{ success: boolean; faq: ProviderFaq }>(
+      `${this.apiUrl}/provider/faqs`,
+      payload,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.faq),
+      tap(() => this.getFaqs().subscribe())
+    );
+  }
+
+  updateFaq(id: number, changes: { question?: string; answer?: string }): Observable<ProviderFaq> {
+    return this.http.put<{ success: boolean; faq: ProviderFaq }>(
+      `${this.apiUrl}/provider/faqs/${id}`,
+      changes,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.faq),
+      tap(() => this.getFaqs().subscribe())
+    );
+  }
+
+  reorderFaqs(order: { id: number }[]): Observable<any> {
+    return this.http.put(
+      `${this.apiUrl}/provider/faqs/reorder`,
+      { order },
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getFaqs().subscribe())
+    );
+  }
+
+  deleteFaq(id: number): Observable<any> {
+    return this.http.delete(
+      `${this.apiUrl}/provider/faqs/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(() => this.getFaqs().subscribe())
     );
   }
 

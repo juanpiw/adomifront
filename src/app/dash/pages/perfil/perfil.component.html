@@ -69,6 +69,45 @@
         (setZonePrimary)="onSetZonePrimary($event)">
       </app-ubicacion-disponibilidad>
 
+      <!-- Preguntas frecuentes -->
+      <section class="faq-manager">
+        <div class="faq-manager__header">
+          <h3 class="faq-manager__title">Preguntas frecuentes</h3>
+          <p class="faq-manager__subtitle">Comparte hasta {{ faqMax }} respuestas a las dudas más comunes de tus clientes.</p>
+        </div>
+
+        <div *ngIf="faqError" class="faq-alert faq-alert--error">{{ faqError }}</div>
+        <div *ngIf="faqSuccess" class="faq-alert faq-alert--success">{{ faqSuccess }}</div>
+        <div *ngIf="faqInfo" class="faq-alert faq-alert--info">{{ faqInfo }}</div>
+
+        <div class="faq-manager__list">
+          <div class="faq-item" *ngFor="let faq of faqs; let i = index">
+            <div class="faq-item__order">
+              <button type="button" class="faq-item__order-btn" (click)="moveFaq(i, -1)" [disabled]="i === 0">↑</button>
+              <button type="button" class="faq-item__order-btn" (click)="moveFaq(i, 1)" [disabled]="i === faqs.length - 1">↓</button>
+            </div>
+            <div class="faq-item__fields">
+              <label>Pregunta</label>
+              <input type="text" [(ngModel)]="faq.question" (ngModelChange)="onFaqChange(i)" placeholder="¿Cuál es la pregunta más común?" />
+              <label>Respuesta</label>
+              <textarea rows="3" [(ngModel)]="faq.answer" (ngModelChange)="onFaqChange(i)" placeholder="Escribe la respuesta que compartes con tus clientes"></textarea>
+            </div>
+            <button type="button" class="faq-item__delete" (click)="onRemoveFaq(i)">Eliminar</button>
+          </div>
+
+          <p *ngIf="!faqs.length" class="faq-manager__empty">Aún no tienes preguntas frecuentes. Añade las dudas que más recibes para ayudar a tus clientes a decidir.</p>
+        </div>
+
+        <div class="faq-manager__actions">
+          <button type="button" class="faq-manager__btn" (click)="onAddFaq()" [disabled]="faqLoading || faqs.length >= faqMax">
+            Añadir pregunta
+          </button>
+          <button type="button" class="faq-manager__btn faq-manager__btn--primary" (click)="onSaveFaqs()" [disabled]="faqLoading">
+            {{ faqLoading ? 'Guardando…' : 'Guardar preguntas frecuentes' }}
+          </button>
+        </div>
+      </section>
+
       <!-- Botón para guardar cambios del perfil público -->
       <div class="perfil-publico__actions">
         <ui-button variant="primary" (click)="savePublicProfile()" [loading]="savingPublicProfile">

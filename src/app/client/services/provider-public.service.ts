@@ -46,6 +46,16 @@ export interface ProviderDetailResponse {
   };
 }
 
+export interface ProviderFaqResponse {
+  success: boolean;
+  faqs: Array<{
+    id: number;
+    question: string;
+    answer: string;
+    order_index: number;
+  }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProviderPublicService {
   private http = inject(HttpClient);
@@ -53,6 +63,10 @@ export class ProviderPublicService {
 
   getProviderDetail(id: number): Observable<ProviderDetailResponse> {
     return this.http.get<ProviderDetailResponse>(`${this.baseUrl}/client/providers/${id}/detail`);
+  }
+
+  getProviderFaqs(id: number): Observable<ProviderFaqResponse> {
+    return this.http.get<ProviderFaqResponse>(`${this.baseUrl}/client/providers/${id}/faqs`);
   }
 }
 

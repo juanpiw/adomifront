@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { ProviderPublicService, ProviderDetailResponse } from '../../services/provider-public.service';
+import { ProviderPublicService, ProviderDetailResponse, ProviderFaqResponse } from '../../services/provider-public.service';
 import { environment } from '../../../../environments/environment';
 import { AppointmentsService } from '../../../services/appointments.service';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -151,11 +151,42 @@ export class PerfilTrabajadorComponent implements OnInit {
           showAllButton: true
         };
         this.initializeComponentData();
+        this.loadProviderFaqs(id);
         this.loading = false;
       },
       error: () => {
         this.loading = false;
         this.router.navigate(['/client/explorar']);
+      }
+    });
+  }
+
+  private loadProviderFaqs(providerId: number): void {
+    this.providerService.getProviderFaqs(providerId).subscribe({
+      next: (resp: ProviderFaqResponse) => {
+        if (!resp?.success) {
+          this.faqData = {
+            title: 'Preguntas Frecuentes',
+            items: []
+          };
+          return;
+        }
+        const items = (resp.faqs || []).map(faq => ({
+          id: String(faq.id),
+          question: faq.question,
+          answer: faq.answer,
+          isExpanded: false
+        }));
+        this.faqData = {
+          title: 'Preguntas Frecuentes',
+          items
+        };
+      },
+      error: () => {
+        this.faqData = {
+          title: 'Preguntas Frecuentes',
+          items: []
+        };
       }
     });
   }
@@ -217,20 +248,7 @@ export class PerfilTrabajadorComponent implements OnInit {
     // FAQ Data
     this.faqData = {
       title: 'Preguntas Frecuentes',
-      items: [
-        {
-          id: 'faq-1',
-          question: '¿Qué tipo de productos utilizas?',
-          answer: 'Utilizo productos profesionales de alta gama, principalmente de marcas libres de crueldad animal y con opciones veganas disponibles bajo petición.',
-          isExpanded: false
-        },
-        {
-          id: 'faq-2',
-          question: '¿Necesito tener estacionamiento disponible?',
-          answer: 'No es estrictamente necesario, pero se agradece mucho si hay un lugar cercano para estacionar, ya que facilita el transporte de mis equipos.',
-          isExpanded: false
-        }
-      ]
+      items: this.faqData.items || []
     };
   }
 
