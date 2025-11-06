@@ -531,7 +531,7 @@ export class ProviderProfileService {
     );
   }
 
-  reorderFaqs(order: { id: number }[]): Observable<any> {
+  reorderFaqs(order: { id: number; order_index?: number }[]): Observable<any> {
     return this.http.put(
       `${this.apiUrl}/provider/faqs/reorder`,
       { order },

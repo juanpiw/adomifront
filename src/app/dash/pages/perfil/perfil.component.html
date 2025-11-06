@@ -285,6 +285,17 @@
               <button class="btn-reserve">Reservar Cita</button>
             </div>
 
+            <!-- Preguntas frecuentes -->
+            <div class="profile-preview__section" *ngIf="faqs.length > 0">
+              <h3>Preguntas frecuentes</h3>
+              <div class="profile-preview__faq">
+                <div class="profile-preview__faq-item" *ngFor="let faq of faqs">
+                  <p class="profile-preview__faq-question">{{ faq.question }}</p>
+                  <p class="profile-preview__faq-answer">{{ faq.answer }}</p>
+                </div>
+              </div>
+            </div>
+
             <!-- Comentarios de clientes -->
             <app-reviews [data]="publicReviewsData"></app-reviews>
           </div>

@@ -1059,11 +1059,22 @@ export class DashPerfilComponent implements OnInit {
 
       const canReorder = this.faqs.every(faq => faq.id && !faq.isNew);
       if (canReorder && this.faqs.length > 1) {
-        await firstValueFrom(
-          this.providerProfileService.reorderFaqs(
-            this.faqs.map(faq => ({ id: faq.id! }))
-          )
-        );
+        const normalizedOrder = this.faqs.map((faq, index) => ({
+          id: typeof faq.id === 'string' ? Number.parseInt(faq.id, 10) : Number(faq.id),
+          order_index: index
+        }));
+
+        const validOrder = normalizedOrder.filter(item => Number.isFinite(item.id));
+
+        if (validOrder.length !== this.faqs.length) {
+          this.faqInfo = 'El orden se actualizará cuando todas las preguntas estén guardadas correctamente.';
+        } else {
+          await firstValueFrom(
+            this.providerProfileService.reorderFaqs(
+              validOrder as Array<{ id: number; order_index: number }>
+            )
+          );
+        }
       }
 
       this.faqSuccess = 'Preguntas frecuentes guardadas correctamente.';
@@ -1125,17 +1136,29 @@ export class DashPerfilComponent implements OnInit {
       return;
     }
 
-    this.providerProfileService.reorderFaqs(
-      this.faqs.map(faq => ({ id: faq.id! }))
-    ).subscribe({
-      next: () => {
-        this.faqSuccess = 'Orden actualizado.';
-      },
-      error: (err) => {
-        console.error('[PERFIL] Error reordenando FAQs:', err);
-        this.faqError = err?.error?.error || 'No se pudo actualizar el orden de las preguntas.';
-      }
-    });
+    const normalizedOrder = this.faqs.map((faq, index) => ({
+      id: typeof faq.id === 'string' ? Number.parseInt(faq.id, 10) : Number(faq.id),
+      order_index: index
+    }));
+
+    const validOrder = normalizedOrder.filter(item => Number.isFinite(item.id));
+
+    if (validOrder.length !== this.faqs.length) {
+      this.faqInfo = 'Guarda primero las nuevas preguntas antes de reordenar.';
+      return;
+    }
+
+    this.providerProfileService
+      .reorderFaqs(validOrder as Array<{ id: number; order_index: number }>)
+      .subscribe({
+        next: () => {
+          this.faqSuccess = 'Orden actualizado.';
+        },
+        error: (err) => {
+          console.error('[PERFIL] Error reordenando FAQs:', err);
+          this.faqError = err?.error?.error || 'No se pudo actualizar el orden de las preguntas.';
+        }
+      });
   }
 
   private clearFaqMessages(): void {

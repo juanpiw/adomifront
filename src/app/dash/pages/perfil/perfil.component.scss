@@ -335,6 +335,37 @@
   font-size: 1rem;
 }
 
+.profile-preview__faq {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.profile-preview__faq-item {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.4);
+  box-shadow:
+    0 4px 10px -6px rgba(15, 23, 42, 0.15),
+    0 2px 6px -6px rgba(15, 23, 42, 0.1);
+}
+
+.profile-preview__faq-question {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.profile-preview__faq-answer {
+  margin: 0;
+  font-size: 0.975rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
 .faq-manager {
   margin-top: 32px;
   padding: 24px;
