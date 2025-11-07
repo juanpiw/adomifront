@@ -34,13 +34,34 @@ export class AdminPaymentsService {
     return this.http.get<any>(`${this.baseUrl}/admin/cash/summary`, { headers: this.headers(secret, token) });
   }
 
-  cashCommissions(secret: string, token: string | null, status: 'all'|'pending'|'overdue'|'paid' = 'pending') {
+  cashCommissions(secret: string, token: string | null, status: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid' = 'pending') {
     const params: string[] = [];
     if (status && status !== 'all') {
       params.push(`status=${encodeURIComponent(status)}`);
     }
     const qs = params.length ? ('?' + params.join('&')) : '';
     return this.http.get<any>(`${this.baseUrl}/admin/cash/commissions${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  listManualCashPayments(secret: string, token: string | null, options: { status?: 'under_review'|'paid'|'rejected'; limit?: number; offset?: number } = {}) {
+    const params = new URLSearchParams();
+    if (options.status) params.set('status', options.status);
+    if (typeof options.limit === 'number') params.set('limit', String(options.limit));
+    if (typeof options.offset === 'number') params.set('offset', String(options.offset));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/cash/manual-payments${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  getManualCashPayment(secret: string, token: string | null, id: number) {
+    return this.http.get<any>(`${this.baseUrl}/admin/cash/manual-payments/${id}`, { headers: this.headers(secret, token) });
+  }
+
+  approveManualCashPayment(secret: string, token: string | null, id: number, payload: { reference?: string; notes?: string }) {
+    return this.http.post<any>(`${this.baseUrl}/admin/cash/manual-payments/${id}/approve`, payload || {}, { headers: this.headers(secret, token) });
+  }
+
+  rejectManualCashPayment(secret: string, token: string | null, id: number, reason: string, notes?: string) {
+    return this.http.post<any>(`${this.baseUrl}/admin/cash/manual-payments/${id}/reject`, { reason, notes }, { headers: this.headers(secret, token) });
   }
 
   pendingCount(secret: string, token: string | null) {

@@ -212,6 +212,12 @@
           <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='overdue'" (click)="setCashFilter('overdue')">
             Vencidas
           </button>
+          <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='under_review'" (click)="setCashFilter('under_review')">
+            En revisión
+          </button>
+          <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='rejected'" (click)="setCashFilter('rejected')">
+            Rechazadas
+          </button>
           <button type="button" class="cash-filters__button" [class.cash-filters__button--active]="cashTableFilter==='paid'" (click)="setCashFilter('paid')">
             Pagadas
           </button>
@@ -258,9 +264,16 @@
                 <span class="badge" [ngClass]="{
                   'badge--pending': d.status==='pending',
                   'badge--overdue': d.status==='overdue',
+                  'badge--review': d.status==='under_review',
+                  'badge--rejected': d.status==='rejected',
                   'badge--paid': d.status==='paid'
                 }">
-                  {{ d.status==='pending' ? 'Pendiente' : (d.status==='overdue' ? 'Vencida' : 'Pagada') }}
+                  {{
+                    d.status==='pending' ? 'Pendiente' :
+                    d.status==='overdue' ? 'Vencida' :
+                    d.status==='under_review' ? 'En revisión' :
+                    d.status==='rejected' ? 'Rechazada' : 'Pagada'
+                  }}
                 </span>
               </td>
             </tr>

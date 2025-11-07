@@ -40,7 +40,18 @@ export class AdminPagosComponent implements OnInit {
   cashDebts: any[] = [];
   cashSummaryLoading = false;
   cashLoading = false;
-  cashFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
+  cashFilter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid' = 'pending';
+  manualPayments: any[] = [];
+  manualPaymentsLoading = false;
+  manualPaymentsError: string | null = null;
+  manualPaymentsFilter: 'all'|'under_review'|'paid'|'rejected' = 'under_review';
+  manualPaymentDetail: any | null = null;
+  manualPaymentDetailLoading = false;
+  manualPaymentDetailError: string | null = null;
+  manualPaymentReferences: Record<number, string> = {};
+  manualPaymentNotes: Record<number, string> = {};
+  manualPaymentRejectReasons: Record<number, string> = {};
+  manualPaymentProcessing: Record<number, boolean> = {};
   founderGenerating = false;
   founderSending = false;
   founderCode: string | null = null;
@@ -117,9 +128,13 @@ export class AdminPagosComponent implements OnInit {
           if (this.gateway === 'cash') {
             this.loadAdminCashSummary();
             this.loadAdminCashCommissions(this.cashFilter);
+            this.loadManualPayments(this.manualPaymentsFilter);
           } else {
             this.cashSummary = null;
             this.cashDebts = [];
+            this.manualPayments = [];
+            this.manualPaymentDetail = null;
+            this.manualPaymentsFilter = 'under_review';
           }
           this.loadVerificationRequests(this.verificationFilter);
         } else {
@@ -148,7 +163,7 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
-  private loadAdminCashCommissions(filter: 'all'|'pending'|'overdue'|'paid' = this.cashFilter) {
+  private loadAdminCashCommissions(filter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid' = this.cashFilter) {
     const token = this.session.getAccessToken();
     this.cashLoading = true;
     this.cashFilter = filter;
@@ -164,9 +179,143 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
-  setCashFilterAdmin(filter: 'all'|'pending'|'overdue'|'paid') {
+  setCashFilterAdmin(filter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid') {
     if (this.cashFilter === filter && !this.cashLoading) return;
     this.loadAdminCashCommissions(filter);
+  }
+
+  private loadManualPayments(filter: 'all'|'under_review'|'paid'|'rejected' = this.manualPaymentsFilter) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.manualPaymentsLoading = true;
+    this.manualPaymentsError = null;
+    this.clearManualPaymentDetail();
+    this.manualPaymentsFilter = filter;
+    this.manualPaymentReferences = {};
+    this.manualPaymentNotes = {};
+    this.manualPaymentRejectReasons = {};
+    this.adminApi.listManualCashPayments(this.adminSecret, token, {
+      status: filter === 'all' ? undefined : filter,
+      limit: 100,
+      offset: 0
+    }).subscribe({
+      next: (res: any) => {
+        this.manualPaymentsLoading = false;
+        if (res?.success) {
+          this.manualPayments = res.data || [];
+        } else {
+          this.manualPayments = [];
+          this.manualPaymentsError = res?.error || 'No se pudieron obtener los pagos manuales.';
+        }
+      },
+      error: (err: any) => {
+        this.manualPaymentsLoading = false;
+        this.manualPayments = [];
+        this.manualPaymentsError = err?.error?.error || 'No se pudieron obtener los pagos manuales.';
+      }
+    });
+  }
+
+  setManualPaymentsFilter(filter: 'all'|'under_review'|'paid'|'rejected') {
+    if (this.manualPaymentsFilter === filter && !this.manualPaymentsLoading) return;
+    this.loadManualPayments(filter);
+  }
+
+  viewManualPayment(payment: any) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.manualPaymentDetailLoading = true;
+    this.manualPaymentDetailError = null;
+    this.manualPaymentDetail = null;
+    this.adminApi.getManualCashPayment(this.adminSecret, token, Number(payment.id)).subscribe({
+      next: (res: any) => {
+        this.manualPaymentDetailLoading = false;
+        if (res?.success) {
+          const detail = { ...res.data };
+          if (detail.metadata && typeof detail.metadata !== 'object') {
+            try {
+              const metadataString = typeof detail.metadata === 'string'
+                ? detail.metadata
+                : detail.metadata?.toString?.('utf8');
+              if (metadataString) {
+                detail.metadata = JSON.parse(metadataString);
+              }
+            } catch {
+              detail.metadata = detail.metadata;
+            }
+          }
+          detail.amount = Number(detail.amount || 0);
+          detail.debt_total = Number(detail.debt_total || 0);
+          this.manualPaymentDetail = detail;
+          const paymentId = Number(payment.id);
+          const existingReference = detail?.reference || '';
+          this.manualPaymentReferences[paymentId] = existingReference;
+          this.manualPaymentNotes[paymentId] = detail?.review_notes || '';
+          this.manualPaymentRejectReasons[paymentId] = detail?.metadata?.rejection_reason || '';
+        } else {
+          this.manualPaymentDetailError = res?.error || 'No fue posible obtener el detalle.';
+        }
+      },
+      error: (err: any) => {
+        this.manualPaymentDetailLoading = false;
+        this.manualPaymentDetailError = err?.error?.error || 'No fue posible obtener el detalle.';
+      }
+    });
+  }
+
+  clearManualPaymentDetail() {
+    this.manualPaymentDetail = null;
+    this.manualPaymentDetailLoading = false;
+    this.manualPaymentDetailError = null;
+  }
+
+  approveManualPayment(payment: any) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    const id = Number(payment.id);
+    const reference = (this.manualPaymentReferences[id] || '').trim();
+    const notes = (this.manualPaymentNotes[id] || '').trim();
+    this.manualPaymentProcessing[id] = true;
+    this.adminApi.approveManualCashPayment(this.adminSecret, token, id, {
+      reference: reference || undefined,
+      notes: notes || undefined
+    }).subscribe({
+      next: () => {
+        delete this.manualPaymentProcessing[id];
+        this.clearManualPaymentDetail();
+        this.loadManualPayments(this.manualPaymentsFilter);
+        this.refreshAdminCash();
+      },
+      error: (err: any) => {
+        delete this.manualPaymentProcessing[id];
+        alert(err?.error?.error || 'No se pudo aprobar el pago manual.');
+      }
+    });
+  }
+
+  rejectManualPayment(payment: any) {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    const id = Number(payment.id);
+    const reason = (this.manualPaymentRejectReasons[id] || '').trim();
+    if (!reason) {
+      alert('Debes ingresar un motivo de rechazo.');
+      return;
+    }
+    const notes = (this.manualPaymentNotes[id] || '').trim();
+    this.manualPaymentProcessing[id] = true;
+    this.adminApi.rejectManualCashPayment(this.adminSecret, token, id, reason, notes || undefined).subscribe({
+      next: () => {
+        delete this.manualPaymentProcessing[id];
+        this.clearManualPaymentDetail();
+        this.loadManualPayments(this.manualPaymentsFilter);
+        this.refreshAdminCash();
+      },
+      error: (err: any) => {
+        delete this.manualPaymentProcessing[id];
+        alert(err?.error?.error || 'No se pudo rechazar el pago manual.');
+      }
+    });
   }
 
   private loadVerificationRequests(filter: 'all' | 'pending' | 'approved' | 'rejected', offset: number = 0) {
@@ -318,6 +467,7 @@ export class AdminPagosComponent implements OnInit {
   refreshAdminCash() {
     this.loadAdminCashSummary();
     this.loadAdminCashCommissions(this.cashFilter);
+    this.loadManualPayments(this.manualPaymentsFilter);
   }
 
   private resetFounderMessages() {

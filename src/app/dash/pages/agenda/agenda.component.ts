@@ -15,7 +15,7 @@ import { NotificationService } from '../../../../libs/shared-ui/notifications/se
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, of, firstValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 
@@ -145,19 +145,21 @@ export class DashAgendaComponent implements OnInit {
   scheduledAppointmentsCount: number = 0;
 
   // Cash backend data
-  cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'paid' }>= [];
+  cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'under_review'|'rejected'|'paid' }>= [];
   cashTotal = 0;
   cashOverdueTotal = 0;
   cashNextDueDate: string | null = null;
   cashNextDueDateLabel: string | null = null;
   cashSummaryLoading = false;
   cashLoading = false;
-  cashTableFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
+  cashTableFilter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid' = 'pending';
   cashSummary: {
     total_due: number;
     overdue_due: number;
     pending_count: number;
     overdue_count: number;
+    under_review_count: number;
+    rejected_count: number;
     paid_count: number;
     next_due_date: string | null;
     last_debt: {
@@ -167,6 +169,14 @@ export class DashAgendaComponent implements OnInit {
       status: string | null;
       due_date: string | null;
       created_at: string | null;
+      manual_payment_id?: number | null;
+      manual_payment_status?: string | null;
+      manual_payment_reference?: string | null;
+      manual_payment_receipt_url?: string | null;
+      manual_payment_bucket?: string | null;
+      manual_payment_key?: string | null;
+      manual_payment_filename?: string | null;
+      manual_payment_updated_at?: string | null;
     } | null;
   } | null = null;
 
@@ -331,10 +341,22 @@ export class DashAgendaComponent implements OnInit {
             overdue_due: this.cashOverdueTotal,
             pending_count: Number(res.summary.pending_count || 0),
             overdue_count: Number(res.summary.overdue_count || 0),
+            under_review_count: Number(res.summary.under_review_count || 0),
+            rejected_count: Number(res.summary.rejected_count || 0),
             paid_count: Number(res.summary.paid_count || 0),
             next_due_date: this.cashNextDueDate,
             last_debt: res.summary.last_debt || null
           };
+          const lastStatus = this.cashSummary?.last_debt?.status as string | undefined;
+          if (lastStatus === 'under_review') {
+            this.cashPaymentLocalState = 'under_review';
+          } else if (lastStatus === 'paid') {
+            this.cashPaymentLocalState = 'approved';
+          } else if (lastStatus === 'rejected') {
+            this.cashPaymentLocalState = 'rejected';
+          } else {
+            this.cashPaymentLocalState = 'idle';
+          }
           console.log('[TRACE][AGENDA] loadCashSummary parsed', this.cashSummary);
           const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
           if (debtIdx >= 0) {
@@ -350,6 +372,7 @@ export class DashAgendaComponent implements OnInit {
           this.cashOverdueTotal = 0;
           this.cashNextDueDate = null;
           this.cashNextDueDateLabel = null;
+          this.cashPaymentLocalState = 'idle';
         }
       },
       error: (err) => {
@@ -363,7 +386,7 @@ export class DashAgendaComponent implements OnInit {
     });
   }
 
-  private loadCashCommissions(filter: 'all'|'pending'|'overdue'|'paid' = this.cashTableFilter) {
+  private loadCashCommissions(filter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid' = this.cashTableFilter) {
     this.cashLoading = true;
     this.cashTableFilter = filter;
     const params: any = {};
@@ -377,7 +400,7 @@ export class DashAgendaComponent implements OnInit {
           date: r.date,
           commission: Number(r.commission_amount || 0),
           dueDate: r.due_date,
-          status: r.status
+          status: (r.status || 'pending') as 'pending'|'overdue'|'under_review'|'rejected'|'paid'
         }));
       },
       error: () => { this.cashLoading = false; },
@@ -385,7 +408,7 @@ export class DashAgendaComponent implements OnInit {
     });
   }
 
-  setCashFilter(filter: 'all'|'pending'|'overdue'|'paid') {
+  setCashFilter(filter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid') {
     if (this.cashTableFilter === filter && !this.cashLoading) {
       return;
     }
@@ -455,25 +478,86 @@ export class DashAgendaComponent implements OnInit {
     }
   }
 
-  submitCashPayment(): void {
+  async submitCashPayment(): Promise<void> {
+    if (this.cashPaymentSubmitting) {
+      return;
+    }
     if (!this.cashPaymentReceiptFile) {
       this.cashPaymentFileError = 'Debes adjuntar el comprobante antes de continuar.';
       return;
     }
+    if (!this.cashSummary || this.cashTotal <= 0) {
+      this.cashPaymentFeedback = { type: 'error', message: 'No encontramos comisiones pendientes para registrar.' };
+      return;
+    }
+
+    const file = this.cashPaymentReceiptFile;
+    const amount = Number(this.cashTotal || 0);
+    const currency = this.cashSummary?.last_debt?.currency || 'CLP';
+    const reference = this.cashPaymentForm.reference?.trim() || undefined;
+    const notes = this.cashPaymentForm.notes?.trim() || undefined;
+
     this.cashPaymentSubmitting = true;
     this.cashPaymentFeedback = null;
     this.cashPaymentFileError = '';
 
-    setTimeout(() => {
-      this.cashPaymentSubmitting = false;
+    try {
+      const signResponse: any = await firstValueFrom(this.payments.signManualCashPaymentReceipt({
+        contentType: file.type || 'application/octet-stream',
+        sizeBytes: file.size,
+        fileName: this.cashPaymentReceiptName || file.name
+      }));
+
+      if (!signResponse?.success || !signResponse.uploadUrl || !signResponse.key) {
+        throw new Error(signResponse?.error || 'No se pudo preparar la subida del comprobante.');
+      }
+
+      const uploadResp = await fetch(signResponse.uploadUrl, {
+        method: 'PUT',
+        headers: signResponse.headers || { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+      });
+
+      if (!uploadResp.ok) {
+        const errorText = await uploadResp.text().catch(() => '');
+        throw new Error(`No se pudo subir el comprobante (${uploadResp.status}). ${errorText}`.trim());
+      }
+
+      const finalizeResponse: any = await firstValueFrom(this.payments.submitManualCashPayment({
+        amount,
+        currency,
+        key: signResponse.key,
+        bucket: signResponse.bucket,
+        reference,
+        notes,
+        fileName: this.cashPaymentReceiptName || file.name
+      }));
+
+      if (!finalizeResponse?.success) {
+        throw new Error(finalizeResponse?.error || 'No se pudo registrar el pago manual.');
+      }
+
+      const difference = Number(finalizeResponse?.difference || 0);
+      const differenceNote = Math.abs(difference) > 0.01
+        ? ` (registramos diferencia de ${difference.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} CLP)`
+        : '';
+
       this.cashPaymentLocalState = 'under_review';
       this.cashPaymentFeedback = {
         type: 'success',
-        message: 'Comprobante enviado. Revisaremos tu pago dentro de las próximas horas.'
+        message: `Comprobante enviado correctamente${differenceNote}. Revisaremos tu pago dentro de las próximas horas.`
       };
+      this.cashPaymentForm = { reference: '', notes: '' };
       this.clearCashReceiptFile();
       this.refreshCash();
-    }, 1200);
+    } catch (error: any) {
+      console.error('[AGENDA] submitCashPayment error', error);
+      const message = error?.error?.error || error?.message || 'No se pudo registrar el pago manual. Intenta nuevamente.';
+      this.cashPaymentFeedback = { type: 'error', message };
+      this.cashPaymentLocalState = 'idle';
+    } finally {
+      this.cashPaymentSubmitting = false;
+    }
   }
 
   get cashPaymentStatusLabel(): string | null {
@@ -485,7 +569,7 @@ export class DashAgendaComponent implements OnInit {
       return 'Comprobante en revisión';
     }
     if (status === 'rejected') {
-      return 'Comprobante rechazado';
+      return 'Comprobante rechazado. Revisa el correo y vuelve a subir otro comprobante.';
     }
     return null;
   }

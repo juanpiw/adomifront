@@ -38,6 +38,42 @@ export class PaymentsService {
     );
   }
 
+  signManualCashPaymentReceipt(payload: { contentType: string; sizeBytes: number; fileName?: string }): Observable<any> {
+    return this.http.post(
+      `${this.base}/provider/cash/manual-payments/sign`,
+      {
+        contentType: payload.contentType,
+        sizeBytes: payload.sizeBytes,
+        fileName: payload.fileName || null
+      },
+      { headers: this.headers() }
+    );
+  }
+
+  submitManualCashPayment(payload: {
+    amount: number;
+    currency?: string;
+    key: string;
+    bucket?: string | null;
+    reference?: string | null;
+    notes?: string | null;
+    fileName?: string | null;
+  }): Observable<any> {
+    return this.http.post(
+      `${this.base}/provider/cash/manual-payments`,
+      {
+        amount: payload.amount,
+        currency: payload.currency,
+        key: payload.key,
+        bucket: payload.bucket,
+        reference: payload.reference,
+        notes: payload.notes,
+        fileName: payload.fileName
+      },
+      { headers: this.headers() }
+    );
+  }
+
   createCheckoutSession(appointmentId: number): Observable<{ success: boolean; url: string }>{
     console.log('[PAYMENTS_SERVICE] createCheckoutSession ->', { appointmentId });
     return this.http.post<{ success: boolean; url: string }>(
