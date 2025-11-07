@@ -1242,8 +1242,9 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
     this.mapCardMarkers = markers;
 
-    if (!this.nearbyActive && !this.hasAutoCentered && firstMarker) {
-      this.mapCenter = { ...firstMarker.position };
+    const firstPosition = firstMarker?.position;
+    if (!this.nearbyActive && !this.hasAutoCentered && firstPosition) {
+      this.mapCenter = { ...firstPosition };
       this.hasAutoCentered = true;
     }
   }
