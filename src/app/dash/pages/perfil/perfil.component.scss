@@ -1,21 +1,27 @@
 ﻿:host { display:block }
 
 .live-location-status {
+  --status-border: #e2e8f0;
+  --status-bg: #f8fafc;
+  --status-text: #1f2937;
+  --status-dot: #94a3b8;
+  --status-subtext: #475569;
+
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 12px;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #1f2937;
+  border: 1px solid var(--status-border);
+  background: var(--status-bg);
+  color: var(--status-text);
 
   &__dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #94a3b8;
+    background: var(--status-dot);
     flex-shrink: 0;
   }
 
@@ -34,7 +40,7 @@
 
   &__message {
     font-size: 0.8125rem;
-    color: #475569;
+    color: var(--status-subtext);
     margin: 0;
   }
 
@@ -59,61 +65,37 @@
     }
   }
 
-  &--watching {
-    border-color: #22c55e;
-    background: #ecfdf5;
-    color: #166534;
-
-    .live-location-status__dot {
-      background: #22c55e;
-    }
-
-    .live-location-status__message {
-      color: #166534;
-    }
+  &[data-state='watching'] {
+    --status-border: #22c55e;
+    --status-bg: #ecfdf5;
+    --status-text: #166534;
+    --status-dot: #22c55e;
+    --status-subtext: #166534;
   }
 
-  &--requesting {
-    border-color: #38bdf8;
-    background: #e0f2fe;
-    color: #0c4a6e;
-
-    .live-location-status__dot {
-      background: #0ea5e9;
-    }
-
-    .live-location-status__message {
-      color: #0c4a6e;
-    }
+  &[data-state='requesting'] {
+    --status-border: #38bdf8;
+    --status-bg: #e0f2fe;
+    --status-text: #0c4a6e;
+    --status-dot: #0ea5e9;
+    --status-subtext: #0c4a6e;
   }
 
-  &--error,
-  &--denied {
-    border-color: #f87171;
-    background: #fee2e2;
-    color: #7f1d1d;
-
-    .live-location-status__dot {
-      background: #ef4444;
-    }
-
-    .live-location-status__message {
-      color: #7f1d1d;
-    }
+  &[data-state='error'],
+  &[data-state='denied'] {
+    --status-border: #f87171;
+    --status-bg: #fee2e2;
+    --status-text: #7f1d1d;
+    --status-dot: #ef4444;
+    --status-subtext: #7f1d1d;
   }
 
-  &--unsupported {
-    border-color: #fbbf24;
-    background: #fef3c7;
-    color: #92400e;
-
-    .live-location-status__dot {
-      background: #f59e0b;
-    }
-
-    .live-location-status__message {
-      color: #92400e;
-    }
+  &[data-state='unsupported'] {
+    --status-border: #fbbf24;
+    --status-bg: #fef3c7;
+    --status-text: #92400e;
+    --status-dot: #f59e0b;
+    --status-subtext: #92400e;
   }
 }
 
