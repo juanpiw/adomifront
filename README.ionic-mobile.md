@@ -58,3 +58,4 @@ Documentar la hoja de ruta para empaquetar `adomi-app` (Angular 20, SSR) como ap
 - `angular.json`: builders y configuraciones actuales (SSR, assets, styles).
 - Documentación oficial: [Ionic Angular](https://ionicframework.com/docs/angular/overview), [Capacitor](https://capacitorjs.com/docs), [Angular Standalone](https://angular.dev/guide/standalone-components).
 
+
