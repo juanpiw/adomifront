@@ -599,6 +599,9 @@ export class DashAgendaComponent implements OnInit {
     if (status === 'rejected') {
       return 'Reenviar comprobante';
     }
+    if (this.cashTotal > 0) {
+      return `Pagar ${this.formatCurrencyCLP(this.cashTotal)}`;
+    }
     return 'Pagar Total Adeudado';
   }
 
@@ -631,6 +634,14 @@ export class DashAgendaComponent implements OnInit {
       return 'rejected';
     }
     return null;
+  }
+
+  private formatCurrencyCLP(amount: number): string {
+    try {
+      return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(amount || 0);
+    } catch {
+      return `$${Math.round(amount || 0).toLocaleString('es-CL')}`;
+    }
   }
 
   private togglePaidAwaitingPanel() {

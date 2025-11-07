@@ -162,6 +162,29 @@
       <h2 class="cash-title">Mis Comisiones Pendientes</h2>
       <p class="cash-sub">Aquí puedes ver las comisiones que debes a la plataforma por los cobros en efectivo.</p>
 
+      <div class="cash-alert" *ngIf="!cashSummaryLoading && cashTotal > 0">
+        <div class="cash-alert__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+        </div>
+        <div class="cash-alert__content">
+          <span class="cash-alert__title">Debes depositar saldo a la app</span>
+          <span class="cash-alert__subtitle">
+            Total pendiente: {{ cashTotal | currency:'CLP':'symbol':'1.0-0':'es-CL' }}
+            <span *ngIf="cashNextDueDateLabel"> • Próxima fecha límite {{ cashNextDueDateLabel }}</span>
+          </span>
+        </div>
+        <button type="button"
+                class="cash-alert__action"
+                (click)="openCashPaymentModal()"
+                [disabled]="isCashPaymentButtonDisabled">
+          Ir a Pagos en Efectivo
+        </button>
+      </div>
+
       <div class="cash-summary">
         <div class="cash-summary__amount">
           <div class="cash-summary__label">Total Adeudado</div>
