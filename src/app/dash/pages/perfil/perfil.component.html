@@ -69,6 +69,20 @@
         (setZonePrimary)="onSetZonePrimary($event)">
       </app-ubicacion-disponibilidad>
 
+      <div class="live-location-status" [ngClass]="'live-location-status--' + liveLocationStatus">
+        <span class="live-location-status__dot"></span>
+        <div class="live-location-status__body">
+          <p class="live-location-status__title">{{ liveLocationStatusLabel }}</p>
+          <p *ngIf="liveLocationMessage" class="live-location-status__message">{{ liveLocationMessage }}</p>
+        </div>
+        <button type="button"
+                class="live-location-status__action"
+                (click)="onRequestCurrentLocation()"
+                [disabled]="liveLocationStatus === 'requesting' || liveLocationSending">
+          {{ liveLocationSending ? 'Enviando...' : 'Actualizar ahora' }}
+        </button>
+      </div>
+
       <!-- Preguntas frecuentes -->
       <section class="faq-manager">
         <div class="faq-manager__header">

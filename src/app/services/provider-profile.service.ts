@@ -63,6 +63,10 @@ export interface Availability {
 export interface CurrentLocationPayload {
   lat: number;
   lng: number;
+  accuracy?: number;
+  speed?: number;
+  heading?: number;
+  timestamp?: number;
 }
 
 export interface ProviderProfile {

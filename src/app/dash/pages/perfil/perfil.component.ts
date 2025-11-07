@@ -1,9 +1,9 @@
-﻿import { Component, OnInit, inject, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
-import { ProviderProfileService, BasicInfo as ServiceBasicInfo, ProviderFaq } from '../../../services/provider-profile.service';
+import { firstValueFrom, Observable } from 'rxjs';
+import { ProviderProfileService, BasicInfo as ServiceBasicInfo, ProviderFaq, CurrentLocationPayload } from '../../../services/provider-profile.service';
 import { ProfileProgressService } from '../../../services/profile-progress.service';
 import { environment } from '../../../../environments/environment';
 import { UiInputComponent } from '../../../../libs/shared-ui/ui-input/ui-input.component';
@@ -38,6 +38,8 @@ interface EditableFaq extends Partial<ProviderFaq> {
   dirty?: boolean;
 }
 
+type LiveLocationStatus = 'off' | 'requesting' | 'watching' | 'error' | 'denied' | 'unsupported';
+
 @Component({
   selector: 'app-d-perfil',
   standalone: true,
@@ -67,7 +69,7 @@ interface EditableFaq extends Partial<ProviderFaq> {
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
 })
-export class DashPerfilComponent implements OnInit {
+export class DashPerfilComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private providerProfileService = inject(ProviderProfileService);
   private portfolioService = inject(PortfolioService);
@@ -84,6 +86,10 @@ export class DashPerfilComponent implements OnInit {
 
     // Cargar datos del perfil desde el backend
     this.loadProfileData();
+  }
+
+  ngOnDestroy(): void {
+    this.stopLiveLocationWatcher('destroy');
   }
 
   // Marcar zona como principal
@@ -216,6 +222,13 @@ export class DashPerfilComponent implements OnInit {
       availableForNewBookings: profile.is_online !== false,
       shareRealTimeLocation: profile.share_real_time_location || false
     };
+
+    if (this.locationSettings.shareRealTimeLocation) {
+      this.setLiveLocationState('requesting', 'Esperando una nueva lectura de tu dispositivo...');
+    } else {
+      this.setLiveLocationState('off', 'Activa "Compartir ubicación en tiempo real" para mostrar tu posición en el mapa.');
+    }
+    this.syncLiveLocationWatcher();
   }
 
   // Datos básicos del perfil
@@ -398,6 +411,16 @@ export class DashPerfilComponent implements OnInit {
       }
     ]
   };
+
+  liveLocationStatus: LiveLocationStatus = 'off';
+  liveLocationStatusLabel = 'Ubicación en vivo desactivada';
+  liveLocationMessage: string | null = 'Activa "Compartir ubicación en tiempo real" para mostrar tu posición en el mapa.';
+  private liveLocationWatchId: number | null = null;
+  private liveLocationLastCoords: { lat: number; lng: number } | null = null;
+  private liveLocationLastSentAt = 0;
+  liveLocationSending = false;
+  private readonly liveLocationMinIntervalMs = 12000;
+  private readonly liveLocationMinDistanceMeters = 20;
 
   // Datos para excepciones
   exceptions: ExceptionDate[] = [
@@ -836,36 +859,345 @@ export class DashPerfilComponent implements OnInit {
     }
   }
 
+  private setLiveLocationState(status: LiveLocationStatus, message?: string) {
+    this.liveLocationStatus = status;
+    const labels: Record<LiveLocationStatus, string> = {
+      off: 'Ubicación en vivo desactivada',
+      requesting: 'Solicitando ubicación...',
+      watching: 'Compartiendo ubicación en vivo',
+      error: 'No pudimos actualizar tu ubicación',
+      denied: 'Permiso de ubicación denegado',
+      unsupported: 'Tu dispositivo no soporta geolocalización'
+    };
+    this.liveLocationStatusLabel = labels[status];
+    if (message !== undefined) {
+      this.liveLocationMessage = message;
+    }
+  }
+
+  private formatTimeForMessage(timestamp: number): string {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  private computeDistanceMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+      * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c * 1000;
+  }
+
+  private shouldSendLiveLocation(lat: number, lng: number): boolean {
+    if (!this.liveLocationLastCoords) {
+      return true;
+    }
+    const elapsed = Date.now() - this.liveLocationLastSentAt;
+    if (elapsed >= this.liveLocationMinIntervalMs) {
+      return true;
+    }
+    const distanceMeters = this.computeDistanceMeters(
+      lat,
+      lng,
+      this.liveLocationLastCoords.lat,
+      this.liveLocationLastCoords.lng
+    );
+    return distanceMeters >= this.liveLocationMinDistanceMeters;
+  }
+
+  private sendCurrentLocationToBackend(data: {
+    lat: number;
+    lng: number;
+    accuracy?: number | null;
+    speed?: number | null;
+    heading?: number | null;
+    timestamp?: number | null;
+  }): Observable<any> {
+    const payload: CurrentLocationPayload = {
+      lat: data.lat,
+      lng: data.lng
+    };
+
+    if (data.accuracy !== undefined && data.accuracy !== null && Number.isFinite(data.accuracy)) {
+      payload.accuracy = Number(data.accuracy);
+    }
+    if (data.speed !== undefined && data.speed !== null && Number.isFinite(data.speed)) {
+      payload.speed = Number(data.speed);
+    }
+    if (data.heading !== undefined && data.heading !== null && Number.isFinite(data.heading)) {
+      payload.heading = Number(data.heading);
+    }
+    if (data.timestamp !== undefined && data.timestamp !== null && Number.isFinite(data.timestamp)) {
+      payload.timestamp = Number(data.timestamp);
+    }
+
+    return this.providerProfileService.updateCurrentLocation(payload);
+  }
+
+  private startLiveLocationWatcher(): void {
+    if (!this.locationSettings.shareRealTimeLocation) {
+      return;
+    }
+    if (!navigator?.geolocation || typeof navigator.geolocation.watchPosition !== 'function') {
+      this.setLiveLocationState('unsupported', 'Tu dispositivo o navegador no soporta geolocalización en vivo.');
+      return;
+    }
+    if (this.liveLocationWatchId !== null) {
+      return;
+    }
+
+    this.setLiveLocationState('requesting', 'Solicitando permiso de ubicación a tu dispositivo...');
+
+    try {
+      this.liveLocationWatchId = navigator.geolocation.watchPosition(
+        (position) => this.handleLiveLocationUpdate(position),
+        (error) => this.handleLiveLocationError(error),
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
+      );
+    } catch (error) {
+      console.error('[PERFIL] Error iniciando watcher de ubicación', error);
+      this.setLiveLocationState('error', 'No pudimos iniciar el seguimiento en vivo.');
+    }
+  }
+
+  private stopLiveLocationWatcher(reason: 'disabled' | 'destroy' | 'error' = 'disabled'): void {
+    if (this.liveLocationWatchId !== null && navigator?.geolocation?.clearWatch) {
+      navigator.geolocation.clearWatch(this.liveLocationWatchId);
+    }
+    this.liveLocationWatchId = null;
+    this.liveLocationLastCoords = null;
+    this.liveLocationLastSentAt = 0;
+    this.liveLocationSending = false;
+
+    if (reason === 'disabled') {
+      this.setLiveLocationState('off', 'Activa "Compartir ubicación en tiempo real" para mostrar tu posición en el mapa.');
+    } else if (reason === 'destroy') {
+      this.setLiveLocationState('off');
+    }
+  }
+
+  private syncLiveLocationWatcher(): void {
+    if (this.locationSettings.shareRealTimeLocation) {
+      this.startLiveLocationWatcher();
+    } else {
+      this.stopLiveLocationWatcher('disabled');
+    }
+  }
+
+  private handleLiveLocationUpdate(position: GeolocationPosition): void {
+    const coords = position.coords;
+    const latitude = coords?.latitude;
+    const longitude = coords?.longitude;
+    const accuracy = coords?.accuracy;
+    const speed = coords?.speed;
+    const heading = coords?.heading;
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return;
+    }
+
+    const timestamp = position.timestamp || Date.now();
+    const accuracyText = Number.isFinite(accuracy) ? `±${Math.round(Number(accuracy))} m` : null;
+    const readingMessage = `Lectura ${this.formatTimeForMessage(timestamp)}${accuracyText ? ` · ${accuracyText}` : ''}`;
+    this.setLiveLocationState('watching', readingMessage);
+
+    if (this.liveLocationSending || !this.shouldSendLiveLocation(latitude as number, longitude as number)) {
+      return;
+    }
+
+    this.liveLocationSending = true;
+    this.liveLocationLastCoords = { lat: latitude as number, lng: longitude as number };
+    this.liveLocationLastSentAt = Date.now();
+
+    this.sendCurrentLocationToBackend({
+      lat: latitude as number,
+      lng: longitude as number,
+      accuracy,
+      speed,
+      heading,
+      timestamp
+    }).subscribe({
+      next: () => {
+        this.liveLocationSending = false;
+        this.setLiveLocationState('watching', `Ubicación enviada ${this.formatTimeForMessage(Date.now())}`);
+      },
+      error: (err) => {
+        this.liveLocationSending = false;
+        console.error('[PERFIL] Error enviando ubicación en vivo', err);
+        this.setLiveLocationState('error', 'No pudimos enviar tu ubicación. Intentaremos en la siguiente lectura.');
+      }
+    });
+  }
+
+  private handleLiveLocationError(error: GeolocationPositionError): void {
+    console.error('[PERFIL] Error en seguimiento de ubicación', error);
+
+    if (error.code === error.PERMISSION_DENIED) {
+      this.setLiveLocationState('denied', 'Debes otorgar permiso de ubicación para compartir tu posición en tiempo real.');
+      this.stopLiveLocationWatcher('error');
+
+      if (this.locationSettings.shareRealTimeLocation) {
+        const previous: LocationSettings = {
+          ...this.locationSettings,
+          coverageZones: [...this.locationSettings.coverageZones]
+        };
+        this.locationSettings = { ...this.locationSettings, shareRealTimeLocation: false };
+        this.persistAvailabilityChange(
+          {
+            is_online: this.locationSettings.availableForNewBookings,
+            share_real_time_location: false
+          },
+          () => {
+            this.locationSettings = previous;
+            this.syncLiveLocationWatcher();
+          }
+        );
+      }
+      return;
+    }
+
+    const message = error.code === error.POSITION_UNAVAILABLE
+      ? 'No pudimos obtener tu posición. Revisa tu señal o intenta más tarde.'
+      : 'La actualización de ubicación tardó demasiado. Intentaremos de nuevo.';
+    this.setLiveLocationState('error', message);
+  }
+
+  private persistAvailabilityChange(
+    payload: Partial<{ is_online: boolean; share_real_time_location: boolean }>,
+    onError?: () => void
+  ): void {
+    this.providerProfileService.updateAvailability(payload).subscribe({
+      next: () => {},
+      error: (err) => {
+        console.error('[PERFIL] Error actualizando disponibilidad', err);
+        if (payload.share_real_time_location !== undefined) {
+          this.setLiveLocationState('error', 'No pudimos guardar tu preferencia de ubicación.');
+        }
+        if (onError) {
+          onError();
+        }
+      }
+    });
+  }
+
   // Event handlers para ubicación y disponibilidad
   onLocationSettingsChange(settings: LocationSettings) {
-    this.locationSettings = settings;
+    const previous: LocationSettings = {
+      ...this.locationSettings,
+      coverageZones: [...this.locationSettings.coverageZones]
+    };
+
+    const nextSettings: LocationSettings = {
+      ...settings,
+      coverageZones: [...settings.coverageZones]
+    };
+
+    const shareChanged = nextSettings.shareRealTimeLocation !== previous.shareRealTimeLocation;
+    const availabilityChanged = nextSettings.availableForNewBookings !== previous.availableForNewBookings;
+
+    this.locationSettings = nextSettings;
+
+    if (shareChanged || availabilityChanged) {
+      this.persistAvailabilityChange(
+        {
+          is_online: nextSettings.availableForNewBookings,
+          share_real_time_location: nextSettings.shareRealTimeLocation
+        },
+        () => {
+          this.locationSettings = previous;
+          this.syncLiveLocationWatcher();
+        }
+      );
+    }
+
+    if (shareChanged) {
+      if (nextSettings.shareRealTimeLocation) {
+        this.startLiveLocationWatcher();
+      } else {
+        this.stopLiveLocationWatcher('disabled');
+      }
+    }
   }
 
   onRequestCurrentLocation() {
     if (!navigator?.geolocation) {
       alert('Geolocalización no disponible en este navegador/dispositivo');
+      this.setLiveLocationState('unsupported', 'Tu dispositivo no soporta geolocalización.');
       return;
     }
+
+    this.setLiveLocationState('requesting', 'Intentando obtener tu ubicación actual...');
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        this.providerProfileService.updateCurrentLocation({ lat, lng }).subscribe({
+        const coords = pos.coords;
+        const latitude = coords?.latitude;
+        const longitude = coords?.longitude;
+        const accuracy = coords?.accuracy;
+        const speed = coords?.speed;
+        const heading = coords?.heading;
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          this.setLiveLocationState('error', 'No pudimos leer tu ubicación. Inténtalo nuevamente.');
+          alert('❌ No se pudo actualizar la ubicación');
+          return;
+        }
+
+        this.liveLocationSending = true;
+        this.sendCurrentLocationToBackend({
+          lat: latitude as number,
+          lng: longitude as number,
+          accuracy,
+          speed,
+          heading,
+          timestamp: pos.timestamp
+        }).subscribe({
           next: () => {
-            // Si el proveedor comparte ubicación, aseguramos persistir el flag también
-            this.providerProfileService.updateAvailability({
-              share_real_time_location: true
-            }).subscribe();
+            this.liveLocationSending = false;
+            this.setLiveLocationState('watching', `Ubicación guardada ${this.formatTimeForMessage(Date.now())}`);
             alert('✅ Ubicación actualizada');
+
+            if (!this.locationSettings.shareRealTimeLocation) {
+              const previous: LocationSettings = {
+                ...this.locationSettings,
+                coverageZones: [...this.locationSettings.coverageZones]
+              };
+              this.locationSettings = { ...this.locationSettings, shareRealTimeLocation: true };
+              this.persistAvailabilityChange(
+                {
+                  is_online: this.locationSettings.availableForNewBookings,
+                  share_real_time_location: true
+                },
+                () => {
+                  this.locationSettings = previous;
+                }
+              );
+            }
+
+            this.startLiveLocationWatcher();
           },
           error: (err) => {
+            this.liveLocationSending = false;
             console.error('[PERFIL] Error al actualizar ubicación actual', err);
+            this.setLiveLocationState('error', 'No pudimos guardar tu ubicación. Inténtalo nuevamente.');
             alert('❌ No se pudo actualizar la ubicación');
           }
         });
       },
       (err) => {
         console.error('[PERFIL] Geolocation error', err);
+        if (err.code === err.PERMISSION_DENIED) {
+          this.setLiveLocationState('denied', 'Debes otorgar permiso de ubicación para compartir tu posición en tiempo real.');
+        } else {
+          this.setLiveLocationState('error', 'No pudimos obtener tu ubicación. Revisa los permisos o la señal GPS.');
+        }
         alert('❌ Permiso de ubicación denegado o no disponible');
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
@@ -873,15 +1205,21 @@ export class DashPerfilComponent implements OnInit {
   }
 
   onOnlineToggle(isOnline: boolean) {
+    const previous: LocationSettings = {
+      ...this.locationSettings,
+      coverageZones: [...this.locationSettings.coverageZones]
+    };
     this.locationSettings = { ...this.locationSettings, availableForNewBookings: isOnline };
-    // Guardar online/offline inmediato
-    this.providerProfileService.updateAvailability({
-      is_online: isOnline,
-      share_real_time_location: this.locationSettings.shareRealTimeLocation
-    }).subscribe({
-      next: () => console.log('[PERFIL] Online status actualizado a', isOnline),
-      error: (err) => console.error('[PERFIL] Error actualizando Online status:', err)
-    });
+
+    this.persistAvailabilityChange(
+      {
+        is_online: isOnline,
+        share_real_time_location: this.locationSettings.shareRealTimeLocation
+      },
+      () => {
+        this.locationSettings = previous;
+      }
+    );
   }
 
   onAddCoverageZone(zoneName: string) {
