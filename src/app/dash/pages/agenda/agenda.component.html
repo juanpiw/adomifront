@@ -171,6 +171,9 @@
             </ng-container>
           </div>
           <div class="cash-summary__overdue" *ngIf="!cashSummaryLoading && cashOverdueTotal>0">Vencido: {{ cashOverdueTotal | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</div>
+          <div class="cash-summary__next" *ngIf="!cashSummaryLoading && cashTotal>0 && cashNextDueDateLabel">
+            Próxima fecha límite: {{ cashNextDueDateLabel }}
+          </div>
         </div>
         <div class="cash-summary__actions">
           <button class="cash-summary__refresh" type="button" (click)="refreshCash()" [disabled]="cashSummaryLoading || cashLoading">

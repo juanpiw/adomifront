@@ -146,6 +146,8 @@ export class DashAgendaComponent implements OnInit {
   cashDebts: Array<{ time: string; client: string; date: string; commission: number; dueDate: string; status: 'pending'|'overdue'|'paid' }>= [];
   cashTotal = 0;
   cashOverdueTotal = 0;
+  cashNextDueDate: string | null = null;
+  cashNextDueDateLabel: string | null = null;
   cashSummaryLoading = false;
   cashLoading = false;
   cashTableFilter: 'all'|'pending'|'overdue'|'paid' = 'pending';
@@ -155,6 +157,7 @@ export class DashAgendaComponent implements OnInit {
     pending_count: number;
     overdue_count: number;
     paid_count: number;
+    next_due_date: string | null;
     last_debt: {
       id: number;
       commission_amount: number;
@@ -295,21 +298,32 @@ export class DashAgendaComponent implements OnInit {
         if (res?.success && res.summary) {
           this.cashTotal = Number(res.summary.total_due || 0);
           this.cashOverdueTotal = Number(res.summary.overdue_due || 0);
+          this.cashNextDueDate = res.summary.next_due_date || null;
+          this.cashNextDueDateLabel = this.cashNextDueDate ? this.formatDueDateLabel(this.cashNextDueDate) : null;
           this.cashSummary = {
             total_due: this.cashTotal,
             overdue_due: this.cashOverdueTotal,
             pending_count: Number(res.summary.pending_count || 0),
             overdue_count: Number(res.summary.overdue_count || 0),
             paid_count: Number(res.summary.paid_count || 0),
+            next_due_date: this.cashNextDueDate,
             last_debt: res.summary.last_debt || null
           };
           console.log('[TRACE][AGENDA] loadCashSummary parsed', this.cashSummary);
           const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
-          if (debtIdx >= 0) this.dashboardMetrics[debtIdx] = { ...this.dashboardMetrics[debtIdx], value: `$${this.cashTotal.toLocaleString('es-CL')}` } as any;
+          if (debtIdx >= 0) {
+            this.dashboardMetrics[debtIdx] = { ...this.dashboardMetrics[debtIdx], value: `$${this.cashTotal.toLocaleString('es-CL')}` } as any;
+          }
           const cashIdx = this.dashboardMetrics.findIndex(m => m.label === 'Citas pagadas en efectivo');
-          if (cashIdx >= 0) this.dashboardMetrics[cashIdx] = { ...this.dashboardMetrics[cashIdx], value: this.cashTotal > 0 ? 1 : 0 } as any;
+          if (cashIdx >= 0) {
+            this.dashboardMetrics[cashIdx] = { ...this.dashboardMetrics[cashIdx], value: this.cashTotal > 0 ? 1 : 0 } as any;
+          }
         } else {
           this.cashSummary = null;
+          this.cashTotal = 0;
+          this.cashOverdueTotal = 0;
+          this.cashNextDueDate = null;
+          this.cashNextDueDateLabel = null;
         }
       },
       error: (err) => {
@@ -1074,6 +1088,23 @@ export class DashAgendaComponent implements OnInit {
     if (view === 'cash') {
       this.loadCashSummary();
       this.loadCashCommissions(this.cashTableFilter);
+    }
+  }
+
+  private formatDueDateLabel(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(date.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return 'Vencido hoy';
+    } else if (diffDays === 1) {
+      return 'Vencido mañana';
+    } else if (diffDays < 7) {
+      return `Vencido en ${diffDays} días`;
+    } else {
+      return `Vencido el ${date.toLocaleDateString('es-CL', { month: 'numeric', day: 'numeric' })}`;
     }
   }
 }

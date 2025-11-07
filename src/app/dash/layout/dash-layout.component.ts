@@ -39,7 +39,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
   hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
   adminPendingCount: number = 0;
-  cashNotice: { amount: number; currency: string; dueDateLabel?: string; status?: string } | null = null;
+  cashNotice: { amount: number; currency: string; dueDateLabel?: string; status: 'pending' | 'overdue'; overdueAmount?: number } | null = null;
   isFounderAccount: boolean = false;
   
   get isAdmin(): boolean {
@@ -110,14 +110,20 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     if (user && user.role === 'provider') {
       this.payments.cashSummary$.subscribe((summary) => {
         console.log('[TRACE][TOPBAR] cashSummary$ emission', summary);
-        if (summary && summary.last_debt && ['pending', 'overdue'].includes(summary.last_debt.status)) {
-          const amount = Number(summary.last_debt.commission_amount || 0);
-          if (amount > 0) {
+        if (summary) {
+          const totalDue = Number(summary.total_due || 0);
+          if (totalDue > 0) {
+            const overdueAmount = Number(summary.overdue_due || 0);
+            const status: 'pending' | 'overdue' = overdueAmount > 0 ? 'overdue' : 'pending';
+            const currency = summary.last_debt?.currency || 'CLP';
+            const dueForLabel = summary.next_due_date || summary.last_debt?.due_date || null;
+
             this.cashNotice = {
-              amount,
-              currency: summary.last_debt.currency || 'CLP',
-              dueDateLabel: summary.last_debt.due_date ? this.formatDueDateLabel(summary.last_debt.due_date) : undefined,
-              status: summary.last_debt.status
+              amount: totalDue,
+              currency,
+              overdueAmount: overdueAmount > 0 ? overdueAmount : undefined,
+              dueDateLabel: dueForLabel ? this.formatDueDateLabel(dueForLabel) : undefined,
+              status
             };
             return;
           }

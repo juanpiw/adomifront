@@ -235,6 +235,29 @@
   }
 }
 
+.topbar-banner--overdue {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+
+  .topbar-banner__icon {
+    background: #fecaca;
+    color: #991b1b;
+  }
+
+  .topbar-banner__subtitle {
+    color: #b91c1c;
+  }
+
+  .topbar-banner__action {
+    background: #ef4444;
+
+    &:hover {
+      background: #dc2626;
+    }
+  }
+}
+
 /* Mobile layout */
 @media (max-width: 900px) {
   .topbar {
