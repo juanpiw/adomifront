@@ -1135,7 +1135,12 @@ export class ExplorarComponent implements OnInit, OnDestroy {
         type: 'provider',
         data: {
           ...provider,
-          liveLocationSource: coords.source
+          liveLocationSource: coords.source,
+          liveLocationLabel: coords.source === 'live' ? this.liveLocationLabels.get(provider.id) || null : null,
+          liveLocationUpdatedAt: coords.updatedAt || provider.current_location_updated_at || provider.live_location?.updated_at || null,
+          liveLocationAccuracy: coords.accuracy ?? provider.current_location_accuracy ?? provider.live_location?.accuracy ?? null,
+          liveLocationSpeed: coords.speed ?? provider.current_location_speed ?? provider.live_location?.speed ?? null,
+          liveLocationHeading: coords.heading ?? provider.current_location_heading ?? provider.live_location?.heading ?? null
         },
         icon: coords.source === 'live' ? 'map-pin' : 'user',
         color: coords.source === 'live' ? '#f97316' : '#3b82f6'
@@ -1211,7 +1216,12 @@ export class ExplorarComponent implements OnInit, OnDestroy {
         type: 'provider',
         data: {
           ...provider,
-          liveLocationSource: coords.source
+          liveLocationSource: coords.source,
+          liveLocationLabel: coords.source === 'live' ? this.liveLocationLabels.get(provider.id) || null : null,
+          liveLocationUpdatedAt: coords.updatedAt || provider.current_location_updated_at || provider.live_location?.updated_at || null,
+          liveLocationAccuracy: coords.accuracy ?? provider.current_location_accuracy ?? provider.live_location?.accuracy ?? null,
+          liveLocationSpeed: coords.speed ?? provider.current_location_speed ?? provider.live_location?.speed ?? null,
+          liveLocationHeading: coords.heading ?? provider.current_location_heading ?? provider.live_location?.heading ?? null
         },
         icon: coords.source === 'live' ? 'map-pin' : 'user',
         color: coords.source === 'live'
@@ -1424,6 +1434,191 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       // Navigate to provider's services
       console.log('Navigate to provider services:', marker.data.id);
     }
+  }
+
+  private onProvidersUpdated(providers: Provider[]): void {
+    const activeIds = new Set<number>(providers.map(p => p.id));
+    // Depurar labels en vivo que ya no corresponden
+    for (const providerId of Array.from(this.liveLocationLabels.keys())) {
+      if (!activeIds.has(providerId)) {
+        this.liveLocationLabels.delete(providerId);
+      }
+    }
+
+    providers.forEach(provider => {
+      const coords = this.resolveProviderCoordinates(provider);
+      if (coords?.source === 'live') {
+        this.ensureLiveLocationLabel(provider, coords);
+      }
+    });
+  }
+
+  private resolveProviderCoordinates(provider: Provider): ProviderCoordinates | null {
+    const liveLat = this.normalizeCoordinate(provider.current_lat ?? provider.live_location?.lat);
+    const liveLng = this.normalizeCoordinate(provider.current_lng ?? provider.live_location?.lng);
+    if (liveLat !== null && liveLng !== null) {
+      return {
+        lat: liveLat,
+        lng: liveLng,
+        source: 'live',
+        accuracy: this.normalizeCoordinate(provider.current_location_accuracy ?? provider.live_location?.accuracy),
+        speed: this.normalizeCoordinate(provider.current_location_speed ?? provider.live_location?.speed),
+        heading: this.normalizeCoordinate(provider.current_location_heading ?? provider.live_location?.heading),
+        updatedAt: provider.current_location_updated_at || provider.live_location?.updated_at || null
+      };
+    }
+
+    const nearbyLat = this.normalizeCoordinate((provider as any).lat ?? provider.primary_lat);
+    const nearbyLng = this.normalizeCoordinate((provider as any).lng ?? provider.primary_lng);
+    if (nearbyLat !== null && nearbyLng !== null) {
+      return {
+        lat: nearbyLat,
+        lng: nearbyLng,
+        source: 'nearby',
+        updatedAt: provider.current_location_updated_at || provider.live_location?.updated_at || null
+      };
+    }
+
+    const primaryLat = this.normalizeCoordinate(provider.primary_lat);
+    const primaryLng = this.normalizeCoordinate(provider.primary_lng);
+    if (primaryLat !== null && primaryLng !== null) {
+      return {
+        lat: primaryLat,
+        lng: primaryLng,
+        source: 'primary'
+      };
+    }
+
+    return null;
+  }
+
+  private normalizeCoordinate(value: any): number | null {
+    if (value === null || value === undefined) return null;
+    const numeric = typeof value === 'string' ? Number(value) : value;
+    return Number.isFinite(numeric) ? Number(numeric) : null;
+  }
+
+  private ensureLiveLocationLabel(provider: Provider, coords: ProviderCoordinates): void {
+    if (!this.isBrowser || coords.source !== 'live') {
+      return;
+    }
+
+    const cacheKey = `${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}`;
+    if (this.reverseGeocodeCache.has(cacheKey)) {
+      this.liveLocationLabels.set(provider.id, this.reverseGeocodeCache.get(cacheKey)!);
+      return;
+    }
+
+    if (this.pendingReverseGeocode.has(provider.id)) {
+      return;
+    }
+
+    const fallback = this.buildPrimaryLocationLabel(provider);
+    if (fallback) {
+      this.liveLocationLabels.set(provider.id, fallback);
+    }
+
+    this.reverseGeocodeLiveLocation(provider.id, coords);
+  }
+
+  private reverseGeocodeLiveLocation(providerId: number, coords: ProviderCoordinates): void {
+    if (!this.isBrowser) return;
+    const apiKey = (environment as any).googleMapsApiKey;
+    if (!apiKey) return;
+
+    const cacheKey = `${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}`;
+    if (this.reverseGeocodeCache.has(cacheKey)) {
+      this.liveLocationLabels.set(providerId, this.reverseGeocodeCache.get(cacheKey)!);
+      return;
+    }
+
+    this.pendingReverseGeocode.add(providerId);
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coords.lat},${coords.lng}&result_type=street_address|route&key=${apiKey}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(result => {
+        const formatted = result?.results?.[0]?.formatted_address as string | undefined;
+        if (formatted) {
+          const shortLabel = formatted.split(',').slice(0, 2).join(', ').trim();
+          this.reverseGeocodeCache.set(cacheKey, shortLabel);
+          this.liveLocationLabels.set(providerId, shortLabel);
+          try {
+            this.cdr.detectChanges();
+          } catch {}
+        }
+      })
+      .catch(() => {
+        // Silenciar errores de geocoding para no afectar la experiencia
+      })
+      .finally(() => {
+        this.pendingReverseGeocode.delete(providerId);
+      });
+  }
+
+  private getProviderLocationLabel(provider: Provider, coords?: ProviderCoordinates | null): string {
+    const baseLabel = this.buildPrimaryLocationLabel(provider) || provider.location || 'Ubicación no disponible';
+    if (!coords) {
+      return baseLabel;
+    }
+
+    if (coords.source === 'live') {
+      const liveLabel = this.liveLocationLabels.get(provider.id);
+      const timestampLabel = this.formatLiveLocationTimestamp(coords.updatedAt || provider.current_location_updated_at || provider.live_location?.updated_at || null);
+      if (liveLabel && timestampLabel) {
+        return `${liveLabel} · ${timestampLabel}`;
+      }
+      if (liveLabel) {
+        return liveLabel;
+      }
+      if (timestampLabel) {
+        return `${baseLabel} · ${timestampLabel}`;
+      }
+      return baseLabel;
+    }
+
+    if (coords.source === 'nearby') {
+      const distance = this.normalizeCoordinate(provider.distance_km);
+      if (distance !== null) {
+        const distanceLabel = distance < 10 ? distance.toFixed(1) : distance.toFixed(0);
+        return `${baseLabel} · a ${distanceLabel} km`;
+      }
+    }
+
+    return baseLabel;
+  }
+
+  private formatLiveLocationTimestamp(updatedAt?: string | null): string | null {
+    if (!updatedAt) return null;
+    const date = new Date(updatedAt);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const formatter = new Intl.DateTimeFormat('es-CL', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    return `Ubicación enviada ${formatter.format(date)}`;
+  }
+
+  private buildPrimaryLocationLabel(provider: Provider): string | null {
+    const parts: string[] = [];
+    const commune = provider.location || provider.primary_commune || provider.primary_location?.commune;
+    const region = provider.primary_region || provider.primary_location?.region;
+
+    if (commune) {
+      parts.push(commune);
+    }
+    if (region && (!commune || !String(commune).includes(region))) {
+      parts.push(region);
+    }
+
+    if (!parts.length) {
+      return null;
+    }
+
+    return parts.join(', ');
   }
 
   private updateMapPanelTitle() {
