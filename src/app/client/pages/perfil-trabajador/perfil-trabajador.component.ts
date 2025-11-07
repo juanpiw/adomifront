@@ -365,12 +365,6 @@ export class PerfilTrabajadorComponent implements OnInit {
     });
   }
 
-  onMessageClicked(): void {
-    console.log('Message clicked - abriendo chat');
-    // El chat se abre automáticamente desde el BookingPanelComponent
-    // No necesitamos hacer nada aquí ya que el evento se maneja en el componente hijo
-  }
-
   onPortfolioItemClick(item: PortfolioItem): void {
     console.log('Portfolio item clicked:', item);
     // TODO: Implementar modal de imagen

@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { ClientProfileService } from '../../../app/services/client-profile.service';
 
 export interface Service {
@@ -64,7 +63,6 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   @Output() dateSelected = new EventEmitter<string>();
   @Output() timeSelected = new EventEmitter<string>();
   @Output() bookingConfirmed = new EventEmitter<BookingSummary>();
-  @Output() messageClicked = new EventEmitter<void>();
 
   // Modal de confirmación
   isConfirmOpen = false;
@@ -76,7 +74,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   errorDate = '';
   errorTime = '';
 
-  constructor(private router: Router, private clientProfile: ClientProfileService) {}
+  constructor(private clientProfile: ClientProfileService) {}
 
   ngOnInit(): void {
     // Precargar preferencia para mostrarla sin esperar a abrir el modal
@@ -161,14 +159,6 @@ export class BookingPanelComponent implements OnChanges, OnInit {
     }
     // Abrir modal de confirmación
     this.isConfirmOpen = true;
-  }
-
-  onSendMessage() {
-    console.log('Enviar mensaje - providerId:', this.providerId, 'providerName:', this.providerName);
-    this.router.navigate(['/client/conversaciones'], {
-      queryParams: this.providerId ? { providerId: this.providerId, providerName: this.providerName } : undefined
-    });
-    this.messageClicked.emit();
   }
 
   // Confirmación
