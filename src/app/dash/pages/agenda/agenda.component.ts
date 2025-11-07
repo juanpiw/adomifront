@@ -1,5 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DashboardResumenComponent, DashboardMetric } from '../../../../libs/shared-ui/dashboard-resumen/dashboard-resumen.component';
 import { CalendarMensualComponent, CalendarEvent } from '../../../../libs/shared-ui/calendar-mensual/calendar-mensual.component';
 import { DayDetailComponent, DayAppointment } from '../../../../libs/shared-ui/day-detail/day-detail.component';
@@ -28,7 +29,8 @@ import { catchError, map } from 'rxjs/operators';
     DayDetailComponent,
     DashboardGraficoComponent,
     HorariosConfigComponent,
-    ModalVerificarServicioComponent
+    ModalVerificarServicioComponent,
+    FormsModule
   ],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.scss']
@@ -168,6 +170,28 @@ export class DashAgendaComponent implements OnInit {
     } | null;
   } | null = null;
 
+  @ViewChild('cashReceiptInput') cashReceiptInput?: ElementRef<HTMLInputElement>;
+
+  cashPaymentModalOpen = false;
+  cashPaymentSubmitting = false;
+  cashPaymentFeedback: { type: 'success' | 'error'; message: string } | null = null;
+  cashPaymentFileError = '';
+  cashPaymentReceiptFile: File | null = null;
+  cashPaymentReceiptName: string | null = null;
+  cashPaymentMaxFileMb: number = Number(((environment as any)?.cashPaymentMaxMb ?? 5));
+  cashPaymentForm: { reference: string; notes: string } = { reference: '', notes: '' };
+  cashPaymentLocalState: 'idle' | 'under_review' | 'approved' | 'rejected' = 'idle';
+  cashBankAccount = {
+    bank: this.getEnv('cashBankName', 'Banco de Chile'),
+    holder: this.getEnv('cashBankHolder', 'Adomi SpA'),
+    rut: this.getEnv('cashBankRut', '77.123.456-K'),
+    accountType: this.getEnv('cashBankAccountType', 'Cuenta Corriente'),
+    accountNumber: this.getEnv('cashBankAccountNumber', '00-123-45678-9'),
+    email: this.getEnv('cashBankNotificationEmail', 'pagos@adomi.app')
+  };
+
+  currentProviderName: string | null = null;
+
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
   private auth = inject(AuthService);
@@ -187,6 +211,8 @@ export class DashAgendaComponent implements OnInit {
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
   ngOnInit() {
+    this.currentProviderName = this.auth.getCurrentUser()?.name || null;
+
     this.route.queryParamMap.subscribe((params) => {
       const viewParam = (params.get('view') || '').toLowerCase();
       if (['dashboard', 'calendar', 'cash', 'config'].includes(viewParam)) {
@@ -369,6 +395,158 @@ export class DashAgendaComponent implements OnInit {
   refreshCash() {
     this.loadCashSummary();
     this.loadCashCommissions(this.cashTableFilter);
+  }
+
+  openCashPaymentModal(): void {
+    if (this.cashTotal <= 0) {
+      return;
+    }
+    const status = this.cashPaymentStatusKey;
+    if (status === 'under_review' || status === 'paid') {
+      return;
+    }
+    this.cashPaymentModalOpen = true;
+    this.cashPaymentSubmitting = false;
+    this.cashPaymentFeedback = null;
+    this.cashPaymentFileError = '';
+    this.cashPaymentForm = { reference: '', notes: '' };
+    this.clearCashReceiptFile();
+  }
+
+  closeCashPaymentModal(): void {
+    if (this.cashPaymentSubmitting) {
+      return;
+    }
+    this.cashPaymentModalOpen = false;
+    this.cashPaymentFeedback = null;
+    this.cashPaymentFileError = '';
+    this.clearCashReceiptFile();
+  }
+
+  onCashReceiptSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input?.files?.length) {
+      return;
+    }
+    const file = input.files[0];
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      this.cashPaymentFileError = 'Formato no permitido. Usa PDF, JPG o PNG.';
+      this.clearCashReceiptFile();
+      return;
+    }
+    const maxBytes = this.cashPaymentMaxFileMb * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.cashPaymentFileError = `El archivo supera el máximo de ${this.cashPaymentMaxFileMb} MB.`;
+      this.clearCashReceiptFile();
+      return;
+    }
+    this.cashPaymentReceiptFile = file;
+    this.cashPaymentReceiptName = file.name;
+    this.cashPaymentFileError = '';
+  }
+
+  clearCashReceiptFile(): void {
+    this.cashPaymentReceiptFile = null;
+    this.cashPaymentReceiptName = null;
+    this.cashPaymentFileError = '';
+    if (this.cashReceiptInput?.nativeElement) {
+      this.cashReceiptInput.nativeElement.value = '';
+    }
+  }
+
+  submitCashPayment(): void {
+    if (!this.cashPaymentReceiptFile) {
+      this.cashPaymentFileError = 'Debes adjuntar el comprobante antes de continuar.';
+      return;
+    }
+    this.cashPaymentSubmitting = true;
+    this.cashPaymentFeedback = null;
+    this.cashPaymentFileError = '';
+
+    setTimeout(() => {
+      this.cashPaymentSubmitting = false;
+      this.cashPaymentLocalState = 'under_review';
+      this.cashPaymentFeedback = {
+        type: 'success',
+        message: 'Comprobante enviado. Revisaremos tu pago dentro de las próximas horas.'
+      };
+      this.clearCashReceiptFile();
+      this.refreshCash();
+    }, 1200);
+  }
+
+  get cashPaymentStatusLabel(): string | null {
+    const status = this.cashPaymentStatusKey;
+    if (status === 'paid') {
+      return 'Pago confirmado';
+    }
+    if (status === 'under_review') {
+      return 'Comprobante en revisión';
+    }
+    if (status === 'rejected') {
+      return 'Comprobante rechazado';
+    }
+    return null;
+  }
+
+  get cashPaymentStatusStyle(): 'review' | 'success' | 'error' | null {
+    const status = this.cashPaymentStatusKey;
+    if (status === 'paid') {
+      return 'success';
+    }
+    if (status === 'under_review') {
+      return 'review';
+    }
+    if (status === 'rejected') {
+      return 'error';
+    }
+    return null;
+  }
+
+  get cashPaymentButtonLabel(): string {
+    const status = this.cashPaymentStatusKey;
+    if (status === 'paid') {
+      return 'Pago confirmado';
+    }
+    if (status === 'under_review') {
+      return 'En revisión';
+    }
+    if (status === 'rejected') {
+      return 'Reenviar comprobante';
+    }
+    return 'Pagar Total Adeudado';
+  }
+
+  get isCashPaymentButtonDisabled(): boolean {
+    const status = this.cashPaymentStatusKey;
+    if (status === 'under_review' || status === 'paid') {
+      return true;
+    }
+    return this.cashSummaryLoading || this.cashTotal === 0;
+  }
+
+  private get cashPaymentStatusKey(): 'under_review' | 'paid' | 'rejected' | null {
+    const summaryStatus = this.cashSummary?.last_debt?.status as string | undefined;
+    if (summaryStatus === 'paid') {
+      return 'paid';
+    }
+    if (summaryStatus === 'under_review') {
+      return 'under_review';
+    }
+    if (summaryStatus === 'rejected') {
+      return 'rejected';
+    }
+    if (this.cashPaymentLocalState === 'approved') {
+      return 'paid';
+    }
+    if (this.cashPaymentLocalState === 'under_review') {
+      return 'under_review';
+    }
+    if (this.cashPaymentLocalState === 'rejected') {
+      return 'rejected';
+    }
+    return null;
   }
 
   private togglePaidAwaitingPanel() {
@@ -990,6 +1168,14 @@ export class DashAgendaComponent implements OnInit {
     const [sh, sm] = start.split(':').map(Number);
     const [eh, em] = end.split(':').map(Number);
     return (eh * 60 + em) - (sh * 60 + sm);
+  }
+
+  private getEnv(key: string, fallback: string): string {
+    const raw = (environment as any)?.[key];
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      return raw;
+    }
+    return fallback;
   }
 
   // Utilidades de formato para la vista

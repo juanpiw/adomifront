@@ -174,6 +174,16 @@
           <div class="cash-summary__next" *ngIf="!cashSummaryLoading && cashTotal>0 && cashNextDueDateLabel">
             Próxima fecha límite: {{ cashNextDueDateLabel }}
           </div>
+          <div class="cash-summary__status" *ngIf="cashPaymentStatusLabel">
+            <span class="cash-status-badge"
+                  [ngClass]="{
+                    'cash-status-badge--review': cashPaymentStatusStyle === 'review',
+                    'cash-status-badge--success': cashPaymentStatusStyle === 'success',
+                    'cash-status-badge--error': cashPaymentStatusStyle === 'error'
+                  }">
+              {{ cashPaymentStatusLabel }}
+            </span>
+          </div>
         </div>
         <div class="cash-summary__actions">
           <button class="cash-summary__refresh" type="button" (click)="refreshCash()" [disabled]="cashSummaryLoading || cashLoading">
@@ -183,9 +193,9 @@
             </svg>
             Actualizar
           </button>
-          <button class="cash-summary__pay" type="button" [disabled]="cashTotal===0 || cashSummaryLoading">
+          <button class="cash-summary__pay" type="button" [disabled]="isCashPaymentButtonDisabled" (click)="openCashPaymentModal()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M21 7H3V5h18v2zm0 4H3V9h18v2zm0 6H3v-2h18v2z"/></svg>
-            Pagar Total Adeudado
+            {{ cashPaymentButtonLabel }}
           </button>
         </div>
       </div>
@@ -258,6 +268,112 @@
         </tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<!-- Modal de pago en efectivo -->
+<div class="cash-payment-backdrop" *ngIf="cashPaymentModalOpen">
+  <div class="cash-payment-backdrop__overlay" (click)="closeCashPaymentModal()"></div>
+  <div class="cash-payment-modal" role="dialog" aria-modal="true" aria-labelledby="cashPaymentTitle">
+    <header class="cash-payment-modal__header">
+      <h3 id="cashPaymentTitle">Pagar comisiones pendientes</h3>
+      <button type="button" class="cash-payment-modal__close" (click)="closeCashPaymentModal()" aria-label="Cerrar">
+        ×
+      </button>
+    </header>
+
+    <div class="cash-payment-modal__body">
+      <section class="cash-payment-amount">
+        <p class="cash-payment-amount__label">Monto total a pagar</p>
+        <p class="cash-payment-amount__value">{{ cashTotal | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</p>
+        <p class="cash-payment-amount__hint" *ngIf="cashPaymentLocalState === 'under_review'">
+          Ya registramos tu comprobante. Te avisaremos cuando esté aprobado.
+        </p>
+      </section>
+
+      <section class="cash-payment-section">
+        <h4>1. Transfiere a la siguiente cuenta</h4>
+        <div class="cash-payment-bank">
+          <div class="cash-payment-bank__row">
+            <span>Banco</span>
+            <strong>{{ cashBankAccount.bank }}</strong>
+          </div>
+          <div class="cash-payment-bank__row">
+            <span>Titular</span>
+            <strong>{{ cashBankAccount.holder }}</strong>
+          </div>
+          <div class="cash-payment-bank__row">
+            <span>RUT</span>
+            <strong>{{ cashBankAccount.rut }}</strong>
+          </div>
+          <div class="cash-payment-bank__row">
+            <span>Tipo de cuenta</span>
+            <strong>{{ cashBankAccount.accountType }}</strong>
+          </div>
+          <div class="cash-payment-bank__row">
+            <span>Nº de cuenta</span>
+            <strong>{{ cashBankAccount.accountNumber }}</strong>
+          </div>
+          <div class="cash-payment-bank__row">
+            <span>Email para notificar</span>
+            <strong>{{ cashBankAccount.email }}</strong>
+          </div>
+        </div>
+        <p class="cash-payment-section__note">
+          Usa el asunto <strong>"Comisión {{ currentProviderName || 'Profesional' }}"</strong> al enviar la transferencia.
+        </p>
+      </section>
+
+      <section class="cash-payment-section">
+        <h4>2. Sube tu comprobante de pago</h4>
+        <div class="cash-payment-upload" [class.cash-payment-upload--error]="cashPaymentFileError">
+          <label class="cash-payment-upload__label" for="cashReceipt">
+            <span class="cash-payment-upload__icon">⭱</span>
+            <span class="cash-payment-upload__text">Haz clic para seleccionar tu archivo</span>
+            <span class="cash-payment-upload__hint">PDF, JPG o PNG · Máx {{ cashPaymentMaxFileMb }} MB</span>
+          </label>
+          <input #cashReceiptInput type="file" id="cashReceipt" accept="application/pdf,image/jpeg,image/png" (change)="onCashReceiptSelected($event)" hidden>
+          <div class="cash-payment-upload__file" *ngIf="cashPaymentReceiptName">
+            <span class="cash-payment-upload__file-name">{{ cashPaymentReceiptName }}</span>
+            <button type="button" class="cash-payment-upload__remove" (click)="clearCashReceiptFile()">Eliminar</button>
+          </div>
+        </div>
+        <p class="cash-payment-upload__error" *ngIf="cashPaymentFileError">{{ cashPaymentFileError }}</p>
+      </section>
+
+      <section class="cash-payment-section">
+        <div class="cash-payment-field-group">
+          <label class="cash-payment-field">
+            <span>Referencia de transferencia (opcional)</span>
+            <input type="text" [(ngModel)]="cashPaymentForm.reference" placeholder="Ej: Nº operación, banco, etc." />
+          </label>
+          <label class="cash-payment-field">
+            <span>Notas adicionales (opcional)</span>
+            <textarea rows="2" [(ngModel)]="cashPaymentForm.notes" placeholder="Cuéntanos cualquier detalle importante"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <div class="cash-payment-feedback cash-payment-feedback--{{ cashPaymentFeedback?.type }}" *ngIf="cashPaymentFeedback">
+        {{ cashPaymentFeedback.message }}
+      </div>
+    </div>
+
+    <footer class="cash-payment-modal__footer">
+      <button type="button" class="cash-payment-modal__button cash-payment-modal__button--ghost" (click)="closeCashPaymentModal()" [disabled]="cashPaymentSubmitting">
+        Cancelar
+      </button>
+      <button type="button" class="cash-payment-modal__button cash-payment-modal__button--primary"
+              (click)="submitCashPayment()"
+              [disabled]="cashPaymentSubmitting || !cashPaymentReceiptFile">
+        <ng-container *ngIf="!cashPaymentSubmitting; else submittingTpl">
+          Confirmar pago enviado
+        </ng-container>
+      </button>
+      <ng-template #submittingTpl>
+        Enviando…
+      </ng-template>
+    </footer>
   </div>
 </div>
 
