@@ -39,7 +39,15 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   pendingAppointmentsCount: number = 0; // 🔔 Contador de citas pendientes
   hasNewAppointment: boolean = false; // ✨ Para animar el avatar cuando hay nueva cita
   adminPendingCount: number = 0;
-  cashNotice: { amount: number; currency: string; dueDateLabel?: string; status: 'pending' | 'overdue'; overdueAmount?: number } | null = null;
+  cashNotice: {
+    amount: number;
+    currency: string;
+    dueDateLabel?: string;
+    status: 'pending' | 'overdue' | 'under_review' | 'rejected';
+    overdueAmount?: number;
+    manualStatus?: 'under_review' | 'paid' | 'rejected' | null;
+    manualUpdatedAt?: string | null;
+  } | null = null;
   isFounderAccount: boolean = false;
   
   get isAdmin(): boolean {
@@ -112,18 +120,32 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         console.log('[TRACE][TOPBAR] cashSummary$ emission', summary);
         if (summary) {
           const totalDue = Number(summary.total_due || 0);
-          if (totalDue > 0) {
-            const overdueAmount = Number(summary.overdue_due || 0);
-            const status: 'pending' | 'overdue' = overdueAmount > 0 ? 'overdue' : 'pending';
-            const currency = summary.last_debt?.currency || 'CLP';
-            const dueForLabel = summary.next_due_date || summary.last_debt?.due_date || null;
+          const overdueAmount = Number(summary.overdue_due || 0);
+          const underReviewCount = Number(summary.under_review_count || 0);
+          const rejectedCount = Number(summary.rejected_count || 0);
+          const manualStatus = (summary.last_debt?.manual_payment_status || null) as ('under_review' | 'paid' | 'rejected' | null);
+          const manualUpdatedAt = summary.last_debt?.manual_payment_updated_at || null;
+          const currency = summary.last_debt?.currency || 'CLP';
+          const dueForLabel = summary.next_due_date || summary.last_debt?.due_date || null;
 
+          let status: 'pending' | 'overdue' | 'under_review' | 'rejected' = 'pending';
+          if (overdueAmount > 0) {
+            status = 'overdue';
+          } else if (manualStatus === 'rejected' || rejectedCount > 0) {
+            status = 'rejected';
+          } else if (manualStatus === 'under_review' || underReviewCount > 0) {
+            status = 'under_review';
+          }
+
+          if (totalDue > 0 || status === 'under_review' || status === 'rejected') {
             this.cashNotice = {
               amount: totalDue,
               currency,
               overdueAmount: overdueAmount > 0 ? overdueAmount : undefined,
               dueDateLabel: dueForLabel ? this.formatDueDateLabel(dueForLabel) : undefined,
-              status
+              status,
+              manualStatus,
+              manualUpdatedAt: manualUpdatedAt || null
             };
             return;
           }

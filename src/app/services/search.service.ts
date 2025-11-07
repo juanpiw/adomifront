@@ -39,6 +39,20 @@ export interface Provider {
   is_verified?: boolean;
   verification_status?: string;
   services: Service[];
+  share_real_time_location?: boolean | null;
+  current_lat?: number | null;
+  current_lng?: number | null;
+  current_location_accuracy?: number | null;
+  current_location_speed?: number | null;
+  current_location_heading?: number | null;
+  current_location_updated_at?: string | null;
+  primary_lat?: number | null;
+  primary_lng?: number | null;
+  primary_commune?: string | null;
+  primary_region?: string | null;
+  live_location?: ProviderLiveLocation | null;
+  primary_location?: ProviderPrimaryLocation | null;
+  distance_km?: number | null;
 }
 
 export interface Service {
@@ -61,6 +75,19 @@ export interface Service {
     location: string;
     rating: number;
     review_count: number;
+    share_real_time_location?: boolean | null;
+    current_lat?: number | null;
+    current_lng?: number | null;
+    current_location_accuracy?: number | null;
+    current_location_speed?: number | null;
+    current_location_heading?: number | null;
+    current_location_updated_at?: string | null;
+    primary_lat?: number | null;
+    primary_lng?: number | null;
+    primary_commune?: string | null;
+    primary_region?: string | null;
+    live_location?: ProviderLiveLocation | null;
+    primary_location?: ProviderPrimaryLocation | null;
   };
 }
 
@@ -84,6 +111,22 @@ export interface Location {
   region: string;
   commune: string;
   count: number;
+}
+
+export interface ProviderLiveLocation {
+  lat: number | null;
+  lng: number | null;
+  accuracy?: number | null;
+  speed?: number | null;
+  heading?: number | null;
+  updated_at?: string | null;
+}
+
+export interface ProviderPrimaryLocation {
+  lat: number | null;
+  lng: number | null;
+  commune?: string | null;
+  region?: string | null;
 }
 
 @Injectable({
@@ -242,12 +285,12 @@ export class SearchService {
   /**
    * Buscar proveedores cercanos (nearby) por lat/lng y radio
    */
-  searchNearbyProviders(args: { lat: number; lng: number; radius_km: number; search?: string; category?: string; rating_min?: number; is_now?: boolean; date?: string; start?: string; end?: string; limit?: number; offset?: number; }): Observable<SearchResponse<any>> {
+  searchNearbyProviders(args: { lat: number; lng: number; radius_km: number; search?: string; category?: string; rating_min?: number; is_now?: boolean; date?: string; start?: string; end?: string; limit?: number; offset?: number; }): Observable<SearchResponse<Provider>> {
     let params = new HttpParams();
     Object.entries(args).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
     });
-    return this.http.get<SearchResponse<any>>(`${this.apiUrl}/client/search/nearby-providers`, {
+    return this.http.get<SearchResponse<Provider>>(`${this.apiUrl}/client/search/nearby-providers`, {
       params,
       headers: { 'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}` }
     });

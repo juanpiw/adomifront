@@ -258,6 +258,52 @@
   }
 }
 
+.topbar-banner--review {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0c4a6e;
+
+  .topbar-banner__icon {
+    background: #bfdbfe;
+    color: #0c4a6e;
+  }
+
+  .topbar-banner__subtitle {
+    color: #0369a1;
+  }
+
+  .topbar-banner__action {
+    background: #0284c7;
+
+    &:hover {
+      background: #0369a1;
+    }
+  }
+}
+
+.topbar-banner--rejected {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+
+  .topbar-banner__icon {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .topbar-banner__subtitle {
+    color: #b91c1c;
+  }
+
+  .topbar-banner__action {
+    background: #f87171;
+
+    &:hover {
+      background: #ef4444;
+    }
+  }
+}
+
 /* Mobile layout */
 @media (max-width: 900px) {
   .topbar {

@@ -49,7 +49,15 @@ export class TopbarComponent implements OnInit {
     planBadge: null,
     verificationBadge: null
   };
-  @Input() cashNotice: { amount: number; currency?: string; dueDateLabel?: string; status?: 'pending' | 'overdue'; overdueAmount?: number } | null = null;
+  @Input() cashNotice: {
+    amount: number;
+    currency?: string;
+    dueDateLabel?: string;
+    status?: 'pending' | 'overdue' | 'under_review' | 'rejected';
+    overdueAmount?: number;
+    manualStatus?: 'under_review' | 'paid' | 'rejected' | null;
+    manualUpdatedAt?: string | null;
+  } | null = null;
 
   @Output() helpClick = new EventEmitter<string>();
   @Output() hamburgerClick = new EventEmitter<void>();

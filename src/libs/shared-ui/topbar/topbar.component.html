@@ -68,24 +68,64 @@
   </div>
 </div>
 
-<div *ngIf="cashNotice" class="topbar-banner" [ngClass]="{'topbar-banner--overdue': cashNotice.status === 'overdue'}">
+<div *ngIf="cashNotice"
+     class="topbar-banner"
+     [ngClass]="{
+       'topbar-banner--overdue': cashNotice.status === 'overdue',
+       'topbar-banner--review': cashNotice.status === 'under_review',
+       'topbar-banner--rejected': cashNotice.status === 'rejected'
+     }">
   <div class="topbar-banner__icon">
     <ui-icon name="alert-triangle"></ui-icon>
   </div>
   <div class="topbar-banner__content">
     <span class="topbar-banner__title">
-      {{ cashNotice.status === 'overdue' ? 'Tienes comisiones en efectivo vencidas' : 'Debes depositar saldo a la app' }}
+      <ng-container [ngSwitch]="cashNotice.status">
+        <ng-container *ngSwitchCase="'overdue'">Tienes comisiones en efectivo vencidas</ng-container>
+        <ng-container *ngSwitchCase="'under_review'">Comprobante en revisión</ng-container>
+        <ng-container *ngSwitchCase="'rejected'">Comprobante rechazado</ng-container>
+        <ng-container *ngSwitchDefault>Debes depositar saldo a la app</ng-container>
+      </ng-container>
     </span>
     <span class="topbar-banner__subtitle">
-      Total pendiente: ${{ cashNotice.amount | number:'1.0-0' }}
-      <span *ngIf="cashNotice.overdueAmount"> • Vencido: ${{ cashNotice.overdueAmount | number:'1.0-0' }}</span>
-      <span *ngIf="cashNotice.dueDateLabel">
-        • {{ cashNotice.status === 'overdue' ? 'Regulariza antes de' : 'Próxima fecha límite' }} {{ cashNotice.dueDateLabel }}
-      </span>
+      <ng-container [ngSwitch]="cashNotice.status">
+        <ng-container *ngSwitchCase="'overdue'">
+          Total pendiente: ${{ cashNotice.amount | number:'1.0-0' }}
+          <span *ngIf="cashNotice.overdueAmount"> • Vencido: ${{ cashNotice.overdueAmount | number:'1.0-0' }}</span>
+          <span *ngIf="cashNotice.dueDateLabel">
+            • Regulariza antes de {{ cashNotice.dueDateLabel }}
+          </span>
+        </ng-container>
+        <ng-container *ngSwitchCase="'under_review'">
+          Total en revisión: ${{ cashNotice.amount | number:'1.0-0' }}
+          <span *ngIf="cashNotice.dueDateLabel">
+            • Próxima fecha límite {{ cashNotice.dueDateLabel }}
+          </span>
+          <span *ngIf="cashNotice.manualUpdatedAt">
+            • Actualizado {{ cashNotice.manualUpdatedAt | date:'dd/MM HH:mm' }}
+          </span>
+        </ng-container>
+        <ng-container *ngSwitchCase="'rejected'">
+          Debes reenviar tu comprobante por ${{ cashNotice.amount | number:'1.0-0' }}.
+          <span *ngIf="cashNotice.dueDateLabel">
+            • Próxima fecha límite {{ cashNotice.dueDateLabel }}
+          </span>
+        </ng-container>
+        <ng-container *ngSwitchDefault>
+          Total pendiente: ${{ cashNotice.amount | number:'1.0-0' }}
+          <span *ngIf="cashNotice.dueDateLabel">
+            • Próxima fecha límite {{ cashNotice.dueDateLabel }}
+          </span>
+        </ng-container>
+      </ng-container>
     </span>
   </div>
   <button type="button" class="topbar-banner__action" (click)="onCashNoticeClick()">
-    Ir a Pagos en Efectivo
+    <ng-container [ngSwitch]="cashNotice.status">
+      <ng-container *ngSwitchCase="'under_review'">Ver estado</ng-container>
+      <ng-container *ngSwitchCase="'rejected'">Reenviar comprobante</ng-container>
+      <ng-container *ngSwitchDefault>Ir a Pagos en Efectivo</ng-container>
+    </ng-container>
   </button>
 </div>
 

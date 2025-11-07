@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -17,6 +17,16 @@ import { UiReferralInviteEmptyComponent } from '../../../libs/shared-ui/referral
 import { finalize } from 'rxjs/operators';
 
 // Interfaces moved to search.service.ts
+
+interface ProviderCoordinates {
+  lat: number;
+  lng: number;
+  source: 'live' | 'nearby' | 'primary';
+  accuracy?: number | null;
+  speed?: number | null;
+  heading?: number | null;
+  updatedAt?: string | null;
+}
 
 @Component({
   selector: 'app-explorar',
@@ -231,6 +241,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private searchService = inject(SearchService);
   private notifications = inject(NotificationService);
+  private cdr = inject(ChangeDetectorRef);
 
   // User data
   user: any = null;
@@ -282,6 +293,12 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   referralEmailSuccess = false;
   private referralCopyTimeout: any;
   private referralLinkCache: string | null = null;
+  private isBrowser = false;
+  private liveLocationLabels = new Map<number, string>();
+  private reverseGeocodeCache = new Map<string, string>();
+  private pendingReverseGeocode = new Set<number>();
+  private refreshCardsTimeout: any = null;
+  private hasAutoCentered = false;
   get locationDisplayLabel(): string | null {
     if (this.selectedLocation) return this.selectedLocation;
     if (this.selectedLocationId) {
@@ -295,7 +312,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('[EXPLORAR] ngOnInit iniciado');
-    if (isPlatformBrowser(this.platformId)) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
       console.log('[EXPLORAR] Cargando datos de usuario...');
       this.loadUserData();
       // Si no hay nombre todavía, pedirlo al backend
@@ -325,6 +343,10 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.referralCopyTimeout) {
       clearTimeout(this.referralCopyTimeout);
+    }
+    if (this.refreshCardsTimeout) {
+      clearTimeout(this.refreshCardsTimeout);
+      this.refreshCardsTimeout = null;
     }
   }
 
@@ -401,6 +423,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   private loadData() {
     console.log('[EXPLORAR] Cargando datos reales...');
     this.loading = true;
+    this.hasAutoCentered = false;
     this.searchError = '';
     this.searchTermInvalidReason = '';
     this.validatedTerm = null;
@@ -424,6 +447,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
         this.services = results.services.data;
         this.filteredProviders = [...this.providers];
         this.filteredServices = [...this.services];
+
+        this.onProvidersUpdated(this.providers);
 
         // Actualizar componentes del mapa
         this.generateMapMarkers();
@@ -525,6 +550,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   applyAdvancedFilters() {
     console.log('[EXPLORAR] Aplicando filtros avanzados...');
     this.loading = true;
+    this.hasAutoCentered = false;
     this.searchError = '';
     this.searchTermInvalidReason = '';
 
@@ -568,6 +594,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
             this.filteredServices = [];
             this.providers = [...this.filteredProviders];
             this.services = [];
+
+            this.onProvidersUpdated(this.providers);
           } else {
             console.log('[EXPLORAR] ✅ Filtros aplicados:', {
               providers: results.providers.data.length,
@@ -586,6 +614,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
               return { ...p, min_price: minPrice };
             });
             this.filteredServices = this.services;
+
+            this.onProvidersUpdated(this.providers);
           }
 
           this.generateMapMarkers();
@@ -728,6 +758,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   applyFilters() {
     console.log('[EXPLORAR] Aplicando filtros básicos...');
     this.loading = true;
+    this.hasAutoCentered = false;
     this.searchError = '';
     this.referralCopySuccess = false;
     this.referralEmailSuccess = false;
@@ -763,6 +794,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
           this.services = results.services.data;
           this.filteredProviders = [...results.providers.data];
           this.filteredServices = [...results.services.data];
+
+          this.onProvidersUpdated(this.providers);
 
           this.generateMapMarkers();
           this.generateProfessionalCards();
@@ -865,6 +898,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   clearFilters() {
     console.log('[EXPLORAR] Limpiando filtros...');
     this.searchTerm = '';
+    this.hasAutoCentered = false;
     this.selectedCategory = '';
     this.selectedLocation = '';
     this.selectedPriceRange = '';
@@ -1089,60 +1123,56 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
   // Map methods
   generateMapMarkers() {
-    this.mapMarkers = [];
-    
-    // Generate markers from providers
+    const markers: any[] = [];
+
     this.providers.forEach(provider => {
-      this.mapMarkers.push({
+      const coords = this.resolveProviderCoordinates(provider);
+      if (!coords) return;
+      markers.push({
         id: `provider-${provider.id}`,
         name: provider.name,
-        position: {
-          lat: this.mapCenter.lat + (Math.random() - 0.5) * 0.1,
-          lng: this.mapCenter.lng + (Math.random() - 0.5) * 0.1
-        },
+        position: { lat: coords.lat, lng: coords.lng },
         type: 'provider',
-        data: provider,
-        icon: 'user',
-        color: '#3b82f6'
+        data: {
+          ...provider,
+          liveLocationSource: coords.source
+        },
+        icon: coords.source === 'live' ? 'map-pin' : 'user',
+        color: coords.source === 'live' ? '#f97316' : '#3b82f6'
       });
     });
 
-    // Generate markers from services
-    this.services.forEach(service => {
-      this.mapMarkers.push({
-        id: `service-${service.id}`,
-        name: service.name,
-        position: {
-          lat: this.mapCenter.lat + (Math.random() - 0.5) * 0.1,
-          lng: this.mapCenter.lng + (Math.random() - 0.5) * 0.1
-        },
-        type: 'service',
-        data: service,
-        icon: 'briefcase',
-        color: '#10b981'
-      });
-    });
+    this.mapMarkers = markers;
   }
 
   // Map Card methods
   generateProfessionalCards() {
     const source = this.nearbyActive ? this.providers : this.filteredProviders;
-    this.professionalCards = source.map(provider => ({
-      id: provider.id.toString(),
-      name: provider.name,
-      profession: provider.profession,
-      avatar: this.resolveAvatar(provider.avatar_url, provider.name, 64),
-      rating: provider.rating,
-      reviews: provider.review_count,
-      description: provider.description,
-      location: provider.location,
-      price: this.services.find(s => s.provider?.id === provider.id || s.provider_id === provider.id)?.price?.toString() || 'Consultar',
-      isHighlighted: provider.id === 1, // Highlight first provider
-      isOnline: (provider as any).is_online === true,
-      isVerified: (provider as any).is_verified === true
-    }));
+    this.professionalCards = source.map((provider, index) => {
+      const coords = this.resolveProviderCoordinates(provider);
+      if (coords?.source === 'live') {
+        this.ensureLiveLocationLabel(provider, coords);
+      }
 
-    // Set highlighted professional (first one)
+      const relatedService = this.services.find(s => s.provider?.id === provider.id || s.provider_id === provider.id);
+
+      return {
+        id: provider.id.toString(),
+        name: provider.name,
+        profession: provider.profession,
+        avatar: this.resolveAvatar(provider.avatar_url, provider.name, 64),
+        rating: provider.rating,
+        reviews: provider.review_count,
+        description: provider.description,
+        location: this.getProviderLocationLabel(provider, coords),
+        price: relatedService?.price !== undefined ? relatedService.price.toString() : 'Consultar',
+        isHighlighted: index === 0,
+        isOnline: provider.is_online === true,
+        isVerified: provider.is_verified === true,
+        verificationStatus: provider.verification_status
+      };
+    });
+
     this.highlightedProfessional = this.professionalCards[0] || null;
   }
 
@@ -1168,18 +1198,44 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
   generateMapCardMarkers() {
     const source = this.nearbyActive ? this.providers : this.filteredProviders;
-    this.mapCardMarkers = source.map(provider => ({
-      id: `provider-${provider.id}`,
-      name: provider.name,
-      position: {
-        lat: this.mapCenter.lat + (Math.random() - 0.5) * 0.1,
-        lng: this.mapCenter.lng + (Math.random() - 0.5) * 0.1
-      },
-      type: 'provider' as const,
-      data: provider,
-      icon: 'user',
-      color: '#3b82f6'
-    }));
+    const markers: MapCardMarker[] = [];
+    let firstMarker: MapCardMarker | null = null;
+
+    source.forEach(provider => {
+      const coords = this.resolveProviderCoordinates(provider);
+      if (!coords) return;
+      const marker: MapCardMarker = {
+        id: `provider-${provider.id}`,
+        name: provider.name,
+        position: { lat: coords.lat, lng: coords.lng },
+        type: 'provider',
+        data: {
+          ...provider,
+          liveLocationSource: coords.source
+        },
+        icon: coords.source === 'live' ? 'map-pin' : 'user',
+        color: coords.source === 'live'
+          ? '#f97316'
+          : provider.is_online === true
+            ? '#10b981'
+            : '#9CA3AF'
+      };
+      markers.push(marker);
+      if (!firstMarker) {
+        firstMarker = marker;
+      }
+
+      if (coords.source === 'live') {
+        this.ensureLiveLocationLabel(provider, coords);
+      }
+    });
+
+    this.mapCardMarkers = markers;
+
+    if (!this.nearbyActive && !this.hasAutoCentered && firstMarker) {
+      this.mapCenter = { ...firstMarker.position };
+      this.hasAutoCentered = true;
+    }
   }
 
   onProfessionalClick(professional: ProfessionalCard) {
@@ -1268,11 +1324,26 @@ export class ExplorarComponent implements OnInit, OnDestroy {
           services_count: 0,
           experience_years: 0,
           is_online: p.is_online,
+          share_real_time_location: p.share_real_time_location,
+          current_lat: p.current_lat ?? p.live_location?.lat ?? null,
+          current_lng: p.current_lng ?? p.live_location?.lng ?? null,
+          current_location_accuracy: p.current_location_accuracy ?? p.live_location?.accuracy ?? null,
+          current_location_speed: p.current_location_speed ?? p.live_location?.speed ?? null,
+          current_location_heading: p.current_location_heading ?? p.live_location?.heading ?? null,
+          current_location_updated_at: p.current_location_updated_at ?? p.live_location?.updated_at ?? null,
+          primary_lat: p.primary_lat ?? p.primary_location?.lat ?? null,
+          primary_lng: p.primary_lng ?? p.primary_location?.lng ?? null,
+          primary_commune: p.primary_commune ?? p.primary_location?.commune ?? null,
+          primary_region: p.primary_region ?? p.primary_location?.region ?? null,
+          live_location: p.live_location ?? null,
+          primary_location: p.primary_location ?? null,
+          distance_km: p.distance_km ?? null,
           services: []
         }));
 
         // Actualizar mapa y tarjetas
         this.providers = this.filteredProviders;
+        this.onProvidersUpdated(this.providers);
         this.generateProfessionalCards();
         this.mapCenter = evt.center;
         this.mapCardMarkers = this.filteredProviders.map(provider => ({

@@ -97,6 +97,7 @@
 
   &__date-input {
     width: 100%;
+    display: block;
     padding: 0.75rem 0.9rem;
     border-radius: 12px;
     border: 1px solid rgba(203, 213, 225, 0.8);
@@ -104,6 +105,8 @@
     color: #0f172a;
     background: #ffffff;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    min-width: 0;
 
     &:focus {
       outline: none;
