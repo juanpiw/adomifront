@@ -1204,7 +1204,6 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   generateMapCardMarkers() {
     const source = this.nearbyActive ? this.providers : this.filteredProviders;
     const markers: MapCardMarker[] = [];
-    let firstMarker: MapCardMarker | null = null;
 
     source.forEach(provider => {
       const coords = this.resolveProviderCoordinates(provider);
@@ -1231,9 +1230,6 @@ export class ExplorarComponent implements OnInit, OnDestroy {
             : '#9CA3AF'
       };
       markers.push(marker);
-      if (!firstMarker) {
-        firstMarker = marker;
-      }
 
       if (coords.source === 'live') {
         this.ensureLiveLocationLabel(provider, coords);
@@ -1242,8 +1238,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
     this.mapCardMarkers = markers;
 
-    if (!this.nearbyActive && !this.hasAutoCentered && firstMarker) {
-      this.mapCenter = { ...firstMarker.position };
+    if (!this.nearbyActive && !this.hasAutoCentered && markers.length) {
+      this.mapCenter = { ...markers[0].position };
       this.hasAutoCentered = true;
     }
   }
