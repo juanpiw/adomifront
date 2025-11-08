@@ -262,14 +262,29 @@ export class AdminCashPaymentsService {
   }
 
   private mapDetail(response: any): AdminManualCashPaymentDetail {
-    const base = this.mapPayment(response);
-    const debtsArray = Array.isArray(response?.debts) ? response.debts : [];
-    const historyArray = Array.isArray(response?.history) ? response.history : [];
+    const payload = response?.data ?? response;
+    const base = this.mapPayment(payload);
+    const debtsArray = Array.isArray(payload?.debts) ? payload.debts : [];
+    const historyArray = Array.isArray(payload?.history) ? payload.history : [];
+    let metadata: Record<string, any> | null = payload?.metadata ?? payload?.meta ?? null;
+
+    if (metadata && typeof metadata === 'string') {
+      try {
+        metadata = JSON.parse(metadata);
+      } catch {
+        metadata = { raw: metadata };
+      }
+    }
+
+    if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
+      metadata = { ...metadata };
+    }
+
     return {
       ...base,
-      reference: response?.reference ?? null,
-      review_notes: response?.review_notes ?? null,
-      metadata: response?.metadata ?? response?.meta ?? null,
+      reference: payload?.reference ?? null,
+      review_notes: payload?.review_notes ?? null,
+      metadata,
       debts: debtsArray.map((debt: any) => ({
         id: Number(debt?.id),
         commission_amount: Number(debt?.commission_amount ?? debt?.amount ?? 0),
@@ -280,39 +295,50 @@ export class AdminCashPaymentsService {
         client_name: debt?.client_name ?? null,
         client_email: debt?.client_email ?? null
       })),
-      history: historyArray.map((record: any): AdminManualCashPaymentHistoryRecord => ({
-        id: record?.id,
-        action: record?.action ?? 'notes_updated',
-        notes: record?.notes ?? null,
-        metadata: record?.metadata ?? null,
-        admin_id: record?.admin_id ?? null,
-        admin_name: record?.admin_name ?? null,
-        created_at: record?.created_at || record?.createdAt || new Date().toISOString()
-      }))
+      history: historyArray.map((record: any): AdminManualCashPaymentHistoryRecord => {
+        let recordMetadata: Record<string, any> | null = record?.metadata ?? null;
+        if (recordMetadata && typeof recordMetadata === 'string') {
+          try {
+            recordMetadata = JSON.parse(recordMetadata);
+          } catch {
+            recordMetadata = { raw: recordMetadata };
+          }
+        }
+        return {
+          id: record?.id,
+          action: record?.action ?? 'notes_updated',
+          notes: record?.notes ?? null,
+          metadata: recordMetadata,
+          admin_id: record?.admin_id ?? null,
+          admin_name: record?.admin_name ?? null,
+          created_at: record?.created_at || record?.createdAt || new Date().toISOString()
+        };
+      })
     };
   }
 
   private mapPayment(raw: any): AdminManualCashPayment {
-    const amount = Number(raw?.amount || 0);
-    const debtTotal = Number(raw?.debt_total ?? raw?.debtTotal ?? 0);
+    const source = raw?.data ?? raw;
+    const amount = Number(source?.amount || 0);
+    const debtTotal = Number(source?.debt_total ?? source?.debtTotal ?? 0);
     const difference =
-      typeof raw?.difference === 'number'
-        ? Number(raw.difference)
+      typeof source?.difference === 'number'
+        ? Number(source.difference)
         : Number((amount - debtTotal).toFixed(2));
     return {
-      id: Number(raw?.id),
-      provider_id: Number(raw?.provider_id ?? raw?.providerId ?? 0),
-      provider_name: raw?.provider_name ?? raw?.providerName ?? null,
-      provider_email: raw?.provider_email ?? raw?.providerEmail ?? null,
+      id: Number(source?.id),
+      provider_id: Number(source?.provider_id ?? source?.providerId ?? 0),
+      provider_name: source?.provider_name ?? source?.providerName ?? null,
+      provider_email: source?.provider_email ?? source?.providerEmail ?? null,
       amount,
-      currency: raw?.currency || 'CLP',
-      status: (raw?.status || 'under_review') as ManualCashPaymentStatus,
-      created_at: raw?.created_at || raw?.createdAt || new Date().toISOString(),
-      updated_at: raw?.updated_at || raw?.updatedAt || null,
+      currency: source?.currency || 'CLP',
+      status: (source?.status || 'under_review') as ManualCashPaymentStatus,
+      created_at: source?.created_at || source?.createdAt || new Date().toISOString(),
+      updated_at: source?.updated_at || source?.updatedAt || null,
       debt_total: debtTotal,
-      debt_count: Number(raw?.debt_count ?? raw?.debtCount ?? 0),
-      public_receipt_url: raw?.public_receipt_url ?? raw?.receiptUrl ?? null,
-      receipt_key: raw?.receipt_key ?? raw?.receiptKey ?? null,
+      debt_count: Number(source?.debt_count ?? source?.debtCount ?? 0),
+      public_receipt_url: source?.public_receipt_url ?? source?.receiptUrl ?? null,
+      receipt_key: source?.receipt_key ?? source?.receiptKey ?? null,
       difference: Number.isFinite(difference) ? difference : Number((amount - debtTotal).toFixed(2))
     };
   }
