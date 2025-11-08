@@ -1,0 +1,424 @@
+.cash-review {
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  background: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cash-review__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 14px;
+  }
+}
+
+.cash-review__refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d0d8e5;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 8px 16px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cash-review__refresh-icon {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #94a3b8;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: cash-spin 1s linear infinite;
+}
+
+.cash-review__refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cash-review__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cash-review__filter {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cash-review__filter--active {
+  background: #1f2937;
+  color: #fff;
+  border-color: #1f2937;
+}
+
+.cash-review__error {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.cash-review__error--inline {
+  margin-top: 8px;
+}
+
+.cash-review__content {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 18px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cash-review__list,
+.cash-review__detail {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cash-review__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cash-review__table th,
+.cash-review__table td {
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.cash-review__table-loading,
+.cash-review__table-empty {
+  text-align: center;
+  padding: 18px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.cash-review__provider {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cash-review__muted {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.cash-review__link {
+  border: none;
+  background: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cash-review__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cash-review__badge--review {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.cash-review__badge--paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cash-review__badge--rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cash-review__detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+}
+
+.cash-review__detail-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.cash-review__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5f5;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: cash-spin 0.9s linear infinite;
+}
+
+.cash-review__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.cash-review__meta-link a {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.cash-review__debts {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+
+  h6 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 12px;
+  }
+}
+
+.cash-review__history {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+
+  h6 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+.cash-review__history-time {
+  font-size: 12px;
+  color: #64748b;
+  margin-right: 6px;
+}
+
+.cash-review__history-action {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cash-review__history-notes {
+  font-size: 12px;
+  color: #475569;
+}
+
+.cash-review__form,
+.cash-review__resubmission {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: #475569;
+
+    input,
+    textarea {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5f5;
+      background: #f8fafc;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+  }
+}
+
+.cash-review__resubmission h6 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.cash-review__resubmission p {
+  margin: -4px 0 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.cash-review__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cash-review__btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.cash-review__btn--primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.cash-review__btn--danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.cash-review__btn--outline {
+  border: 1px solid #cbd5f5;
+  background: #f1f5f9;
+  color: #1d4ed8;
+}
+
+.cash-review__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cash-review__readonly {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.cash-review__message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+
+  button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    color: inherit;
+  }
+}
+
+.cash-review__message--success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.cash-review__message--error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+@keyframes cash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+

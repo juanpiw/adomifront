@@ -1,0 +1,269 @@
+<div class="cash-review">
+  <div class="cash-review__header">
+    <div>
+      <h4>Pagos manuales con comprobante</h4>
+      <p>Gestiona los comprobantes enviados por proveedores y actualiza su estado.</p>
+    </div>
+    <button
+      type="button"
+      class="cash-review__refresh"
+      (click)="onRefreshList()"
+      [disabled]="state().loadingList"
+    >
+      <span class="cash-review__refresh-icon" aria-hidden="true"></span>
+      Actualizar
+    </button>
+  </div>
+
+  <div class="cash-review__filters">
+    <button
+      type="button"
+      class="cash-review__filter"
+      *ngFor="let filter of filters"
+      [class.cash-review__filter--active]="state().filter === filter.value"
+      (click)="onFilterChange(filter.value)"
+    >
+      {{ filter.label }}
+    </button>
+  </div>
+
+  <div *ngIf="state().error" class="cash-review__error">
+    {{ state().error }}
+  </div>
+
+  <div class="cash-review__content">
+    <div class="cash-review__list">
+      <table class="cash-review__table">
+        <thead>
+          <tr>
+            <th>Proveedor</th>
+            <th>Monto</th>
+            <th>Recibido</th>
+            <th>Estado</th>
+            <th>Deudas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="state().loadingList">
+            <td colspan="6" class="cash-review__table-loading">
+              <span class="cash-review__spinner"></span>
+              Cargando comprobantes…
+            </td>
+          </tr>
+          <tr *ngIf="!state().loadingList && state().list.length === 0">
+            <td colspan="6" class="cash-review__table-empty">
+              No hay comprobantes para este estado.
+            </td>
+          </tr>
+          <tr
+            *ngFor="let payment of state().list; trackBy: trackByPaymentId"
+          >
+            <td>
+              <div class="cash-review__provider">
+                {{ payment.provider_name || payment.provider_email || 'Proveedor sin nombre' }}
+              </div>
+              <div class="cash-review__muted">ID #{{ payment.provider_id }}</div>
+            </td>
+            <td>
+              {{ payment.amount | currency: payment.currency:'symbol':'1.0-0':'es-CL' }}
+            </td>
+            <td>{{ payment.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span
+                class="cash-review__badge"
+                [ngClass]="{
+                  'cash-review__badge--review': payment.status === 'under_review',
+                  'cash-review__badge--paid': payment.status === 'paid',
+                  'cash-review__badge--rejected': payment.status === 'rejected'
+                }"
+              >
+                {{ statusLabel(payment.status) }}
+              </span>
+            </td>
+            <td>
+              <div>{{ payment.debt_total | currency: payment.currency:'symbol':'1.0-0':'es-CL' }}</div>
+              <div class="cash-review__muted">{{ payment.debt_count || 0 }} deudas</div>
+            </td>
+            <td class="cash-review__table-actions">
+              <button type="button" class="cash-review__link" (click)="onSelectPayment(payment)">
+                Ver detalle
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="cash-review__detail"
+      *ngIf="state().detail || state().detailLoading || state().detailError"
+    >
+      <div class="cash-review__detail-header">
+        <h5>Detalle comprobante #{{ state().detail?.id || '...' }}</h5>
+        <button type="button" class="cash-review__link" (click)="onCloseDetail()">
+          Cerrar
+        </button>
+      </div>
+
+      <div *ngIf="state().detailLoading" class="cash-review__detail-loading">
+        <span class="cash-review__spinner"></span>
+        Abriendo comprobante…
+      </div>
+
+      <div *ngIf="state().detailError" class="cash-review__error cash-review__error--inline">
+        {{ state().detailError }}
+      </div>
+
+      <ng-container *ngIf="state().detail as detail">
+        <div
+          *ngIf="actionMessage() as message"
+          class="cash-review__message"
+          [class.cash-review__message--success]="message.type === 'success'"
+          [class.cash-review__message--error]="message.type === 'error'"
+        >
+          <span>{{ message.text }}</span>
+          <button type="button" (click)="onClearMessages()" aria-label="Cerrar mensaje">×</button>
+        </div>
+
+        <div class="cash-review__meta">
+          <div><strong>Proveedor:</strong> {{ detail.provider_name || detail.provider_email }} (ID #{{ detail.provider_id }})</div>
+          <div><strong>Monto pagado:</strong> {{ detail.amount | currency: detail.currency:'symbol':'1.0-0':'es-CL' }}</div>
+          <div><strong>Deuda total:</strong> {{ detail.debt_total | currency: detail.currency:'symbol':'1.0-0':'es-CL' }}</div>
+          <div><strong>Diferencia:</strong> {{ (detail.difference ?? (detail.amount - detail.debt_total)) | currency: detail.currency:'symbol':'1.0-0':'es-CL' }}</div>
+          <div><strong>Recibido:</strong> {{ detail.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+          <div *ngIf="detail.public_receipt_url" class="cash-review__meta-link">
+            <a [href]="detail.public_receipt_url" target="_blank" rel="noopener">Abrir comprobante</a>
+          </div>
+        </div>
+
+        <div class="cash-review__debts">
+          <h6>Deudas asociadas ({{ detail.debts?.length || 0 }})</h6>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Vencimiento</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let debt of detail.debts">
+                <td>#{{ debt.id }}</td>
+                <td>{{ debt.commission_amount | currency: detail.currency:'symbol':'1.0-0':'es-CL' }}</td>
+                <td>{{ debt.status }}</td>
+                <td>{{ debt.due_date ? (debt.due_date | date:'dd/MM/yyyy') : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="detail.history?.length" class="cash-review__history">
+          <h6>Historial</h6>
+          <ul>
+            <li *ngFor="let record of detail.history">
+              <span class="cash-review__history-time">{{ record.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="cash-review__history-action">{{ statusLabel(record.action) }}</span>
+              <span class="cash-review__history-notes" *ngIf="record.notes">· {{ record.notes }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <ng-container *ngIf="detail.status === 'under_review'; else cashReviewReadonly">
+          <div class="cash-review__form">
+            <label>
+              <span>Referencia de conciliación</span>
+              <input
+                type="text"
+                [ngModel]="detailReference()"
+                (ngModelChange)="detailReference.set($event)"
+                placeholder="Ej: Nº transferencia, folio interno"
+              />
+            </label>
+            <label>
+              <span>Notas internas (opcional)</span>
+              <textarea
+                rows="3"
+                [ngModel]="detailNotes()"
+                (ngModelChange)="detailNotes.set($event)"
+                placeholder="Observaciones internas"
+              ></textarea>
+            </label>
+            <label>
+              <span>Motivo de rechazo</span>
+              <input
+                type="text"
+                [ngModel]="detailRejectReason()"
+                (ngModelChange)="detailRejectReason.set($event)"
+                placeholder="Completa si rechazarás el comprobante"
+              />
+            </label>
+            <div class="cash-review__actions">
+              <button
+                type="button"
+                class="cash-review__btn cash-review__btn--primary"
+                (click)="onApprove(detail)"
+                [disabled]="state().processingIds[detail.id]"
+              >
+                {{ state().processingIds[detail.id] ? 'Procesando…' : 'Aprobar pago' }}
+              </button>
+              <button
+                type="button"
+                class="cash-review__btn cash-review__btn--danger"
+                (click)="onReject(detail)"
+                [disabled]="state().processingIds[detail.id]"
+              >
+                {{ state().processingIds[detail.id] ? 'Procesando…' : 'Rechazar comprobante' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="cash-review__resubmission">
+            <h6>Solicitar reenvío</h6>
+            <p>Envía instrucciones claras si necesitas un nuevo comprobante.</p>
+            <label>
+              <span>Instrucciones para el proveedor</span>
+              <textarea
+                rows="3"
+                [ngModel]="resubmissionReason()"
+                (ngModelChange)="resubmissionReason.set($event)"
+                placeholder="Describe qué requiere el nuevo comprobante"
+              ></textarea>
+            </label>
+            <label>
+              <span>Notas internas (opcional)</span>
+              <textarea
+                rows="2"
+                [ngModel]="resubmissionNotes()"
+                (ngModelChange)="resubmissionNotes.set($event)"
+                placeholder="Ej: Proveedor enviará captura con mayor calidad"
+              ></textarea>
+            </label>
+            <div class="cash-review__actions">
+              <button
+                type="button"
+                class="cash-review__btn cash-review__btn--outline"
+                (click)="onRequestResubmission(detail)"
+                [disabled]="state().processingIds[detail.id]"
+              >
+                {{ state().processingIds[detail.id] ? 'Procesando…' : 'Solicitar reenvío' }}
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #cashReviewReadonly>
+          <div class="cash-review__readonly">
+            <p><strong>Estado:</strong> {{ statusLabel(detail.status) }}</p>
+            <p><strong>Referencia:</strong> {{ detail.reference || '—' }}</p>
+            <p><strong>Notas:</strong> {{ detail.review_notes || '—' }}</p>
+            <p *ngIf="detail.metadata?.rejection_reason"><strong>Rechazo:</strong> {{ detail.metadata.rejection_reason }}</p>
+          </div>
+        </ng-template>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+

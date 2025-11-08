@@ -64,6 +64,19 @@ export class AdminPaymentsService {
     return this.http.post<any>(`${this.baseUrl}/admin/cash/manual-payments/${id}/reject`, { reason, notes }, { headers: this.headers(secret, token) });
   }
 
+  requestManualCashResubmission(
+    secret: string,
+    token: string | null,
+    id: number,
+    payload: { reason: string; notes?: string | null }
+  ) {
+    return this.http.post<any>(
+      `${this.baseUrl}/admin/cash/manual-payments/${id}/request-resubmission`,
+      payload,
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   pendingCount(secret: string, token: string | null) {
     return this.http.get<any>(`${this.baseUrl}/admin/payments/pending-count`, { headers: this.headers(secret, token) });
   }
