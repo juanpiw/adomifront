@@ -258,7 +258,7 @@
             <p><strong>Estado:</strong> {{ statusLabel(detail.status) }}</p>
             <p><strong>Referencia:</strong> {{ detail.reference || '—' }}</p>
             <p><strong>Notas:</strong> {{ detail.review_notes || '—' }}</p>
-            <p *ngIf="detail.metadata?.rejection_reason"><strong>Rechazo:</strong> {{ detail.metadata.rejection_reason }}</p>
+            <p *ngIf="detail.metadata?.['rejection_reason']"><strong>Rechazo:</strong> {{ detail.metadata?.['rejection_reason'] }}</p>
           </div>
         </ng-template>
       </ng-container>

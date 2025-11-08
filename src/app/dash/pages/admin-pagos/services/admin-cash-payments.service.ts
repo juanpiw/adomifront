@@ -79,9 +79,12 @@ export class AdminCashPaymentsService {
     }
     this.patchState({ loadingList: true, error: null });
     try {
+      const filter = this.stateSig().filter;
+      const status: 'under_review' | 'paid' | 'rejected' | undefined =
+        filter === 'all' ? undefined : filter;
       const response = await firstValueFrom(
         this.adminPayments.listManualCashPayments(this.adminSecret, this.session.getAccessToken(), {
-          status: this.stateSig().filter === 'all' ? undefined : this.stateSig().filter
+          status
         })
       );
       const typed = this.mapListResponse(response);
@@ -131,8 +134,17 @@ export class AdminCashPaymentsService {
     payload: { reference?: string | null; notes?: string | null }
   ): Promise<{ success: boolean; error?: string }> {
     return this.runAction(id, async () => {
+      const body = {
+        reference: payload.reference ?? undefined,
+        notes: payload.notes ?? undefined
+      };
       await firstValueFrom(
-        this.adminPayments.approveManualCashPayment(this.adminSecret, this.session.getAccessToken(), id, payload || {})
+        this.adminPayments.approveManualCashPayment(
+          this.adminSecret,
+          this.session.getAccessToken(),
+          id,
+          body
+        )
       );
       await this.refreshList();
       if (this.detailId === id) {
@@ -156,7 +168,7 @@ export class AdminCashPaymentsService {
           this.session.getAccessToken(),
           id,
           payload.reason.trim(),
-          payload.notes
+          payload.notes ?? undefined
         )
       );
       await this.refreshList();

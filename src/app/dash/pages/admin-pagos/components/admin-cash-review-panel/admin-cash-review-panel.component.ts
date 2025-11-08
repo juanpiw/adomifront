@@ -123,7 +123,7 @@ export class AdminCashReviewPanelComponent {
   private syncDetailForm(detail: AdminManualCashPaymentDetail) {
     this.detailReference.set(detail.reference || '');
     this.detailNotes.set(detail.review_notes || '');
-    const rejectionReason = detail.metadata?.rejection_reason || '';
+    const rejectionReason = detail.metadata?.['rejection_reason'] || '';
     this.detailRejectReason.set(typeof rejectionReason === 'string' ? rejectionReason : '');
     this.actionMessage.set(null);
   }
