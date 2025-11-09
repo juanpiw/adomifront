@@ -8,6 +8,7 @@ import { AdminPaymentsService } from './admin-payments.service';
 import { AdminSummaryCardsComponent } from './admin-summary-cards.component';
 import { AdminPaymentsTableComponent } from './admin-payments-table.component';
 import { AdminCashReviewPanelComponent } from './components/admin-cash-review-panel/admin-cash-review-panel.component';
+import { AdminCashPaymentsService } from './services/admin-cash-payments.service';
 
 @Component({
   selector: 'app-admin-pagos',
@@ -20,6 +21,7 @@ export class AdminPagosComponent implements OnInit {
   private http = inject(HttpClient);
   private session = inject(SessionService);
   private adminApi = inject(AdminPaymentsService);
+  private cashPayments = inject(AdminCashPaymentsService);
   baseUrl = environment.apiBaseUrl;
   loading = false;
   error: string | null = null;
@@ -70,6 +72,7 @@ export class AdminPagosComponent implements OnInit {
   founderDurationMonths: number | null = null;
   founderExpiryMonths: number | null = 6;
   founderNotes = '';
+  selectedCashDebtId: number | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -79,11 +82,17 @@ export class AdminPagosComponent implements OnInit {
     }
     const saved = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : null;
     if (saved) this.adminSecret = saved;
-    if (this.adminSecret) this.load();
+    if (this.adminSecret) {
+      this.cashPayments.setSecret(this.adminSecret);
+      this.load();
+    }
   }
 
   setSecretAndLoad() {
     if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('admin:secret', this.adminSecret);
+    if (this.adminSecret) {
+      this.cashPayments.setSecret(this.adminSecret);
+    }
     this.load();
   }
 
@@ -156,11 +165,23 @@ export class AdminPagosComponent implements OnInit {
     this.adminApi.cashCommissions(this.adminSecret, token, filter).subscribe({
       next: (res: any) => {
         this.cashLoading = false;
-        this.cashDebts = res?.data || [];
+        const data = res?.data || [];
+        this.cashDebts = data;
+        if (!data.length) {
+          this.selectedCashDebtId = null;
+          return;
+        }
+        const existing = data.find((item: any) => item.id === this.selectedCashDebtId);
+        if (existing) {
+          this.onSelectCashDebt(existing, false);
+          return;
+        }
+        this.onSelectCashDebt(data[0], false);
       },
       error: () => {
         this.cashLoading = false;
         this.cashDebts = [];
+        this.selectedCashDebtId = null;
       }
     });
   }
@@ -319,6 +340,33 @@ export class AdminPagosComponent implements OnInit {
   refreshAdminCash() {
     this.loadAdminCashSummary();
     this.loadAdminCashCommissions(this.cashFilter);
+  }
+
+  onSelectCashDebt(debt: any, forceLookup = true) {
+    if (!debt) return;
+    this.selectedCashDebtId = Number.isFinite(Number(debt.id)) ? Number(debt.id) : null;
+
+    const manualPaymentId = Number(
+      debt.manual_payment_id ??
+      debt.manualPaymentId ??
+      debt.manual_payment?.id ??
+      debt.manual_payment ??
+      debt.payment_id ??
+      debt.paymentId ??
+      0
+    );
+
+    if (!forceLookup && manualPaymentId === this.cashPayments.state().detail?.id) {
+      return;
+    }
+
+    if (this.adminSecret) {
+      this.cashPayments.setSecret(this.adminSecret);
+    }
+
+    if (manualPaymentId) {
+      void this.cashPayments.openDetail(manualPaymentId);
+    }
   }
 
   private resetFounderMessages() {

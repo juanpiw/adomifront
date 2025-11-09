@@ -126,6 +126,20 @@
 .admin-cash__provider { font-weight: 600; }
 .admin-cash__muted { color: #94a3b8; font-size: 12px; }
 
+.admin-cash__row {
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-cash__row:hover {
+  background: #f8fafc;
+}
+
+.admin-cash__row--selected {
+  background: #eef2ff;
+  box-shadow: inset 3px 0 0 #4338ca;
+}
+
 .cash-spinner {
   display: inline-block;
   width: 16px;

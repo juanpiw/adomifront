@@ -110,6 +110,9 @@
         </tr>
         <tr
           *ngFor="let c of cashDebts"
+          class="admin-cash__row"
+          [class.admin-cash__row--selected]="selectedCashDebtId === c.id"
+          (click)="onSelectCashDebt(c)"
         >
           <td>
             <div class="admin-cash__provider">{{ c.provider_name || c.provider_email }}</div>
