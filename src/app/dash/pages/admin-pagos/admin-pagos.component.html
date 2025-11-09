@@ -108,7 +108,9 @@
         <tr *ngIf="!cashLoading && cashDebts.length === 0">
           <td colspan="7" class="admin-cash__table-empty">No hay comisiones para este estado.</td>
         </tr>
-        <tr *ngFor="let c of cashDebts">
+        <tr
+          *ngFor="let c of cashDebts"
+        >
           <td>
             <div class="admin-cash__provider">{{ c.provider_name || c.provider_email }}</div>
             <div class="admin-cash__muted">ID #{{ c.provider_id }}</div>

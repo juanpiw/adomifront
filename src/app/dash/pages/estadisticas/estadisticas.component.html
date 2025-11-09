@@ -14,6 +14,13 @@
     [loading]="loading">
   </ui-kpi-cards>
   
+<div
+  *ngIf="!loading && !error && !summary && timeseries.length === 0 && services.length === 0 && reviews.length === 0"
+  class="analytics-empty"
+>
+  Aún no contamos con datos en este rango. Cuando completes reservas pagadas, verás aquí tus métricas.
+</div>
+
   <!-- Gráficos en grid -->
   <div class="charts-grid">
     <ui-revenue-chart 

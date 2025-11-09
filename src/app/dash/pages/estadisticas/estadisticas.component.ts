@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { 
   StatisticsHeaderComponent, 
@@ -11,7 +11,10 @@ import {
 import { DateRange } from '../../../../libs/shared-ui/statistics/date-filter/date-filter.component';
 import { ProviderAnalyticsService, ProviderAnalyticsSummary, ProviderAnalyticsSeries, ProviderServiceRank, ProviderReviewItem, AnalyticsRange } from '../../../services/provider-analytics.service';
 import { SessionService } from '../../../auth/services/session.service';
-import { finalize } from 'rxjs/operators';
+import { finalize, filter, take } from 'rxjs/operators';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
+import { AuthUser } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-d-estadisticas',
@@ -28,7 +31,7 @@ import { finalize } from 'rxjs/operators';
   templateUrl: './estadisticas.component.html',
   styleUrls: ['./estadisticas.component.scss']
 })
-export class DashEstadisticasComponent implements OnInit {
+export class DashEstadisticasComponent implements OnInit, OnDestroy {
   dateRange: DateRange = this.buildDefaultRange();
   rangeLabel = 'Últimos 6 Meses';
 
@@ -44,15 +47,30 @@ export class DashEstadisticasComponent implements OnInit {
   private analytics = inject(ProviderAnalyticsService);
   private session = inject(SessionService);
   private providerId: number | null = null;
+  private userSubscription?: Subscription;
+  private readonly sessionUser$ = toObservable(this.session.user);
 
   ngOnInit(): void {
     const user = this.session.getUser();
-    this.providerId = user?.id || null;
-    if (!this.providerId) {
-      this.error = 'No se pudo determinar el proveedor autenticado.';
+    if (this.initializeProvider(user)) {
+      this.fetchAnalytics(this.dateRange);
       return;
     }
-    this.fetchAnalytics(this.dateRange);
+
+    this.userSubscription = this.sessionUser$
+      .pipe(
+        filter((u): u is AuthUser => !!u && Number.isFinite(u.id)),
+        take(1)
+      )
+      .subscribe((u) => {
+        if (this.initializeProvider(u)) {
+          this.fetchAnalytics(this.dateRange);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
   }
 
   onDateRangeChange(range: DateRange) {
@@ -112,6 +130,23 @@ export class DashEstadisticasComponent implements OnInit {
           this.reviews = [];
         }
       });
+  }
+
+  private initializeProvider(user: AuthUser | null): boolean {
+    if (!user) {
+      return false;
+    }
+    if (user.role !== 'provider') {
+      this.error = 'Esta sección está disponible solo para cuentas de profesional.';
+      return false;
+    }
+    const providerId = Number(user.id);
+    if (!Number.isFinite(providerId)) {
+      return false;
+    }
+    this.providerId = providerId;
+    this.error = null;
+    return true;
   }
 
   private buildDefaultRange(): DateRange {

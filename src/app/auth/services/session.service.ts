@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { AuthService, AuthUser } from './auth.service';
 
-const STORAGE_KEY = 'adomi:user';
+const STORAGE_KEY = 'adomi_user';
 const ONBOARDING_KEY = 'adomi:onboarding_completed';
 
 @Injectable({ providedIn: 'root' })

@@ -42,34 +42,6 @@ export class AdminPagosComponent implements OnInit {
   cashSummaryLoading = false;
   cashLoading = false;
   cashFilter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid' = 'pending';
-  founderGenerating = false;
-  founderSending = false;
-  founderCode: string | null = null;
-  founderPromoInfo: { id?: number | null; code?: string; expires_at?: string | null; duration_months?: number | null; max_redemptions?: number | null } | null = null;
-  founderSuccess: string | null = null;
-  founderErrorMsg: string | null = null;
-  founderRecipientEmail = '';
-  founderRecipientName = '';
-  founderCustomMessage = '';
-  founderDurationMonths: number | null = null;
-  founderExpiryMonths: number | null = 6;
-  founderNotes: string = '';
-  founderEmailStatus: 'idle' | 'sent' | 'error' = 'idle';
-  founderEmailErrorDetail: string | null = null;
-  verificationRequests: any[] = [];
-  verificationLoading = false;
-  verificationError: string | null = null;
-  verificationFilter: 'all' | 'pending' | 'approved' | 'rejected' = 'pending';
-  verificationNotes: Record<number, string> = {};
-  verificationRejectReasons: Record<number, string> = {};
-  verificationProcessing: Record<number, boolean> = {};
-  verificationSearch = '';
-  verificationDetail: any | null = null;
-  verificationDetailLoading = false;
-  verificationDetailError: string | null = null;
-  verificationLimit = 25;
-  verificationOffset = 0;
-  verificationPagination: { limit: number; offset: number; returned: number } | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
