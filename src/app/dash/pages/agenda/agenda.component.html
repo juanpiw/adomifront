@@ -153,6 +153,13 @@
           {{ loading ? 'Guardando...' : 'Guardar Horario' }}
         </button>
       </div>
+
+      <app-excepciones-feriados
+        [exceptions]="exceptions"
+        [loading]="exceptionsLoading"
+        (addException)="onAddException($event)"
+        (removeException)="onRemoveException($event)">
+      </app-excepciones-feriados>
     </div>
   </div>
 

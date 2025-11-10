@@ -7,6 +7,7 @@ import { DayDetailComponent, DayAppointment } from '../../../../libs/shared-ui/d
 import { DashboardGraficoComponent } from '../../../../libs/shared-ui/dashboard-grafico/dashboard-grafico.component';
 import { ModalVerificarServicioComponent } from '../../../../libs/shared-ui/modal-verificar-servicio/modal-verificar-servicio.component';
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
+import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 import { PaymentsService } from '../../../services/payments.service';
@@ -29,6 +30,7 @@ import { catchError, map } from 'rxjs/operators';
     DayDetailComponent,
     DashboardGraficoComponent,
     HorariosConfigComponent,
+    ExcepcionesFeriadosComponent,
     ModalVerificarServicioComponent,
     FormsModule
   ],
@@ -85,6 +87,27 @@ export class DashAgendaComponent implements OnInit {
 
   // Datos de configuración de horarios
   timeBlocks: TimeBlock[] = [];
+  exceptions: ExceptionDate[] = [];
+  exceptionsLoading = false;
+  private readonly dayEnumToLabel: Record<string, string> = {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes',
+    saturday: 'Sábado',
+    sunday: 'Domingo'
+  };
+  private readonly dayLabelToEnum: Record<string, string> = {
+    Lunes: 'monday',
+    Martes: 'tuesday',
+    Miércoles: 'wednesday',
+    Jueves: 'thursday',
+    Viernes: 'friday',
+    Sábado: 'saturday',
+    Domingo: 'sunday'
+  };
+  private weeklyBlockIndex = new Map<number, { dayEnum: string; start: string; end: string; enabled: boolean }>();
 
   // Estados
   loading = false;
@@ -211,6 +234,8 @@ export class DashAgendaComponent implements OnInit {
     this.loadDashboardData();
     this.refreshEarnings();
     this.loadPaidAwaiting();
+    this.loadWeeklyAvailability();
+    this.loadExceptions();
     // Cargar mes actual
     const today = new Date();
     // Preseleccionar el día de hoy para mostrar citas sin click
@@ -390,19 +415,54 @@ export class DashAgendaComponent implements OnInit {
     this.availabilityService.getWeekly().subscribe({
       next: (resp) => {
         const blocks = Array.isArray(resp?.blocks) ? resp.blocks : [];
-        this.timeBlocks = blocks.map((block: any) => ({
-          id: String(block.id),
-          day: this.dayEnumToLabel[String(block.day_of_week)] || String(block.day_of_week),
-          startTime: String(block.start_time || '').slice(0, 5),
-          endTime: String(block.end_time || '').slice(0, 5),
-          enabled: block.is_active !== false
-        }));
+        this.weeklyBlockIndex.clear();
+        this.timeBlocks = blocks.map((block: any) => {
+          const id = Number(block.id);
+          const dayEnum = String(block.day_of_week || '').toLowerCase();
+          const dayLabel = this.dayEnumToLabel[dayEnum] || this.capitalize(dayEnum);
+          const start = String(block.start_time || '').slice(0, 5);
+          const end = String(block.end_time || '').slice(0, 5);
+          const enabled = block.is_active !== false;
+          if (Number.isFinite(id)) {
+            this.weeklyBlockIndex.set(id, { dayEnum, start, end, enabled });
+          }
+          return {
+            id: String(block.id),
+            day: dayLabel,
+            startTime: start,
+            endTime: end,
+            enabled
+          };
+        });
         this.availabilityLoading = false;
       },
       error: (err) => {
         console.error('[AGENDA] Error cargando disponibilidad semanal', err);
         this.timeBlocks = [];
+        this.weeklyBlockIndex.clear();
         this.availabilityLoading = false;
+      }
+    });
+  }
+
+  private loadExceptions(): void {
+    this.exceptionsLoading = true;
+    this.availabilityService.listExceptions().subscribe({
+      next: (resp) => {
+        const list = Array.isArray(resp?.exceptions) ? resp.exceptions : [];
+        this.exceptions = list
+          .map((exc: any) => ({
+            id: String(exc.id),
+            date: exc.exception_date || exc.date || '',
+            reason: exc.reason || undefined
+          }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+        this.exceptionsLoading = false;
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error cargando excepciones de disponibilidad', err);
+        this.exceptions = [];
+        this.exceptionsLoading = false;
       }
     });
   }
@@ -1290,6 +1350,29 @@ export class DashAgendaComponent implements OnInit {
     return hhmm;
   }
 
+  private capitalize(value: string): string {
+    if (!value) {
+      return '';
+    }
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  private formatExceptionDate(value: string): string {
+    try {
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return value;
+      }
+      return date.toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return value;
+    }
+  }
+
   // Handlers de configuración de horarios (usados por el template)
   onAddTimeBlock(timeBlock: Omit<TimeBlock, 'id'>) {
     const dayEnum = this.dayLabelToEnum[timeBlock.day];
@@ -1334,6 +1417,10 @@ export class DashAgendaComponent implements OnInit {
     if (!Number.isFinite(numericId)) {
       return;
     }
+    if (!this.weeklyBlockIndex.has(numericId)) {
+      console.warn('[AGENDA] Bloque no encontrado en el índice local al eliminar:', blockId);
+      return;
+    }
     this.availabilityLoading = true;
     this.availabilityService.deleteWeekly(numericId).subscribe({
       next: () => {
@@ -1371,6 +1458,10 @@ export class DashAgendaComponent implements OnInit {
     if (!Number.isFinite(numericId)) {
       return;
     }
+    if (!this.weeklyBlockIndex.has(numericId)) {
+      console.warn('[AGENDA] Bloque no encontrado en el índice local al actualizar:', updatedBlock);
+      return;
+    }
     this.availabilityLoading = true;
     this.availabilityService.updateWeekly(numericId, { is_active: updatedBlock.enabled }).subscribe({
       next: () => {
@@ -1403,41 +1494,152 @@ export class DashAgendaComponent implements OnInit {
     });
   }
 
-  onSaveSchedule() {
+  async onSaveSchedule() {
     this.loading = true;
-    this.availabilityService.getWeekly().subscribe({
-      next: (resp) => {
-        const existing = resp?.blocks || [];
-    const dayNameToEnum: Record<string, any> = {
-      'Lunes': 'monday', 'Martes': 'tuesday', 'Miércoles': 'wednesday', 'Jueves': 'thursday', 'Viernes': 'friday', 'Sábado': 'saturday', 'Domingo': 'sunday'
-        };
+    try {
+      const resp = await firstValueFrom(this.availabilityService.getWeekly());
+      const existing = Array.isArray(resp?.blocks) ? resp.blocks : [];
+      const existingMap = new Map<string, any>();
+      const key = (day: string, start: string, end: string) => `${day}|${start}|${end}`;
 
-        const tasks: Array<Promise<any>> = [];
-        const key = (d: any) => `${d.day_of_week}|${String(d.start_time).slice(0,5)}|${String(d.end_time).slice(0,5)}`;
-        const existingMap = new Map(existing.map((b: any) => [key(b), b]));
+      existing.forEach((block: any) => {
+        const dayEnum = String(block.day_of_week || '').toLowerCase();
+        const start = String(block.start_time || '').slice(0, 5);
+        const end = String(block.end_time || '').slice(0, 5);
+        existingMap.set(key(dayEnum, start, end), block);
+      });
 
-        this.timeBlocks.forEach(tb => {
-          const dayEnum = dayNameToEnum[tb.day];
-          const k = `${dayEnum}|${tb.startTime}|${tb.endTime}`;
-          const found = existingMap.get(k);
-          if (found) {
-            tasks.push(this.availabilityService.updateWeekly(found.id, { is_active: tb.enabled }).toPromise());
-            existingMap.delete(k);
-          } else {
-            tasks.push(this.availabilityService.createWeekly(dayEnum, tb.startTime, tb.endTime, tb.enabled).toPromise());
-          }
+      const tasks: Array<Promise<any>> = [];
+
+      this.timeBlocks.forEach(tb => {
+        const dayEnum = this.dayLabelToEnum[tb.day];
+        if (!dayEnum) {
+          return;
+        }
+        const k = key(dayEnum, tb.startTime, tb.endTime);
+        const found = existingMap.get(k);
+        if (found) {
+          tasks.push(firstValueFrom(this.availabilityService.updateWeekly(found.id, {
+            is_active: tb.enabled
+          })));
+          existingMap.delete(k);
+        } else {
+          tasks.push(firstValueFrom(this.availabilityService.createWeekly(
+            dayEnum as any,
+            tb.startTime,
+            tb.endTime,
+            tb.enabled
+          )));
+        }
+      });
+
+      existingMap.forEach((block) => {
+        tasks.push(firstValueFrom(this.availabilityService.deleteWeekly(block.id)));
+      });
+
+      if (tasks.length) {
+        await Promise.allSettled(tasks);
+      }
+
+      try {
+        this.notifications.setUserProfile('provider');
+        this.notifications.createNotification({
+          type: 'availability',
+          profile: 'provider',
+          title: 'Horario sincronizado',
+          message: 'Tus horarios quedaron actualizados.',
+          priority: 'medium'
         });
-
-        existingMap.forEach((b: any) => {
-          tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise());
+      } catch {}
+      this.loadWeeklyAvailability();
+    } catch (err) {
+      console.error('[AGENDA] Error al guardar horario semanal', err);
+      try {
+        this.notifications.setUserProfile('provider');
+        this.notifications.createNotification({
+          type: 'availability',
+          profile: 'provider',
+          title: 'Error al guardar horario',
+          message: 'No se pudo guardar tu horario. Intenta de nuevo.',
+          priority: 'high'
         });
+      } catch {}
+    } finally {
+      this.loading = false;
+    }
+  }
 
-        return Promise.allSettled(tasks).then(() => {
-          this.loading = false;
-          console.log('Horario guardado');
-        });
+  onAddException(data: { date: string; reason?: string }) {
+    if (!data?.date) {
+      return;
+    }
+    this.exceptionsLoading = true;
+    this.availabilityService.createException(data.date, false, undefined, undefined, data.reason).subscribe({
+      next: () => {
+        try {
+          this.notifications.setUserProfile('provider');
+          const label = this.formatExceptionDate(data.date);
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Fecha bloqueada',
+            message: `Bloqueaste el ${label || data.date}.`,
+            priority: 'medium'
+          });
+        } catch {}
+        this.loadExceptions();
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        console.error('[AGENDA] Error creando excepción de disponibilidad', err);
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Error al bloquear fecha',
+            message: 'No pudimos registrar la excepción. Intenta nuevamente.',
+            priority: 'high'
+          });
+        } catch {}
+        this.exceptionsLoading = false;
+      }
+    });
+  }
+
+  onRemoveException(exceptionId: string) {
+    const numericId = Number(exceptionId);
+    if (!Number.isFinite(numericId)) {
+      return;
+    }
+    this.exceptionsLoading = true;
+    this.availabilityService.deleteException(numericId).subscribe({
+      next: () => {
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Excepción eliminada',
+            message: 'La fecha bloqueada fue eliminada.',
+            priority: 'medium'
+          });
+        } catch {}
+        this.loadExceptions();
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error eliminando excepción de disponibilidad', err);
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Error al eliminar fecha',
+            message: 'No se pudo eliminar la excepción.',
+            priority: 'high'
+          });
+        } catch {}
+        this.exceptionsLoading = false;
+      }
     });
   }
 
