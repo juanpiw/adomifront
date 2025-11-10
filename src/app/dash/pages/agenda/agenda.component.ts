@@ -182,25 +182,6 @@ export class DashAgendaComponent implements OnInit {
 
   currentProviderName: string | null = null;
   availabilityLoading = false;
-  private readonly dayEnumToLabel: Record<string, string> = {
-    monday: 'Lunes',
-    tuesday: 'Martes',
-    wednesday: 'Miércoles',
-    thursday: 'Jueves',
-    friday: 'Viernes',
-    saturday: 'Sábado',
-    sunday: 'Domingo'
-  };
-  private readonly dayLabelToEnum: Record<string, string> = {
-    Lunes: 'monday',
-    Martes: 'tuesday',
-    Miércoles: 'wednesday',
-    Jueves: 'thursday',
-    Viernes: 'friday',
-    Sábado: 'saturday',
-    Domingo: 'sunday'
-  };
-
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
   private auth = inject(AuthService);
