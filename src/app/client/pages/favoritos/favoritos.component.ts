@@ -13,6 +13,7 @@ import {
 import { ProfileRequiredModalComponent } from '../../../../libs/shared-ui/profile-required-modal/profile-required-modal.component';
 import { FavoritesService, FavoriteItem } from '../../../services/favorites.service';
 import { ProfileValidationService } from '../../../services/profile-validation.service';
+import { SearchService, Provider as SearchProvider } from '../../../services/search.service';
 
 @Component({
   selector: 'app-favoritos',
@@ -32,10 +33,12 @@ export class FavoritosComponent implements OnInit {
   private router = inject(Router);
   private profileValidation = inject(ProfileValidationService);
   private favoritesService = inject(FavoritesService);
+  private searchService = inject(SearchService);
 
   searchValue = '';
   favorites: FavoriteProfessional[] = [];
   recommendedProfessionals: Professional[] = [];
+  recommendedLoading = false;
 
   // Profile validation
   showProfileModal: boolean = false;
@@ -72,6 +75,7 @@ export class FavoritosComponent implements OnInit {
           rating: Number(it.rating || 0),
           initials: it.name.split(' ').map(n => n[0]).join('').toUpperCase()
         }));
+        this.syncRecommendedFavorites();
       },
       error: (err) => {
         console.error('[FAVORITOS] Error cargando favoritos:', err);
@@ -81,36 +85,94 @@ export class FavoritosComponent implements OnInit {
   }
 
   private loadRecommendedProfessionals(): void {
-    // Mock data - replace with actual API call
-    this.recommendedProfessionals = [
-      {
-        id: '1',
-        name: 'Elena Torres',
-        role: 'Estilista Profesional',
-        description: 'Con más de 10 años de experiencia en color y cortes de vanguardia.',
-        rating: 4.9,
-        reviewCount: 85,
-        iconColor: 'pink'
+    this.recommendedLoading = true;
+
+    const useNearby = !!navigator.geolocation;
+
+    if (useNearby) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          this.fetchRecommended({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        () => this.fetchRecommended(),
+        {
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 5 * 60 * 1000
+        }
+      );
+    } else {
+      this.fetchRecommended();
+    }
+  }
+
+  private fetchRecommended(coords?: { lat: number; lng: number }): void {
+    const request$ = coords
+      ? this.searchService.searchNearbyProviders({
+          lat: coords.lat,
+          lng: coords.lng,
+          radius_km: 10,
+          limit: 8,
+          rating_min: 3.5
+        })
+      : this.searchService.searchProviders({
+          limit: 8,
+          offset: 0,
+          rating_min: 3.5
+        });
+
+    request$.subscribe({
+      next: (resp) => {
+        const providers = resp?.data ?? [];
+        this.recommendedProfessionals = providers.map((provider, index) =>
+          this.mapProviderToProfessional(provider, index)
+        );
+        this.syncRecommendedFavorites();
+        this.recommendedLoading = false;
       },
-      {
-        id: '2',
-        name: 'Mario Rojas',
-        role: 'Chef a Domicilio',
-        description: 'Especialista en cocina mediterránea para eventos privados y cenas.',
-        rating: 5.0,
-        reviewCount: 89,
-        iconColor: 'orange'
-      },
-      {
-        id: '3',
-        name: 'Luis Gómez',
-        role: 'Armador de Muebles',
-        description: 'Montaje rápido y profesional de todo tipo de muebles. Experiencia garantizada.',
-        rating: 4.8,
-        reviewCount: 204,
-        iconColor: 'lime'
+      error: (err) => {
+        console.error('[FAVORITOS] Error cargando recomendados:', err);
+        this.recommendedProfessionals = [];
+        this.recommendedLoading = false;
       }
-    ];
+    });
+  }
+
+  private mapProviderToProfessional(provider: SearchProvider, index: number): Professional {
+    const palette: Professional['iconColor'][] = ['pink', 'orange', 'lime', 'blue', 'teal', 'red'];
+    const color = palette[index % palette.length];
+    const description =
+      provider.description?.trim() ||
+      provider.profession?.trim() ||
+      (provider.primary_commune ? `Disponible en ${provider.primary_commune}` : 'Profesional verificado en AdomiApp');
+
+    const isFavorite = this.favorites.some(fav => fav.id === String(provider.id));
+
+    return {
+      id: String(provider.id),
+      name: provider.name,
+      role: provider.profession || 'Profesional',
+      description,
+      rating: Number(provider.rating || 0),
+      reviewCount: Number(provider.review_count || 0),
+      iconColor: color,
+      isFavorite,
+      isVerified: !!provider.is_verified
+    };
+  }
+
+  private syncRecommendedFavorites(): void {
+    if (!this.recommendedProfessionals.length || !this.favorites.length) {
+      return;
+    }
+    const favoritesSet = new Set(this.favorites.map(fav => fav.id));
+    this.recommendedProfessionals = this.recommendedProfessionals.map(pro => ({
+      ...pro,
+      isFavorite: favoritesSet.has(pro.id)
+    }));
   }
 
   // Event handlers
