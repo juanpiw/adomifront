@@ -21,6 +21,8 @@ export class FavoritesSectionComponent {
   @Input() title = 'Mis Profesionales de Confianza (Favoritos)';
   @Input() description = 'Agenda más rápido con los expertos que has guardado en tu lista.';
   @Input() favorites: FavoriteProfessional[] = [];
+  @Input() emptyTitle = 'Guarda tu primer profesional favorito';
+  @Input() emptyDescription = 'Busca en las categorías de abajo y presiona el corazón para agregarlo aquí.';
   @Input() showViewAllLink = true;
   @Input() viewAllLinkText = 'Ver todos';
 
@@ -28,30 +30,14 @@ export class FavoritesSectionComponent {
   @Output() rebookClick = new EventEmitter<FavoriteProfessional>();
   @Output() messageClick = new EventEmitter<FavoriteProfessional>();
   @Output() favoriteClick = new EventEmitter<FavoriteProfessional>();
-
-  defaultFavorites: FavoriteProfessional[] = [
-    {
-      id: '1',
-      name: 'Elena Torres',
-      role: 'Estilista Profesional',
-      rating: 4.9,
-      initials: 'ET'
-    },
-    {
-      id: '2',
-      name: 'Mario Rojas',
-      role: 'Chef a Domicilio',
-      rating: 5.0,
-      initials: 'MR'
-    }
-  ];
+  @Output() removeClick = new EventEmitter<FavoriteProfessional>();
 
   get displayFavorites(): FavoriteProfessional[] {
-    return this.favorites.length > 0 ? this.favorites : this.defaultFavorites;
+    return this.favorites;
   }
 
   get hasFavorites(): boolean {
-    return this.displayFavorites.length > 0;
+    return this.favorites.length > 0;
   }
 
   onViewAllClick(): void {
@@ -68,6 +54,10 @@ export class FavoritesSectionComponent {
 
   onFavoriteClick(favorite: FavoriteProfessional): void {
     this.favoriteClick.emit(favorite);
+  }
+
+  onRemoveClick(favorite: FavoriteProfessional): void {
+    this.removeClick.emit(favorite);
   }
 }
 

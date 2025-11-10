@@ -18,10 +18,9 @@
   </p>
 
   <!-- Lista de Favoritos -->
-  <div class="favorites-list">
-    <!-- Favoritos existentes -->
-    <div 
-      *ngFor="let favorite of displayFavorites" 
+  <div class="favorites-list" *ngIf="hasFavorites; else emptyState">
+    <div
+      *ngFor="let favorite of displayFavorites"
       class="favorite-item">
       <div class="favorite-info">
         <div class="favorite-avatar">
@@ -48,16 +47,22 @@
           (click)="onMessageClick(favorite)">
           Mensaje
         </button>
+        <button
+          class="action-button action-button--danger"
+          (click)="onRemoveClick(favorite)">
+          Eliminar
+        </button>
       </div>
     </div>
-
-    <!-- Placeholder para lista vacía -->
-    <div *ngIf="!hasFavorites" class="favorites-empty">
-      <span class="empty-icon">✨</span>
-      <p class="empty-title">Guarda tu primer profesional favorito</p>
-      <p class="empty-description">Busca en las categorías de abajo y presiona el corazón para agregarlo aquí.</p>
-    </div>
   </div>
+
+  <ng-template #emptyState>
+    <div class="favorites-empty">
+      <span class="empty-icon">✨</span>
+      <p class="empty-title">{{ emptyTitle }}</p>
+      <p class="empty-description">{{ emptyDescription }}</p>
+    </div>
+  </ng-template>
 </section>
 
 

@@ -5,15 +5,25 @@
   </h2>
 
   <!-- Grid de Recomendados -->
-  <div class="recommended-grid">
-    <ui-favorites-professional-card
-      *ngFor="let professional of displayProfessionals"
-      [professional]="professional"
-      (cardClick)="onProfessionalClick($event)"
-      (favoriteToggle)="onFavoriteToggle($event)"
-      (bookClick)="onBookClick($event)">
-    </ui-favorites-professional-card>
-  </div>
+  <ng-container *ngIf="hasProfessionals; else emptyRecommended">
+    <div class="recommended-grid">
+      <ui-favorites-professional-card
+        *ngFor="let professional of displayProfessionals"
+        [professional]="professional"
+        (cardClick)="onProfessionalClick($event)"
+        (favoriteToggle)="onFavoriteToggle($event)"
+        (bookClick)="onBookClick($event)">
+      </ui-favorites-professional-card>
+    </div>
+  </ng-container>
+
+  <ng-template #emptyRecommended>
+    <div class="recommended-empty">
+      <span class="empty-icon">🗺️</span>
+      <p class="empty-title">{{ emptyTitle }}</p>
+      <p class="empty-description">{{ emptyDescription }}</p>
+    </div>
+  </ng-template>
 </section>
 
 

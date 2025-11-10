@@ -165,7 +165,7 @@ export class FavoritosComponent implements OnInit {
   }
 
   private syncRecommendedFavorites(): void {
-    if (!this.recommendedProfessionals.length || !this.favorites.length) {
+    if (!this.recommendedProfessionals.length) {
       return;
     }
     const favoritesSet = new Set(this.favorites.map(fav => fav.id));
@@ -218,6 +218,22 @@ export class FavoritosComponent implements OnInit {
     console.log('Favorite clicked:', favorite);
     // Navigate to professional profile
     this.router.navigate(['/client/explorar', favorite.id]);
+  }
+
+  onRemoveFavorite(favorite: FavoriteProfessional): void {
+    const providerId = Number(favorite.id);
+    if (!Number.isFinite(providerId)) {
+      return;
+    }
+    this.favoritesService.removeFavorite(providerId).subscribe({
+      next: () => {
+        this.favorites = this.favorites.filter(item => item.id !== favorite.id);
+        this.syncRecommendedFavorites();
+      },
+      error: (err) => {
+        console.error('[FAVORITOS] Error eliminando favorito:', err);
+      }
+    });
   }
 
   onProfessionalClick(professional: Professional): void {

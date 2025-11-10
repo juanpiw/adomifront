@@ -12,43 +12,19 @@ import { ProfessionalCardComponent, Professional } from '../professional-card/pr
 export class RecommendedSectionComponent {
   @Input() title = 'Servicios Recomendados Cerca de Ti';
   @Input() professionals: Professional[] = [];
+  @Input() emptyTitle = 'Sin recomendaciones por ahora';
+  @Input() emptyDescription = 'En cuanto tengamos datos de tu zona o favoritos similares, los verás aquí.';
 
   @Output() professionalClick = new EventEmitter<Professional>();
   @Output() favoriteToggle = new EventEmitter<Professional>();
   @Output() bookClick = new EventEmitter<Professional>();
 
-  defaultProfessionals: Professional[] = [
-    {
-      id: '1',
-      name: 'Elena Torres',
-      role: 'Estilista Profesional',
-      description: 'Con más de 10 años de experiencia en color y cortes de vanguardia.',
-      rating: 4.9,
-      reviewCount: 85,
-      iconColor: 'pink'
-    },
-    {
-      id: '2',
-      name: 'Mario Rojas',
-      role: 'Chef a Domicilio',
-      description: 'Especialista en cocina mediterránea para eventos privados y cenas.',
-      rating: 5.0,
-      reviewCount: 89,
-      iconColor: 'orange'
-    },
-    {
-      id: '3',
-      name: 'Luis Gómez',
-      role: 'Armador de Muebles',
-      description: 'Montaje rápido y profesional de todo tipo de muebles. Experiencia garantizada.',
-      rating: 4.8,
-      reviewCount: 204,
-      iconColor: 'lime'
-    }
-  ];
-
   get displayProfessionals(): Professional[] {
-    return this.professionals.length > 0 ? this.professionals : this.defaultProfessionals;
+    return this.professionals;
+  }
+
+  get hasProfessionals(): boolean {
+    return this.professionals.length > 0;
   }
 
   onProfessionalClick(professional: Professional): void {

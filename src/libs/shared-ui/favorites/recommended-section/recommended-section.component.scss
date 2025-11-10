@@ -31,3 +31,31 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.recommended-empty {
+  margin-top: 2rem;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  border: 2px dashed rgba(102, 126, 234, 0.25);
+  background: rgba(102, 126, 234, 0.04);
+  text-align: center;
+  color: #64748b;
+}
+
+.empty-icon {
+  font-size: 2.25rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.empty-title {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-description {
+  margin: 0;
+  font-size: 0.95rem;
+}

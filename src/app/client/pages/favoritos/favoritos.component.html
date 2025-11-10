@@ -22,10 +22,13 @@
     <!-- Favorites Section -->
     <ui-favorites-favorites-section
       [favorites]="favorites"
+      [emptyTitle]="'Aún no tienes profesionales guardados'"
+      [emptyDescription]="'Explora y marca el corazón para mantenerlos cerca.'"
       (viewAllClick)="onViewAllFavorites()"
       (rebookClick)="onRebookFavorite($event)"
       (messageClick)="onMessageFavorite($event)"
-      (favoriteClick)="onFavoriteClick($event)">
+      (favoriteClick)="onFavoriteClick($event)"
+      (removeClick)="onRemoveFavorite($event)">
     </ui-favorites-favorites-section>
 
     <!-- Recommended Section -->
