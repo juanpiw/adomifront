@@ -22,6 +22,8 @@ interface Plan {
   promoCode?: string;
   duration_months?: number;
   commission_rate?: number;
+}
+
 interface TempUserData {
   name: string;
   email: string;

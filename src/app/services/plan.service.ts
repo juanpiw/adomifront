@@ -31,7 +31,7 @@ export class PlanService {
     const token = this.auth.getAccessToken();
     const headers: Record<string, string> = {};
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     }
     return new HttpHeaders(headers);
   }
