@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../auth/services/auth.service';
 
 export interface PlanInfo {
   id: number;
@@ -22,8 +23,18 @@ export interface PlanExpirationResponse {
 })
 export class PlanService {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
   private planInfoSubject = new BehaviorSubject<PlanInfo | null>(null);
   public planInfo$ = this.planInfoSubject.asObservable();
+
+  private authHeaders(): HttpHeaders {
+    const token = this.auth.getAccessToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return new HttpHeaders(headers);
+  }
 
   /**
    * Obtener información del plan actual del usuario
@@ -113,6 +124,22 @@ export class PlanService {
       month: 'long',
       day: 'numeric'
     });
+  }
+
+  initiateTbkPlanPayment(planId: number): Observable<{ ok: boolean; token: string; url: string; paymentId?: number }> {
+    return this.http.post<{ ok: boolean; token: string; url: string; paymentId?: number }>(
+      `${environment.apiBaseUrl}/plans/tbk/init`,
+      { planId },
+      { headers: this.authHeaders() }
+    );
+  }
+
+  commitTbkPlanPayment(token: string): Observable<{ ok: boolean; status: string; paymentId?: number; subscription?: any }> {
+    return this.http.post<{ ok: boolean; status: string; paymentId?: number; subscription?: any }>(
+      `${environment.apiBaseUrl}/plans/tbk/commit`,
+      { token },
+      { headers: this.authHeaders() }
+    );
   }
 }
 

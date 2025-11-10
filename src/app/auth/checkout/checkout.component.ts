@@ -50,6 +50,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   stripeError: string | null = null;
   promoCode: string | null = null;
   registeredUserId: number | null = null;
+  paymentGateway: 'stripe' | 'tbk' = 'stripe';
 
   private http = inject(HttpClient);
   private router = inject(Router);
@@ -76,6 +77,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.promoCode = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined'
       ? sessionStorage.getItem('promoCode')
       : null;
+
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      const storedGateway = sessionStorage.getItem('paymentGateway');
+      if (storedGateway === 'tbk' || storedGateway === 'stripe') {
+        this.paymentGateway = storedGateway;
+      }
+    }
 
     if (!this.promoCode && (this.selectedPlan as any)?.promoCode) {
       this.promoCode = (this.selectedPlan as any).promoCode;
@@ -118,6 +126,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         return;
       }
 
+      if (this.paymentGateway === 'tbk') {
+        await this.startTbkFlow();
+        return;
+      }
+
       console.log('[CHECKOUT] Creando sesión de Stripe para planId:', this.selectedPlan.id);
       this.http.post<CheckoutResponse>(`${environment.apiBaseUrl}/stripe/create-checkout-session`, {
         planId: this.selectedPlan.id
@@ -157,6 +170,65 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.error = 'Error inesperado. Inténtalo nuevamente.';
       this.loading = false;
     }
+  }
+
+  private async startTbkFlow(): Promise<void> {
+    if (!this.selectedPlan) {
+      this.loading = false;
+      this.error = 'Plan no seleccionado.';
+      return;
+    }
+
+    try {
+      const token = this.authService.getAccessToken();
+      if (!token) {
+        this.error = 'Debes iniciar sesión nuevamente para continuar con el pago.';
+        this.loading = false;
+        return;
+      }
+
+      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+      const response: any = await firstValueFrom(
+        this.http.post(`${environment.apiBaseUrl}/plans/tbk/init`, { planId: this.selectedPlan.id }, { headers })
+      );
+
+      if (!response?.ok || !response?.token || !response?.url) {
+        this.error = response?.error || 'No pudimos iniciar el pago con Webpay Plus.';
+        this.loading = false;
+        return;
+      }
+
+      if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('tbkPlanPending', '1');
+      }
+
+      this.redirectToTbk(response.url, response.token);
+    } catch (error: any) {
+      console.error('[CHECKOUT] Error iniciando pago TBK:', error);
+      const message = error?.error?.error || error?.message || 'No pudimos iniciar el pago con Webpay Plus.';
+      this.error = message;
+      this.loading = false;
+    }
+  }
+
+  private redirectToTbk(url: string, token: string): void {
+    if (typeof document === 'undefined') {
+      window.location.href = url;
+      return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'token_ws';
+    input.value = token;
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
   }
 
   private async registerUserFirst() {
@@ -280,6 +352,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         sessionStorage.removeItem('tempUserData');
         sessionStorage.removeItem('selectedPlan');
         sessionStorage.removeItem('promoCode');
+        sessionStorage.removeItem('paymentGateway');
+        sessionStorage.removeItem('tbkPlanPending');
       }
     } catch {}
   }

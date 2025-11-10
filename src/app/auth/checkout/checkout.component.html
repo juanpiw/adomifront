@@ -52,11 +52,17 @@
       <div class="payment-details">
         <div class="detail">
           <span class="label">Método de pago:</span>
-          <span class="value">Tarjeta de crédito/débito (Stripe)</span>
+          <span class="value">
+            {{ paymentGateway === 'tbk' ? 'Webpay Plus (Transbank)' : 'Tarjeta de crédito/débito (Stripe)' }}
+          </span>
         </div>
         <div class="detail">
           <span class="label">Seguridad:</span>
-          <span class="value">Pago 100% seguro con Stripe</span>
+          <span class="value">
+            {{ paymentGateway === 'tbk'
+              ? 'Serás redirigido a Webpay Plus para completar el pago de forma segura.'
+              : 'Pago 100% seguro con Stripe' }}
+          </span>
         </div>
       </div>
     </div>
@@ -89,7 +95,9 @@
         (click)="proceedToPayment()"
         [disabled]="loading"
       >
-        <span *ngIf="!loading">Proceder al Pago</span>
+        <span *ngIf="!loading">
+          {{ paymentGateway === 'tbk' ? 'Ir a Webpay Plus' : 'Proceder al Pago' }}
+        </span>
         <span *ngIf="loading">Procesando...</span>
       </button>
     </div>

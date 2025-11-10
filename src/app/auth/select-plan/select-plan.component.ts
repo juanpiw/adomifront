@@ -22,8 +22,6 @@ interface Plan {
   promoCode?: string;
   duration_months?: number;
   commission_rate?: number;
-}
-
 interface TempUserData {
   name: string;
   email: string;
@@ -58,6 +56,25 @@ export class SelectPlanComponent implements OnInit {
   loading = true;
   error: string | null = null;
   tempUserData: TempUserData | null = null;
+  paymentMethod: 'stripe' | 'tbk' = 'stripe';
+  readonly paymentMethods: Array<{
+    id: 'stripe' | 'tbk';
+    label: string;
+    description: string;
+    badge?: string;
+  }> = [
+    {
+      id: 'stripe',
+      label: 'Tarjeta de crédito / débito',
+      description: 'Procesado por Stripe. Acepta tarjetas internacionales.',
+      badge: 'Recomendado'
+    },
+    {
+      id: 'tbk',
+      label: 'Webpay Plus (Transbank)',
+      description: 'Paga con tarjetas chilenas o RedCompra mediante Webpay.'
+    }
+  ];
   
   // Billing toggle
   isAnnualBilling = true; // Por defecto anual
@@ -206,6 +223,7 @@ export class SelectPlanComponent implements OnInit {
     }
     console.log('[SELECT_PLAN] Plan seleccionado:', plan);
     this.selectedPlan = plan;
+    this.paymentMethod = 'stripe';
   }
 
   toggleBilling() {
@@ -249,6 +267,10 @@ export class SelectPlanComponent implements OnInit {
       console.warn('[SELECT_PLAN] No hay selectedPlan o tempUserData. Abortando.');
       return;
     }
+    if (this.requiresPaymentSelection() && !this.paymentMethod) {
+      console.warn('[SELECT_PLAN] Falta seleccionar método de pago.');
+      return;
+    }
 
     console.log('[SELECT_PLAN] Continuar a pago con plan:', this.selectedPlan);
     // Guardar plan seleccionado temporalmente
@@ -259,12 +281,25 @@ export class SelectPlanComponent implements OnInit {
       } else {
         sessionStorage.removeItem('promoCode');
       }
+      if (this.requiresPaymentSelection()) {
+        sessionStorage.setItem('paymentGateway', this.paymentMethod);
+      } else {
+        sessionStorage.removeItem('paymentGateway');
+      }
       console.log('[SELECT_PLAN] selectedPlan guardado en sessionStorage');
     }
     
     // Redirigir a checkout
     console.log('[SELECT_PLAN] Navegando a /auth/checkout');
     this.router.navigateByUrl('/auth/checkout');
+  }
+
+  requiresPaymentSelection(): boolean {
+    return !!this.selectedPlan && !this.selectedPlan.isPromo && Number(this.selectedPlan.price || 0) > 0;
+  }
+
+  onPaymentMethodChange(method: 'stripe' | 'tbk') {
+    this.paymentMethod = method;
   }
 
   goBack() {

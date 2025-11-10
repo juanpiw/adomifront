@@ -141,6 +141,35 @@
     </div>
   </div>
 
+  <!-- Payment method selector -->
+  <div *ngIf="!loading && !error && requiresPaymentSelection()" class="payment-methods">
+    <h3>Selecciona cómo quieres pagar</h3>
+    <p>Elige la pasarela de pago que prefieras para completar tu suscripción.</p>
+
+    <div class="payment-options">
+      <label
+        class="payment-option"
+        *ngFor="let method of paymentMethods"
+        [class.selected]="paymentMethod === method.id"
+      >
+        <input
+          type="radio"
+          name="paymentMethod"
+          [value]="method.id"
+          [checked]="paymentMethod === method.id"
+          (change)="onPaymentMethodChange(method.id)"
+        />
+        <div class="payment-option__body">
+          <div class="payment-option__header">
+            <span class="payment-option__title">{{ method.label }}</span>
+            <span *ngIf="method.badge" class="payment-option__badge">{{ method.badge }}</span>
+          </div>
+          <p class="payment-option__description">{{ method.description }}</p>
+        </div>
+      </label>
+    </div>
+  </div>
+
   <!-- Action buttons -->
   <div *ngIf="!loading && !error" class="actions">
     <button class="btn-secondary" (click)="goBack()" [disabled]="promoActivating">Volver</button>
@@ -150,7 +179,7 @@
       [disabled]="!selectedPlan"
       (click)="continueToPayment()"
     >
-      Continuar al Pago
+      {{ paymentMethod === 'tbk' && requiresPaymentSelection() ? 'Pagar con Webpay Plus' : 'Pagar con Stripe' }}
     </button>
   </div>
 </div>
