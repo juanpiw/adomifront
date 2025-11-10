@@ -5,16 +5,20 @@
   <div class="horario-disponibilidad__content">
     <h4 class="horario-disponibilidad__section-title">Horario Semanal Estándar</h4>
     
-    <div class="horario-disponibilidad__days">
+    <div class="horario-disponibilidad__days" [class.horario-disponibilidad__days--loading]="loading">
       <div 
         *ngFor="let day of schedule.days"
         class="horario-disponibilidad__day"
         [class.horario-disponibilidad__day--active]="day.enabled"
-        [class.horario-disponibilidad__day--inactive]="!day.enabled">
+        [class.horario-disponibilidad__day--inactive]="!day.enabled"
+        [class.horario-disponibilidad__day--disabled]="loading">
         
         <div class="horario-disponibilidad__day-header">
           <span class="horario-disponibilidad__day-name">{{ day.day }}</span>
-          <div class="horario-disponibilidad__toggle" (click)="onToggleDay(day)">
+          <div
+            class="horario-disponibilidad__toggle"
+            (click)="onToggleDay(day)"
+            [class.horario-disponibilidad__toggle--disabled]="loading">
             <div class="horario-disponibilidad__toggle-track" 
                  [class.horario-disponibilidad__toggle-track--active]="day.enabled">
               <div class="horario-disponibilidad__toggle-thumb"></div>
@@ -34,16 +38,19 @@
                 type="time"
                 class="horario-disponibilidad__time-input"
                 [value]="block.start"
-                (change)="onTimeBlockChange(day, block.id, 'start', $event.target.value)">
+                (change)="onTimeBlockChange(day, block.id, 'start', $event.target.value)"
+                [disabled]="loading">
               <span class="horario-disponibilidad__time-label">a</span>
               <input 
                 type="time"
                 class="horario-disponibilidad__time-input"
                 [value]="block.end"
-                (change)="onTimeBlockChange(day, block.id, 'end', $event.target.value)">
+                (change)="onTimeBlockChange(day, block.id, 'end', $event.target.value)"
+                [disabled]="loading">
               <button 
                 class="horario-disponibilidad__remove-button"
-                (click)="onRemoveTimeBlock(day, block.id)">
+                (click)="onRemoveTimeBlock(day, block.id)"
+                [disabled]="loading">
                 ✖
               </button>
             </div>
@@ -51,10 +58,14 @@
           
           <button 
             class="horario-disponibilidad__add-button"
-            (click)="onAddTimeBlock(day)">
+            (click)="onAddTimeBlock(day)"
+            [disabled]="loading">
             + Añadir bloque
           </button>
         </div>
+      </div>
+      <div *ngIf="loading" class="horario-disponibilidad__loading">
+        Guardando cambios en tu horario…
       </div>
     </div>
   </div>

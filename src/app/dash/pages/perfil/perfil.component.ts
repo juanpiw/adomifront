@@ -27,6 +27,7 @@ import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/sh
 import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/verificacion-perfil.component';
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
+import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 
 type PortfolioItemDisplay = PortfolioImage & { thumbnailUrl?: string | null; order?: number };
 interface EditableFaq extends Partial<ProviderFaq> {
@@ -75,6 +76,7 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   private portfolioService = inject(PortfolioService);
   private availabilityService = inject(ProviderAvailabilityService);
   private progressService = inject(ProfileProgressService);
+  private notifications = inject(NotificationService);
 
   ngOnInit() {
     // Leer query parameters para activar tab específico
@@ -187,6 +189,8 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
         console.error('[PERFIL] Error al cargar zonas:', err);
       }
     });
+
+    this.loadAvailabilitySettings();
   }
 
   /**
@@ -362,55 +366,8 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   };
 
   // Datos para horario semanal
-  weeklySchedule: WeeklySchedule = {
-    days: [
-      {
-        day: 'Lunes',
-        enabled: true,
-        timeBlocks: [
-          { id: '1', start: '09:00', end: '18:00' }
-        ]
-      },
-      {
-        day: 'Martes',
-        enabled: false,
-        timeBlocks: []
-      },
-      {
-        day: 'Miércoles',
-        enabled: true,
-        timeBlocks: [
-          { id: '2', start: '09:00', end: '18:00' }
-        ]
-      },
-      {
-        day: 'Jueves',
-        enabled: true,
-        timeBlocks: [
-          { id: '3', start: '09:00', end: '18:00' }
-        ]
-      },
-      {
-        day: 'Viernes',
-        enabled: true,
-        timeBlocks: [
-          { id: '4', start: '09:00', end: '18:00' }
-        ]
-      },
-      {
-        day: 'Sábado',
-        enabled: true,
-        timeBlocks: [
-          { id: '5', start: '10:00', end: '16:00' }
-        ]
-      },
-      {
-        day: 'Domingo',
-        enabled: false,
-        timeBlocks: []
-      }
-    ]
-  };
+  weeklySchedule: WeeklySchedule = this.createEmptyWeeklySchedule();
+  availabilityLoading = false;
 
   liveLocationStatus: LiveLocationStatus = 'off';
   liveLocationStatusLabel = 'Ubicación en vivo desactivada';
@@ -423,13 +380,28 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   private readonly liveLocationMinDistanceMeters = 20;
 
   // Datos para excepciones
-  exceptions: ExceptionDate[] = [
-    {
-      id: '1',
-      date: '2025-10-05',
-      reason: 'Ejemplo: Día de Limpieza/Mantenimiento'
-    }
-  ];
+  exceptions: ExceptionDate[] = [];
+  exceptionsLoading = false;
+  private readonly dayLabels: string[] = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  private readonly dayEnumToLabel: Record<string, string> = {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes',
+    saturday: 'Sábado',
+    sunday: 'Domingo'
+  };
+  private readonly dayLabelToEnum: Record<string, string> = {
+    Lunes: 'monday',
+    Martes: 'tuesday',
+    Miércoles: 'wednesday',
+    Jueves: 'thursday',
+    Viernes: 'friday',
+    Sábado: 'saturday',
+    Domingo: 'sunday'
+  };
+  private weeklyBlockIndex = new Map<number, { dayEnum: string; start: string; end: string; enabled: boolean }>();
 
   // Event handlers para los componentes
   onBasicInfoChange(info: BasicInfo) {
@@ -1511,18 +1483,196 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   }
 
   onAddTimeBlock(data: { day: string; block: any }) {
-    console.log('Agregar bloque de tiempo:', data);
-    // La lógica ya está en el componente
+    const dayEnum = this.dayLabelToEnum[data.day];
+    if (!dayEnum) {
+      console.warn('[PERFIL] Día inválido al crear bloque', data.day);
+      return;
+    }
+    const start = String(data.block?.start || '09:00');
+    const end = String(data.block?.end || '17:00');
+    this.availabilityLoading = true;
+    this.availabilityService.createWeekly(dayEnum as any, start, end, true).subscribe({
+      next: () => {
+        this.notifyAvailability('success', `Se agregó un bloque el ${data.day} de ${start} a ${end}.`);
+        this.loadAvailabilitySettings();
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error creando bloque de disponibilidad', err);
+        this.notifyAvailability('error', 'No pudimos crear el bloque. Intenta nuevamente.');
+        this.availabilityLoading = false;
+      }
+    });
   }
 
   onRemoveTimeBlock(data: { day: string; blockId: string }) {
-    console.log('Remover bloque de tiempo:', data);
-    // La lógica ya está en el componente
+    const numericId = Number(data.blockId);
+    if (!Number.isFinite(numericId) || !this.weeklyBlockIndex.has(numericId)) {
+      console.warn('[PERFIL] Bloque sin ID persistido, se quitará solo del estado local:', data.blockId);
+      return;
+    }
+    this.availabilityLoading = true;
+    this.availabilityService.deleteWeekly(numericId).subscribe({
+      next: () => {
+        this.notifyAvailability('success', 'Bloque eliminado correctamente.');
+        this.loadAvailabilitySettings();
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error eliminando bloque de disponibilidad', err);
+        this.notifyAvailability('error', 'No se pudo eliminar el bloque. Vuelve a intentarlo.');
+        this.availabilityLoading = false;
+      }
+    });
   }
 
-  onToggleDay(data: { day: string; enabled: boolean }) {
-    console.log('Toggle día:', data);
-    // La lógica ya está en el componente
+  async onToggleDay(data: { day: string; enabled: boolean }) {
+    const daySchedule = this.weeklySchedule.days.find(item => item.day === data.day);
+    if (!daySchedule) {
+      return;
+    }
+    const blockIds = daySchedule.timeBlocks
+      .map(block => Number(block.id))
+      .filter(id => Number.isFinite(id) && this.weeklyBlockIndex.has(id));
+    if (!blockIds.length) {
+      return;
+    }
+    this.availabilityLoading = true;
+    try {
+      const tasks = blockIds.map(id =>
+        firstValueFrom(this.availabilityService.updateWeekly(id, { is_active: data.enabled }))
+      );
+      await Promise.allSettled(tasks);
+      if (data.enabled) {
+        this.notifyAvailability('success', `Activaste el día ${data.day} para recibir reservas.`);
+      } else {
+        this.notifyAvailability('success', `Marcaste el ${data.day} como día de descanso.`);
+      }
+    } catch (err) {
+      console.error('[PERFIL] Error actualizando estado del día', err);
+      this.notifyAvailability('error', 'No se pudo actualizar el estado del día.');
+    } finally {
+      this.loadAvailabilitySettings();
+    }
+  }
+
+  private loadAvailabilitySettings(): void {
+    this.availabilityLoading = true;
+    this.availabilityService.getWeekly().subscribe({
+      next: (resp) => {
+        const blocks = Array.isArray(resp?.blocks) ? resp.blocks : [];
+        this.weeklySchedule = this.mapWeeklySchedule(blocks);
+        this.availabilityLoading = false;
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar horario semanal', err);
+        this.weeklySchedule = this.createEmptyWeeklySchedule();
+        this.availabilityLoading = false;
+      }
+    });
+
+    this.loadExceptions();
+  }
+
+  private mapWeeklySchedule(blocks: any[]): WeeklySchedule {
+    this.weeklyBlockIndex.clear();
+    const grouped = new Map<string, Array<{ id: string; start: string; end: string; enabled: boolean }>>();
+    blocks.forEach((block: any) => {
+      const label = this.dayEnumToLabel[String(block.day_of_week)] || String(block.day_of_week);
+      const start = String(block.start_time || '').slice(0, 5);
+      const end = String(block.end_time || '').slice(0, 5);
+      const enabled = block.is_active !== false;
+      if (!grouped.has(label)) {
+        grouped.set(label, []);
+      }
+      grouped.get(label)!.push({
+        id: String(block.id),
+        start,
+        end,
+        enabled
+      });
+      const numericId = Number(block.id);
+      if (Number.isFinite(numericId)) {
+        const dayEnum = String(block.day_of_week || '').toLowerCase();
+        this.weeklyBlockIndex.set(numericId, {
+          dayEnum,
+          start,
+          end,
+          enabled
+        });
+      }
+    });
+
+    const schedule = this.createEmptyWeeklySchedule();
+    schedule.days = schedule.days.map(day => {
+      const items = grouped.get(day.day) || [];
+      return {
+        day: day.day,
+        enabled: items.length > 0 ? items.some(item => item.enabled) : false,
+        timeBlocks: items.map(item => ({
+          id: item.id,
+          start: item.start,
+          end: item.end
+        }))
+      };
+    });
+    return schedule;
+  }
+
+  private loadExceptions(): void {
+    this.exceptionsLoading = true;
+    this.availabilityService.listExceptions().subscribe({
+      next: (resp) => {
+        const list = Array.isArray(resp?.exceptions) ? resp.exceptions : [];
+        const mapped = list.map((exc: any) => ({
+          id: String(exc.id),
+          date: exc.exception_date || exc.date || '',
+          reason: exc.reason || undefined
+        }));
+        this.exceptions = mapped.sort((a, b) => a.date.localeCompare(b.date));
+        this.exceptionsLoading = false;
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al cargar excepciones de disponibilidad', err);
+        this.exceptions = [];
+        this.exceptionsLoading = false;
+      }
+    });
+  }
+
+  private notifyAvailability(
+    type: 'success' | 'error',
+    message: string,
+    title?: string
+  ): void {
+    try {
+      this.notifications.setUserProfile('provider');
+      this.notifications.createNotification({
+        type: 'availability',
+        profile: 'provider',
+        title:
+          title ||
+          (type === 'success' ? 'Horario actualizado' : 'Error de disponibilidad'),
+        message,
+        priority: type === 'success' ? 'medium' : 'high'
+      });
+    } catch (err) {
+      console.warn('[PERFIL] No se pudo mostrar la notificación de disponibilidad', err);
+    }
+  }
+
+  private formatExceptionDate(value: string): string {
+    try {
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return value;
+      }
+      return date.toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return value;
+    }
   }
 
   // Event handlers para excepciones
@@ -1531,13 +1681,40 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   }
 
   onAddException(data: { date: string; reason?: string }) {
-    console.log('Agregar excepción:', data);
-    // La lógica ya está en el componente
+    if (!data.date) {
+      return;
+    }
+    this.exceptionsLoading = true;
+    this.availabilityService.createException(data.date, false, undefined, undefined, data.reason).subscribe({
+      next: () => {
+        this.notifyAvailability('success', `Bloqueaste el ${this.formatExceptionDate(data.date)}.`);
+        this.loadExceptions();
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error creando excepción de disponibilidad', err);
+        this.notifyAvailability('error', 'No se pudo bloquear la fecha. Revisa la información e intenta de nuevo.');
+        this.exceptionsLoading = false;
+      }
+    });
   }
 
   onRemoveException(exceptionId: string) {
-    console.log('Remover excepción:', exceptionId);
-    // La lógica ya está en el componente
+    const numericId = Number(exceptionId);
+    if (!Number.isFinite(numericId)) {
+      return;
+    }
+    this.exceptionsLoading = true;
+    this.availabilityService.deleteException(numericId).subscribe({
+      next: () => {
+        this.notifyAvailability('success', 'La fecha bloqueada fue eliminada.');
+        this.loadExceptions();
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error eliminando excepción de disponibilidad', err);
+        this.notifyAvailability('error', 'No se pudo eliminar la excepción.');
+        this.exceptionsLoading = false;
+      }
+    });
   }
 
   save() { 
@@ -1555,58 +1732,81 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
 
   // Guardar horario semanal desde el tab Configuración del Perfil
   savingWeeklySchedule = false;
-  saveWeeklySchedule() {
+  async saveWeeklySchedule() {
     this.savingWeeklySchedule = true;
-    // 1) Cargar bloques existentes
-    this.availabilityService.getWeekly().subscribe({
-      next: (resp) => {
-        const existing = resp.blocks || [];
-        const mapDay: Record<string, any> = {
-          'Lunes':'monday','Martes':'tuesday','Miércoles':'wednesday','Jueves':'thursday','Viernes':'friday','Sábado':'saturday','Domingo':'sunday'
-        };
+    try {
+      const resp = await firstValueFrom(this.availabilityService.getWeekly());
+      const existing = Array.isArray(resp?.blocks) ? resp.blocks : [];
+      const mapDay: Record<string, any> = {
+        Lunes: 'monday',
+        Martes: 'tuesday',
+        Miércoles: 'wednesday',
+        Jueves: 'thursday',
+        Viernes: 'friday',
+        Sábado: 'saturday',
+        Domingo: 'sunday'
+      };
+      const keyExisting = (b: any) =>
+        `${b.day_of_week}|${String(b.start_time).slice(0, 5)}|${String(b.end_time).slice(0, 5)}`;
+      const existingMap = new Map(existing.map((b: any) => [keyExisting(b), b]));
+      const tasks: Array<Promise<any>> = [];
 
-        const keyExisting = (b: any) => `${b.day_of_week}|${String(b.start_time).slice(0,5)}|${String(b.end_time).slice(0,5)}`;
-        const existingMap = new Map(existing.map(b => [keyExisting(b), b]));
+      this.weeklySchedule.days.forEach(day => {
+        const dayEnum = mapDay[day.day];
+        if (!dayEnum) {
+          return;
+        }
 
-        const tasks: Array<Promise<any>> = [];
+        if (!day.enabled) {
+          existing
+            .filter((b: any) => b.day_of_week === dayEnum)
+            .forEach((b: any) => {
+              tasks.push(firstValueFrom(this.availabilityService.updateWeekly(b.id, { is_active: false })));
+              existingMap.delete(keyExisting(b));
+            });
+          return;
+        }
 
-        // Crear/actualizar según weeklySchedule
-        this.weeklySchedule.days.forEach(day => {
-          const dayEnum = mapDay[day.day];
-          if (!day.enabled) {
-            // si el día está desactivado, eliminar bloques existentes de ese día
-            existing
-              .filter((b: any) => b.day_of_week === dayEnum)
-              .forEach((b: any) => tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise()));
-            return;
+        day.timeBlocks.forEach(block => {
+          const k = `${dayEnum}|${block.start}|${block.end}`;
+          const found = existingMap.get(k);
+          if (found) {
+            tasks.push(
+              firstValueFrom(
+                this.availabilityService.updateWeekly(found.id, {
+                  is_active: true,
+                  start_time: block.start,
+                  end_time: block.end
+                })
+              )
+            );
+            existingMap.delete(k);
+          } else {
+            tasks.push(
+              firstValueFrom(
+                this.availabilityService.createWeekly(dayEnum as any, block.start, block.end, true)
+              )
+            );
           }
-          day.timeBlocks.forEach(block => {
-            const k = `${dayEnum}|${block.start}|${block.end}`;
-            const found = existingMap.get(k);
-            if (found) {
-              tasks.push(this.availabilityService.updateWeekly(found.id, { is_active: true }).toPromise());
-              existingMap.delete(k);
-            } else {
-              tasks.push(this.availabilityService.createWeekly(dayEnum, block.start, block.end, true).toPromise());
-            }
-          });
         });
+      });
 
-        // Eliminar los bloques restantes no usados
-        existingMap.forEach((b) => {
-          tasks.push(this.availabilityService.deleteWeekly(b.id).toPromise());
-        });
+      existingMap.forEach((b) => {
+        tasks.push(firstValueFrom(this.availabilityService.deleteWeekly(b.id)));
+      });
 
-        Promise.allSettled(tasks).then(() => {
-          this.savingWeeklySchedule = false;
-          alert('✅ Horario guardado correctamente');
-        });
-      },
-      error: () => {
-        this.savingWeeklySchedule = false;
-        alert('❌ Error al guardar horario');
+      if (tasks.length) {
+        await Promise.allSettled(tasks);
       }
-    });
+
+      this.notifyAvailability('success', 'Tu horario fue guardado correctamente.');
+      this.loadAvailabilitySettings();
+    } catch (err) {
+      console.error('[PERFIL] Error al guardar horario semanal', err);
+      this.notifyAvailability('error', 'No se pudo guardar el horario. Intenta nuevamente.');
+    } finally {
+      this.savingWeeklySchedule = false;
+    }
   }
 
   savePublicProfile() {
@@ -1737,6 +1937,16 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   goToPortfolioItem(index: number) {
     if (index < 0 || index >= this.portfolioImages.length) return;
     this.portfolioLightboxIndex = index;
+  }
+
+  private createEmptyWeeklySchedule(): WeeklySchedule {
+    return {
+      days: this.dayLabels.map(day => ({
+        day,
+        enabled: false,
+        timeBlocks: []
+      }))
+    };
   }
 
   private normalizePortfolioItems(portfolio: any[]): PortfolioItemDisplay[] {

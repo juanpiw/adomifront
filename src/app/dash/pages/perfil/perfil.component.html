@@ -176,6 +176,7 @@
       </div>
       <app-horario-disponibilidad 
         [schedule]="weeklySchedule"
+        [loading]="availabilityLoading || savingWeeklySchedule"
         (scheduleChange)="onScheduleChange($event)"
         (addTimeBlock)="onAddTimeBlock($event)"
         (removeTimeBlock)="onRemoveTimeBlock($event)"
@@ -191,6 +192,7 @@
       <!-- Excepciones y Feriados -->
       <app-excepciones-feriados 
         [exceptions]="exceptions"
+        [loading]="exceptionsLoading"
         (exceptionsChange)="onExceptionsChange($event)"
         (addException)="onAddException($event)"
         (removeException)="onRemoveException($event)">

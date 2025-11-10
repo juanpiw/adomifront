@@ -121,6 +121,16 @@
     gap: 0.5rem;
   }
 
+  &__time-empty {
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+    color: #475569;
+    background: rgba(226, 232, 240, 0.35);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+  }
+
   &__time {
     position: relative;
     padding: 0.6rem 0.5rem;

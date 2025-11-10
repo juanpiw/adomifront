@@ -140,7 +140,7 @@
       <!-- Configuración de Horarios -->
       <app-horarios-config 
         [timeBlocks]="timeBlocks"
-        [loading]="loading"
+        [loading]="loading || availabilityLoading"
         (addTimeBlock)="onAddTimeBlock($event)"
         (removeTimeBlock)="onRemoveTimeBlock($event)"
         (updateTimeBlock)="onUpdateTimeBlock($event)">

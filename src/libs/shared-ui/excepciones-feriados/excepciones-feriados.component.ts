@@ -16,13 +16,8 @@ export interface ExceptionDate {
   styleUrls: ['./excepciones-feriados.component.scss']
 })
 export class ExcepcionesFeriadosComponent {
-  @Input() exceptions: ExceptionDate[] = [
-    {
-      id: '1',
-      date: '05/10/2025',
-      reason: 'Ejemplo: Día de Limpieza/Mantenimiento'
-    }
-  ];
+  @Input() exceptions: ExceptionDate[] = [];
+  @Input() loading = false;
 
   @Output() exceptionsChange = new EventEmitter<ExceptionDate[]>();
   @Output() addException = new EventEmitter<{ date: string; reason?: string }>();
@@ -32,16 +27,10 @@ export class ExcepcionesFeriadosComponent {
   newReason = '';
 
   onAddException() {
+    if (this.loading) {
+      return;
+    }
     if (this.newDate.trim()) {
-      const newException: ExceptionDate = {
-        id: Date.now().toString(),
-        date: this.newDate.trim(),
-        reason: this.newReason.trim() || undefined
-      };
-
-      const updatedExceptions = [...this.exceptions, newException];
-      this.exceptions = updatedExceptions;
-      this.exceptionsChange.emit(updatedExceptions);
       this.addException.emit({ 
         date: this.newDate.trim(), 
         reason: this.newReason.trim() || undefined 
@@ -54,9 +43,9 @@ export class ExcepcionesFeriadosComponent {
   }
 
   onRemoveException(exceptionId: string) {
-    const updatedExceptions = this.exceptions.filter(ex => ex.id !== exceptionId);
-    this.exceptions = updatedExceptions;
-    this.exceptionsChange.emit(updatedExceptions);
+    if (this.loading) {
+      return;
+    }
     this.removeException.emit(exceptionId);
   }
 

@@ -84,50 +84,7 @@ export class DashAgendaComponent implements OnInit {
   dayAppointments: DayAppointment[] = [];
 
   // Datos de configuración de horarios
-  timeBlocks: TimeBlock[] = [
-    {
-      id: '1',
-      day: 'Lunes',
-      startTime: '09:00',
-      endTime: '18:00',
-      enabled: true
-    },
-    {
-      id: '2',
-      day: 'Martes',
-      startTime: '09:00',
-      endTime: '18:00',
-      enabled: true
-    },
-    {
-      id: '3',
-      day: 'Miércoles',
-      startTime: '09:00',
-      endTime: '18:00',
-      enabled: true
-    },
-    {
-      id: '4',
-      day: 'Jueves',
-      startTime: '09:00',
-      endTime: '18:00',
-      enabled: true
-    },
-    {
-      id: '5',
-      day: 'Viernes',
-      startTime: '09:00',
-      endTime: '18:00',
-      enabled: true
-    },
-    {
-      id: '6',
-      day: 'Sábado',
-      startTime: '10:00',
-      endTime: '16:00',
-      enabled: true
-    }
-  ];
+  timeBlocks: TimeBlock[] = [];
 
   // Estados
   loading = false;
@@ -201,6 +158,25 @@ export class DashAgendaComponent implements OnInit {
   };
 
   currentProviderName: string | null = null;
+  availabilityLoading = false;
+  private readonly dayEnumToLabel: Record<string, string> = {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes',
+    saturday: 'Sábado',
+    sunday: 'Domingo'
+  };
+  private readonly dayLabelToEnum: Record<string, string> = {
+    Lunes: 'monday',
+    Martes: 'tuesday',
+    Miércoles: 'wednesday',
+    Jueves: 'thursday',
+    Viernes: 'friday',
+    Sábado: 'saturday',
+    Domingo: 'sunday'
+  };
 
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
@@ -286,6 +262,7 @@ export class DashAgendaComponent implements OnInit {
     // Inicializar pestaña cash
     this.loadCashSummary();
     this.loadCashCommissions(this.cashTableFilter);
+    this.loadWeeklyAvailability();
   }
 
   // Cargar citas del mes
@@ -405,6 +382,28 @@ export class DashAgendaComponent implements OnInit {
       },
       error: () => { this.cashLoading = false; },
       complete: () => { this.cashLoading = false; }
+    });
+  }
+
+  private loadWeeklyAvailability() {
+    this.availabilityLoading = true;
+    this.availabilityService.getWeekly().subscribe({
+      next: (resp) => {
+        const blocks = Array.isArray(resp?.blocks) ? resp.blocks : [];
+        this.timeBlocks = blocks.map((block: any) => ({
+          id: String(block.id),
+          day: this.dayEnumToLabel[String(block.day_of_week)] || String(block.day_of_week),
+          startTime: String(block.start_time || '').slice(0, 5),
+          endTime: String(block.end_time || '').slice(0, 5),
+          enabled: block.is_active !== false
+        }));
+        this.availabilityLoading = false;
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error cargando disponibilidad semanal', err);
+        this.timeBlocks = [];
+        this.availabilityLoading = false;
+      }
     });
   }
 
@@ -1293,25 +1292,115 @@ export class DashAgendaComponent implements OnInit {
 
   // Handlers de configuración de horarios (usados por el template)
   onAddTimeBlock(timeBlock: Omit<TimeBlock, 'id'>) {
-    const newTimeBlock: TimeBlock = {
-      ...timeBlock,
-      id: Date.now().toString()
-    } as TimeBlock;
-    this.timeBlocks.push(newTimeBlock);
-    console.log('Bloque de tiempo agregado:', newTimeBlock);
+    const dayEnum = this.dayLabelToEnum[timeBlock.day];
+    if (!dayEnum) {
+      console.warn('[AGENDA] Día inválido al crear bloque', timeBlock.day);
+      return;
+    }
+    this.availabilityLoading = true;
+    this.availabilityService.createWeekly(dayEnum as any, timeBlock.startTime, timeBlock.endTime, timeBlock.enabled).subscribe({
+      next: () => {
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Horario actualizado',
+            message: `Se agregó un bloque ${timeBlock.day} ${timeBlock.startTime} - ${timeBlock.endTime}`,
+            priority: 'medium'
+          });
+        } catch {}
+        this.loadWeeklyAvailability();
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error creando bloque de horario', err);
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Error al crear horario',
+            message: 'No pudimos guardar el nuevo bloque. Intenta nuevamente.',
+            priority: 'high'
+          });
+        } catch {}
+        this.availabilityLoading = false;
+      }
+    });
   }
 
   onRemoveTimeBlock(blockId: string) {
-    this.timeBlocks = this.timeBlocks.filter(block => block.id !== blockId);
-    console.log('Bloque de tiempo eliminado:', blockId);
+    const numericId = Number(blockId);
+    if (!Number.isFinite(numericId)) {
+      return;
+    }
+    this.availabilityLoading = true;
+    this.availabilityService.deleteWeekly(numericId).subscribe({
+      next: () => {
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Bloque eliminado',
+            message: 'El bloque de horario fue eliminado correctamente.',
+            priority: 'medium'
+          });
+        } catch {}
+        this.loadWeeklyAvailability();
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error eliminando bloque de horario', err);
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Error al eliminar',
+            message: 'No pudimos eliminar el bloque. Vuelve a intentarlo.',
+            priority: 'high'
+          });
+        } catch {}
+        this.availabilityLoading = false;
+      }
+    });
   }
 
   onUpdateTimeBlock(updatedBlock: TimeBlock) {
-    const index = this.timeBlocks.findIndex(block => block.id === updatedBlock.id);
-    if (index !== -1) {
-      this.timeBlocks[index] = updatedBlock;
-      console.log('Bloque de tiempo actualizado:', updatedBlock);
+    const numericId = Number(updatedBlock.id);
+    if (!Number.isFinite(numericId)) {
+      return;
     }
+    this.availabilityLoading = true;
+    this.availabilityService.updateWeekly(numericId, { is_active: updatedBlock.enabled }).subscribe({
+      next: () => {
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Horario actualizado',
+            message: `Actualizaste el bloque ${updatedBlock.day} ${updatedBlock.startTime} - ${updatedBlock.endTime}`,
+            priority: 'medium'
+          });
+        } catch {}
+        this.loadWeeklyAvailability();
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error actualizando bloque de horario', err);
+        try {
+          this.notifications.setUserProfile('provider');
+          this.notifications.createNotification({
+            type: 'availability',
+            profile: 'provider',
+            title: 'Error al actualizar',
+            message: 'Tus cambios no se guardaron. Intenta de nuevo.',
+            priority: 'high'
+          });
+        } catch {}
+        this.availabilityLoading = false;
+      }
+    });
   }
 
   onSaveSchedule() {

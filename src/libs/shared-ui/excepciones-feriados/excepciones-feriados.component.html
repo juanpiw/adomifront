@@ -11,7 +11,8 @@
         <input 
           type="date"
           class="excepciones-feriados__input"
-          [(ngModel)]="newDate">
+          [(ngModel)]="newDate"
+          [disabled]="loading">
       </div>
       
       <div class="excepciones-feriados__input-group">
@@ -20,14 +21,19 @@
           type="text"
           class="excepciones-feriados__input"
           placeholder="Ej: Vacaciones, Feriado, etc."
-          [(ngModel)]="newReason">
+          [(ngModel)]="newReason"
+          [disabled]="loading">
       </div>
       
       <button 
         class="excepciones-feriados__add-button"
-        (click)="onAddException()">
+        (click)="onAddException()"
+        [disabled]="loading || !newDate">
         Bloquear Fecha
       </button>
+    </div>
+    <div *ngIf="loading" class="excepciones-feriados__loading">
+      Procesando cambios…
     </div>
   </div>
 
@@ -43,9 +49,13 @@
       </div>
       <button 
         class="excepciones-feriados__remove-button"
-        (click)="onRemoveException(exception.id)">
+        (click)="onRemoveException(exception.id)"
+        [disabled]="loading">
         🗑️
       </button>
+    </div>
+    <div *ngIf="!exceptions.length && !loading" class="excepciones-feriados__empty">
+      No tienes fechas bloqueadas. Usa el formulario para añadir la primera.
     </div>
   </div>
 </section>

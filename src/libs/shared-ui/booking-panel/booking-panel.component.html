@@ -45,6 +45,9 @@
               <input type="time" class="booking-panel__time-input"
                      (change)="onTimeChange($any($event.target).value || '')">
             </div>
+            <p *ngIf="!data.timeSlots || data.timeSlots.length === 0" class="booking-panel__time-empty">
+              No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional para coordinar.
+            </p>
             <div class="booking-panel__error" *ngIf="errorTime">{{ errorTime }}</div>
           </div>
         </div>

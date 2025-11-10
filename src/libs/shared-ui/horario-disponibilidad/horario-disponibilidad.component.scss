@@ -36,6 +36,10 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+
+    &--loading {
+      opacity: 0.6;
+    }
   }
 
   &__day {
@@ -53,6 +57,10 @@
     &--inactive {
       border-color: #e2e8f0;
       background: #f8fafc;
+    }
+
+    &--disabled {
+      pointer-events: none;
     }
   }
 
@@ -114,6 +122,13 @@
       border-color: #4338ca;
       box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
     }
+
+    &:disabled {
+      background: #ede9fe;
+      border-color: rgba(99, 102, 241, 0.5);
+      color: #6b7280;
+      cursor: not-allowed;
+    }
   }
 
   &__remove-button {
@@ -129,6 +144,12 @@
     &:hover {
       color: #4338ca;
       background: rgba(67, 56, 202, 0.1);
+    }
+
+    &:disabled {
+      color: #c7d2fe;
+      cursor: not-allowed;
+      background: none;
     }
   }
 
@@ -148,10 +169,20 @@
     &:hover {
       color: #3730a3;
     }
+
+    &:disabled {
+      color: #c7d2fe;
+      cursor: not-allowed;
+    }
   }
 
   &__toggle {
     cursor: pointer;
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
 
   &__toggle-track {
@@ -180,6 +211,12 @@
 
   &__toggle-track--active &__toggle-thumb {
     transform: translateX(1.5rem);
+  }
+
+  &__loading {
+    font-size: 0.875rem;
+    color: #4338ca;
+    text-align: center;
   }
 }
 

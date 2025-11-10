@@ -74,6 +74,7 @@ export class HorarioDisponibilidadComponent {
       }
     ]
   };
+  @Input() loading = false;
 
   @Output() scheduleChange = new EventEmitter<WeeklySchedule>();
   @Output() addTimeBlock = new EventEmitter<{ day: string; block: TimeBlock }>();
@@ -81,6 +82,9 @@ export class HorarioDisponibilidadComponent {
   @Output() toggleDay = new EventEmitter<{ day: string; enabled: boolean }>();
 
   onToggleDay(day: DaySchedule) {
+    if (this.loading) {
+      return;
+    }
     const updatedSchedule = {
       ...this.schedule,
       days: this.schedule.days.map(d => 
@@ -93,6 +97,9 @@ export class HorarioDisponibilidadComponent {
   }
 
   onAddTimeBlock(day: DaySchedule) {
+    if (this.loading) {
+      return;
+    }
     const newBlock: TimeBlock = {
       id: Date.now().toString(),
       start: '09:00',
@@ -114,6 +121,9 @@ export class HorarioDisponibilidadComponent {
   }
 
   onRemoveTimeBlock(day: DaySchedule, blockId: string) {
+    if (this.loading) {
+      return;
+    }
     const updatedSchedule = {
       ...this.schedule,
       days: this.schedule.days.map(d => 
@@ -129,6 +139,9 @@ export class HorarioDisponibilidadComponent {
   }
 
   onTimeBlockChange(day: DaySchedule, blockId: string, field: 'start' | 'end', value: string) {
+    if (this.loading) {
+      return;
+    }
     const updatedSchedule = {
       ...this.schedule,
       days: this.schedule.days.map(d => 
