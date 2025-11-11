@@ -73,6 +73,10 @@
         <div class="perfil-info">
           <h2 class="perfil-name">{{ fullName }}</h2>
           <p class="perfil-member-since">{{ memberSinceLabel }}</p>
+          <div class="perfil-verification-badge" [attr.data-state]="verificationStatusVariant">
+            <span *ngIf="verificationLoading" class="perfil-verification-badge__spinner"></span>
+            <span *ngIf="!verificationLoading">{{ verificationStatusLabel }}</span>
+          </div>
         </div>
       </div>
 
@@ -271,6 +275,21 @@
       
       <!-- DIVISOR SUTIL -->
       <hr class="perfil-divider">
+
+      <!-- VERIFICACIÓN DE IDENTIDAD -->
+      <section class="perfil-section perfil-verificacion">
+        <h3 class="perfil-section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" class="perfil-section-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 11c0 1.105.895 2 2 2s2-.895 2-2-.895-2-2-2-2 .895-2 2zm-9 9c0-4.418 3.582-8 8-8h2c4.418 0 8 3.582 8 8v1H3v-1z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 6a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Verificación de identidad
+        </h3>
+        <p class="perfil-section-description">
+          Aporta una capa extra de confianza verificando tu identidad. Tus datos están protegidos y solo se usan para validar tu cuenta.
+        </p>
+        <app-client-verificacion-perfil (statusChange)="onVerificationStatusChange($event)"></app-client-verificacion-perfil>
+      </section>
 
       <!-- BOTÓN DE GUARDADO Y FEEDBACK -->
       <div class="perfil-actions">

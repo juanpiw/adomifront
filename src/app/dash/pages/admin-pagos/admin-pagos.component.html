@@ -242,9 +242,17 @@
 
   <section *ngIf="adminSecret" class="verification-card">
     <div class="verification-card__header">
-      <div>
+      <div class="verification-card__header-info">
         <h3>Verificación de identidad</h3>
-        <p>Revisa los documentos de los proveedores y aprueba o rechaza según corresponda.</p>
+        <p>{{ verificationType === 'client' ? 'Revisa los documentos de los clientes y garantiza que la comunidad sea segura.' : 'Revisa los documentos de los proveedores y aprueba o rechaza según corresponda.' }}</p>
+        <div class="verification-card__type-toggle">
+          <button type="button" class="verification-card__type-btn" [class.verification-card__type-btn--active]="verificationType === 'provider'" (click)="setVerificationType('provider')">
+            Proveedores
+          </button>
+          <button type="button" class="verification-card__type-btn" [class.verification-card__type-btn--active]="verificationType === 'client'" (click)="setVerificationType('client')">
+            Clientes
+          </button>
+        </div>
       </div>
       <div class="verification-card__filters">
         <button type="button" class="verification-card__filter" [class.verification-card__filter--active]="verificationFilter==='pending'" (click)="setVerificationFilter('pending')">Pendientes</button>
@@ -269,7 +277,7 @@
     <table *ngIf="!verificationLoading && verificationRequests.length" class="table verification-table">
       <thead>
         <tr>
-          <th>Proveedor</th>
+          <th>Usuario</th>
           <th>Documento</th>
           <th>Archivos</th>
           <th>Estado</th>
@@ -280,9 +288,12 @@
       <tbody>
         <tr *ngFor="let req of verificationRequests">
           <td>
-            <div class="verification-table__provider">{{ req.full_name || req.provider_name || req.provider_email }}</div>
-            <div class="verification-table__muted">ID #{{ req.provider_id }}</div>
-            <div class="verification-table__muted">{{ req.provider_email }}</div>
+            <div class="verification-table__provider">
+              <span class="verification-table__chip">{{ getVerificationDisplayType(req) }}</span>
+              {{ getVerificationDisplayName(req) }}
+            </div>
+            <div class="verification-table__muted">ID #{{ getVerificationDisplayId(req) }}</div>
+            <div class="verification-table__muted">{{ getVerificationDisplayEmail(req) || '—' }}</div>
           </td>
           <td>
             <div><strong>{{ req.document_type | uppercase }}</strong> · Nº {{ req.document_number || '—' }}</div>
@@ -340,7 +351,9 @@
       <div class="verification-detail__header">
         <div>
           <h4>Detalle solicitud #{{ verificationDetail?.id || '...' }}</h4>
-          <p *ngIf="verificationDetail" class="verification-table__muted">Estado: {{ verificationDetail.status }} · Proveedor #{{ verificationDetail.provider_id }}</p>
+          <p *ngIf="verificationDetail" class="verification-table__muted">
+            Estado: {{ verificationDetail.status }} · {{ getVerificationDisplayType(verificationDetail) }} #{{ getVerificationDisplayId(verificationDetail) }}
+          </p>
         </div>
         <div class="verification-detail__actions">
           <button type="button" class="verification-card__link" (click)="refreshVerificationDetail()" [disabled]="verificationDetailLoading || !verificationDetail">Regenerar enlaces</button>
@@ -354,6 +367,8 @@
       <div *ngIf="verificationDetailError" class="error-message">{{ verificationDetailError }}</div>
       <div *ngIf="verificationDetail && !verificationDetailLoading" class="verification-detail__content">
         <div class="verification-detail__meta">
+          <div><strong>{{ getVerificationDisplayType(verificationDetail) }}:</strong> {{ getVerificationDisplayName(verificationDetail) }}</div>
+          <div class="verification-table__muted">{{ getVerificationDisplayEmail(verificationDetail) || '—' }}</div>
           <div><strong>Documento:</strong> {{ verificationDetail.document_type | uppercase }} · {{ verificationDetail.document_number || '—' }}</div>
           <div><strong>Enviado:</strong> {{ verificationDetail.submitted_at ? (verificationDetail.submitted_at | date:'short') : '—' }}</div>
           <div><strong>Actualizado:</strong> {{ verificationDetail.updated_at | date:'short' }}</div>

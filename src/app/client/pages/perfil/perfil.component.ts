@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientProfileService, SaveClientProfilePayload } from '../../../services/client-profile.service';
 import { environment } from '../../../../environments/environment';
+import { ClientVerificacionPerfilComponent } from '../../../../libs/shared-ui/verificacion-perfil/client-verificacion-perfil.component';
+import { ClientVerificationStatus } from '../../../services/client-verification.service';
 
 @Component({
   selector: 'app-c-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ClientVerificacionPerfilComponent],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
 })
@@ -25,6 +27,8 @@ export class ClientPerfilComponent implements OnInit {
   notes = '';
   profilePhotoUrl = '';
   memberSinceLabel = 'Cliente Adomi';
+  verificationStatus: ClientVerificationStatus = 'none';
+  verificationLoading = true;
   
   // Estado del formulario
   isSaving = false;
@@ -50,6 +54,37 @@ export class ClientPerfilComponent implements OnInit {
 
   ngOnInit() {
     this.loadProfile();
+  }
+
+  onVerificationStatusChange(status: ClientVerificationStatus) {
+    this.verificationStatus = status || 'none';
+    this.verificationLoading = false;
+  }
+
+  get verificationStatusVariant(): 'approved' | 'pending' | 'rejected' | 'none' {
+    switch (this.verificationStatus) {
+      case 'approved':
+        return 'approved';
+      case 'pending':
+        return 'pending';
+      case 'rejected':
+        return 'rejected';
+      default:
+        return 'none';
+    }
+  }
+
+  get verificationStatusLabel(): string {
+    switch (this.verificationStatusVariant) {
+      case 'approved':
+        return 'Identidad verificada';
+      case 'pending':
+        return 'Verificación en revisión';
+      case 'rejected':
+        return 'Verificación rechazada';
+      default:
+        return 'Identidad no verificada';
+    }
   }
 
   /**

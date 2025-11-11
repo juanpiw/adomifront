@@ -58,6 +58,7 @@ export class AdminPagosComponent implements OnInit {
   verificationDetail: any | null = null;
   verificationDetailLoading = false;
   verificationDetailError: string | null = null;
+  verificationType: 'provider' | 'client' = 'provider';
   founderGenerating = false;
   founderSending = false;
   founderCode: string | null = null;
@@ -208,7 +209,8 @@ export class AdminPagosComponent implements OnInit {
       status: statusParam,
       limit: this.verificationLimit,
       offset: this.verificationOffset,
-      search: searchTerm ? searchTerm : undefined
+      search: searchTerm ? searchTerm : undefined,
+      type: this.verificationType
     }).subscribe({
       next: (res: any) => {
         this.verificationLoading = false;
@@ -226,6 +228,43 @@ export class AdminPagosComponent implements OnInit {
         this.verificationPagination = null;
       }
     });
+  }
+
+  setVerificationType(type: 'provider' | 'client') {
+    if (this.verificationType === type && !this.verificationLoading) {
+      return;
+    }
+    this.verificationType = type;
+    this.verificationOffset = 0;
+    this.verificationNotes = {};
+    this.verificationRejectReasons = {};
+    this.verificationProcessing = {};
+    this.verificationDetail = null;
+    this.verificationDetailError = null;
+    this.loadVerificationRequests(this.verificationFilter, 0);
+  }
+
+  getVerificationDisplayType(item: any): 'Proveedor' | 'Cliente' {
+    return item?.entityType === 'client' ? 'Cliente' : 'Proveedor';
+  }
+
+  getVerificationDisplayId(item: any): number | string {
+    return item?.entityId ?? item?.client_id ?? item?.provider_id ?? '—';
+  }
+
+  getVerificationDisplayName(item: any): string {
+    return item?.full_name
+      || item?.client_name
+      || item?.provider_name
+      || item?.user_name
+      || item?.client_email
+      || item?.provider_email
+      || item?.user_email
+      || '—';
+  }
+
+  getVerificationDisplayEmail(item: any): string {
+    return item?.client_email || item?.provider_email || item?.user_email || '';
   }
 
   setVerificationFilter(filter: 'all' | 'pending' | 'approved' | 'rejected') {
@@ -264,7 +303,7 @@ export class AdminPagosComponent implements OnInit {
     const token = this.session.getAccessToken();
     const notes = (this.verificationNotes[request.id] || '').trim();
     this.verificationProcessing[request.id] = true;
-    this.adminApi.approveVerification(this.adminSecret, token, Number(request.id), notes || undefined).subscribe({
+    this.adminApi.approveVerification(this.adminSecret, token, Number(request.id), notes || undefined, this.verificationType).subscribe({
       next: () => {
         delete this.verificationProcessing[request.id];
         this.clearVerificationDetail();
@@ -284,7 +323,7 @@ export class AdminPagosComponent implements OnInit {
     this.verificationDetailError = null;
     this.verificationDetail = null;
 
-    this.adminApi.getVerificationDetail(this.adminSecret, token, Number(request.id)).subscribe({
+    this.adminApi.getVerificationDetail(this.adminSecret, token, Number(request.id), this.verificationType).subscribe({
       next: (res: any) => {
         this.verificationDetailLoading = false;
         if (res?.success) {
@@ -324,7 +363,7 @@ export class AdminPagosComponent implements OnInit {
     }
     const notes = (this.verificationNotes[request.id] || '').trim();
     this.verificationProcessing[request.id] = true;
-    this.adminApi.rejectVerification(this.adminSecret, token, Number(request.id), reason, notes || undefined).subscribe({
+    this.adminApi.rejectVerification(this.adminSecret, token, Number(request.id), reason, notes || undefined, this.verificationType).subscribe({
       next: () => {
         delete this.verificationProcessing[request.id];
         this.clearVerificationDetail();

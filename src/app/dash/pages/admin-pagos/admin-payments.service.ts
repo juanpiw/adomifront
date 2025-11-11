@@ -121,7 +121,7 @@ export class AdminPaymentsService {
   listVerifications(
     secret: string,
     token: string | null,
-    options: { status?: string; limit?: number; offset?: number; search?: string; from?: string; to?: string } = {}
+    options: { status?: string; limit?: number; offset?: number; search?: string; from?: string; to?: string; type?: 'provider' | 'client' } = {}
   ) {
     const params = new URLSearchParams();
     if (options.status && options.status !== 'all') {
@@ -142,20 +142,26 @@ export class AdminPaymentsService {
     if (options.to) {
       params.set('to', options.to);
     }
+    if (options.type) {
+      params.set('type', options.type);
+    }
     const qs = params.toString() ? `?${params.toString()}` : '';
     return this.http.get<any>(`${this.baseUrl}/admin/verification/requests${qs}`, { headers: this.headers(secret, token) });
   }
 
-  getVerificationDetail(secret: string, token: string | null, id: number) {
-    return this.http.get<any>(`${this.baseUrl}/admin/verification/requests/${id}`, { headers: this.headers(secret, token) });
+  getVerificationDetail(secret: string, token: string | null, id: number, type: 'provider' | 'client' = 'provider') {
+    const qs = type ? `?type=${type}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/verification/requests/${id}${qs}`, { headers: this.headers(secret, token) });
   }
 
-  approveVerification(secret: string, token: string | null, id: number, notes?: string) {
-    return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/approve`, { notes }, { headers: this.headers(secret, token) });
+  approveVerification(secret: string, token: string | null, id: number, notes?: string, type: 'provider' | 'client' = 'provider') {
+    const qs = type ? `?type=${type}` : '';
+    return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/approve${qs}`, { notes, type }, { headers: this.headers(secret, token) });
   }
 
-  rejectVerification(secret: string, token: string | null, id: number, reason: string, notes?: string) {
-    return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/reject`, { reason, notes }, { headers: this.headers(secret, token) });
+  rejectVerification(secret: string, token: string | null, id: number, reason: string, notes?: string, type: 'provider' | 'client' = 'provider') {
+    const qs = type ? `?type=${type}` : '';
+    return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/reject${qs}`, { reason, notes, type }, { headers: this.headers(secret, token) });
   }
 }
 
