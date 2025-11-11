@@ -12,6 +12,7 @@ export interface SearchSuggestion {
   priority: number; // 1-10, mayor número = mayor prioridad
   icon?: string;
   isPopular?: boolean;
+  roles?: Array<'client' | 'provider' | 'admin'>;
 }
 
 export interface SearchContext {

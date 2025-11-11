@@ -20,6 +20,7 @@ import { PaymentsService } from '../../services/payments.service';
 import { Subscription } from 'rxjs';
 import { ProviderVerificationService, VerificationStatus } from '../../services/provider-verification.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../services/tbk-onboarding.service';
+import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
 
 @Component({
   selector: 'app-dash-layout',
@@ -83,6 +84,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private payments = inject(PaymentsService);
   private providerVerification = inject(ProviderVerificationService);
   private tbkOnboarding = inject(TbkOnboardingService);
+  private globalSearch = inject(GlobalSearchService);
 
   private pushMessageSub?: Subscription;
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -113,6 +115,10 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     this.loadVerificationState();
     this.initializeNotifications();
     this.initializeTbkOnboarding();
+    this.globalSearch.setContext({
+      userRole: 'provider',
+      currentPage: this.router.url
+    });
 
     const user = this.sessionService.getUser();
     if (user && user.role === 'provider') {

@@ -354,6 +354,27 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   // Referencia al componente mis-servicios
   @ViewChild('misServiciosComponent') misServiciosComponent: any;
 
+  private readonly dayLabels: string[] = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  private readonly dayEnumToLabel: Record<string, string> = {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes',
+    saturday: 'Sábado',
+    sunday: 'Domingo'
+  };
+  private readonly dayLabelToEnum: Record<string, string> = {
+    Lunes: 'monday',
+    Martes: 'tuesday',
+    Miércoles: 'wednesday',
+    Jueves: 'thursday',
+    Viernes: 'friday',
+    Sábado: 'saturday',
+    Domingo: 'sunday'
+  };
+  private weeklyBlockIndex = new Map<number, { dayEnum: string; start: string; end: string; enabled: boolean }>();
+
   // Datos para ubicación y disponibilidad
   locationSettings: LocationSettings = {
     availableForNewBookings: true,
@@ -382,26 +403,6 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   // Datos para excepciones
   exceptions: ExceptionDate[] = [];
   exceptionsLoading = false;
-  private readonly dayLabels: string[] = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  private readonly dayEnumToLabel: Record<string, string> = {
-    monday: 'Lunes',
-    tuesday: 'Martes',
-    wednesday: 'Miércoles',
-    thursday: 'Jueves',
-    friday: 'Viernes',
-    saturday: 'Sábado',
-    sunday: 'Domingo'
-  };
-  private readonly dayLabelToEnum: Record<string, string> = {
-    Lunes: 'monday',
-    Martes: 'tuesday',
-    Miércoles: 'wednesday',
-    Jueves: 'thursday',
-    Viernes: 'friday',
-    Sábado: 'saturday',
-    Domingo: 'sunday'
-  };
-  private weeklyBlockIndex = new Map<number, { dayEnum: string; start: string; end: string; enabled: boolean }>();
 
   // Event handlers para los componentes
   onBasicInfoChange(info: BasicInfo) {

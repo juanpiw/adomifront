@@ -24,6 +24,7 @@ export class ClientPerfilComponent implements OnInit {
   region = '';
   notes = '';
   profilePhotoUrl = '';
+  memberSinceLabel = 'Cliente Adomi';
   
   // Estado del formulario
   isSaving = false;
@@ -80,6 +81,7 @@ export class ClientPerfilComponent implements OnInit {
           this.commune = response.profile.commune || '';
           this.region = response.profile.region || '';
           this.profilePhotoUrl = response.profile.profile_photo_url || '';
+          this.memberSinceLabel = this.buildMemberSinceLabel(response.profile.created_at);
         }
         
         this.isLoading = false;
@@ -225,5 +227,23 @@ export class ClientPerfilComponent implements OnInit {
         this.feedbackType = '';
       }, 3000);
     }
+  }
+
+  private buildMemberSinceLabel(createdAt?: string | null): string {
+    if (!createdAt) {
+      return 'Cliente Adomi';
+    }
+    const date = new Date(createdAt);
+    if (Number.isNaN(date.getTime())) {
+      return 'Cliente Adomi';
+    }
+    const formatter = new Intl.DateTimeFormat('es-CL', {
+      month: 'long',
+      year: 'numeric'
+    });
+    const formatted = formatter.format(date);
+    // Capitalizar primera letra del mes
+    const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    return `Cliente Adomi desde ${capitalized}`;
   }
 }

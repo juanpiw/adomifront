@@ -17,7 +17,8 @@ export class GlobalSearchService {
       keywords: ['dashboard', 'resumen', 'inicio', 'panel', 'estadísticas'],
       priority: 10,
       icon: 'home',
-      isPopular: true
+      isPopular: true,
+      roles: ['provider']
     },
     {
       id: 'dashboard-notifications',
@@ -27,7 +28,8 @@ export class GlobalSearchService {
       link: '/dash/notificaciones',
       keywords: ['notificaciones', 'alertas', 'avisos', 'configurar'],
       priority: 8,
-      icon: 'bell'
+      icon: 'bell',
+      roles: ['provider']
     },
 
     // Sugerencias para Perfil
@@ -40,7 +42,8 @@ export class GlobalSearchService {
       keywords: ['perfil', 'editar', 'información', 'datos', 'personal'],
       priority: 9,
       icon: 'user',
-      isPopular: true
+      isPopular: true,
+      roles: ['provider']
     },
     {
       id: 'profile-photos',
@@ -50,7 +53,8 @@ export class GlobalSearchService {
       link: '/dash/perfil',
       keywords: ['fotos', 'portafolio', 'galería', 'imágenes', 'trabajos'],
       priority: 7,
-      icon: 'image'
+      icon: 'image',
+      roles: ['provider']
     },
     {
       id: 'profile-verification',
@@ -60,7 +64,8 @@ export class GlobalSearchService {
       link: '/dash/perfil',
       keywords: ['verificación', 'verificar', 'cuenta', 'documentos'],
       priority: 6,
-      icon: 'check-circle'
+      icon: 'check-circle',
+      roles: ['provider']
     },
 
     // Sugerencias para Agenda
@@ -73,7 +78,8 @@ export class GlobalSearchService {
       keywords: ['agenda', 'citas', 'horarios', 'programadas', 'calendario'],
       priority: 9,
       icon: 'calendar',
-      isPopular: true
+      isPopular: true,
+      roles: ['provider']
     },
     {
       id: 'agenda-availability',
@@ -83,7 +89,8 @@ export class GlobalSearchService {
       link: '/dash/agenda',
       keywords: ['disponibilidad', 'horarios', 'trabajo', 'configurar'],
       priority: 8,
-      icon: 'clock'
+      icon: 'clock',
+      roles: ['provider']
     },
 
     // Sugerencias para Ingresos
@@ -96,7 +103,8 @@ export class GlobalSearchService {
       keywords: ['ingresos', 'ganancias', 'dinero', 'finanzas', 'reportes'],
       priority: 8,
       icon: 'money',
-      isPopular: true
+      isPopular: true,
+      roles: ['provider']
     },
     {
       id: 'income-reports',
@@ -106,7 +114,8 @@ export class GlobalSearchService {
       link: '/dash/ingresos',
       keywords: ['reportes', 'generar', 'detallados', 'estadísticas'],
       priority: 6,
-      icon: 'chart'
+      icon: 'chart',
+      roles: ['provider']
     },
 
     // Sugerencias para Servicios
@@ -118,7 +127,8 @@ export class GlobalSearchService {
       link: '/dash/servicios',
       keywords: ['servicios', 'gestionar', 'administrar', 'ofrecer'],
       priority: 8,
-      icon: 'briefcase'
+      icon: 'briefcase',
+      roles: ['provider']
     },
     {
       id: 'services-pricing',
@@ -128,7 +138,8 @@ export class GlobalSearchService {
       link: '/dash/servicios',
       keywords: ['precios', 'configurar', 'establecer', 'tarifas'],
       priority: 7,
-      icon: 'tag'
+      icon: 'tag',
+      roles: ['provider']
     },
 
     // Sugerencias para Mensajes
@@ -140,7 +151,8 @@ export class GlobalSearchService {
       link: '/dash/mensajes',
       keywords: ['mensajes', 'conversaciones', 'chat', 'clientes'],
       priority: 7,
-      icon: 'message'
+      icon: 'message',
+      roles: ['provider']
     },
 
     // Sugerencias para Configuración
@@ -152,7 +164,8 @@ export class GlobalSearchService {
       link: '/dash/configuracion',
       keywords: ['configuración', 'ajustes', 'cuenta', 'general'],
       priority: 6,
-      icon: 'settings'
+      icon: 'settings',
+      roles: ['provider']
     },
     {
       id: 'settings-notifications',
@@ -162,7 +175,100 @@ export class GlobalSearchService {
       link: '/dash/configuracion',
       keywords: ['notificaciones', 'configurar', 'personalizar', 'recibir'],
       priority: 5,
-      icon: 'bell'
+      icon: 'bell',
+      roles: ['provider']
+    },
+
+    // Sugerencias para Cliente
+    {
+      id: 'client-explore',
+      title: 'Explorar profesionales',
+      description: 'Encuentra profesionales cercanos y reserva servicios',
+      category: 'dashboard',
+      link: '/client/explorar',
+      keywords: ['explorar', 'profesionales', 'servicios', 'buscar'],
+      priority: 10,
+      icon: 'search',
+      isPopular: true,
+      roles: ['client']
+    },
+    {
+      id: 'client-reservations',
+      title: 'Mis reservas',
+      description: 'Revisa tus reservas activas y pasadas',
+      category: 'agenda',
+      link: '/client/reservas',
+      keywords: ['reservas', 'citas', 'historial', 'agenda'],
+      priority: 9,
+      icon: 'calendar',
+      isPopular: true,
+      roles: ['client']
+    },
+    {
+      id: 'client-favorites',
+      title: 'Profesionales favoritos',
+      description: 'Accede rápido a tus profesionales de confianza',
+      category: 'services',
+      link: '/client/favoritos',
+      keywords: ['favoritos', 'profesionales', 'confianza', 'guardados'],
+      priority: 8,
+      icon: 'heart',
+      roles: ['client']
+    },
+    {
+      id: 'client-conversations',
+      title: 'Mis conversaciones',
+      description: 'Chatea con tus profesionales y coordina detalles',
+      category: 'messages',
+      link: '/client/conversaciones',
+      keywords: ['conversaciones', 'mensajes', 'chat', 'profesionales'],
+      priority: 8,
+      icon: 'message',
+      roles: ['client']
+    },
+    {
+      id: 'client-edit-profile',
+      title: 'Actualizar mis datos',
+      description: 'Modifica tu información personal y dirección',
+      category: 'profile',
+      link: '/client/perfil',
+      keywords: ['perfil', 'cliente', 'datos', 'información', 'editar'],
+      priority: 7,
+      icon: 'user',
+      roles: ['client']
+    },
+    {
+      id: 'client-payments',
+      title: 'Gestionar mis pagos',
+      description: 'Consulta tus boletas y métodos de pago',
+      category: 'income',
+      link: '/client/pagos',
+      keywords: ['pagos', 'boletas', 'métodos', 'tarjeta'],
+      priority: 7,
+      icon: 'credit-card',
+      roles: ['client']
+    },
+    {
+      id: 'client-settings',
+      title: 'Preferencias de cuenta',
+      description: 'Actualiza tus notificaciones y preferencias',
+      category: 'settings',
+      link: '/client/configuracion',
+      keywords: ['configuración', 'preferencias', 'notificaciones', 'cuenta'],
+      priority: 6,
+      icon: 'settings',
+      roles: ['client']
+    },
+    {
+      id: 'client-terms',
+      title: 'Ver términos y condiciones',
+      description: 'Consulta las políticas y condiciones de uso',
+      category: 'help',
+      link: '/client/terminos',
+      keywords: ['términos', 'condiciones', 'políticas', 'uso'],
+      priority: 4,
+      icon: 'file-text',
+      roles: ['client']
     },
 
     // Sugerencias de Ayuda
@@ -174,7 +280,8 @@ export class GlobalSearchService {
       link: '/dash/soporte',
       keywords: ['soporte', 'ayuda', 'contactar', 'problema'],
       priority: 5,
-      icon: 'help-circle'
+      icon: 'help-circle',
+      roles: ['provider']
     },
     {
       id: 'help-faq',
@@ -184,7 +291,8 @@ export class GlobalSearchService {
       link: '/dash/ayuda',
       keywords: ['preguntas', 'frecuentes', 'faq', 'respuestas'],
       priority: 4,
-      icon: 'help-circle'
+      icon: 'help-circle',
+      roles: ['provider']
     }
   ];
 
@@ -221,6 +329,7 @@ export class GlobalSearchService {
     
     // Filtrar sugerencias basadas en la consulta
     const results = this.searchData
+      .filter(suggestion => this.isSuggestionAllowed(suggestion))
       .filter(suggestion => this.matchesQuery(suggestion, normalizedQuery))
       .sort((a, b) => {
         // Ordenar por relevancia (coincidencia exacta primero, luego por prioridad)
@@ -248,6 +357,7 @@ export class GlobalSearchService {
    */
   getDefaultSuggestions(): SearchSuggestion[] {
     const popular = this.searchData
+      .filter(s => this.isSuggestionAllowed(s))
       .filter(s => s.isPopular)
       .sort((a, b) => b.priority - a.priority)
       .slice(0, 6);
@@ -261,7 +371,9 @@ export class GlobalSearchService {
   getRecentSuggestions(): SearchSuggestion[] {
     return this.currentContext.recentSearches
       .slice(0, 5)
-      .map(search => this.searchData.find(s => s.title.toLowerCase().includes(search.toLowerCase())))
+      .map(search => this.searchData.find(s => 
+        s.title.toLowerCase().includes(search.toLowerCase()) && this.isSuggestionAllowed(s)
+      ))
       .filter(Boolean) as SearchSuggestion[];
   }
 
@@ -370,5 +482,12 @@ export class GlobalSearchService {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('global-search-recent');
     }
+  }
+
+  private isSuggestionAllowed(suggestion: SearchSuggestion): boolean {
+    if (!suggestion.roles || suggestion.roles.length === 0) {
+      return true;
+    }
+    return suggestion.roles.includes(this.currentContext.userRole);
   }
 }

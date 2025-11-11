@@ -13,6 +13,7 @@ import { MenuService } from '../services/menu.service';
 import { ChatService, MessageDto } from '../../services/chat.service';
 import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
 import { NotificationsService } from '../../services/notifications.service';
+import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -43,6 +44,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   private chat = inject(ChatService);
   private appointmentsService = inject(AppointmentsService);
   private notificationsService = inject(NotificationsService);
+  private globalSearch = inject(GlobalSearchService);
 
   userName: string | null = null;
   userAvatarUrl: string | null = null;
@@ -87,6 +89,10 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       this.loadClientData();
       // Inicializar notificaciones push
       this.initializeNotifications();
+      this.globalSearch.setContext({
+        userRole: 'client',
+        currentPage: this.router.url
+      });
     }
 
     // Escuchar cambios de foto de perfil (subida/eliminación) y refrescar avatar
