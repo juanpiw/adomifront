@@ -52,7 +52,9 @@ export class PerfilTrabajadorComponent implements OnInit {
       date: '',
       time: '',
       price: ''
-    }
+    },
+    allowManualTime: false,
+    timeSlotsMessage: null
   };
 
   portfolioData: PortfolioData = {
@@ -212,7 +214,9 @@ export class PerfilTrabajadorComponent implements OnInit {
         date: this.formatToday(),
         time: '',
         price: this.workerData.services[0] ? `$${Number(this.workerData.services[0].price).toLocaleString('es-CL')}` : ''
-      }
+      },
+      allowManualTime: false,
+      timeSlotsMessage: null
     };
 
     // Cargar slots iniciales
@@ -415,7 +419,7 @@ export class PerfilTrabajadorComponent implements OnInit {
     console.log('🟡 [PERFIL] Cargando time slots:', { providerId, date, serviceId });
     
     this.appointments.getTimeSlots(providerId, this.toIsoDate(date), serviceId).subscribe({
-      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }> }) => {
+      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }>; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }) => {
         console.log('🟡 [PERFIL] Time slots recibidos:', resp.time_slots);
         
         const slots = (resp.time_slots || []).map((s: { time: string; is_available: boolean; reason?: string }) => ({ 
@@ -437,6 +441,21 @@ export class PerfilTrabajadorComponent implements OnInit {
         });
         
         this.bookingPanelData.timeSlots = slots;
+        const meta = (resp as any).meta || {};
+        const allowManual = !!meta.allow_manual;
+        const fullyBlocked = !!meta.fully_blocked;
+
+        if (allowManual) {
+          this.bookingPanelData.timeSlotsMessage = 'El profesional no tiene horarios publicados para esta fecha. Ingresa un horario para coordinar.';
+        } else if (fullyBlocked) {
+          this.bookingPanelData.timeSlotsMessage = 'Este profesional bloqueó esta fecha. Selecciona otro día.';
+        } else if (!slots.length) {
+          this.bookingPanelData.timeSlotsMessage = 'No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional para coordinar.';
+        } else {
+          this.bookingPanelData.timeSlotsMessage = null;
+        }
+
+        this.bookingPanelData.allowManualTime = allowManual;
         
         // Actualizar summary conservando servicio/precio
         const active = this.bookingPanelData.services.find((s: Service) => s.isActive);
@@ -451,6 +470,8 @@ export class PerfilTrabajadorComponent implements OnInit {
       error: (err: any) => {
         console.error('🔴 [PERFIL] Error cargando time-slots:', err);
         this.bookingPanelData.timeSlots = [];
+        this.bookingPanelData.allowManualTime = false;
+        this.bookingPanelData.timeSlotsMessage = 'No se pudieron cargar los horarios. Intenta nuevamente.';
       }
     });
   }

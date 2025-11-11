@@ -30,6 +30,7 @@ export interface AppointmentDto {
 export interface TimeSlotDto {
   time: string; // HH:mm
   is_available: boolean;
+  reason?: 'booked' | 'blocked' | string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -141,8 +142,8 @@ export class AppointmentsService {
   }
 
   // Time slots
-  getTimeSlots(provider_id: number, date: string, service_id: number): Observable<{ success: boolean; time_slots: TimeSlotDto[] }>{
-    return this.http.get<{ success: boolean; time_slots: TimeSlotDto[] }>(
+  getTimeSlots(provider_id: number, date: string, service_id: number): Observable<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }>{
+    return this.http.get<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }>(
       `${this.api}/availability/time-slots`,
       { headers: this.headers(), params: { provider_id, date, service_id } as any }
     );

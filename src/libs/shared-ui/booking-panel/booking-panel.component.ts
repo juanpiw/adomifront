@@ -31,6 +31,8 @@ export interface BookingPanelData {
   selectedServiceId?: string;
   selectedDate?: string;
   selectedTime?: string;
+  allowManualTime?: boolean;
+  timeSlotsMessage?: string | null;
 }
 
 @Component({
@@ -51,7 +53,9 @@ export class BookingPanelComponent implements OnChanges, OnInit {
       date: '',
       time: '',
       price: ''
-    }
+    },
+    allowManualTime: false,
+    timeSlotsMessage: null
   };
 
   // Estado de confirmación controlado por el padre (para mostrar loading/errores en el modal)
@@ -102,6 +106,8 @@ export class BookingPanelComponent implements OnChanges, OnInit {
     // Reset selección de hora al cambiar servicio
     this.data.timeSlots = (this.data.timeSlots || []).map(slot => ({ ...slot, isSelected: false }));
     this.data.summary.time = '';
+    this.data.allowManualTime = false;
+    this.data.timeSlotsMessage = null;
     this.serviceSelected.emit(serviceId);
   }
 
@@ -111,6 +117,8 @@ export class BookingPanelComponent implements OnChanges, OnInit {
     // Reset selección de hora al cambiar fecha
     this.data.timeSlots = (this.data.timeSlots || []).map(slot => ({ ...slot, isSelected: false }));
     this.data.summary.time = '';
+    this.data.allowManualTime = false;
+    this.data.timeSlotsMessage = null;
     this.dateSelected.emit(date);
   }
 
@@ -126,6 +134,9 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   }
 
   onTimeChange(time: string) {
+    if (!this.data.allowManualTime) {
+      return;
+    }
     // Para entrada manual cuando no hay slots
     this.data.summary.time = time;
     this.errorTime = '';

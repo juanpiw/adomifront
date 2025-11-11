@@ -41,12 +41,12 @@
               {{ slot.time }}
               <span *ngIf="slot.reason === 'blocked'" class="booking-panel__time-icon">🔒</span>
             </button>
-            <div *ngIf="!data.timeSlots || data.timeSlots.length === 0" class="booking-panel__time-manual">
+            <div *ngIf="data.allowManualTime && (!data.timeSlots || data.timeSlots.length === 0)" class="booking-panel__time-manual">
               <input type="time" class="booking-panel__time-input"
                      (change)="onTimeChange($any($event.target).value || '')">
             </div>
-            <p *ngIf="!data.timeSlots || data.timeSlots.length === 0" class="booking-panel__time-empty">
-              No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional para coordinar.
+            <p *ngIf="data.timeSlotsMessage" class="booking-panel__time-empty">
+              {{ data.timeSlotsMessage }}
             </p>
             <div class="booking-panel__error" *ngIf="errorTime">{{ errorTime }}</div>
           </div>
