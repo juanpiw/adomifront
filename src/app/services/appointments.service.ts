@@ -12,7 +12,7 @@ export interface AppointmentDto {
   date: string; // YYYY-MM-DD
   start_time: string; // HH:mm
   end_time: string; // HH:mm
-  status: 'scheduled'|'confirmed'|'cancelled'|'completed';
+  status: 'scheduled'|'confirmed'|'cancelled'|'completed'|'expired';
   notes?: string | null;
   created_at?: string;
   updated_at?: string;

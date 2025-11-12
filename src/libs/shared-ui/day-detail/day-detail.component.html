@@ -59,12 +59,10 @@
           <p *ngIf="appointment.locationLabel" class="day-detail__appointment-location">
             <span class="day-detail__appointment-location-icon">📍</span>
             <span class="day-detail__appointment-location-text">{{ appointment.locationLabel }}</span>
-            <button type="button" class="day-detail__location-edit" (click)="onEditLocation($event, appointment)">Cambiar dirección</button>
           </p>
           <p *ngIf="!appointment.locationLabel" class="day-detail__appointment-location day-detail__appointment-location--empty">
             <span class="day-detail__appointment-location-icon">📍</span>
             <span class="day-detail__appointment-location-text">Dirección no registrada</span>
-            <button type="button" class="day-detail__location-edit" (click)="onEditLocation($event, appointment)">Agregar dirección</button>
           </p>
           <p *ngIf="appointment.clientPhone" class="day-detail__appointment-phone">
             📞 {{ appointment.clientPhone }}
@@ -85,6 +83,9 @@
           <div *ngIf="appointment.status === 'cancelled'" class="day-detail__cancelled-message">
             Cancelada {{ appointment.cancelledBy === 'client' ? 'por el cliente' : (appointment.cancelledBy === 'provider' ? 'por ti' : 'automáticamente') }}
             <span *ngIf="appointment.cancellationReason"> • {{ appointment.cancellationReason }}</span>
+          </div>
+          <div *ngIf="appointment.status === 'expired'" class="day-detail__cancelled-message">
+            Expirada automáticamente por falta de confirmación en 24 horas.
           </div>
           <div *ngIf="appointment.paymentMethod==='cash'" class="day-detail__payment-chip">Pago en efectivo</div>
           <div *ngIf="appointment.status === 'confirmed'" class="day-detail__appointment-status" 
@@ -113,7 +114,7 @@
             </p>
           </div>
 
-          <div class="day-detail__appointment-actions" *ngIf="appointment.status !== 'cancelled'">
+          <div class="day-detail__appointment-actions" *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'expired'">
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
             <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>
           </div>

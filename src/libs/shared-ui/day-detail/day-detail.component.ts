@@ -11,7 +11,7 @@ export interface DayAppointment {
   clientName: string;
   clientAvatarUrl?: string | null;
   clientPhone?: string;
-  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'expired';
   type: 'appointment' | 'break' | 'blocked';
   notes?: string;
   paymentStatus?: 'unpaid' | 'paid';
@@ -173,6 +173,8 @@ export class DayDetailComponent {
         return '#6b7280';
       case 'cancelled':
         return '#ef4444';
+      case 'expired':
+        return '#9ca3af';
       default:
         return '#6b7280';
     }
@@ -188,6 +190,8 @@ export class DayDetailComponent {
         return 'Completada';
       case 'cancelled':
         return 'Cancelada';
+      case 'expired':
+        return 'Expirada';
       default:
         return 'Desconocido';
     }

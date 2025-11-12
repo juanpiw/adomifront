@@ -297,7 +297,7 @@ export class ClientReservasComponent implements OnInit {
     this.appointments.onAppointmentUpdated().subscribe((appt) => {
       this.loadAppointments();
       // Crear notificación in-app para cliente sobre cambio de estado
-      const statusMap: any = { scheduled: 'Programada', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada' };
+      const statusMap: any = { scheduled: 'Programada', confirmed: 'Confirmada', completed: 'Completada', cancelled: 'Cancelada', expired: 'Expirada' };
       const statusText = statusMap[(appt as any).status] || 'Actualizada';
       this.notifications.setUserProfile('client');
       this.notifications.createNotification({
@@ -357,7 +357,7 @@ export class ClientReservasComponent implements OnInit {
                          .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
         const realizadasCompletadas = list.filter(a => a.status === 'completed')
                                   .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
-        const cancelled = list.filter(a => a.status === 'cancelled');
+        const cancelled = list.filter(a => ['cancelled', 'expired'].includes(String(a.status)));
 
         // Todas las próximas confirmadas
         // Resetear mapa antes de reconstruir listas
@@ -441,12 +441,18 @@ export class ClientReservasComponent implements OnInit {
 
         this.canceladasProfesionalList = cancelled
           .filter(c => String((c as any).cancelled_by || 'provider') !== 'client')
-          .map(c => ({
-            avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
-            titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
-            fecha: this.formatDate(c.date),
-            pillText: (c as any).cancellation_reason ? `Motivo: ${(c as any).cancellation_reason}` : 'Cancelada por el profesional'
-          }));
+          .map(c => {
+            const isExpired = String(c.status) === 'expired';
+            const pillText = isExpired
+              ? 'Expirada por falta de confirmación'
+              : ((c as any).cancellation_reason ? `Motivo: ${(c as any).cancellation_reason}` : 'Cancelada por el profesional');
+            return {
+              avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
+              titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
+              fecha: this.formatDate(c.date),
+              pillText
+            };
+          });
 
         // Pagadas/Realizadas: incluir completadas o pagadas
         const isPaidStatus = (s: any) => ['paid','succeeded','completed'].includes(String(s || ''));
