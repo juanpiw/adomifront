@@ -9,8 +9,11 @@
     <p>Créditos disponibles para usar en tus próximos servicios.</p>
   </header>
 
-  <section class="wallet-balance-card">
-    <p class="wallet-balance-card__label">Saldo Disponible</p>
+  <section
+    class="wallet-balance-card"
+    *ngIf="!summaryLoading && !summaryError; else walletSummaryState"
+  >
+    <p class="wallet-balance-card__label">Saldo disponible</p>
     <div class="wallet-balance-card__value">
       <span>{{ formatCurrency(walletSummary.balance) }}</span>
       <span class="wallet-balance-card__currency">{{ walletSummary.currency }}</span>
@@ -19,20 +22,59 @@
       Este crédito se descontará automáticamente en el pago de tu próxima reserva.
     </p>
 
-    <button type="button" class="wallet-balance-card__cta">
+    <button type="button" class="wallet-balance-card__cta" (click)="onUseBalance()">
       Usar mi saldo (Buscar servicio)
     </button>
 
-    <p class="wallet-balance-card__note">
-      Regla 4.3 · {{ walletSummary.note }}
+    <p class="wallet-balance-card__note">Regla 4.3 · {{ walletSummary.note }}</p>
+    <p class="wallet-balance-card__updated" *ngIf="walletSummary.last_updated">
+      Actualizado {{ formatDate(walletSummary.last_updated) }}
     </p>
   </section>
 
+  <ng-template #walletSummaryState>
+    <section class="wallet-balance-card wallet-balance-card--state">
+      <ng-container *ngIf="summaryLoading; else walletSummaryError">
+        <p class="wallet-state__message">Cargando tu billetera...</p>
+      </ng-container>
+    </section>
+  </ng-template>
+
+  <ng-template #walletSummaryError>
+    <div class="wallet-state__error">
+      <p>{{ summaryError }}</p>
+      <button type="button" class="wallet-state__retry" (click)="retrySummary()">
+        Reintentar
+      </button>
+    </div>
+  </ng-template>
+
   <section class="wallet-history">
     <h2>Historial de movimientos</h2>
-    <div class="wallet-history__list">
+
+    <div class="wallet-state__message" *ngIf="movementsLoading">Cargando movimientos...</div>
+
+    <div class="wallet-state__error" *ngIf="!movementsLoading && movementsError">
+      <p>{{ movementsError }}</p>
+      <button type="button" class="wallet-state__retry" (click)="retryMovements()">
+        Reintentar
+      </button>
+    </div>
+
+    <p class="wallet-empty-state" *ngIf="!movementsLoading && !movementsError && !movements.length">
+      Aún no tienes movimientos en tu billetera.
+    </p>
+
+    <div
+      class="wallet-history__list"
+      *ngIf="!movementsLoading && !movementsError && movements.length"
+    >
       <article class="wallet-movement" *ngFor="let movement of movements">
-        <div class="wallet-movement__icon" [class.credit]="movement.type === 'credit'" [class.debit]="movement.type === 'debit'">
+        <div
+          class="wallet-movement__icon"
+          [class.credit]="movement.type === 'credit'"
+          [class.debit]="movement.type === 'debit'"
+        >
           <ng-container [ngSwitch]="movement.type">
             <svg *ngSwitchCase="'credit'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -44,16 +86,15 @@
         </div>
         <div class="wallet-movement__info">
           <p class="wallet-movement__title">{{ movement.title }}</p>
-          <p class="wallet-movement__description">
+          <p class="wallet-movement__description" *ngIf="movement.description">
             {{ movement.description }}
-            <span *ngIf="movement.rule" class="wallet-movement__rule">({{ movement.rule }})</span>
           </p>
         </div>
         <div class="wallet-movement__meta" [class.credit]="movement.type === 'credit'" [class.debit]="movement.type === 'debit'">
           <p class="wallet-movement__amount">
             {{ movement.type === 'credit' ? '+' : '-' }} {{ formatCurrency(movement.amount) }}
           </p>
-          <p class="wallet-movement__date">{{ formatDate(movement.date) }}</p>
+          <p class="wallet-movement__date">{{ formatDate(movement.created_at) }}</p>
         </div>
       </article>
     </div>
