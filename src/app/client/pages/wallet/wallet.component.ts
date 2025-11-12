@@ -1,17 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   ClientWalletMovement,
   ClientWalletService,
-  ClientWalletSummary
-} from '../../../services/client-wallet.service';
+  ClientWalletSummary,
+  WalletMovementsResponse,
+  WalletSummaryResponse
+} from '../../services/client-wallet.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-c-wallet',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule],
   templateUrl: './wallet.component.html',
   styleUrls: ['./wallet.component.scss']
 })
@@ -57,14 +59,14 @@ export class ClientWalletComponent implements OnInit {
     this.summaryError = null;
 
     this.walletService.getSummary().subscribe({
-      next: ({ summary }) => {
+      next: ({ summary }: WalletSummaryResponse) => {
         this.walletSummary = {
           ...summary,
           note: summary.note || this.walletSummary.note
         };
         this.summaryLoading = false;
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('[CLIENT WALLET] Error cargando resumen:', err);
         this.summaryError = err?.error?.error || 'No pudimos cargar tu saldo disponible.';
         this.summaryLoading = false;
@@ -76,18 +78,20 @@ export class ClientWalletComponent implements OnInit {
     this.movementsLoading = true;
     this.movementsError = null;
 
-    this.walletService.getMovements(this.movementsLimit, this.movementsOffset).subscribe({
-      next: ({ movements, pagination }) => {
-        this.movements = movements;
-        this.movementsTotal = pagination?.total ?? movements.length;
-        this.movementsLoading = false;
-      },
-      error: (err) => {
-        console.error('[CLIENT WALLET] Error cargando movimientos:', err);
-        this.movementsError = err?.error?.error || 'No pudimos cargar el historial de movimientos.';
-        this.movementsLoading = false;
-      }
-    });
+    this.walletService
+      .getMovements(this.movementsLimit, this.movementsOffset)
+      .subscribe({
+        next: ({ movements, pagination }: WalletMovementsResponse) => {
+          this.movements = movements;
+          this.movementsTotal = pagination?.total ?? movements.length;
+          this.movementsLoading = false;
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('[CLIENT WALLET] Error cargando movimientos:', err);
+          this.movementsError = err?.error?.error || 'No pudimos cargar el historial de movimientos.';
+          this.movementsLoading = false;
+        }
+      });
   }
 
   retrySummary(): void {

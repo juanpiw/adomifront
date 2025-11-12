@@ -26,12 +26,12 @@ export interface ClientWalletMovement {
   created_at: string;
 }
 
-interface WalletSummaryResponse {
+export interface WalletSummaryResponse {
   success: boolean;
   summary: ClientWalletSummary;
 }
 
-interface WalletMovementsResponse {
+export interface WalletMovementsResponse {
   success: boolean;
   movements: ClientWalletMovement[];
   pagination: { total: number; limit: number; offset: number };
