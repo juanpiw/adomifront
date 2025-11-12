@@ -25,6 +25,7 @@ export interface AppointmentDto {
   client_commune?: string | null;
   client_region?: string | null;
   client_phone?: string | null;
+  client_avatar_url?: string | null;
 }
 
 export interface TimeSlotDto {

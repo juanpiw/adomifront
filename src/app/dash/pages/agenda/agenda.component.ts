@@ -1185,6 +1185,7 @@ export class DashAgendaComponent implements OnInit {
       time: a.start_time.slice(0, 5),
       duration: this.diffMinutes(a.start_time, a.end_time),
       clientName: a.client_name || '',
+      clientAvatarUrl: ((a as any).client_avatar_url || null) as string | null,
       clientPhone: ((a as any).client_phone || '') as string,
       status: a.status as any,
       paymentStatus: (a.payment_status === 'completed' || a.payment_status === 'paid' || a.payment_status === 'succeeded') ? 'paid' : 'unpaid',

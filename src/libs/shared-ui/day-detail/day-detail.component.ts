@@ -8,6 +8,7 @@ export interface DayAppointment {
   time: string;
   duration: number;
   clientName: string;
+  clientAvatarUrl?: string | null;
   clientPhone?: string;
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   type: 'appointment' | 'break' | 'blocked';
@@ -215,5 +216,16 @@ export class DayDetailComponent {
 
   trackByAppointmentId(index: number, appointment: DayAppointment): string {
     return appointment.id;
+  }
+
+  getClientInitials(name?: string | null): string {
+    if (!name) return 'C';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'C';
+    if (parts.length === 1) return (parts[0][0] || 'C').toUpperCase();
+    const first = parts[0][0] || '';
+    const last = parts[parts.length - 1][0] || '';
+    const initials = `${first}${last}`.trim();
+    return initials ? initials.toUpperCase() : 'C';
   }
 }

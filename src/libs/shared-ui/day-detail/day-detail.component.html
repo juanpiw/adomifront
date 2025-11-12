@@ -43,7 +43,19 @@
 
         <div class="day-detail__appointment-content">
           <h4 class="day-detail__appointment-title">{{ appointment.title }}</h4>
-          <p class="day-detail__appointment-client">{{ appointment.clientName }}</p>
+          <p class="day-detail__appointment-client">
+            <span class="day-detail__client-avatar" *ngIf="appointment.clientAvatarUrl; else clientInitials">
+              <img [src]="appointment.clientAvatarUrl"
+                   [alt]="appointment.clientName || 'Cliente'"
+                   loading="lazy" />
+            </span>
+            <ng-template #clientInitials>
+              <span class="day-detail__client-avatar day-detail__client-avatar--placeholder">
+                {{ getClientInitials(appointment.clientName) }}
+              </span>
+            </ng-template>
+            <span class="day-detail__client-name">{{ appointment.clientName }}</span>
+          </p>
           <p *ngIf="appointment.locationLabel" class="day-detail__appointment-location">
             <span class="day-detail__appointment-location-icon">📍</span>
             <span class="day-detail__appointment-location-text">{{ appointment.locationLabel }}</span>

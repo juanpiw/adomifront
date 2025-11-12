@@ -163,9 +163,44 @@
   }
 
   &__appointment-client {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.875rem;
     color: #374151;
     margin: 0;
+  }
+
+  &__client-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    overflow: hidden;
+    background: #e5e7eb;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4b5563;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    &--placeholder {
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+  }
+
+  &__client-name {
+    flex: 1;
+    min-width: 0;
   }
 
   &__appointment-location {
