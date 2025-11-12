@@ -16,15 +16,15 @@
     <div class="golden-invite-modal__chips" *ngIf="summary">
       <div class="golden-invite-modal__chip">
         <span class="label">Emitidas</span>
-        <span class="value">{{ summary.counts?.issued || 0 }}</span>
+        <span class="value">{{ summary.counts.issued || 0 }}</span>
       </div>
       <div class="golden-invite-modal__chip">
         <span class="label">En proceso</span>
-        <span class="value">{{ summary.counts?.registered || 0 }}</span>
+        <span class="value">{{ summary.counts.registered || 0 }}</span>
       </div>
       <div class="golden-invite-modal__chip">
         <span class="label">Verificadas</span>
-        <span class="value">{{ summary.counts?.verified || 0 }}</span>
+        <span class="value">{{ summary.counts.verified || 0 }}</span>
       </div>
     </div>
 

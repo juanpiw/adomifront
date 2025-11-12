@@ -314,6 +314,15 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   // Datos para solicitudes (ahora será un array)
   solicitudesData: SolicitudData[] = [];
 
+  private readonly defaultGestionBlocks = [
+    { id: '1', day: 'Lunes', startTime: '09:00', endTime: '11:00', status: 'confirmed' as const },
+    { id: '2', day: 'Miércoles', startTime: '15:00', endTime: '17:00', status: 'confirmed' as const }
+  ];
+
+  gestionData = {
+    timeBlocks: [...this.defaultGestionBlocks]
+  };
+
   // Event handlers
   onNotificationClick() {
     console.log('Notificación clickeada');
@@ -413,12 +422,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       ...data,
       status: 'confirmed' as const
     };
-    this.gestionData.timeBlocks.push(newBlock);
+    this.gestionData.timeBlocks = [...this.gestionData.timeBlocks, newBlock];
     console.log('Bloque de tiempo agregado:', newBlock);
   }
 
   onRemoveTimeBlock(blockId: string) {
-    this.gestionData.timeBlocks = this.gestionData.timeBlocks.filter(block => block.id !== blockId);
+    this.gestionData.timeBlocks = this.gestionData.timeBlocks.filter((block) => block.id !== blockId);
     console.log('Bloque de tiempo eliminado:', blockId);
   }
 
@@ -473,10 +482,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   remainingInvites(): number {
-    if (!this.inviteSummary) return 3;
-    const quota = Number(this.inviteSummary.quota || 3);
-    const active = Number(this.inviteSummary.counts?.issued || 0) + Number(this.inviteSummary.counts?.registered || 0);
-    const verified = Number(this.inviteSummary.counts?.verified || 0);
+    const summary = this.inviteSummary;
+    if (!summary) return 3;
+    const quota = Number(summary.quota ?? 3);
+    const counts = summary.counts;
+    const active = Number(counts.issued ?? 0) + Number(counts.registered ?? 0);
+    const verified = Number(counts.verified ?? 0);
     return Math.max(quota - (active + verified), 0);
   }
 

@@ -27,11 +27,13 @@ export class GoldenInviteModalComponent {
   }
 
   remainingInvites(): number {
-    if (!this.summary) return 3;
-    const quota = Number(this.summary.quota || 3);
-    const verified = Number(this.summary.counts?.verified || 0);
-    const issued = Number(this.summary.counts?.issued || 0);
-    const registered = Number(this.summary.counts?.registered || 0);
+    const summary = this.summary;
+    if (!summary) return 3;
+    const quota = Number(summary.quota ?? 3);
+    const counts = summary.counts;
+    const verified = Number(counts.verified ?? 0);
+    const issued = Number(counts.issued ?? 0);
+    const registered = Number(counts.registered ?? 0);
     const consumed = verified + issued + registered;
     return Math.max(quota - consumed, 0);
   }
