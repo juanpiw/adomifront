@@ -52,6 +52,48 @@
   <!-- Contenido del dashboard -->
   <div *ngIf="currentView === 'dashboard'" class="agenda-content">
     <div class="agenda-content__main">
+      <section class="reschedule-requests" *ngIf="rescheduleRequestsLoading || rescheduleRequests.length">
+        <div class="reschedule-requests__header">
+          <h3>Solicitudes de reprogramación</h3>
+          <span *ngIf="rescheduleRequestsLoading" class="reschedule-requests__loading">
+            Cargando solicitudes…
+          </span>
+        </div>
+
+        <div *ngIf="!rescheduleRequestsLoading && !rescheduleRequests.length" class="reschedule-requests__empty">
+          No tienes solicitudes pendientes por responder.
+        </div>
+
+        <div *ngFor="let request of rescheduleRequests" class="reschedule-requests__card">
+          <div class="reschedule-requests__body">
+            <div class="reschedule-requests__title">
+              Cliente: <strong>{{ request.client_name || 'Cliente' }}</strong>
+            </div>
+            <div class="reschedule-requests__meta">
+              <span>Servicio: {{ request.service_name || 'Servicio reservado' }}</span>
+              <span>Propuesta: {{ formatRescheduleRequestLabel(request) }}</span>
+              <span *ngIf="request.reschedule_reason">Motivo: {{ request.reschedule_reason }}</span>
+            </div>
+          </div>
+          <div class="reschedule-requests__actions">
+            <button
+              type="button"
+              class="reschedule-requests__btn reschedule-requests__btn--accept"
+              (click)="respondRescheduleRequest(request.id, 'accept')"
+              [disabled]="rescheduleDecisionLoadingId === request.id">
+              {{ rescheduleDecisionLoadingId === request.id ? 'Aceptando…' : 'Aceptar' }}
+            </button>
+            <button
+              type="button"
+              class="reschedule-requests__btn reschedule-requests__btn--reject"
+              (click)="respondRescheduleRequest(request.id, 'reject')"
+              [disabled]="rescheduleDecisionLoadingId === request.id">
+              {{ rescheduleDecisionLoadingId === request.id ? 'Procesando…' : 'Rechazar' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Dashboard Resumen -->
       <app-dashboard-resumen 
         [metrics]="dashboardMetrics"

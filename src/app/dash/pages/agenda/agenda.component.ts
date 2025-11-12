@@ -191,6 +191,7 @@ export class DashAgendaComponent implements OnInit {
 
   rescheduleRequestsLoading = false;
   rescheduleRequests: Array<(AppointmentDto & { client_name?: string; service_name?: string; reschedule_target_date?: string | null; reschedule_target_start_time?: string | null; reschedule_reason?: string | null })> = [];
+  rescheduleDecisionLoadingId: number | null = null;
 
   currentProviderName: string | null = null;
   availabilityLoading = false;
@@ -727,6 +728,56 @@ export class DashAgendaComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  private loadRescheduleRequests() {
+    this.rescheduleRequestsLoading = true;
+    this.appointments.listProviderRescheduleRequests().subscribe({
+      next: (resp) => {
+        this.rescheduleRequests = Array.isArray(resp?.appointments) ? resp.appointments : [];
+        this.rescheduleRequestsLoading = false;
+      },
+      error: (err) => {
+        this.rescheduleRequestsLoading = false;
+        console.error('[AGENDA] Error cargando solicitudes de reprogramación', err);
+      }
+    });
+  }
+
+  respondRescheduleRequest(appointmentId: number, decision: 'accept'|'reject'): void {
+    if (!appointmentId) return;
+    if (this.rescheduleDecisionLoadingId === appointmentId) return;
+    let reason: string | null = null;
+    if (decision === 'reject') {
+      const confirmReject = window.confirm('¿Deseas rechazar la reprogramación solicitada por el cliente?');
+      if (!confirmReject) return;
+      const input = window.prompt('Motivo para el cliente (opcional)');
+      reason = input && input.trim().length ? input.trim() : null;
+    }
+    this.rescheduleDecisionLoadingId = appointmentId;
+    this.appointments.respondReschedule(appointmentId, decision, { reason }).subscribe({
+      next: () => {
+        this.rescheduleDecisionLoadingId = null;
+        this.loadRescheduleRequests();
+        if (this.selectedDate) {
+          const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
+          this.loadDay(iso);
+        }
+      },
+      error: (err) => {
+        this.rescheduleDecisionLoadingId = null;
+        console.error('[AGENDA] Error al responder solicitud de reprogramación', err);
+        alert(err?.error?.error || 'No se pudo procesar la respuesta de reprogramación.');
+      }
+    });
+  }
+
+  formatRescheduleRequestLabel(appt: AppointmentDto & { reschedule_target_date?: string | null; reschedule_target_start_time?: string | null }): string {
+    const date = appt?.reschedule_target_date || appt?.date;
+    const time = (appt?.reschedule_target_start_time || appt?.start_time || '').toString();
+    const formattedDate = this.formatDateLabel(date || '');
+    const formattedTime = this.formatTimeLabel(time);
+    return `${formattedDate} a las ${formattedTime}`;
   }
 
   private loadChartDataLast7Days() {
@@ -1453,6 +1504,25 @@ export class DashAgendaComponent implements OnInit {
     return hhmm;
   }
 
+  private formatDateLabel(dateStr: string): string {
+    if (!dateStr) return '';
+    const base = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+    const [y, m, d] = base.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    const dt = new Date(y, m - 1, d);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: 'short' });
+  }
+
+  private formatTimeLabel(hhmm: string): string {
+    if (!hhmm) return '';
+    const parts = hhmm.split(':');
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`;
+    }
+    return hhmm;
+  }
+
   private capitalize(value: string): string {
     if (!value) {
       return '';
@@ -1756,6 +1826,9 @@ export class DashAgendaComponent implements OnInit {
         queryParams: { view },
         queryParamsHandling: 'merge'
       }).catch(() => {});
+    }
+    if (view === 'dashboard') {
+      this.loadRescheduleRequests();
     }
     if (view === 'calendar' && this.selectedDate) {
       this.loadMonth(this.selectedDate.getFullYear(), this.selectedDate.getMonth() + 1);
