@@ -8,7 +8,7 @@
       
       <!-- Header -->
       <div class="review-modal__header">
-        <h2 class="review-modal__title">Califica tu experiencia</h2>
+        <h2 class="review-modal__title">{{ title }}</h2>
         <button class="review-modal__close" (click)="onClose()">
           <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -19,7 +19,11 @@
       <!-- Contenido -->
       <div class="review-modal__body">
         <p class="review-modal__question">
-          ¿Qué tal fue el servicio de <span class="review-modal__worker-name">{{ workerName }}</span>?
+          {{ questionPrefix }}
+          <span class="review-modal__worker-name">{{ subjectDisplayName }}</span>{{ questionSuffix }}
+        </p>
+        <p class="review-modal__service" *ngIf="serviceName">
+          Servicio: <strong>{{ serviceName }}</strong>
         </p>
         
         <!-- Estrellas -->
@@ -42,7 +46,8 @@
         <textarea 
           class="review-modal__comment"
           [(ngModel)]="comment"
-          placeholder="Escribe un comentario (opcional)..."
+          [disabled]="commentDisabled"
+          [placeholder]="commentPlaceholder"
           rows="4">
         </textarea>
       </div>
@@ -51,11 +56,11 @@
       <div class="review-modal__footer">
         <button 
           class="review-modal__submit"
-          [class.review-modal__submit--disabled]="rating === 0 || isSubmitting"
-          [disabled]="rating === 0 || isSubmitting"
+          [class.review-modal__submit--disabled]="isSubmitDisabled"
+          [disabled]="isSubmitDisabled"
           (click)="onSubmit()">
-          <span *ngIf="!isSubmitting">Enviar Reseña</span>
-          <span *ngIf="isSubmitting">Enviando...</span>
+          <span *ngIf="!isSubmitting">{{ submitLabel }}</span>
+          <span *ngIf="isSubmitting">{{ submittingLabel }}</span>
         </button>
       </div>
     </div>
@@ -68,15 +73,15 @@
         </svg>
       </div>
       
-      <h2 class="review-modal__success-title">¡Gracias por tu opinión!</h2>
+      <h2 class="review-modal__success-title">{{ successTitle }}</h2>
       <p class="review-modal__success-message">
-        Tu reseña ayuda a otros miembros de la comunidad a tomar mejores decisiones.
+        {{ successMessage }}
       </p>
       
       <button 
         class="review-modal__success-button"
         (click)="onCloseSuccess()">
-        Cerrar
+        {{ successButtonLabel }}
       </button>
     </div>
 

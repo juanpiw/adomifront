@@ -123,7 +123,8 @@
         (closureAction)="onClosureAction($event)"
         (verifyClosure)="onVerifyClosure($event)"
         (updateLocation)="onUpdateAppointmentLocation($event)"
-        (viewClientProfile)="onViewClientProfile($event)">
+        (viewClientProfile)="onViewClientProfile($event)"
+        (reviewClient)="onReviewClient($event)">
         <ng-template #appointmentActionsTemplate let-appointment="appointment">
           <button *ngIf="appointment.status === 'scheduled'"
                   class="day-detail__action-btn day-detail__action-btn--confirm"
@@ -432,6 +433,26 @@
   (verified)="onVerificationSubmit($event)"
   (cancel)="onVerificationCancel()"
 ></ui-modal-verificar-servicio>
+
+<app-review-modal
+  #clientReviewModal
+  [isOpen]="reviewModalOpen"
+  [workerName]="reviewModalClientName"
+  [subjectName]="reviewModalClientName"
+  [serviceName]="reviewModalServiceName"
+  [appointmentId]="reviewTargetAppointment?.id || ''"
+  [title]="'Califica al cliente'"
+  [questionPrefix]="'¿Cómo fue la experiencia con'"
+  [questionSuffix]="'?'"
+  [submitLabel]="'Guardar reseña'"
+  [submittingLabel]="'Guardando...'"
+  [commentPlaceholder]="'Comparte detalles útiles para otros proveedores (opcional)...'"
+  [successTitle]="'¡Reseña registrada!'"
+  [successMessage]="'Gracias por compartir cómo fue trabajar con este cliente.'"
+  [successButtonLabel]="'Cerrar'"
+  (close)="onReviewModalClose()"
+  (reviewSubmitted)="onReviewModalSubmit($event)"
+></app-review-modal>
 
 
 

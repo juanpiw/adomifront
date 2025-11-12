@@ -75,6 +75,13 @@
           <p *ngIf="appointment.notes" class="day-detail__appointment-notes">
             {{ appointment.notes }}
           </p>
+          <div *ngIf="appointment.canReviewClient" class="day-detail__review-action">
+            <button type="button"
+                    class="day-detail__action-btn day-detail__action-btn--secondary"
+                    (click)="onClientReviewClick($event, appointment)">
+              Calificar cliente
+            </button>
+          </div>
           <div *ngIf="appointment.status === 'cancelled'" class="day-detail__cancelled-message">
             Cancelada {{ appointment.cancelledBy === 'client' ? 'por el cliente' : (appointment.cancelledBy === 'provider' ? 'por ti' : 'automáticamente') }}
             <span *ngIf="appointment.cancellationReason"> • {{ appointment.cancellationReason }}</span>

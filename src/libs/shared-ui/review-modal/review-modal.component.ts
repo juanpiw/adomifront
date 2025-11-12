@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -17,11 +17,25 @@ export interface ReviewData {
   templateUrl: './review-modal.component.html',
   styleUrls: ['./review-modal.component.scss']
 })
-export class ReviewModalComponent {
+export class ReviewModalComponent implements OnChanges {
   @Input() isOpen: boolean = false;
   @Input() workerName: string = '';
+  @Input() subjectName: string = '';
   @Input() serviceName: string = '';
   @Input() appointmentId: string = '';
+  @Input() title: string = 'Califica tu experiencia';
+  @Input() questionPrefix: string = '¿Qué tal fue el servicio de';
+  @Input() questionSuffix: string = '?';
+  @Input() commentPlaceholder: string = 'Escribe un comentario (opcional)...';
+  @Input() submitLabel: string = 'Enviar Reseña';
+  @Input() submittingLabel: string = 'Enviando...';
+  @Input() successTitle: string = '¡Gracias por tu opinión!';
+  @Input() successMessage: string = 'Tu reseña ayuda a otros miembros de la comunidad a tomar mejores decisiones.';
+  @Input() successButtonLabel: string = 'Cerrar';
+  @Input() allowZeroRating: boolean = false;
+  @Input() defaultRating: number | null = null;
+  @Input() defaultComment: string | null = null;
+  @Input() commentDisabled: boolean = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() reviewSubmitted = new EventEmitter<ReviewData>();
@@ -34,6 +48,35 @@ export class ReviewModalComponent {
   showErrorView: boolean = false;
   isSubmitting: boolean = false;
   errorMessage: string = '';
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const opened = changes['isOpen']?.currentValue && !changes['isOpen'].previousValue;
+    if (opened) {
+      this.applyPresetValues();
+    } else if (this.isOpen && (changes['defaultRating'] || changes['defaultComment'])) {
+      this.applyPresetValues();
+    }
+  }
+
+  get subjectDisplayName(): string {
+    return (this.subjectName && this.subjectName.trim()) || this.workerName;
+  }
+
+  get isSubmitDisabled(): boolean {
+    const ratingRequired = !this.allowZeroRating;
+    const ratingInvalid = ratingRequired && this.rating === 0;
+    return ratingInvalid || this.isSubmitting;
+  }
+
+  private applyPresetValues(): void {
+    if (this.defaultRating !== null && this.defaultRating !== undefined) {
+      this.rating = Number(this.defaultRating);
+    }
+    if (typeof this.defaultComment === 'string') {
+      this.comment = this.defaultComment;
+    }
+    this.hoverRating = 0;
+  }
 
   setRating(rating: number): void {
     this.rating = rating;
@@ -54,7 +97,7 @@ export class ReviewModalComponent {
   }
 
   onSubmit(): void {
-    if (this.rating === 0) {
+    if (!this.allowZeroRating && this.rating === 0) {
       return; // No permitir envío sin rating
     }
 

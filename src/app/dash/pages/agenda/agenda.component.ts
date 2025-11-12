@@ -6,10 +6,12 @@ import { CalendarMensualComponent, CalendarEvent } from '../../../../libs/shared
 import { DayDetailComponent, DayAppointment } from '../../../../libs/shared-ui/day-detail/day-detail.component';
 import { DashboardGraficoComponent } from '../../../../libs/shared-ui/dashboard-grafico/dashboard-grafico.component';
 import { ModalVerificarServicioComponent } from '../../../../libs/shared-ui/modal-verificar-servicio/modal-verificar-servicio.component';
+import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
 import { HorariosConfigComponent, TimeBlock } from '../../../../libs/shared-ui/horarios-config/horarios-config.component';
 import { ExcepcionesFeriadosComponent, ExceptionDate } from '../../../../libs/shared-ui/excepciones-feriados/excepciones-feriados.component';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
+import { ProviderClientReviewsService } from '../../../services/provider-client-reviews.service';
 import { PaymentsService } from '../../../services/payments.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
@@ -32,6 +34,7 @@ import { catchError, map } from 'rxjs/operators';
     HorariosConfigComponent,
     ExcepcionesFeriadosComponent,
     ModalVerificarServicioComponent,
+    ReviewModalComponent,
     FormsModule
   ],
   templateUrl: './agenda.component.html',
@@ -161,6 +164,7 @@ export class DashAgendaComponent implements OnInit {
   } | null = null;
 
   @ViewChild('cashReceiptInput') cashReceiptInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('clientReviewModal') clientReviewModal?: ReviewModalComponent;
 
   cashPaymentModalOpen = false;
   cashPaymentSubmitting = false;
@@ -180,6 +184,11 @@ export class DashAgendaComponent implements OnInit {
     email: this.getEnv('cashBankNotificationEmail', 'pagos@adomi.app')
   };
 
+  reviewModalOpen = false;
+  reviewModalSubmitting = false;
+  reviewModalError: string | null = null;
+  reviewTargetAppointment: DayAppointment | null = null;
+
   currentProviderName: string | null = null;
   availabilityLoading = false;
   private appointments = inject(AppointmentsService);
@@ -190,6 +199,7 @@ export class DashAgendaComponent implements OnInit {
   private baseUrl = environment.apiBaseUrl;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private clientReviews = inject(ProviderClientReviewsService);
 
   private updatingFromQuery = false;
 
@@ -927,6 +937,87 @@ export class DashAgendaComponent implements OnInit {
     window.open(url, '_blank');
   }
 
+  onReviewClient(appointment: DayAppointment) {
+    if (!appointment || !appointment.clientId) {
+      console.warn('[AGENDA] No se puede calificar al cliente: faltan datos de la cita', appointment);
+      alert('No se pudo abrir la calificación porque faltan datos del cliente.');
+      return;
+    }
+    this.reviewModalError = null;
+    this.reviewModalSubmitting = false;
+    this.reviewTargetAppointment = appointment;
+    this.reviewModalOpen = true;
+  }
+
+  onReviewModalClose() {
+    this.reviewModalOpen = false;
+    this.reviewModalError = null;
+    this.reviewModalSubmitting = false;
+    this.reviewTargetAppointment = null;
+  }
+
+  onReviewModalSubmit(data: ReviewData) {
+    const appointment = this.reviewTargetAppointment;
+    if (!appointment || !appointment.clientId) {
+      this.clientReviewModal?.showError('No se pudo identificar la cita que deseas calificar.');
+      return;
+    }
+
+    const clientId = Number(appointment.clientId);
+    const appointmentId = Number(appointment.id);
+
+    if (!Number.isFinite(clientId) || clientId <= 0 || !Number.isFinite(appointmentId) || appointmentId <= 0) {
+      this.clientReviewModal?.showError('Datos de la cita inválidos. Intenta nuevamente.');
+      return;
+    }
+
+    this.reviewModalSubmitting = true;
+    const payload = {
+      appointment_id: appointmentId,
+      rating: data.rating,
+      comment: data.comment?.trim() ? data.comment.trim() : null
+    };
+
+    this.clientReviews.createReview(clientId, payload).subscribe({
+      next: (resp) => {
+        this.reviewModalSubmitting = false;
+        if (!resp?.success) {
+          const message = resp?.error || 'No se pudo registrar tu reseña.';
+          this.clientReviewModal?.showError(message);
+          return;
+        }
+
+        const reviewId = resp.review && 'id' in resp.review ? Number((resp.review as any).id) : null;
+
+        const idx = this.dayAppointments.findIndex((a) => String(a.id) === String(appointment.id));
+        if (idx >= 0) {
+          this.dayAppointments[idx] = {
+            ...this.dayAppointments[idx],
+            clientReviewId: reviewId ?? this.dayAppointments[idx].clientReviewId ?? appointmentId,
+            canReviewClient: false
+          };
+        }
+
+        this.reviewTargetAppointment = this.dayAppointments[idx] || appointment;
+        this.clientReviewModal?.showSuccess();
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error creando reseña de cliente', err);
+        this.reviewModalSubmitting = false;
+        const message = err?.error?.error || 'No se pudo registrar tu reseña. Intenta nuevamente.';
+        this.clientReviewModal?.showError(message);
+      }
+    });
+  }
+
+  get reviewModalClientName(): string {
+    return this.reviewTargetAppointment?.clientName || '';
+  }
+
+  get reviewModalServiceName(): string {
+    return this.reviewTargetAppointment?.title || '';
+  }
+
   onConfirmAppointment(appointmentId: number) {
     const index = this.dayAppointments.findIndex(a => Number(a.id) === Number(appointmentId));
     const appointment = index >= 0 ? this.dayAppointments[index] : null;
@@ -1212,7 +1303,11 @@ export class DashAgendaComponent implements OnInit {
       locationLabel: ((a as any).client_location_label || (a as any).client_location || '') as string,
       clientAddress: ((a as any).client_address ?? null) as string | null,
       clientCommune: ((a as any).client_commune ?? null) as string | null,
-      clientRegion: ((a as any).client_region ?? null) as string | null
+      clientRegion: ((a as any).client_region ?? null) as string | null,
+      clientReviewId: (a as any).client_review_id !== undefined && (a as any).client_review_id !== null
+        ? Number((a as any).client_review_id)
+        : null,
+      canReviewClient: String(a.status) === 'completed' && !(a as any).client_review_id
     };
   }
 

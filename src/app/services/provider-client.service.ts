@@ -17,15 +17,37 @@ export interface ProviderClientProfile {
   notes: string;
   verification_status: 'none' | 'pending' | 'approved' | 'rejected';
   is_verified: boolean;
+  rating_average: number;
+  review_count: number;
   profile_photo_url: string | null;
   profile_created_at: string | null;
   profile_updated_at: string | null;
   user_created_at: string | null;
 }
 
+export interface ProviderClientReview {
+  id: number;
+  appointment_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  provider_name: string | null;
+}
+
+export interface ProviderClientReviewSummary {
+  count: number;
+  average: number;
+}
+
+export interface ProviderClientProfileReviews {
+  summary: ProviderClientReviewSummary;
+  recent: ProviderClientReview[];
+}
+
 export interface ProviderClientProfileResponse {
   success: boolean;
   client: ProviderClientProfile;
+  reviews: ProviderClientProfileReviews;
   error?: string;
   details?: string;
 }

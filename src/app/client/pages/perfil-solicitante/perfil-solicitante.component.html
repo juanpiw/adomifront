@@ -40,6 +40,22 @@
             <div class="perfil-verification-badge" [attr.data-state]="verificationStatusVariant">
               <span>{{ verificationStatusLabel }}</span>
             </div>
+            <div class="perfil-rating" *ngIf="hasReviews; else noReviewsBadge">
+              <div class="perfil-rating__score">{{ ratingAverage | number:'1.1-2' }}</div>
+              <div class="perfil-rating__stars">
+                <span *ngFor="let star of [1,2,3,4,5]" [class.filled]="star <= Math.round(ratingAverage)">
+                  ★
+                </span>
+              </div>
+              <div class="perfil-rating__count">
+                {{ ratingCount }} reseña{{ ratingCount === 1 ? '' : 's' }}
+              </div>
+            </div>
+            <ng-template #noReviewsBadge>
+              <div class="perfil-rating perfil-rating--empty">
+                <span class="perfil-rating__count">Sin reseñas de proveedores aún</span>
+              </div>
+            </ng-template>
           </div>
         </div>
 
@@ -108,20 +124,86 @@
           <div class="perfil-notes">{{ profile.notes }}</div>
         </section>
 
-        <section class="perfil-section perfil-futuro">
-          <h3 class="perfil-section-title">
-            <svg xmlns="http://www.w3.org/2000/svg" class="perfil-section-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 11c0 1.105.895 2 2 2s2-.895 2-2-.895-2-2-2-2 .895-2 2zm-9 9c0-4.418 3.582-8 8-8h2c4.418 0 8 3.582 8 8v1H3v-1z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 6a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Evaluaciones futuras
-          </h3>
+        <section class="perfil-section perfil-reviews">
+          <div class="perfil-section-header">
+            <h3 class="perfil-section-title">
+              <svg xmlns="http://www.w3.org/2000/svg" class="perfil-section-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 11c0 1.105.895 2 2 2s2-.895 2-2-.895-2-2-2-2 .895-2 2zm-9 9c0-4.418 3.582-8 8-8h2c4.418 0 8 3.582 8 8v1H3v-1z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 6a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Evaluaciones de proveedores
+            </h3>
+            <button type="button"
+                    class="perfil-review-button"
+                    (click)="openReviewModalForAppointment()"
+                    [disabled]="reviewableAppointments.length === 0">
+              Calificar cliente
+            </button>
+          </div>
           <p class="perfil-section-description">
-            Próximamente podrás calificar al cliente y dejar comentarios sobre la experiencia del servicio.
+            Registra experiencias posteriores a una cita completada para ayudar al equipo y a otros profesionales.
           </p>
+
+          <div class="perfil-reviewable" *ngIf="reviewableAppointments.length > 0">
+            <h4 class="perfil-reviewable__title">Citas pendientes de calificar</h4>
+            <ul class="perfil-reviewable__list">
+              <li class="perfil-reviewable__item" *ngFor="let appointment of reviewableAppointments">
+                <div class="perfil-reviewable__details">
+                  {{ formatReviewableAppointment(appointment) }}
+                </div>
+                <button type="button"
+                        class="perfil-reviewable__action"
+                        (click)="openReviewModalForAppointment(appointment.id)">
+                  Calificar
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="perfil-reviewable perfil-reviewable--empty" *ngIf="!reviewableLoading && reviewableAppointments.length === 0">
+            <p>No tienes citas completadas pendientes de calificar.</p>
+            <p class="perfil-reviewable__hint">Las reseñas solo se habilitan una vez que la cita está marcada como completada.</p>
+          </div>
+          <div class="perfil-reviewable perfil-reviewable--loading" *ngIf="reviewableLoading">
+            <div class="perfil-loading">
+              <div class="perfil-loading__spinner perfil-loading__spinner--mini"></div>
+              <p>Cargando citas disponibles...</p>
+            </div>
+          </div>
+
+          <div class="perfil-reviews-list" *ngIf="hasReviews; else perfilNoReviews">
+            <div class="perfil-reviews-loading" *ngIf="reviewLoading">
+              <div class="perfil-loading__spinner perfil-loading__spinner--mini"></div>
+            </div>
+            <app-reviews *ngIf="!reviewLoading" [data]="reviewsData"></app-reviews>
+          </div>
+          <ng-template #perfilNoReviews>
+            <p class="perfil-empty-state">
+              Aún no registras reseñas para este cliente. Califica después de completar una cita.
+            </p>
+          </ng-template>
         </section>
       </ng-container>
     </div>
   </div>
 </div>
+
+<app-review-modal
+  #clientReviewModal
+  [isOpen]="reviewModalOpen"
+  [workerName]="clientName"
+  [subjectName]="clientName"
+  [serviceName]="selectedReviewServiceName"
+  [appointmentId]="reviewModalAppointmentId ? reviewModalAppointmentId.toString() : ''"
+  [title]="'Califica al cliente'"
+  [questionPrefix]="'¿Cómo fue la experiencia con'"
+  [questionSuffix]="'?'"
+  [submitLabel]="'Guardar reseña'"
+  [submittingLabel]="'Guardando...'"
+  [commentPlaceholder]="'Comparte detalles para el equipo (opcional)...'"
+  [successTitle]="'¡Reseña registrada!'"
+  [successMessage]="'Gracias por dejar comentarios sobre este cliente.'"
+  [successButtonLabel]="'Cerrar'"
+  (close)="onReviewModalClose()"
+  (reviewSubmitted)="onReviewModalSubmit($event)"
+></app-review-modal>
 

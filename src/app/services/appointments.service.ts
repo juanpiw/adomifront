@@ -26,6 +26,7 @@ export interface AppointmentDto {
   client_region?: string | null;
   client_phone?: string | null;
   client_avatar_url?: string | null;
+  client_review_id?: number | null;
 }
 
 export interface TimeSlotDto {

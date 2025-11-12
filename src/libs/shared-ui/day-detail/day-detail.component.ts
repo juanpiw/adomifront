@@ -26,6 +26,8 @@ export interface DayAppointment {
   clientAddress?: string | null;
   clientCommune?: string | null;
   clientRegion?: string | null;
+  clientReviewId?: number | null;
+  canReviewClient?: boolean;
 }
 
 @Component({
@@ -52,6 +54,7 @@ export class DayDetailComponent {
   @Output() verifyClosure = new EventEmitter<string>();
   @Output() updateLocation = new EventEmitter<DayAppointment>();
   @Output() viewClientProfile = new EventEmitter<DayAppointment>();
+  @Output() reviewClient = new EventEmitter<DayAppointment>();
 
   isModalOpen: boolean = false;
 
@@ -132,6 +135,11 @@ export class DayDetailComponent {
   onClientClick(event: Event, appointment: DayAppointment) {
     event.stopPropagation();
     this.viewClientProfile.emit(appointment);
+  }
+
+  onClientReviewClick(event: Event, appointment: DayAppointment) {
+    event.stopPropagation();
+    this.reviewClient.emit(appointment);
   }
 
   onNewAppointment() {
