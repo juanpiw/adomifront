@@ -34,6 +34,7 @@ export class CalendarMensualComponent implements OnInit {
 
   isModalOpen: boolean = false;
   selectedDateForModal?: Date;
+  private lastSelectedDate?: Date;
   currentMonth: Date = new Date();
   calendarDays: Date[] = [];
   weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -185,10 +186,8 @@ export class CalendarMensualComponent implements OnInit {
 
   onDateClick(date: Date) {
     if (this.isCurrentMonth(date)) {
+      this.lastSelectedDate = date;
       this.dateSelected.emit(date);
-      // Abrir modal con la fecha seleccionada
-      this.selectedDateForModal = date;
-      this.isModalOpen = true;
     }
   }
 
@@ -205,7 +204,7 @@ export class CalendarMensualComponent implements OnInit {
   }
 
   onNewAppointment() {
-    this.selectedDateForModal = new Date(); // Fecha actual por defecto
+    this.selectedDateForModal = this.lastSelectedDate ? new Date(this.lastSelectedDate) : new Date();
     this.isModalOpen = true;
     this.newAppointment.emit();
   }
