@@ -3,23 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
-import { 
-  InicioProximaCitaComponent, 
-  ProximaCitaData 
+import {
+  InicioProximaCitaComponent,
+  ProximaCitaData
 } from '../../../../libs/shared-ui/inicio-proxima-cita/inicio-proxima-cita.component';
-import { 
-  CitaDetalleResult, 
-  CancelCitaResult 
+import {
+  CitaDetalleResult,
+  CancelCitaResult
 } from '../../../../libs/shared-ui/inicio-proxima-cita/modals';
 import { InicioIngresosMesComponent, IngresosData } from '../../../../libs/shared-ui/inicio-ingresos-mes/inicio-ingresos-mes.component';
 import { InicioIngresosDiaComponent, IngresosDiaData } from '../../../../libs/shared-ui/inicio-ingresos-dia/inicio-ingresos-dia.component';
-import { 
-  InicioSolicitudesComponent, 
+import {
+  InicioSolicitudesComponent,
   SolicitudData,
   AcceptReservaResult,
   RejectReservaResult
 } from '../../../../libs/shared-ui/inicio-solicitudes';
-import { InicioGestionDisponibilidadComponent, GestionDisponibilidadData } from '../../../../libs/shared-ui/inicio-gestion-disponibilidad/inicio-gestion-disponibilidad.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
 import { AppointmentsService } from '../../../services/appointments.service';
@@ -38,7 +37,6 @@ import { Subscription } from 'rxjs';
     InicioIngresosMesComponent,
     InicioIngresosDiaComponent,
     InicioSolicitudesComponent,
-    InicioGestionDisponibilidadComponent,
     FormsModule
   ],
   templateUrl: './home.component.html',
@@ -71,6 +69,8 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   inviteName: string = '';
   inviteSubmitting = false;
   inviteSuccessMessage: string | null = null;
+  inviteCardExpanded = false;
+  inviteSummaryLoaded = false;
 
   // Datos para el header
   headerData: HeaderData = {
@@ -89,6 +89,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.route.queryParamMap.subscribe((params) => {
       const view = (params.get('view') || '').toLowerCase();
       if (view === 'invitaciones') {
+        this.inviteCardExpanded = true;
         this.loadInviteData(true);
       }
     });
@@ -313,14 +314,6 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   // Datos para solicitudes (ahora será un array)
   solicitudesData: SolicitudData[] = [];
 
-  // Datos para gestión de disponibilidad
-  gestionData: GestionDisponibilidadData = {
-    timeBlocks: [
-      { id: '1', day: 'Lunes y Jueves', startTime: '15:00', endTime: '16:30', status: 'confirmed' },
-      { id: '2', day: 'Miércoles', startTime: '09:00', endTime: '11:00', status: 'confirmed' }
-    ]
-  };
-
   // Event handlers
   onNotificationClick() {
     console.log('Notificación clickeada');
@@ -429,12 +422,6 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     console.log('Bloque de tiempo eliminado:', blockId);
   }
 
-  onStatusChange(isOnline: boolean) {
-    this.isOnline = isOnline;
-    console.log('Estado cambiado a:', isOnline ? 'Online' : 'Offline');
-    // TODO: Implementar lógica para actualizar estado en el backend
-  }
-
   private initializeTbkBanner(): void {
     if (!this.tbkStateSub) {
       this.tbkStateSub = this.tbkOnboarding.state$.subscribe((state) => {
@@ -454,8 +441,14 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.providerInvites.list().subscribe({
       next: (response) => {
         if (response?.success) {
-          this.inviteSummary = response.summary;
+          this.applyInviteSummary(response.summary || null);
           this.invites = response.invites || [];
+          if (!this.inviteCardExpanded && this.invites.length > 0) {
+            this.inviteCardExpanded = true;
+          }
+        } else {
+          this.applyInviteSummary(null);
+          this.invites = [];
         }
         this.inviteLoading = false;
         if (focus) {
@@ -465,6 +458,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.inviteLoading = false;
         this.inviteError = error?.error?.error || 'No se pudo cargar las invitaciones.';
+        this.inviteSummaryLoaded = true;
       }
     });
   }
@@ -505,6 +499,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.inviteSubmitting = false;
         if (response?.success) {
+          this.inviteCardExpanded = true;
           this.inviteSuccessMessage = 'Invitación creada. Comparte el enlace para completar el proceso.';
           this.resetInviteForm();
           this.loadInviteData();
@@ -588,4 +583,16 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   trackInvite = (_index: number, invite: ProviderInvite) => invite.id;
+
+  toggleInviteCard() {
+    this.inviteCardExpanded = !this.inviteCardExpanded;
+    if (this.inviteCardExpanded && !this.inviteSummary) {
+      this.loadInviteData();
+    }
+  }
+
+  private applyInviteSummary(summary: ProviderInviteSummary | null) {
+    this.inviteSummary = summary;
+    this.inviteSummaryLoaded = true;
+  }
 }
