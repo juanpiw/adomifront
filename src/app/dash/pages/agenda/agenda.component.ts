@@ -917,6 +917,16 @@ export class DashAgendaComponent implements OnInit {
     // TODO(siguiente iteración): Abrir modal para editar/cancelar
   }
 
+  onViewClientProfile(appointment: DayAppointment) {
+    if (!appointment || !appointment.clientId) {
+      console.warn('[AGENDA] No se pudo navegar al perfil del cliente: faltan datos', appointment);
+      return;
+    }
+    const tree = this.router.createUrlTree(['/client/solicitante', appointment.clientId]);
+    const url = this.router.serializeUrl(tree);
+    window.open(url, '_blank');
+  }
+
   onConfirmAppointment(appointmentId: number) {
     const index = this.dayAppointments.findIndex(a => Number(a.id) === Number(appointmentId));
     const appointment = index >= 0 ? this.dayAppointments[index] : null;
@@ -1184,6 +1194,7 @@ export class DashAgendaComponent implements OnInit {
       title: a.service_name ? `${a.service_name}` : (a.client_name ? `Cita con ${a.client_name}` : 'Cita'),
       time: a.start_time.slice(0, 5),
       duration: this.diffMinutes(a.start_time, a.end_time),
+      clientId: String(a.client_id),
       clientName: a.client_name || '',
       clientAvatarUrl: ((a as any).client_avatar_url || null) as string | null,
       clientPhone: ((a as any).client_phone || '') as string,

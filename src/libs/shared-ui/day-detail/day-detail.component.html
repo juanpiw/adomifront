@@ -43,7 +43,7 @@
 
         <div class="day-detail__appointment-content">
           <h4 class="day-detail__appointment-title">{{ appointment.title }}</h4>
-          <p class="day-detail__appointment-client">
+          <button type="button" class="day-detail__appointment-client" (click)="onClientClick($event, appointment)">
             <span class="day-detail__client-avatar" *ngIf="appointment.clientAvatarUrl; else clientInitials">
               <img [src]="appointment.clientAvatarUrl"
                    [alt]="appointment.clientName || 'Cliente'"
@@ -55,7 +55,7 @@
               </span>
             </ng-template>
             <span class="day-detail__client-name">{{ appointment.clientName }}</span>
-          </p>
+          </button>
           <p *ngIf="appointment.locationLabel" class="day-detail__appointment-location">
             <span class="day-detail__appointment-location-icon">📍</span>
             <span class="day-detail__appointment-location-text">{{ appointment.locationLabel }}</span>

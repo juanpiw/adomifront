@@ -7,6 +7,7 @@ export interface DayAppointment {
   title: string;
   time: string;
   duration: number;
+  clientId: string;
   clientName: string;
   clientAvatarUrl?: string | null;
   clientPhone?: string;
@@ -50,6 +51,7 @@ export class DayDetailComponent {
   @Output() closureAction = new EventEmitter<{ id: string; action: 'no_show'|'issue' }>();
   @Output() verifyClosure = new EventEmitter<string>();
   @Output() updateLocation = new EventEmitter<DayAppointment>();
+  @Output() viewClientProfile = new EventEmitter<DayAppointment>();
 
   isModalOpen: boolean = false;
 
@@ -125,6 +127,11 @@ export class DayDetailComponent {
   onEditLocation(event: Event, appointment: DayAppointment) {
     event.stopPropagation();
     this.updateLocation.emit(appointment);
+  }
+
+  onClientClick(event: Event, appointment: DayAppointment) {
+    event.stopPropagation();
+    this.viewClientProfile.emit(appointment);
   }
 
   onNewAppointment() {

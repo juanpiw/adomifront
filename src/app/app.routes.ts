@@ -39,6 +39,7 @@ import { Component } from '@angular/core';
 import { AdminPagosComponent } from './dash/pages/admin-pagos/admin-pagos.component';
 import { TbkReturnComponent } from './client/pages/tbk-return/tbk-return.component';
 import { TbkPlanReturnComponent } from './auth/tbk-plan-return/tbk-plan-return.component';
+import { PerfilSolicitanteComponent } from './client/pages/perfil-solicitante/perfil-solicitante.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -50,6 +51,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'explorar', pathMatch: 'full' },
       { path: 'explorar', component: ExplorarComponent },
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
+      { path: 'solicitante/:clientId', component: PerfilSolicitanteComponent },
       { path: 'reservas', component: ClientReservasComponent },
       { path: 'favoritos', component: FavoritosComponent },
       { path: 'conversaciones', component: ConversacionesComponent },
