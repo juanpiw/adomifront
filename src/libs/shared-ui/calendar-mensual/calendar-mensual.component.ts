@@ -10,7 +10,7 @@ export interface CalendarEvent {
   time: string;
   type: 'appointment' | 'break' | 'blocked';
   color?: string;
-  status?: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+  status?: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'expired';
   paymentStatus?: 'unpaid' | 'paid' | 'succeeded' | 'pending' | 'completed';
 }
 
