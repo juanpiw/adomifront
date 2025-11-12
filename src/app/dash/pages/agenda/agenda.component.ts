@@ -933,8 +933,18 @@ export class DashAgendaComponent implements OnInit {
       return;
     }
     const tree = this.router.createUrlTree(['/client/solicitante', appointment.clientId]);
-    const url = this.router.serializeUrl(tree);
-    window.open(url, '_blank');
+    const serializedUrl = this.router.serializeUrl(tree);
+    const absoluteUrl = this.toAbsoluteUrl(serializedUrl);
+    console.log('[AGENDA] Abriendo perfil de cliente en nueva pestaña', {
+      appointmentId: appointment.id,
+      clientId: appointment.clientId,
+      serializedUrl,
+      absoluteUrl,
+      currentLocation: typeof window !== 'undefined' ? window.location.href : 'server'
+    });
+    if (typeof window !== 'undefined') {
+      window.open(absoluteUrl, '_blank', 'noopener');
+    }
   }
 
   onReviewClient(appointment: DayAppointment) {
@@ -1765,6 +1775,19 @@ export class DashAgendaComponent implements OnInit {
       return `Vencido en ${diffDays} días`;
     } else {
       return `Vencido el ${date.toLocaleDateString('es-CL', { month: 'numeric', day: 'numeric' })}`;
+    }
+  }
+
+  private toAbsoluteUrl(path: string): string {
+    const formattedPath = path.startsWith('/') ? path : `/${path}`;
+    if (typeof window === 'undefined') {
+      return formattedPath;
+    }
+    try {
+      const origin = window.location.origin;
+      return `${origin}${formattedPath}`;
+    } catch {
+      return formattedPath;
     }
   }
 }
