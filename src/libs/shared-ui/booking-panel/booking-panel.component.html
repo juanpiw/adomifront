@@ -91,6 +91,18 @@
         <strong>{{ paymentMethodText() }}</strong>
       </div>
       <p class="booking-confirm__error" *ngIf="confirmError">{{ confirmError }}</p>
+      <div class="booking-confirm__suggestions" *ngIf="alternativeSlots?.length">
+        <p class="booking-confirm__suggestions-title">Horarios que siguen disponibles:</p>
+        <div class="booking-confirm__chips">
+          <button
+            class="booking-confirm__chip"
+            type="button"
+            *ngFor="let option of alternativeSlots"
+            (click)="onAlternativeSlotClick(option)">
+            {{ option }}
+          </button>
+        </div>
+      </div>
     </div>
     <div class="booking-confirm__actions">
       <button class="booking-confirm__btn booking-confirm__btn--secondary" [disabled]="confirming" (click)="closeConfirm()">Cancelar</button>

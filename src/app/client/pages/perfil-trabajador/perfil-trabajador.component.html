@@ -54,6 +54,7 @@
           [providerId]="workerId || undefined"
           [providerName]="profileHeroData.name"
           [data]="bookingPanelData"
+          [alternativeSlots]="slotSuggestions"
           (serviceSelected)="onServiceSelected($event)"
           (dateSelected)="onDateSelected($event)"
           (timeSelected)="onTimeSelected($event)"

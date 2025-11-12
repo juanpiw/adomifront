@@ -34,6 +34,7 @@ export class PerfilTrabajadorComponent implements OnInit {
   confirming: boolean = false;
   confirmError: string | null = null;
   closeConfirmSignal: number = 0;
+  slotSuggestions: string[] = [];
 
   // Component data
   profileHeroData: ProfileHeroData = {
@@ -292,6 +293,8 @@ export class PerfilTrabajadorComponent implements OnInit {
 
   onTimeSelected(time: string): void {
     this.bookingPanelData.summary.time = time;
+    this.confirmError = null;
+    this.slotSuggestions = [];
   }
 
   onBookingConfirmed(summary: BookingSummary): void {
@@ -363,8 +366,74 @@ export class PerfilTrabajadorComponent implements OnInit {
         console.error('🔴 [BOOKING] Error status:', err.status);
         console.error('🔴 [BOOKING] Error message:', err.message);
         console.error('🔴 [BOOKING] Error completo:', err);
-        this.confirmError = err?.error?.error || '❌ No se pudo crear la cita';
         this.confirming = false;
+        if (err?.status === 409 && err?.error?.error === 'SLOT_TAKEN') {
+          this.handleSlotTaken(appointmentData, err?.error?.nextOptions);
+        } else {
+          this.confirmError = err?.error?.message || err?.error?.error || '❌ No se pudo crear la cita';
+        }
+      }
+    });
+  }
+
+  private handleSlotTaken(
+    appointmentData: { provider_id: number; service_id: number; date: string; start_time: string },
+    backendOptions?: string[]
+  ): void {
+    const { provider_id: providerId, service_id: serviceId, date: isoDate, start_time: conflictedTime } = appointmentData;
+    const preservedSummary = { ...this.bookingPanelData.summary };
+
+    this.confirmError = 'Otro usuario acaba de reservar este horario. Elige una alternativa disponible.';
+    this.slotSuggestions = Array.isArray(backendOptions) && backendOptions.length
+      ? backendOptions.slice(0, 3)
+      : [];
+
+    this.appointments.getTimeSlots(providerId, isoDate, serviceId).subscribe({
+      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }>; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }) => {
+        const normalizedSlots: TimeSlot[] = (resp.time_slots || []).map((slot: { time: string; is_available: boolean; reason?: string }) => ({
+          time: slot.time,
+          isAvailable: slot.is_available,
+          reason: slot.reason as 'booked' | 'blocked' | undefined
+        }));
+
+        this.bookingPanelData.timeSlots = normalizedSlots.map(slot => ({
+          ...slot,
+          isSelected: false
+        }));
+
+        const meta = resp.meta || {};
+        const allowManual = !!meta.allow_manual;
+        const fullyBlocked = !!meta.fully_blocked;
+
+        if (allowManual) {
+          this.bookingPanelData.timeSlotsMessage = 'El profesional no tiene horarios publicados para esta fecha. Ingresa un horario para coordinar.';
+        } else if (fullyBlocked) {
+          this.bookingPanelData.timeSlotsMessage = 'Este profesional bloqueó esta fecha. Selecciona otro día.';
+        } else if (!normalizedSlots.length) {
+          this.bookingPanelData.timeSlotsMessage = 'No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional para coordinar.';
+        } else {
+          this.bookingPanelData.timeSlotsMessage = null;
+        }
+
+        this.bookingPanelData.allowManualTime = allowManual;
+        this.bookingPanelData.summary = {
+          service: preservedSummary.service,
+          date: preservedSummary.date,
+          time: '',
+          price: preservedSummary.price
+        };
+
+        if (!this.slotSuggestions.length) {
+          this.slotSuggestions = normalizedSlots
+            .filter(slot => slot.isAvailable && slot.time !== conflictedTime)
+            .slice(0, 3)
+            .map(slot => slot.time);
+        }
+      },
+      error: () => {
+        if (!this.slotSuggestions.length) {
+          this.slotSuggestions = [];
+        }
       }
     });
   }

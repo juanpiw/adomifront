@@ -62,6 +62,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   @Input() confirming: boolean = false;
   @Input() confirmError: string | null = null;
   @Input() closeConfirmSignal: number = 0; // aumentar para cerrar modal desde el padre
+  @Input() alternativeSlots: string[] = [];
 
   @Output() serviceSelected = new EventEmitter<string>();
   @Output() dateSelected = new EventEmitter<string>();
@@ -218,5 +219,9 @@ export class BookingPanelComponent implements OnChanges, OnInit {
       return '✅ Disponible';
     }
     return 'No disponible';
+  }
+
+  onAlternativeSlotClick(slot: string) {
+    this.onTimeClick(slot);
   }
 }
