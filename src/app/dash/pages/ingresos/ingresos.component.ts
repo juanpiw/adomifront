@@ -11,7 +11,10 @@ import {
   FinancialKPIs,
   Transaction,
   PaymentSettings,
-  IncomeGoal
+  IncomeGoal,
+  TabConfig,
+  WalletSummary,
+  WalletMovement
 } from '../../../../libs/shared-ui/income';
 import { 
   TimeFilterComponent,
@@ -52,6 +55,12 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   private providerProfile = inject(ProviderProfileService);
   private fb = inject(FormBuilder);
   private tbkOnboarding = inject(TbkOnboardingService);
+  tabsConfig: TabConfig[] = [
+    { id: 'resumen', label: 'Resumen de Ingresos', isActive: true },
+    { id: 'wallet', label: 'Billetera Adomi', isActive: false },
+    { id: 'pagos', label: 'Configuración de Pagos', isActive: false },
+    { id: 'metas', label: 'Metas de Ingreso', isActive: false }
+  ];
   activeTab = 'resumen';
   selectedTimeFilter = 'month';
   currentDateRange: { startDate: Date; endDate: Date } = {
@@ -81,6 +90,22 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     commerceName: ['', [Validators.required, Validators.minLength(3)]],
     commerceEmail: ['', [Validators.required, Validators.email]]
   });
+  walletSummary: WalletSummary = {
+    availableBalance: 0,
+    pendingBalance: 0,
+    holdBalance: 0,
+    totalWithdrawn: 0,
+    creditsEarned: 0,
+    lastUpdated: null,
+    nextReleaseAmount: 0,
+    nextReleaseDate: null
+  };
+  walletMovements: WalletMovement[] = [];
+  walletFilter: 'all' | 'credits' | 'debits' | 'holds' = 'all';
+  walletLoading = false;
+  walletLoaded = false;
+  walletError: string | null = null;
+  private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   
   // Datos de KPIs financieros
   financialKPIs: FinancialKPIs = {
@@ -143,6 +168,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   savingIncomeGoal = false;
 
   ngOnInit() {
+    this.setActiveTab(this.activeTab);
     // Leer query parameters para configurar el filtro automáticamente
     this.route.queryParams.subscribe(params => {
       if (params['period']) {
@@ -160,7 +186,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   }
 
   onTabChanged(tabId: string) {
-    this.activeTab = tabId;
+    this.setActiveTab(tabId);
   }
 
   onViewDetailsClicked() {
@@ -217,7 +243,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   }
 
   onGoToSummary() {
-    this.activeTab = 'resumen';
+    this.setActiveTab('resumen');
   }
 
   onTimeFilterChanged(filterChange: TimeFilterChange) {
@@ -546,8 +572,19 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     return !this.tbkSecondaryCode || this.tbkStatus === 'none';
   }
 
+  get filteredWalletMovements(): WalletMovement[] {
+    if (this.walletFilter === 'all') return this.walletMovements;
+    if (this.walletFilter === 'credits') {
+      return this.walletMovements.filter(movement => movement.type === 'credit');
+    }
+    if (this.walletFilter === 'debits') {
+      return this.walletMovements.filter(movement => movement.type === 'debit');
+    }
+    return this.walletMovements.filter(movement => movement.type === 'hold' || movement.type === 'release');
+  }
+
   goToPaymentsTab() {
-    this.activeTab = 'pagos';
+    this.setActiveTab('pagos');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -647,5 +684,182 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       }
     }
     return 'corriente';
+  }
+
+  private setActiveTab(tabId: string) {
+    this.activeTab = tabId;
+    this.tabsConfig = this.tabsConfig.map(tab => ({
+      ...tab,
+      isActive: tab.id === tabId
+    }));
+
+    if (tabId === 'wallet' && !this.walletLoaded && !this.walletLoading) {
+      this.loadWalletData();
+    }
+  }
+
+  private loadWalletData() {
+    this.walletLoading = true;
+    this.walletError = null;
+    try {
+      const now = new Date();
+      this.walletSummary = {
+        availableBalance: 785710,
+        pendingBalance: 120000,
+        holdBalance: 85000,
+        totalWithdrawn: 1650000,
+        creditsEarned: 6,
+        lastUpdated: now,
+        nextReleaseAmount: 180000,
+        nextReleaseDate: '2025-11-18'
+      };
+      this.walletMovements = [
+        {
+          id: 101,
+          date: '2025-11-11',
+          type: 'credit',
+          title: 'Depósito Cita Confirmada',
+          description: 'Corte colegial – Impact Render',
+          amount: 142860,
+          status: 'completado',
+          reference: 'PAY-2025-11-11-01',
+          relatedAppointmentId: 421
+        },
+        {
+          id: 102,
+          date: '2025-11-09',
+          type: 'hold',
+          title: 'En retención por verificación',
+          description: 'Coloración full glam – Carolina Díaz',
+          amount: 85000,
+          status: 'retenido',
+          reference: 'HOLD-2025-11-09-02',
+          relatedAppointmentId: 419
+        },
+        {
+          id: 103,
+          date: '2025-11-08',
+          type: 'credit',
+          title: 'Penalización por No-Show',
+          description: 'Cobro 50% por inasistencia del cliente',
+          amount: 60000,
+          status: 'completado',
+          reference: 'NSC-2025-11-08-07',
+          relatedAppointmentId: 415
+        },
+        {
+          id: 104,
+          date: '2025-11-05',
+          type: 'debit',
+          title: 'Retiro a cuenta bancaria',
+          description: 'Transferido a Banco de Chile',
+          amount: 350000,
+          status: 'completado',
+          reference: 'WD-2025-11-05-01'
+        },
+        {
+          id: 105,
+          date: '2025-11-02',
+          type: 'credit',
+          title: 'Depósito semanal',
+          description: 'Servicios 28 Oct – 1 Nov',
+          amount: 298570,
+          status: 'completado',
+          reference: 'PAY-2025-11-02-03'
+        },
+        {
+          id: 106,
+          date: '2025-10-30',
+          type: 'debit',
+          title: 'Pago comisión cash',
+          description: 'Comisión cobrada por citas en efectivo',
+          amount: 120000,
+          status: 'completado',
+          reference: 'COM-2025-10-30-05'
+        }
+      ];
+      this.walletLoaded = true;
+    } catch (error) {
+      console.error('[DASH_INGRESOS] Error cargando datos de wallet:', error);
+      this.walletError = 'No pudimos cargar tu billetera. Intenta nuevamente en unos minutos.';
+    } finally {
+      this.walletLoading = false;
+    }
+  }
+
+  onRequestWithdrawal() {
+    if (this.walletSummary.availableBalance <= 0) {
+      this.showToast('Necesitas saldo disponible para solicitar un retiro.');
+      return;
+    }
+    this.showToast('Solicitud de retiro enviada. Te notificaremos cuando esté procesada.');
+  }
+
+  onViewWithdrawalHistory() {
+    this.showToast('Muy pronto podrás revisar tu historial de retiros desde esta sección.');
+  }
+
+  setWalletFilter(filter: 'all' | 'credits' | 'debits' | 'holds') {
+    this.walletFilter = filter;
+  }
+
+  walletTypeLabel(type: WalletMovement['type']): string {
+    switch (type) {
+      case 'credit':
+        return 'Ingreso';
+      case 'debit':
+        return 'Retiro';
+      case 'hold':
+        return 'Retención';
+      case 'release':
+        return 'Liberación';
+      default:
+        return 'Movimiento';
+    }
+  }
+
+  walletTypeClass(type: WalletMovement['type']): string {
+    switch (type) {
+      case 'credit':
+        return 'wallet-tag--credit';
+      case 'debit':
+        return 'wallet-tag--debit';
+      case 'hold':
+        return 'wallet-tag--hold';
+      case 'release':
+        return 'wallet-tag--release';
+      default:
+        return 'wallet-tag--neutral';
+    }
+  }
+
+  walletStatusClass(status: WalletMovement['status']): string {
+    switch (status) {
+      case 'completado':
+        return 'chip--success';
+      case 'pendiente':
+        return 'chip--warning';
+      case 'retenido':
+        return 'chip--danger';
+      default:
+        return 'chip--neutral';
+    }
+  }
+
+  walletStatusLabel(status: WalletMovement['status']): string {
+    switch (status) {
+      case 'completado':
+        return 'Completado';
+      case 'pendiente':
+        return 'Pendiente';
+      case 'retenido':
+        return 'Retenido';
+      default:
+        return status;
+    }
+  }
+
+  formatCurrency(value: number): string {
+    return this.clpFormatter.format(value || 0);
   }
 }

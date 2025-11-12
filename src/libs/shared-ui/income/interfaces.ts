@@ -46,6 +46,29 @@ export interface TabConfig {
   isActive: boolean;
 }
 
+export interface WalletSummary {
+  availableBalance: number;
+  pendingBalance: number;
+  holdBalance: number;
+  totalWithdrawn: number;
+  creditsEarned: number;
+  lastUpdated: Date | null;
+  nextReleaseAmount?: number;
+  nextReleaseDate?: string | null;
+}
+
+export interface WalletMovement {
+  id: number;
+  date: string;
+  type: 'credit' | 'debit' | 'hold' | 'release';
+  title: string;
+  description?: string;
+  amount: number;
+  status: 'completado' | 'pendiente' | 'retenido';
+  reference?: string;
+  relatedAppointmentId?: number | null;
+}
+
 export interface KpiCard {
   id: string;
   label: string;

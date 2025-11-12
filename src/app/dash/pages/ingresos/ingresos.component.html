@@ -11,6 +11,7 @@
   
   <!-- Navegación de pestañas -->
   <ui-tab-navigation 
+    [tabs]="tabsConfig"
     (tabChanged)="onTabChanged($event)">
   </ui-tab-navigation>
   
@@ -140,6 +141,189 @@
         (viewAllClicked)="onViewAllTransactions()"
         (transactionSelected)="onTransactionSelected($event)">
       </ui-transactions-table>
+    </div>
+    
+    <!-- Pestaña: Billetera -->
+    <div *ngIf="activeTab === 'wallet'" class="tab-panel">
+      <div class="wallet-grid">
+        <section class="metric-card wallet-balance-card">
+          <div class="wallet-balance-card__header">
+            <div>
+              <h2>Billetera Adomi</h2>
+              <p>Saldo disponible para retiros y reintegros automáticos.</p>
+            </div>
+            <span class="wallet-last-updated" *ngIf="walletSummary.lastUpdated as updated">
+              Actualizado {{ updated | date:'short' }}
+            </span>
+          </div>
+          <div class="wallet-balance-card__amount">
+            {{ formatCurrency(walletSummary.availableBalance) }}
+          </div>
+          <p class="wallet-balance-card__caption">Saldo disponible</p>
+          <div class="wallet-balance-card__meta">
+            <div class="wallet-meta-item">
+              <span class="label">Pendiente de liberación</span>
+              <span class="value">{{ formatCurrency(walletSummary.pendingBalance) }}</span>
+            </div>
+            <div class="wallet-meta-item">
+              <span class="label">Saldo retenido</span>
+              <span class="value">{{ formatCurrency(walletSummary.holdBalance) }}</span>
+            </div>
+            <div class="wallet-meta-item">
+              <span class="label">Total retirado</span>
+              <span class="value">{{ formatCurrency(walletSummary.totalWithdrawn) }}</span>
+            </div>
+            <div class="wallet-meta-item">
+              <span class="label">Créditos generados</span>
+              <span class="value">{{ walletSummary.creditsEarned }}</span>
+            </div>
+          </div>
+          <div class="wallet-next-release" *ngIf="walletSummary.nextReleaseAmount">
+            <ui-icon name="calendar" class="wallet-next-release__icon"></ui-icon>
+            <div>
+              <p class="wallet-next-release__title">Próxima liberación</p>
+              <p class="wallet-next-release__value">
+                {{ formatCurrency(walletSummary.nextReleaseAmount || 0) }}
+                <span *ngIf="walletSummary.nextReleaseDate">• {{ walletSummary.nextReleaseDate | date:'dd/MM/yy' }}</span>
+              </p>
+            </div>
+          </div>
+          <div class="wallet-actions">
+            <button class="wallet-btn wallet-btn--primary" (click)="onRequestWithdrawal()">
+              Solicitar retiro
+            </button>
+            <button class="wallet-btn wallet-btn--ghost" (click)="onViewWithdrawalHistory()">
+              Historial de retiros
+            </button>
+          </div>
+        </section>
+
+        <section class="metric-card wallet-overview-card">
+          <h3>Resumen del periodo</h3>
+          <div class="wallet-stat-grid">
+            <div class="wallet-stat-card wallet-stat-card--credit">
+              <p class="wallet-stat-card__label">Ingresos creditados</p>
+              <p class="wallet-stat-card__value">
+                {{ formatCurrency(walletMovements.filter(m => m.type === 'credit').reduce((acc, cur) => acc + cur.amount, 0)) }}
+              </p>
+              <span class="wallet-stat-card__detail">{{ walletMovements.filter(m => m.type === 'credit').length }} movimientos</span>
+            </div>
+            <div class="wallet-stat-card wallet-stat-card--debit">
+              <p class="wallet-stat-card__label">Retiros y comisiones</p>
+              <p class="wallet-stat-card__value">
+                {{ formatCurrency(walletMovements.filter(m => m.type === 'debit').reduce((acc, cur) => acc + cur.amount, 0)) }}
+              </p>
+              <span class="wallet-stat-card__detail">{{ walletMovements.filter(m => m.type === 'debit').length }} movimientos</span>
+            </div>
+            <div class="wallet-stat-card wallet-stat-card--hold">
+              <p class="wallet-stat-card__label">Montos en retención</p>
+              <p class="wallet-stat-card__value">
+                {{ formatCurrency(walletSummary.holdBalance) }}
+              </p>
+              <span class="wallet-stat-card__detail">{{ walletMovements.filter(m => m.type === 'hold').length }} en espera</span>
+            </div>
+            <div class="wallet-stat-card wallet-stat-card--neutral">
+              <p class="wallet-stat-card__label">Total histórico retirado</p>
+              <p class="wallet-stat-card__value">
+                {{ formatCurrency(walletSummary.totalWithdrawn) }}
+              </p>
+              <span class="wallet-stat-card__detail">Incluye retiros manuales y automáticos</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="metric-card wallet-movements-card">
+        <div class="wallet-movements-card__header">
+          <div>
+            <h3>Movimientos recientes</h3>
+            <p>Detalle de ingresos, retiros y retenciones de la billetera.</p>
+          </div>
+          <div class="wallet-filters">
+            <button 
+              class="wallet-filter-btn" 
+              [class.wallet-filter-btn--active]="walletFilter === 'all'"
+              (click)="setWalletFilter('all')">
+              Todos
+            </button>
+            <button 
+              class="wallet-filter-btn" 
+              [class.wallet-filter-btn--active]="walletFilter === 'credits'"
+              (click)="setWalletFilter('credits')">
+              Ingresos
+            </button>
+            <button 
+              class="wallet-filter-btn" 
+              [class.wallet-filter-btn--active]="walletFilter === 'debits'"
+              (click)="setWalletFilter('debits')">
+              Retiros
+            </button>
+            <button 
+              class="wallet-filter-btn" 
+              [class.wallet-filter-btn--active]="walletFilter === 'holds'"
+              (click)="setWalletFilter('holds')">
+              Retenciones
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="walletLoading" class="wallet-loader">
+          <span class="spinner"></span>
+          <span>Cargando movimientos...</span>
+        </div>
+        <div *ngIf="walletError" class="tbk-card__error">{{ walletError }}</div>
+
+        <ng-container *ngIf="!walletLoading && !walletError">
+          <div *ngIf="filteredWalletMovements.length; else walletEmptyState">
+            <table class="wallet-movements-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Movimiento</th>
+                  <th>Monto</th>
+                  <th>Estado</th>
+                  <th>Referencia</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let movement of filteredWalletMovements">
+                  <td>{{ movement.date | date:'dd/MM/yy' }}</td>
+                  <td>
+                    <span class="wallet-tag" [class]="walletTypeClass(movement.type)">
+                      {{ walletTypeLabel(movement.type) }}
+                    </span>
+                    <div class="wallet-movement__title">{{ movement.title }}</div>
+                    <div class="wallet-movement__description" *ngIf="movement.description">{{ movement.description }}</div>
+                  </td>
+                  <td class="wallet-movement__amount" [class.wallet-movement__amount--credit]="movement.type === 'credit'" [class.wallet-movement__amount--debit]="movement.type === 'debit'">
+                    {{ formatCurrency(movement.amount) }}
+                  </td>
+                  <td>
+                    <span class="chip" [ngClass]="walletStatusClass(movement.status)">
+                      {{ walletStatusLabel(movement.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="wallet-reference">{{ movement.reference || '—' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="wallet-table-footer">
+              <button class="wallet-btn wallet-btn--ghost" (click)="showToast('Pronto podrás ver el historial completo de la billetera.')">
+                Ver historial completo
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #walletEmptyState>
+          <div class="wallet-empty">
+            <h4>Aún no registramos movimientos</h4>
+            <p>Cuando recibas pagos o realices retiros, aparecerán en este listado.</p>
+          </div>
+        </ng-template>
+      </section>
     </div>
     
     <!-- Pestaña: Configuración de Pagos -->
