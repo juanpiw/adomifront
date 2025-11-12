@@ -105,6 +105,11 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   walletLoading = false;
   walletLoaded = false;
   walletError: string | null = null;
+  walletCreditTotal = 0;
+  walletCreditCount = 0;
+  walletDebitTotal = 0;
+  walletDebitCount = 0;
+  walletHoldCount = 0;
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   
   // Datos de KPIs financieros
@@ -778,12 +783,20 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
           reference: 'COM-2025-10-30-05'
         }
       ];
+      this.walletCreditTotal = this.walletMovements
+        .filter((m) => m.type === 'credit')
+        .reduce((acc, cur) => acc + cur.amount, 0);
+      this.walletCreditCount = this.walletMovements.filter((m) => m.type === 'credit').length;
+      this.walletDebitTotal = this.walletMovements
+        .filter((m) => m.type === 'debit')
+        .reduce((acc, cur) => acc + cur.amount, 0);
+      this.walletDebitCount = this.walletMovements.filter((m) => m.type === 'debit').length;
+      this.walletHoldCount = this.walletMovements.filter((m) => m.type === 'hold' || m.type === 'release').length;
       this.walletLoaded = true;
-    } catch (error) {
-      console.error('[DASH_INGRESOS] Error cargando datos de wallet:', error);
-      this.walletError = 'No pudimos cargar tu billetera. Intenta nuevamente en unos minutos.';
-    } finally {
       this.walletLoading = false;
+    } catch (error) {
+      this.walletLoading = false;
+      this.walletError = 'No pudimos cargar tu billetera. Intenta nuevamente más tarde.';
     }
   }
 

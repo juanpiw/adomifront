@@ -204,23 +204,23 @@
             <div class="wallet-stat-card wallet-stat-card--credit">
               <p class="wallet-stat-card__label">Ingresos creditados</p>
               <p class="wallet-stat-card__value">
-                {{ formatCurrency(walletMovements.filter(m => m.type === 'credit').reduce((acc, cur) => acc + cur.amount, 0)) }}
+                {{ formatCurrency(walletCreditTotal) }}
               </p>
-              <span class="wallet-stat-card__detail">{{ walletMovements.filter(m => m.type === 'credit').length }} movimientos</span>
+              <span class="wallet-stat-card__detail">{{ walletCreditCount }} movimientos</span>
             </div>
             <div class="wallet-stat-card wallet-stat-card--debit">
               <p class="wallet-stat-card__label">Retiros y comisiones</p>
               <p class="wallet-stat-card__value">
-                {{ formatCurrency(walletMovements.filter(m => m.type === 'debit').reduce((acc, cur) => acc + cur.amount, 0)) }}
+                {{ formatCurrency(walletDebitTotal) }}
               </p>
-              <span class="wallet-stat-card__detail">{{ walletMovements.filter(m => m.type === 'debit').length }} movimientos</span>
+              <span class="wallet-stat-card__detail">{{ walletDebitCount }} movimientos</span>
             </div>
             <div class="wallet-stat-card wallet-stat-card--hold">
               <p class="wallet-stat-card__label">Montos en retención</p>
               <p class="wallet-stat-card__value">
                 {{ formatCurrency(walletSummary.holdBalance) }}
               </p>
-              <span class="wallet-stat-card__detail">{{ walletMovements.filter(m => m.type === 'hold').length }} en espera</span>
+              <span class="wallet-stat-card__detail">{{ walletHoldCount }} en espera</span>
             </div>
             <div class="wallet-stat-card wallet-stat-card--neutral">
               <p class="wallet-stat-card__label">Total histórico retirado</p>
