@@ -12,7 +12,7 @@ export interface AppointmentDto {
   date: string; // YYYY-MM-DD
   start_time: string; // HH:mm
   end_time: string; // HH:mm
-  status: 'scheduled'|'confirmed'|'cancelled'|'completed'|'expired';
+  status: 'scheduled'|'confirmed'|'cancelled'|'completed'|'expired'|'pending_reschedule';
   notes?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -27,6 +27,15 @@ export interface AppointmentDto {
   client_phone?: string | null;
   client_avatar_url?: string | null;
   client_review_id?: number | null;
+  client_reschedule_count?: number;
+  provider_reschedule_count?: number;
+  reschedule_requested_by?: 'none'|'client'|'provider';
+  reschedule_requested_at?: string | null;
+  reschedule_target_date?: string | null;
+  reschedule_target_start_time?: string | null;
+  reschedule_target_end_time?: string | null;
+  reschedule_reason?: string | null;
+  reschedule_previous_status?: string | null;
 }
 
 export interface TimeSlotDto {
@@ -123,6 +132,37 @@ export class AppointmentsService {
     return this.http.put<{ success: boolean; appointment: AppointmentDto }>(
       `${this.api}/appointments/${id}`,
       patch,
+      { headers: this.headers() }
+    );
+  }
+
+  requestReschedule(
+    id: number,
+    payload: { date: string; start_time: string; end_time?: string | null; reason?: string | null }
+  ): Observable<{ success: boolean; appointment: AppointmentDto }>{
+    return this.http.post<{ success: boolean; appointment: AppointmentDto }>(
+      `${this.api}/appointments/${id}/reschedule`,
+      {
+        date: payload.date,
+        start_time: payload.start_time,
+        end_time: payload.end_time ?? null,
+        reason: payload.reason ?? null
+      },
+      { headers: this.headers() }
+    );
+  }
+
+  respondReschedule(
+    id: number,
+    decision: 'accept'|'reject',
+    options?: { reason?: string | null }
+  ): Observable<{ success: boolean; appointment: AppointmentDto }>{
+    return this.http.post<{ success: boolean; appointment: AppointmentDto }>(
+      `${this.api}/appointments/${id}/reschedule/decision`,
+      {
+        decision,
+        reason: options?.reason ?? null
+      },
       { headers: this.headers() }
     );
   }
@@ -279,6 +319,13 @@ export class AppointmentsService {
       error?: string;
     }>(
       `${this.api}/provider/appointments/pending-requests`,
+      { headers: this.headers() }
+    );
+  }
+
+  listProviderRescheduleRequests(): Observable<{ success: boolean; appointments: AppointmentDto[]; error?: string }> {
+    return this.http.get<{ success: boolean; appointments: AppointmentDto[]; error?: string }>(
+      `${this.api}/provider/appointments/reschedule-requests`,
       { headers: this.headers() }
     );
   }

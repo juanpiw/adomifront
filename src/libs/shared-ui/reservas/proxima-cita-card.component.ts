@@ -31,7 +31,7 @@ export interface ProximaCitaData {
 export class ProximaCitaCardComponent implements OnInit, OnChanges {
   @Input() data!: ProximaCitaData;
   @Output() contactar = new EventEmitter<void>();
-  @Output() reprogramar = new EventEmitter<void>();
+  @Output() reprogramar = new EventEmitter<number>();
   @Output() cancelar = new EventEmitter<number>();
   @Output() pagar = new EventEmitter<number>();
   @Output() pedirDevolucion = new EventEmitter<{ appointmentId: number; reason: string }>();
@@ -88,7 +88,7 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
 
   onReprogramarClick(): void {
     try { console.log('[PROXIMA_CITA_CARD] REPROGRAMAR click', { appointmentId: this.data?.appointmentId }); } catch {}
-    this.reprogramar.emit();
+    this.reprogramar.emit(this.data?.appointmentId || 0);
   }
 
   onCancelarClick(): void {

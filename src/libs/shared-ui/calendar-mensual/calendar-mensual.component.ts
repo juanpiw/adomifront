@@ -10,7 +10,7 @@ export interface CalendarEvent {
   time: string;
   type: 'appointment' | 'break' | 'blocked';
   color?: string;
-  status?: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'expired';
+  status?: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'expired' | 'pending_reschedule';
   paymentStatus?: 'unpaid' | 'paid' | 'succeeded' | 'pending' | 'completed';
 }
 
@@ -136,6 +136,7 @@ export class CalendarMensualComponent implements OnInit {
     // Contar eventos por estado
     let confirmedCount = 0;
     let scheduledCount = 0;
+    let rescheduleCount = 0;
     let cancelledCount = 0;
     let paidCount = 0;
 
@@ -151,6 +152,8 @@ export class CalendarMensualComponent implements OnInit {
         }
       } else if (event.status === 'scheduled') {
         scheduledCount++;
+      } else if (event.status === 'pending_reschedule') {
+        rescheduleCount++;
       }
     });
 
@@ -161,7 +164,7 @@ export class CalendarMensualComponent implements OnInit {
       return '#3b82f6'; // Azul si todas están pagadas
     } else if (confirmedCount > 0) {
       return '#f59e0b'; // Amarillo si hay confirmadas pendientes de pago
-    } else if (scheduledCount > 0) {
+    } else if (scheduledCount > 0 || rescheduleCount > 0) {
       return '#10b981'; // Verde si solo hay programadas
     }
 
@@ -243,6 +246,11 @@ export class CalendarMensualComponent implements OnInit {
         if (event.status === 'scheduled') {
           console.log(`[CALENDAR] Event ${event.id}: SCHEDULED -> GREEN`);
           return '#10b981'; // Verde para programadas (esperando confirmación)
+        }
+        
+        if (event.status === 'pending_reschedule') {
+          console.log(`[CALENDAR] Event ${event.id}: PENDING_RESCHEDULE -> PURPLE`);
+          return '#8b5cf6'; // Morado para citas pendientes de reprogramación
         }
         
         if (event.status === 'completed') {

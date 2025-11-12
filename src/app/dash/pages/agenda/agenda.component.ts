@@ -189,6 +189,9 @@ export class DashAgendaComponent implements OnInit {
   reviewModalError: string | null = null;
   reviewTargetAppointment: DayAppointment | null = null;
 
+  rescheduleRequestsLoading = false;
+  rescheduleRequests: Array<(AppointmentDto & { client_name?: string; service_name?: string; reschedule_target_date?: string | null; reschedule_target_start_time?: string | null; reschedule_reason?: string | null })> = [];
+
   currentProviderName: string | null = null;
   availabilityLoading = false;
   private appointments = inject(AppointmentsService);
@@ -225,6 +228,7 @@ export class DashAgendaComponent implements OnInit {
     this.loadDashboardData();
     this.refreshEarnings();
     this.loadPaidAwaiting();
+    this.loadRescheduleRequests();
     this.loadWeeklyAvailability();
     this.loadExceptions();
     // Cargar mes actual
@@ -272,7 +276,10 @@ export class DashAgendaComponent implements OnInit {
         });
       } catch {}
     });
-    this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => this.onRealtimeUpsert(a));
+    this.appointments.onAppointmentUpdated().subscribe((a: AppointmentDto) => {
+      this.onRealtimeUpsert(a);
+      this.loadRescheduleRequests();
+    });
     this.appointments.onAppointmentDeleted().subscribe((p: { id: number }) => this.onRealtimeDelete(p.id));
 
     // Inicializar pestaña cash

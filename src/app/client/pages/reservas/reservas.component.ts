@@ -34,6 +34,37 @@ import { FavoritesService } from '../../../services/favorites.service';
   <section class="reservas-page">
     <h2 class="title">Mis Reservas</h2>
 
+    <section *ngIf="rescheduleRequestsForRespond.length" class="reschedule-banner reschedule-banner--action">
+      <div *ngFor="let request of rescheduleRequestsForRespond" class="reschedule-banner__item">
+        <div class="reschedule-banner__info">
+          <p class="reschedule-banner__title">Solicitud de reprogramación</p>
+          <p class="reschedule-banner__text">
+            {{ request.provider_name || 'El profesional' }} propone {{ formatRescheduleLabel(request) }}.
+            <span *ngIf="request.reschedule_reason">Motivo: {{ request.reschedule_reason }}</span>
+          </p>
+        </div>
+        <div class="reschedule-banner__actions">
+          <button class="reschedule-btn accept" (click)="respondReschedule(request.id, 'accept')" [disabled]="rescheduleActionLoadingId === request.id">
+            {{ rescheduleActionLoadingId === request.id ? 'Aceptando...' : 'Aceptar' }}
+          </button>
+          <button class="reschedule-btn reject" (click)="respondReschedule(request.id, 'reject')" [disabled]="rescheduleActionLoadingId === request.id">
+            {{ rescheduleActionLoadingId === request.id ? 'Procesando...' : 'Rechazar' }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="rescheduleRequestsOutgoing.length" class="reschedule-banner reschedule-banner--info">
+      <div *ngFor="let request of rescheduleRequestsOutgoing" class="reschedule-banner__item">
+        <div class="reschedule-banner__info">
+          <p class="reschedule-banner__title">Reprogramación en revisión</p>
+          <p class="reschedule-banner__text">
+            Esperando respuesta del profesional para mover la cita a {{ formatRescheduleLabel(request) }}.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <ui-reservas-tabs 
       [tabs]="['Próximas','Pasadas','Canceladas','Pagadas/Realizadas']"
       (tabChange)="activeTab = $event" 
@@ -46,6 +77,7 @@ import { FavoritesService } from '../../../services/favorites.service';
           [data]="p" 
           (pagar)="onPagar($event)"
           (pedirDevolucion)="onRefund($event)"
+          (reprogramar)="onRequestReschedule($event)"
           (contactar)="onContactar(p.appointmentId)"
           (cancelar)="openCancelModal($event)"
           style="margin-bottom:12px;">
@@ -168,6 +200,18 @@ import { FavoritesService } from '../../../services/favorites.service';
     .reservas-page{padding:24px}
     .title{font-weight:800;font-size:24px;margin:0 0 8px;color:#0f172a}
     .content{margin-top:16px}
+    .reschedule-banner{margin:16px 0;padding:16px;border-radius:12px;background:#eef2ff;border:1px solid #c7d2fe;display:flex;flex-direction:column;gap:12px}
+    .reschedule-banner--action{background:#fff7ed;border-color:#fed7aa}
+    .reschedule-banner--info{background:#f8fafc;border-color:#e2e8f0}
+    .reschedule-banner__item{display:flex;flex-direction:column;gap:12px;border-radius:10px;padding:0}
+    .reschedule-banner__info{display:flex;flex-direction:column;gap:4px}
+    .reschedule-banner__title{margin:0;font-weight:700;color:#1f2937;font-size:15px}
+    .reschedule-banner__text{margin:0;color:#475569;font-size:14px;line-height:1.5}
+    .reschedule-banner__actions{display:flex;gap:8px;flex-wrap:wrap}
+    .reschedule-btn{padding:8px 16px;border-radius:999px;border:none;font-weight:700;cursor:pointer;transition:opacity .2s ease}
+    .reschedule-btn.accept{background:#16a34a;color:#fff}
+    .reschedule-btn.reject{background:#ef4444;color:#fff}
+    .reschedule-btn:disabled{opacity:.7;cursor:not-allowed}
     .pay-modal__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
     .pay-modal__container{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:420px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);z-index:91;overflow:hidden}
     .pay-modal__header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb}
@@ -236,6 +280,11 @@ export class ClientReservasComponent implements OnInit {
   canceladasProfesionalList: CanceladaProfesionalData[] = [];
   realizadasList: ReservaPasadaData[] = [];
   private favoritesSet: Set<number> = new Set<number>();
+
+  private appointmentIndex = new Map<number, (AppointmentDto & any)>();
+  rescheduleRequestsForRespond: Array<AppointmentDto & any> = [];
+  rescheduleRequestsOutgoing: Array<AppointmentDto & any> = [];
+  rescheduleActionLoadingId: number | null = null;
 
   // Estado del modal de reseñas
   showReviewModal = false;
@@ -331,10 +380,24 @@ export class ClientReservasComponent implements OnInit {
   private loadAppointments(): void {
     this.appointments.listClientAppointments().subscribe({
       next: (resp) => {
-        const list = (resp.appointments || []) as (AppointmentDto & { provider_name?: string; service_name?: string; price?: number; payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed' })[];
+        const list = (resp.appointments || []) as (AppointmentDto & {
+          provider_name?: string;
+          service_name?: string;
+          price?: number;
+          payment_status?: 'unpaid'|'paid'|'succeeded'|'pending'|'completed';
+          reschedule_requested_by?: 'none'|'client'|'provider';
+          reschedule_target_date?: string | null;
+          reschedule_target_start_time?: string | null;
+          reschedule_reason?: string | null;
+        })[];
         console.log('[RESERVAS] Citas cargadas:', list);
         console.log('[RESERVAS] Precios en datos:', list.map(a => ({ id: a.id, price: a.price, service_name: a.service_name })));
         console.log('[RESERVAS] Estado de pago por cita:', list.map(a => ({ id: a.id, payment_status: (a as any).payment_status, status: a.status })));
+        this.appointmentIndex = new Map();
+        list.forEach(entry => this.appointmentIndex.set(Number(entry.id), entry as any));
+        const pendingReschedules = list.filter(a => a.status === 'pending_reschedule');
+        this.rescheduleRequestsForRespond = pendingReschedules.filter(a => String(a.reschedule_requested_by) === 'provider') as any;
+        this.rescheduleRequestsOutgoing = pendingReschedules.filter(a => String(a.reschedule_requested_by) === 'client') as any;
         const paid = list.filter(a => ['paid','succeeded','completed'].includes(String((a as any).payment_status || '')));
         console.log('[RESERVAS][TRACE] Paid appointments mapping:', paid.map(a => ({ id: a.id, status: (a as any).payment_status, date: a.date })));
         const now = new Date();
@@ -590,6 +653,90 @@ export class ClientReservasComponent implements OnInit {
     this.cancelModalAppointmentId = null;
     this.cancelModalLoading = false;
     this.cancelModalError = null;
+  }
+
+  onRequestReschedule(appointmentId?: number | null): void {
+    if (!appointmentId) {
+      return;
+    }
+    const appt = this.appointmentIndex.get(Number(appointmentId));
+    if (!appt) {
+      alert('No encontramos la cita seleccionada.');
+      return;
+    }
+    if (String(appt.status) === 'pending_reschedule') {
+      alert('Ya existe una solicitud de reprogramación en curso.');
+      return;
+    }
+    if (Number(appt.client_reschedule_count || 0) >= 1) {
+      alert('Solo puedes solicitar una reprogramación por cita.');
+      return;
+    }
+    const defaultDate = appt.reschedule_target_date || appt.date;
+    const defaultTimeSrc = (appt.reschedule_target_start_time || appt.start_time || '').toString();
+    const defaultTime = defaultTimeSrc ? defaultTimeSrc.slice(0, 5) : '';
+    const newDate = window.prompt('Ingresa la nueva fecha (YYYY-MM-DD)', defaultDate || '');
+    if (!newDate) return;
+    const newTime = window.prompt('Ingresa el nuevo horario (HH:mm)', defaultTime);
+    if (!newTime) return;
+    const reason = window.prompt('Motivo para el profesional (opcional)');
+    this.rescheduleActionLoadingId = Number(appointmentId);
+    this.appointments.requestReschedule(Number(appointmentId), {
+      date: newDate,
+      start_time: newTime,
+      reason: reason && reason.trim().length ? reason.trim() : null
+    }).subscribe({
+      next: () => {
+        this.rescheduleActionLoadingId = null;
+        this.loadAppointments();
+        alert('Solicitud de reprogramación enviada.');
+      },
+      error: (err) => {
+        this.rescheduleActionLoadingId = null;
+        console.error('[RESERVAS] Error al solicitar reprogramación', err);
+        alert(err?.error?.error || 'No se pudo procesar la reprogramación.');
+      }
+    });
+  }
+
+  respondReschedule(appointmentId: number, decision: 'accept'|'reject'): void {
+    if (!appointmentId) return;
+    const appt = this.appointmentIndex.get(Number(appointmentId));
+    if (!appt) return;
+    if (this.rescheduleActionLoadingId === appointmentId) return;
+    if (decision === 'reject') {
+      const confirmReject = window.confirm('¿Seguro que deseas rechazar la reprogramación propuesta?');
+      if (!confirmReject) {
+        return;
+      }
+    }
+    let reason: string | null = null;
+    if (decision === 'reject') {
+      const input = window.prompt('Motivo (opcional)');
+      reason = input && input.trim().length ? input.trim() : null;
+    }
+    this.rescheduleActionLoadingId = appointmentId;
+    this.appointments.respondReschedule(appointmentId, decision, { reason }).subscribe({
+      next: () => {
+        this.rescheduleActionLoadingId = null;
+        this.loadAppointments();
+        alert(decision === 'accept' ? 'Reprogramación confirmada.' : 'Solicitud de reprogramación rechazada.');
+      },
+      error: (err) => {
+        this.rescheduleActionLoadingId = null;
+        console.error('[RESERVAS] Error al responder reprogramación', err);
+        alert(err?.error?.error || 'No pudimos procesar tu respuesta.');
+      }
+    });
+  }
+
+  formatRescheduleLabel(appt: AppointmentDto & any): string {
+    if (!appt) return '';
+    const date = appt.reschedule_target_date || appt.date;
+    const time = (appt.reschedule_target_start_time || appt.start_time || '').toString();
+    const formattedDate = this.formatDate(date || '');
+    const formattedTime = this.formatTime(time);
+    return `${formattedDate} a las ${formattedTime}`;
   }
   
   isCurrentAppointmentOverCashLimit(): boolean {

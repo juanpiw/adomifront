@@ -16,6 +16,7 @@ import {
   WalletSummary,
   WalletMovement
 } from '../../../../libs/shared-ui/income';
+import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 import { 
   TimeFilterComponent,
   TimeFilterChange
@@ -43,6 +44,7 @@ type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
     PaymentSettingsFormComponent,
     IncomeGoalsComponent,
     TimeFilterComponent,
+    IconComponent,
     ReactiveFormsModule
   ],
   templateUrl: './ingresos.component.html',
