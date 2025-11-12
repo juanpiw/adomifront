@@ -18,6 +18,7 @@ import { ClientReservasComponent } from './client/pages/reservas/reservas.compon
 import { FavoritosComponent } from './client/pages/favoritos/favoritos.component';
 import { ClientPerfilComponent } from './client/pages/perfil/perfil.component';
 import { ClientPagosComponent } from './client/pages/pagos/pagos.component';
+import { ClientWalletComponent } from './client/pages/wallet/wallet.component';
 import { ClientConfiguracionComponent } from './client/pages/configuracion/configuracion.component';
 import { ExplorarComponent } from './client/explorar/explorar.component';
 import { PerfilTrabajadorComponent } from './client/pages/perfil-trabajador/perfil-trabajador.component';
@@ -57,6 +58,7 @@ export const routes: Routes = [
       { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },
+      { path: 'wallet', component: ClientWalletComponent },
       { path: 'pago/exito', component: ClientReservasComponent },
       { path: 'pago/cancelado', component: ClientReservasComponent },
       { path: 'configuracion', component: ClientConfiguracionComponent },

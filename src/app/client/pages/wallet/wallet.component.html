@@ -1,0 +1,62 @@
+<div class="wallet-page">
+  <header class="wallet-header">
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0H3" />
+      </svg>
+      Mi Billetera Adomi
+    </h1>
+    <p>Créditos disponibles para usar en tus próximos servicios.</p>
+  </header>
+
+  <section class="wallet-balance-card">
+    <p class="wallet-balance-card__label">Saldo Disponible</p>
+    <div class="wallet-balance-card__value">
+      <span>{{ formatCurrency(walletSummary.balance) }}</span>
+      <span class="wallet-balance-card__currency">{{ walletSummary.currency }}</span>
+    </div>
+    <p class="wallet-balance-card__help">
+      Este crédito se descontará automáticamente en el pago de tu próxima reserva.
+    </p>
+
+    <button type="button" class="wallet-balance-card__cta">
+      Usar mi saldo (Buscar servicio)
+    </button>
+
+    <p class="wallet-balance-card__note">
+      Regla 4.3 · {{ walletSummary.note }}
+    </p>
+  </section>
+
+  <section class="wallet-history">
+    <h2>Historial de movimientos</h2>
+    <div class="wallet-history__list">
+      <article class="wallet-movement" *ngFor="let movement of movements">
+        <div class="wallet-movement__icon" [class.credit]="movement.type === 'credit'" [class.debit]="movement.type === 'debit'">
+          <ng-container [ngSwitch]="movement.type">
+            <svg *ngSwitchCase="'credit'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg *ngSwitchCase="'debit'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </ng-container>
+        </div>
+        <div class="wallet-movement__info">
+          <p class="wallet-movement__title">{{ movement.title }}</p>
+          <p class="wallet-movement__description">
+            {{ movement.description }}
+            <span *ngIf="movement.rule" class="wallet-movement__rule">({{ movement.rule }})</span>
+          </p>
+        </div>
+        <div class="wallet-movement__meta" [class.credit]="movement.type === 'credit'" [class.debit]="movement.type === 'debit'">
+          <p class="wallet-movement__amount">
+            {{ movement.type === 'credit' ? '+' : '-' }} {{ formatCurrency(movement.amount) }}
+          </p>
+          <p class="wallet-movement__date">{{ formatDate(movement.date) }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
+
