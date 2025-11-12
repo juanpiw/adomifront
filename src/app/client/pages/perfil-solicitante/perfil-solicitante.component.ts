@@ -1,8 +1,16 @@
 import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ProviderClientService, ProviderClientProfile } from '../../../services/provider-client.service';
-import { ProviderClientReviewsService, ProviderClientReview, ProviderClientReviewSummary, ProviderClientReviewableAppointment } from '../../../services/provider-client-reviews.service';
+import {
+  ProviderClientService,
+  ProviderClientProfile,
+  ProviderClientReview,
+  ProviderClientReviewSummary
+} from '../../../services/provider-client.service';
+import {
+  ProviderClientReviewsService,
+  ProviderClientReviewableAppointment
+} from '../../../services/provider-client-reviews.service';
 import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
 import { ReviewModalComponent, ReviewData } from '../../../../libs/shared-ui/review-modal/review-modal.component';
 
@@ -19,6 +27,8 @@ export class PerfilSolicitanteComponent implements OnInit {
   private providerClientReviews = inject(ProviderClientReviewsService);
 
   @ViewChild('clientReviewModal') clientReviewModal?: ReviewModalComponent;
+
+  readonly Math = Math;
 
   loading = true;
   error: string | null = null;
