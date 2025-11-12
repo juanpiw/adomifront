@@ -34,6 +34,29 @@ export interface ProviderIncomeGoalDto {
   progress: number;
 }
 
+export interface ProviderWalletSummaryDto {
+  available_balance: number;
+  pending_balance: number;
+  hold_balance: number;
+  total_withdrawn: number;
+  credits_earned: number;
+  last_updated: string | null;
+  next_release_amount: number;
+  next_release_date: string | null;
+}
+
+export interface ProviderWalletMovementDto {
+  id: number;
+  date: string;
+  type: 'credit' | 'debit' | 'hold' | 'release';
+  title: string;
+  description?: string | null;
+  amount: number;
+  status: 'completado' | 'pendiente' | 'retenido';
+  reference?: string | null;
+  relatedAppointmentId?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FinancesService {
   private http = inject(HttpClient);
@@ -79,6 +102,31 @@ export class FinancesService {
       { headers: this.headers() }
     );
   }
+
+  getWalletSummary(): Observable<{ success: boolean; summary: ProviderWalletSummaryDto }>{
+    return this.http.get<{ success: boolean; summary: ProviderWalletSummaryDto }>(
+      `${this.base}/provider/wallet/summary`,
+      { headers: this.headers() }
+    );
+  }
+
+  getWalletMovements(options?: { type?: 'all' | 'credits' | 'debits' | 'holds'; limit?: number; offset?: number }): Observable<{
+    success: boolean;
+    movements: ProviderWalletMovementDto[];
+    pagination: { total: number; limit: number; offset: number };
+  }>{
+    let params = new HttpParams();
+    if (options?.type) params = params.set('type', options.type);
+    if (Number.isFinite(options?.limit)) params = params.set('limit', String(options?.limit));
+    if (Number.isFinite(options?.offset)) params = params.set('offset', String(options?.offset));
+
+    return this.http.get<{
+      success: boolean;
+      movements: ProviderWalletMovementDto[];
+      pagination: { total: number; limit: number; offset: number };
+    }>(
+      `${this.base}/provider/wallet/movements`,
+      { headers: this.headers(), params }
+    );
+  }
 }
-
-

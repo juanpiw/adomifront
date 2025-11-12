@@ -27,6 +27,10 @@
       <p class="pc-days-label">días restantes</p>
     </div>
   </div>
+
+  <p *ngIf="data.allowReprogram === false && data.reprogramDisabledReason" class="pc-hint">
+    {{ data.reprogramDisabledReason }}
+  </p>
   <!-- Advertencia de límite de efectivo -->
   <div *ngIf="data.mostrarPagar && data.precio && data.precio > (data.cashCap ?? 150000)" class="pc-cash-limit-warning">
     <div class="pc-cash-limit-warning__icon">💳</div>
@@ -37,8 +41,20 @@
   </div>
 
   <div class="pc-actions">
-    <button class="pc-btn primary" (click)="onContactarClick()" [disabled]="data.mostrarPagar" title="{{ data.mostrarPagar ? 'Disponible luego del pago' : '' }}">Contactar</button>
-    <button class="pc-btn secondary" (click)="onReprogramarClick()">Reprogramar</button>
+    <button
+      class="pc-btn primary"
+      (click)="onContactarClick()"
+      [disabled]="data.mostrarPagar"
+      title="{{ data.mostrarPagar ? 'Disponible luego del pago' : '' }}">
+      Contactar
+    </button>
+    <button
+      class="pc-btn secondary"
+      (click)="onReprogramarClick()"
+      [disabled]="data.allowReprogram === false"
+      [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
+      Reprogramar
+    </button>
     <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
     <button *ngIf="data.mostrarPagar" class="pc-btn primary" (click)="onPagarClick()">Pagar</button>
     <span *ngIf="data.mostrarPagar && data.paymentPreference" class="pc-pref-pill" [class.pc-pref-pill--cash]="data.paymentPreference==='cash'" [class.pc-pref-pill--card]="data.paymentPreference==='card'">

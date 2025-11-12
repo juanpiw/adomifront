@@ -19,6 +19,8 @@ export interface ProximaCitaData {
   precio?: number;
   cashCap?: number;
   cashCapLabel?: string;
+  allowReprogram?: boolean;
+  reprogramDisabledReason?: string;
 }
 
 @Component({
@@ -87,7 +89,15 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   }
 
   onReprogramarClick(): void {
-    try { console.log('[PROXIMA_CITA_CARD] REPROGRAMAR click', { appointmentId: this.data?.appointmentId }); } catch {}
+    try {
+      console.log('[PROXIMA_CITA_CARD] REPROGRAMAR click', {
+        appointmentId: this.data?.appointmentId,
+        allowReprogram: this.data?.allowReprogram
+      });
+    } catch {}
+    if (this.data?.allowReprogram === false) {
+      return;
+    }
     this.reprogramar.emit(this.data?.appointmentId || 0);
   }
 

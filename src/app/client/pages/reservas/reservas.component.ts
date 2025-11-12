@@ -65,6 +65,47 @@ import { FavoritesService } from '../../../services/favorites.service';
       </div>
     </section>
 
+    <!-- Modal reprogramación -->
+    <div *ngIf="showRescheduleModal" class="reschedule-modal__backdrop" (click)="closeRescheduleModal()"></div>
+    <div *ngIf="showRescheduleModal" class="reschedule-modal__container" role="dialog" aria-modal="true">
+      <header class="reschedule-modal__header">
+        <h4>Reprogramar cita</h4>
+        <button type="button" class="reschedule-modal__close" (click)="closeRescheduleModal()" [disabled]="rescheduleForm.loading">✕</button>
+      </header>
+      <section class="reschedule-modal__body">
+        <p class="reschedule-modal__context" *ngIf="rescheduleForm.originalDate">
+          Cita original: {{ rescheduleForm.originalDate }} · {{ rescheduleForm.originalTime }}
+        </p>
+        <form (ngSubmit)="submitReschedule()" class="reschedule-modal__form">
+          <label class="reschedule-modal__label">
+            Nueva fecha
+            <input type="date" name="rescheduleDate" [(ngModel)]="rescheduleForm.date" (change)="updateRescheduleLateFlag()" (blur)="updateRescheduleLateFlag()" required [disabled]="rescheduleForm.loading">
+          </label>
+          <label class="reschedule-modal__label">
+            Nuevo horario
+            <input type="time" name="rescheduleTime" [(ngModel)]="rescheduleForm.time" (change)="updateRescheduleLateFlag()" (blur)="updateRescheduleLateFlag()" required [disabled]="rescheduleForm.loading">
+          </label>
+          <label class="reschedule-modal__label">
+            Mensaje para el profesional (opcional)
+            <textarea name="rescheduleReason" rows="3" [(ngModel)]="rescheduleForm.reason" placeholder="Comparte un contexto breve" [disabled]="rescheduleForm.loading"></textarea>
+          </label>
+          <div class="reschedule-modal__note" *ngIf="rescheduleForm.isLate">
+            El cambio es dentro de las próximas 24 horas. Enviaremos una solicitud al profesional para que la apruebe.
+          </div>
+          <div class="reschedule-modal__note reschedule-modal__note--instant" *ngIf="!rescheduleForm.isLate">
+            El cambio es con suficiente anticipación. Reprogramaremos automáticamente la cita.
+          </div>
+          <div class="reschedule-modal__error" *ngIf="rescheduleForm.error">{{ rescheduleForm.error }}</div>
+          <div class="reschedule-modal__actions">
+            <button type="button" class="reschedule-modal__btn" (click)="closeRescheduleModal()" [disabled]="rescheduleForm.loading">Cerrar</button>
+            <button type="submit" class="reschedule-modal__btn reschedule-modal__btn--primary" [disabled]="rescheduleForm.loading">
+              {{ rescheduleForm.loading ? 'Enviando...' : (rescheduleForm.isLate ? 'Solicitar reprogramación' : 'Reprogramar cita') }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+
     <ui-reservas-tabs 
       [tabs]="['Próximas','Pasadas','Canceladas','Pagadas/Realizadas']"
       (tabChange)="activeTab = $event" 
@@ -212,6 +253,25 @@ import { FavoritesService } from '../../../services/favorites.service';
     .reschedule-btn.accept{background:#16a34a;color:#fff}
     .reschedule-btn.reject{background:#ef4444;color:#fff}
     .reschedule-btn:disabled{opacity:.7;cursor:not-allowed}
+    .reschedule-modal__backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:94}
+    .reschedule-modal__container{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:460px;background:#fff;border-radius:16px;box-shadow:0 30px 60px rgba(15,23,42,.25);z-index:95;overflow:hidden;display:flex;flex-direction:column}
+    .reschedule-modal__header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+    .reschedule-modal__header h4{margin:0;font-size:18px;font-weight:700;color:#0f172a}
+    .reschedule-modal__close{border:none;background:transparent;font-size:20px;cursor:pointer;color:#64748b}
+    .reschedule-modal__body{padding:20px;display:flex;flex-direction:column;gap:16px}
+    .reschedule-modal__context{margin:0;color:#475569;font-size:14px;font-weight:600}
+    .reschedule-modal__form{display:flex;flex-direction:column;gap:16px}
+    .reschedule-modal__label{display:flex;flex-direction:column;font-size:13px;font-weight:700;color:#334155;gap:6px;text-transform:uppercase;letter-spacing:.05em}
+    .reschedule-modal__label input,
+    .reschedule-modal__label textarea{border:1px solid #cbd5f5;border-radius:10px;padding:10px;font-size:15px;font-weight:500;color:#0f172a}
+    .reschedule-modal__label textarea{resize:vertical;min-height:90px}
+    .reschedule-modal__note{background:#fff7ed;border:1px solid #fed7aa;color:#92400e;font-weight:600;border-radius:10px;padding:12px;font-size:13px}
+    .reschedule-modal__note--instant{background:#ecfdf5;border-color:#6ee7b7;color:#047857}
+    .reschedule-modal__error{color:#dc2626;font-weight:600;font-size:13px}
+    .reschedule-modal__actions{display:flex;justify-content:flex-end;gap:12px;padding-top:8px}
+    .reschedule-modal__btn{padding:10px 16px;border-radius:10px;border:1px solid #cbd5f5;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;transition:background .2s ease,transform .2s ease}
+    .reschedule-modal__btn--primary{background:#4338ca;color:#fff;border-color:#4338ca}
+    .reschedule-modal__btn:disabled{opacity:.6;cursor:not-allowed}
     .pay-modal__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
     .pay-modal__container{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:420px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);z-index:91;overflow:hidden}
     .pay-modal__header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb}
@@ -285,6 +345,28 @@ export class ClientReservasComponent implements OnInit {
   rescheduleRequestsForRespond: Array<AppointmentDto & any> = [];
   rescheduleRequestsOutgoing: Array<AppointmentDto & any> = [];
   rescheduleActionLoadingId: number | null = null;
+  showRescheduleModal = false;
+  rescheduleForm: {
+    appointmentId: number | null;
+    date: string;
+    time: string;
+    reason: string;
+    loading: boolean;
+    error: string;
+    isLate: boolean;
+    originalDate: string;
+    originalTime: string;
+  } = {
+    appointmentId: null,
+    date: '',
+    time: '',
+    reason: '',
+    loading: false,
+    error: '',
+    isLate: false,
+    originalDate: '',
+    originalTime: ''
+  };
 
   // Estado del modal de reseñas
   showReviewModal = false;
@@ -436,6 +518,19 @@ export class ClientReservasComponent implements OnInit {
             const rawPayment = String((a as any).payment_status || '')
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}, rawPrice=${JSON.stringify(a.price)}`);
+            const limitReached = Number(a.client_reschedule_count || 0) >= 1;
+            let allowReprogram = !(a.status === 'confirmed' && !isPaid);
+            if (limitReached) {
+              allowReprogram = false;
+            }
+            let reprogramDisabledReason: string | undefined;
+            if (!allowReprogram) {
+              if (!isPaid && a.status === 'confirmed') {
+                reprogramDisabledReason = 'Reprograma una vez que completes el pago de la cita.';
+              } else if (limitReached) {
+                reprogramDisabledReason = 'Ya utilizaste la reprogramación disponible para esta cita.';
+              }
+            }
 
             const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
@@ -450,7 +545,9 @@ export class ClientReservasComponent implements OnInit {
               paymentPreference: (a as any).payment_method || null,
               verification_code: (a as any).verification_code || undefined,
               cashCap: this.cashCap,
-              cashCapLabel: this.cashCapCurrency
+              cashCapLabel: this.cashCapCurrency,
+              allowReprogram,
+              reprogramDisabledReason
             };
 
             if (isPaid) {
@@ -598,6 +695,27 @@ export class ClientReservasComponent implements OnInit {
     if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
     return hhmm;
   }
+  private normalizeDateValue(value: any): string | null {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return value.toISOString().slice(0, 10);
+    }
+    const raw = String(value).trim();
+    if (!raw) return null;
+    if (raw.includes('T')) {
+      return raw.split('T')[0];
+    }
+    return raw.slice(0, 10);
+  }
+  private normalizeTimeValue(value: any): string | null {
+    if (!value && value !== 0) return null;
+    if (value instanceof Date) {
+      return value.toISOString().slice(11, 16);
+    }
+    const raw = String(value).trim();
+    if (!raw) return null;
+    return raw.slice(0, 5);
+  }
   private daysFromToday(dateIso: string): number {
     if (!dateIso || typeof dateIso !== 'string') return 0;
     const [y,m,d] = dateIso.split('-').map(Number);
@@ -659,44 +777,7 @@ export class ClientReservasComponent implements OnInit {
     if (!appointmentId) {
       return;
     }
-    const appt = this.appointmentIndex.get(Number(appointmentId));
-    if (!appt) {
-      alert('No encontramos la cita seleccionada.');
-      return;
-    }
-    if (String(appt.status) === 'pending_reschedule') {
-      alert('Ya existe una solicitud de reprogramación en curso.');
-      return;
-    }
-    if (Number(appt.client_reschedule_count || 0) >= 1) {
-      alert('Solo puedes solicitar una reprogramación por cita.');
-      return;
-    }
-    const defaultDate = appt.reschedule_target_date || appt.date;
-    const defaultTimeSrc = (appt.reschedule_target_start_time || appt.start_time || '').toString();
-    const defaultTime = defaultTimeSrc ? defaultTimeSrc.slice(0, 5) : '';
-    const newDate = window.prompt('Ingresa la nueva fecha (YYYY-MM-DD)', defaultDate || '');
-    if (!newDate) return;
-    const newTime = window.prompt('Ingresa el nuevo horario (HH:mm)', defaultTime);
-    if (!newTime) return;
-    const reason = window.prompt('Motivo para el profesional (opcional)');
-    this.rescheduleActionLoadingId = Number(appointmentId);
-    this.appointments.requestReschedule(Number(appointmentId), {
-      date: newDate,
-      start_time: newTime,
-      reason: reason && reason.trim().length ? reason.trim() : null
-    }).subscribe({
-      next: () => {
-        this.rescheduleActionLoadingId = null;
-        this.loadAppointments();
-        alert('Solicitud de reprogramación enviada.');
-      },
-      error: (err) => {
-        this.rescheduleActionLoadingId = null;
-        console.error('[RESERVAS] Error al solicitar reprogramación', err);
-        alert(err?.error?.error || 'No se pudo procesar la reprogramación.');
-      }
-    });
+    this.openRescheduleModal(Number(appointmentId));
   }
 
   respondReschedule(appointmentId: number, decision: 'accept'|'reject'): void {
@@ -720,12 +801,185 @@ export class ClientReservasComponent implements OnInit {
       next: () => {
         this.rescheduleActionLoadingId = null;
         this.loadAppointments();
-        alert(decision === 'accept' ? 'Reprogramación confirmada.' : 'Solicitud de reprogramación rechazada.');
+        const requestedBy = String(appt.reschedule_requested_by || '');
+        const acceptance = decision === 'accept';
+        const title = acceptance ? 'Reprogramación confirmada' : 'Solicitud rechazada';
+        const message = acceptance
+          ? 'La reprogramación quedó confirmada.'
+          : requestedBy === 'provider'
+            ? 'Rechazaste la reprogramación propuesta. Se aplicarán las políticas de cancelación correspondientes.'
+            : 'Se canceló la solicitud de reprogramación.';
+        this.notifications.createNotification({
+          type: 'appointment',
+          title,
+          message,
+          priority: 'medium',
+          profile: 'client',
+          actions: ['view'],
+          metadata: { appointmentId: String(appointmentId) }
+        });
       },
       error: (err) => {
         this.rescheduleActionLoadingId = null;
         console.error('[RESERVAS] Error al responder reprogramación', err);
-        alert(err?.error?.error || 'No pudimos procesar tu respuesta.');
+        this.notifications.createNotification({
+          type: 'appointment',
+          title: 'No pudimos procesar tu respuesta',
+          message: err?.error?.error || 'Intenta nuevamente en unos minutos.',
+          priority: 'high',
+          profile: 'client',
+          actions: ['view'],
+          metadata: { appointmentId: String(appointmentId) }
+        });
+      }
+    });
+  }
+
+  openRescheduleModal(appointmentId: number): void {
+    const appt = this.appointmentIndex.get(Number(appointmentId));
+    if (!appt) {
+      this.notifications.createNotification({
+        type: 'appointment',
+        title: 'No encontramos la cita',
+        message: 'Actualiza la página e inténtalo nuevamente.',
+        priority: 'high',
+        profile: 'client',
+        actions: ['view']
+      });
+      return;
+    }
+    if (String(appt.status) === 'pending_reschedule') {
+      this.notifications.createNotification({
+        type: 'appointment',
+        title: 'Solicitud en curso',
+        message: 'Ya existe una solicitud de reprogramación esperando respuesta.',
+        priority: 'medium',
+        profile: 'client',
+        actions: ['view'],
+        metadata: { appointmentId: String(appointmentId) }
+      });
+      return;
+    }
+    if (Number(appt.client_reschedule_count || 0) >= 1) {
+      this.notifications.createNotification({
+        type: 'appointment',
+        title: 'Límite alcanzado',
+        message: 'Solo puedes reprogramar una vez por cita. Cancela si necesitas cambiar nuevamente.',
+        priority: 'medium',
+        profile: 'client',
+        actions: ['view'],
+        metadata: { appointmentId: String(appointmentId) }
+      });
+      return;
+    }
+    const allowReprogram = !(String(appt.status) === 'confirmed' && !['paid','succeeded','completed'].includes(String(appt.payment_status || '')));
+    if (!allowReprogram) {
+      this.notifications.createNotification({
+        type: 'appointment',
+        title: 'Reprogramación bloqueada',
+        message: 'Completa el pago para solicitar un cambio de horario.',
+        priority: 'medium',
+        profile: 'client',
+        actions: ['view'],
+        metadata: { appointmentId: String(appointmentId) }
+      });
+      return;
+    }
+    const defaultDate = this.normalizeDateValue(appt.reschedule_target_date || appt.date);
+    const defaultTime = this.normalizeTimeValue(appt.reschedule_target_start_time || appt.start_time);
+
+    this.rescheduleForm.appointmentId = Number(appointmentId);
+    this.rescheduleForm.date = defaultDate || '';
+    this.rescheduleForm.time = defaultTime || '';
+    this.rescheduleForm.reason = '';
+    this.rescheduleForm.loading = false;
+    this.rescheduleForm.error = '';
+    this.rescheduleForm.originalDate = this.formatDate(appt.date || '');
+    this.rescheduleForm.originalTime = this.formatTime(appt.start_time || '');
+    this.rescheduleForm.isLate = false;
+    this.showRescheduleModal = true;
+    this.updateRescheduleLateFlag();
+  }
+
+  closeRescheduleModal(): void {
+    if (this.rescheduleForm.loading) {
+      return;
+    }
+    this.showRescheduleModal = false;
+    this.rescheduleActionLoadingId = null;
+    this.rescheduleForm = {
+      appointmentId: null,
+      date: '',
+      time: '',
+      reason: '',
+      loading: false,
+      error: '',
+      isLate: false,
+      originalDate: '',
+      originalTime: ''
+    };
+  }
+
+  updateRescheduleLateFlag(): void {
+    if (!this.rescheduleForm.date || !this.rescheduleForm.time) {
+      this.rescheduleForm.isLate = false;
+      return;
+    }
+    const candidate = new Date(`${this.rescheduleForm.date}T${this.rescheduleForm.time}:00`);
+    if (Number.isNaN(candidate.getTime())) {
+      this.rescheduleForm.isLate = false;
+      return;
+    }
+    this.rescheduleForm.isLate = (candidate.getTime() - Date.now()) < (24 * 60 * 60 * 1000);
+  }
+
+  submitReschedule(): void {
+    if (!this.rescheduleForm.appointmentId || this.rescheduleForm.loading) {
+      return;
+    }
+    if (!this.rescheduleForm.date || !this.rescheduleForm.time) {
+      this.rescheduleForm.error = 'Selecciona una fecha y hora válidas.';
+      return;
+    }
+    const payload = {
+      date: this.rescheduleForm.date,
+      start_time: this.rescheduleForm.time,
+      reason: this.rescheduleForm.reason && this.rescheduleForm.reason.trim().length
+        ? this.rescheduleForm.reason.trim()
+        : null
+    };
+
+    this.rescheduleForm.loading = true;
+    this.rescheduleForm.error = '';
+    this.rescheduleActionLoadingId = this.rescheduleForm.appointmentId;
+
+    this.appointments.requestReschedule(this.rescheduleForm.appointmentId, payload).subscribe({
+      next: () => {
+        const appointmentId = this.rescheduleForm.appointmentId!;
+        const isLate = this.rescheduleForm.isLate;
+        const message = isLate
+          ? 'Enviamos tu solicitud al profesional. Te avisaremos cuando responda.'
+          : 'Reprogramamos la cita al nuevo horario.';
+
+        this.notifications.createNotification({
+          type: 'appointment',
+          title: isLate ? 'Solicitud enviada' : 'Cita reprogramada',
+          message,
+          priority: 'medium',
+          profile: 'client',
+          actions: ['view'],
+          metadata: { appointmentId: String(appointmentId) }
+        });
+
+        this.closeRescheduleModal();
+        this.rescheduleActionLoadingId = null;
+        this.loadAppointments();
+      },
+      error: (err) => {
+        this.rescheduleForm.loading = false;
+        this.rescheduleActionLoadingId = null;
+        console.error('[RESERVAS] Error al solicitar reprogramación', err);
+        this.rescheduleForm.error = err?.error?.error || 'No se pudo procesar la reprogramación.';
       }
     });
   }

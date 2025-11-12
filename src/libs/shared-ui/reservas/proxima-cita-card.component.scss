@@ -46,6 +46,8 @@
 .pc-btn.secondary:hover { background: #cbd5e1; }
 .pc-btn.danger { background: transparent; color: #dc2626; }
 .pc-btn.danger:hover { background: #fee2e2; }
+.pc-btn[disabled] { opacity: .6; cursor: not-allowed; }
+.pc-hint { margin-top: .75rem; font-size: .85rem; color: #b45309; font-weight: 600; }
 
 @media (min-width: 768px) { .pc-row { flex-direction: row; align-items: center; } .pc-count { margin-left: 1.5rem; } }
 

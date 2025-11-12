@@ -25,7 +25,7 @@ import { FinancesService } from '../../../services/finances.service';
 import { AuthService, AuthUser } from '../../../auth/services/auth.service';
 import { ProviderProfileService, ProviderProfile } from '../../../services/provider-profile.service';
 import { take } from 'rxjs/operators';
-import { firstValueFrom, Subscription, timer } from 'rxjs';
+import { firstValueFrom, Subscription, timer, forkJoin } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProviderIncomeGoalDto } from '../../../services/finances.service';
 import { TbkOnboardingService } from '../../../services/tbk-onboarding.service';
@@ -708,98 +708,75 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   private loadWalletData() {
     this.walletLoading = true;
     this.walletError = null;
-    try {
-      const now = new Date();
-      this.walletSummary = {
-        availableBalance: 785710,
-        pendingBalance: 120000,
-        holdBalance: 85000,
-        totalWithdrawn: 1650000,
-        creditsEarned: 6,
-        lastUpdated: now,
-        nextReleaseAmount: 180000,
-        nextReleaseDate: '2025-11-18'
-      };
-      this.walletMovements = [
-        {
-          id: 101,
-          date: '2025-11-11',
-          type: 'credit',
-          title: 'Depósito Cita Confirmada',
-          description: 'Corte colegial – Impact Render',
-          amount: 142860,
-          status: 'completado',
-          reference: 'PAY-2025-11-11-01',
-          relatedAppointmentId: 421
-        },
-        {
-          id: 102,
-          date: '2025-11-09',
-          type: 'hold',
-          title: 'En retención por verificación',
-          description: 'Coloración full glam – Carolina Díaz',
-          amount: 85000,
-          status: 'retenido',
-          reference: 'HOLD-2025-11-09-02',
-          relatedAppointmentId: 419
-        },
-        {
-          id: 103,
-          date: '2025-11-08',
-          type: 'credit',
-          title: 'Penalización por No-Show',
-          description: 'Cobro 50% por inasistencia del cliente',
-          amount: 60000,
-          status: 'completado',
-          reference: 'NSC-2025-11-08-07',
-          relatedAppointmentId: 415
-        },
-        {
-          id: 104,
-          date: '2025-11-05',
-          type: 'debit',
-          title: 'Retiro a cuenta bancaria',
-          description: 'Transferido a Banco de Chile',
-          amount: 350000,
-          status: 'completado',
-          reference: 'WD-2025-11-05-01'
-        },
-        {
-          id: 105,
-          date: '2025-11-02',
-          type: 'credit',
-          title: 'Depósito semanal',
-          description: 'Servicios 28 Oct – 1 Nov',
-          amount: 298570,
-          status: 'completado',
-          reference: 'PAY-2025-11-02-03'
-        },
-        {
-          id: 106,
-          date: '2025-10-30',
-          type: 'debit',
-          title: 'Pago comisión cash',
-          description: 'Comisión cobrada por citas en efectivo',
-          amount: 120000,
-          status: 'completado',
-          reference: 'COM-2025-10-30-05'
-        }
-      ];
-      this.walletCreditTotal = this.walletMovements
-        .filter((m) => m.type === 'credit')
-        .reduce((acc, cur) => acc + cur.amount, 0);
-      this.walletCreditCount = this.walletMovements.filter((m) => m.type === 'credit').length;
-      this.walletDebitTotal = this.walletMovements
-        .filter((m) => m.type === 'debit')
-        .reduce((acc, cur) => acc + cur.amount, 0);
-      this.walletDebitCount = this.walletMovements.filter((m) => m.type === 'debit').length;
-      this.walletHoldCount = this.walletMovements.filter((m) => m.type === 'hold' || m.type === 'release').length;
-      this.walletLoaded = true;
-      this.walletLoading = false;
-    } catch (error) {
-      this.walletLoading = false;
-      this.walletError = 'No pudimos cargar tu billetera. Intenta nuevamente más tarde.';
+
+    forkJoin({
+      summary: this.finances.getWalletSummary(),
+      movements: this.finances.getWalletMovements({ limit: 200, offset: 0 })
+    }).subscribe({
+      next: ({ summary, movements }) => {
+        const summaryDto = summary?.summary;
+        this.walletSummary = {
+          availableBalance: Number(summaryDto?.available_balance || 0),
+          pendingBalance: Number(summaryDto?.pending_balance || 0),
+          holdBalance: Number(summaryDto?.hold_balance || 0),
+          totalWithdrawn: Number(summaryDto?.total_withdrawn || 0),
+          creditsEarned: Number(summaryDto?.credits_earned || 0),
+          lastUpdated: summaryDto?.last_updated ? new Date(summaryDto.last_updated) : null,
+          nextReleaseAmount: Number(summaryDto?.next_release_amount || 0),
+          nextReleaseDate: summaryDto?.next_release_date
+            ? this.formatWalletMovementDate(summaryDto.next_release_date)
+            : null
+        };
+
+        const movementDtos = movements?.movements || [];
+        this.walletMovements = movementDtos.map((dto) => ({
+          id: Number(dto.id),
+          date: this.formatWalletMovementDate(dto.date),
+          type: dto.type,
+          title: dto.title || (dto.type === 'credit' ? 'Ingreso a la billetera' : 'Movimiento'),
+          description: dto.description || undefined,
+          amount: Math.abs(Number(dto.amount || 0)),
+          status: dto.status,
+          reference: dto.reference || undefined,
+          relatedAppointmentId: dto.relatedAppointmentId ?? null
+        }));
+        this.walletMovements.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        this.recomputeWalletAggregates();
+        this.walletLoaded = true;
+        this.walletLoading = false;
+      },
+      error: (err) => {
+        console.error('[DASH_INGRESOS] Error cargando billetera:', err);
+        this.walletError = err?.error?.error || err?.message || 'No pudimos cargar tu billetera. Intenta nuevamente más tarde.';
+        this.walletLoading = false;
+      }
+    });
+  }
+
+  private recomputeWalletAggregates(): void {
+    this.walletCreditTotal = this.walletMovements
+      .filter((movement) => movement.type === 'credit')
+      .reduce((acc, cur) => acc + cur.amount, 0);
+    this.walletCreditCount = this.walletMovements.filter((movement) => movement.type === 'credit').length;
+
+    this.walletDebitTotal = this.walletMovements
+      .filter((movement) => movement.type === 'debit')
+      .reduce((acc, cur) => acc + cur.amount, 0);
+    this.walletDebitCount = this.walletMovements.filter((movement) => movement.type === 'debit').length;
+
+    this.walletHoldCount = this.walletMovements.filter((movement) => movement.type === 'hold' || movement.type === 'release').length;
+  }
+
+  private formatWalletMovementDate(value: string | null | undefined): string {
+    if (!value) {
+      return '';
     }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return String(value).slice(0, 10);
+    }
+    return date.toISOString().slice(0, 10);
   }
 
   onRequestWithdrawal() {
