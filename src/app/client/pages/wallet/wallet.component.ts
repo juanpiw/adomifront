@@ -1,19 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
-
-type WalletMovementType = 'credit' | 'debit';
-
-interface WalletMovement {
-  id: number;
-  type: WalletMovementType;
-  title: string;
-  description: string;
-  rule?: string;
-  amount: number;
-  currency: 'CLP';
-  date: string;
-}
+import {
+  ClientWalletMovement,
+  ClientWalletService,
+  ClientWalletSummary
+} from '../../../services/client-wallet.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-c-wallet',
@@ -22,56 +15,101 @@ interface WalletMovement {
   templateUrl: './wallet.component.html',
   styleUrls: ['./wallet.component.scss']
 })
-export class ClientWalletComponent {
+export class ClientWalletComponent implements OnInit {
+  private walletService = inject(ClientWalletService);
+  private router = inject(Router);
+
   private readonly formatter = new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
     maximumFractionDigits: 0
   });
 
-  walletSummary = {
-    balance: 41500,
-    currency: 'CLP' as const,
+  summaryLoading = true;
+  summaryError: string | null = null;
+  movementsLoading = true;
+  movementsError: string | null = null;
+
+  walletSummary: ClientWalletSummary = {
+    balance: 0,
+    pending_balance: 0,
+    hold_balance: 0,
+    total_received: 0,
+    total_spent: 0,
+    credits_count: 0,
+    currency: 'CLP',
+    last_updated: null,
     note: 'Tu saldo no expira y solo se genera por reembolsos y compensaciones.'
   };
 
-  movements: WalletMovement[] = [
-    {
-      id: 1,
-      type: 'credit',
-      title: 'Reembolso (Cancelación >24h)',
-      description: 'Cita #12345',
-      rule: 'Regla 3.1',
-      amount: 30000,
-      currency: 'CLP',
-      date: '2025-11-10'
-    },
-    {
-      id: 2,
-      type: 'credit',
-      title: 'Compensación (Proveedor No Asiste)',
-      description: 'Cita #12300',
-      rule: 'Regla 5.2',
-      amount: 16500,
-      currency: 'CLP',
-      date: '2025-11-08'
-    },
-    {
-      id: 3,
-      type: 'debit',
-      title: 'Uso de saldo en servicio',
-      description: 'Cita #12400',
-      amount: 5000,
-      currency: 'CLP',
-      date: '2025-11-05'
-    }
-  ];
+  movements: ClientWalletMovement[] = [];
+  movementsTotal = 0;
+  private movementsLimit = 50;
+  private movementsOffset = 0;
+
+  ngOnInit(): void {
+    this.loadSummary();
+    this.loadMovements();
+  }
+
+  loadSummary(): void {
+    this.summaryLoading = true;
+    this.summaryError = null;
+
+    this.walletService.getSummary().subscribe({
+      next: ({ summary }) => {
+        this.walletSummary = {
+          ...summary,
+          note: summary.note || this.walletSummary.note
+        };
+        this.summaryLoading = false;
+      },
+      error: (err) => {
+        console.error('[CLIENT WALLET] Error cargando resumen:', err);
+        this.summaryError = err?.error?.error || 'No pudimos cargar tu saldo disponible.';
+        this.summaryLoading = false;
+      }
+    });
+  }
+
+  loadMovements(): void {
+    this.movementsLoading = true;
+    this.movementsError = null;
+
+    this.walletService.getMovements(this.movementsLimit, this.movementsOffset).subscribe({
+      next: ({ movements, pagination }) => {
+        this.movements = movements;
+        this.movementsTotal = pagination?.total ?? movements.length;
+        this.movementsLoading = false;
+      },
+      error: (err) => {
+        console.error('[CLIENT WALLET] Error cargando movimientos:', err);
+        this.movementsError = err?.error?.error || 'No pudimos cargar el historial de movimientos.';
+        this.movementsLoading = false;
+      }
+    });
+  }
+
+  retrySummary(): void {
+    this.loadSummary();
+  }
+
+  retryMovements(): void {
+    this.loadMovements();
+  }
+
+  onUseBalance(): void {
+    this.router.navigate(['/client/explorar']);
+  }
 
   formatCurrency(amount: number): string {
     return this.formatter.format(amount);
   }
 
   formatDate(value: string): string {
+    if (!value) {
+      return '-';
+    }
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
       return value;
