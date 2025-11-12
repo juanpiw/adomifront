@@ -6,6 +6,13 @@
   (dismiss)="onPlanAlertDismiss()">
 </plan-upgrade-alert>
 
+<app-golden-invite-modal
+  [isOpen]="showGoldenInviteModal"
+  [summary]="goldenInviteSummary"
+  (close)="dismissGoldenInviteModal()"
+  (primaryAction)="onGoldenInvitePrimary()">
+</app-golden-invite-modal>
+
 <div class="verification-modal-backdrop" *ngIf="showVerificationPrompt">
   <div class="verification-modal">
     <div class="verification-modal__icon">
@@ -82,6 +89,7 @@
           <div class="user-name">{{ providerName || 'Usuario' }}</div>
           <div class="user-sub">Cuenta de profesional</div>
           <div *ngIf="isFounderAccount" class="user-sub-badge founder-badge">Cuenta Fundador</div>
+          <div *ngIf="isPioneer" class="user-sub-badge pioneer-badge">Pionero</div>
         </div>
       </div>
       <!-- Switch de estado online -->

@@ -21,11 +21,13 @@ import { Subscription } from 'rxjs';
 import { ProviderVerificationService, VerificationStatus } from '../../services/provider-verification.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../services/tbk-onboarding.service';
 import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
+import { GoldenInviteModalComponent } from '../../../libs/shared-ui/golden-invite-modal/golden-invite-modal.component';
+import { ProviderInviteService, ProviderInviteSummary } from '../../services/provider-invite.service';
 
 @Component({
   selector: 'app-dash-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent, PlanUpgradeAlertComponent, TopbarComponent, OnlineStatusSwitchComponent],
+  imports: [CommonModule, RouterLink, RouterOutlet, ThemeSwitchComponent, IconComponent, PlanUpgradeAlertComponent, TopbarComponent, OnlineStatusSwitchComponent, GoldenInviteModalComponent],
   templateUrl: './dash-layout.component.html',
   styleUrls: ['./dash-layout.component.scss']
 })
@@ -85,6 +87,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private providerVerification = inject(ProviderVerificationService);
   private tbkOnboarding = inject(TbkOnboardingService);
   private globalSearch = inject(GlobalSearchService);
+  private providerInvites = inject(ProviderInviteService);
 
   private pushMessageSub?: Subscription;
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -100,13 +103,19 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   tbkBlockingActive = false;
   private currentUrl: string | null = null;
   private readonly TBK_BLOCKER_DISMISSED_KEY = 'provider:tbkBlockerDismissed';
+  private readonly GOLDEN_INVITE_DISMISSED_KEY = 'provider:goldenInviteModalDismissed';
+
+  showGoldenInviteModal = false;
+  goldenInviteSummary: ProviderInviteSummary | null = null;
+  private lastVerificationStatus: VerificationStatus | null = null;
+  isPioneer = false;
+  private inviteSummaryLoaded = false;
 
   ngOnInit() {
     try {
       if (this.sessionService.isFounder()) {
         this.isFounderAccount = true;
-        this.topbarPlanBadge = { label: 'Cuenta Fundador', variant: 'founder' };
-        this.refreshTopbarBadges();
+        this.updatePlanBadge();
       }
     } catch {}
 
@@ -481,6 +490,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   private evaluateVerificationStatus(status: VerificationStatus | undefined, rejectionReason: string | null) {
     if (!status) status = 'none';
+    const previousStatus = this.lastVerificationStatus;
+    this.lastVerificationStatus = status;
     this.verificationStatus = status;
     this.verificationRejectionReason = rejectionReason;
 
@@ -513,6 +524,18 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     }
 
     this.updateVerificationBadge();
+    if (status === 'approved') {
+      this.loadInviteSummaryIfNeeded();
+    }
+
+    if (
+      status === 'approved' &&
+      previousStatus !== 'approved' &&
+      typeof localStorage !== 'undefined' &&
+      localStorage.getItem(this.GOLDEN_INVITE_DISMISSED_KEY) !== 'true'
+    ) {
+      this.openGoldenInviteModal();
+    }
   }
 
   private updateVerificationBadge() {
@@ -546,6 +569,74 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       };
     }
 
+    this.refreshTopbarBadges();
+  }
+
+  private openGoldenInviteModal() {
+    this.providerInvites.list().subscribe({
+      next: (response) => {
+        if (response?.success) {
+          this.applyInviteSummary(response.summary || null);
+        }
+        this.showGoldenInviteModal = true;
+      },
+      error: () => {
+        this.goldenInviteSummary = null;
+        this.showGoldenInviteModal = true;
+      }
+    });
+  }
+
+  onGoldenInvitePrimary() {
+    this.dismissGoldenInviteModal();
+    this.router.navigate(['/dash/home'], { queryParams: { view: 'invitaciones' } });
+  }
+
+  dismissGoldenInviteModal() {
+    this.showGoldenInviteModal = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(this.GOLDEN_INVITE_DISMISSED_KEY, 'true');
+      }
+    } catch {}
+  }
+
+  private applyInviteSummary(summary: ProviderInviteSummary | null) {
+    this.goldenInviteSummary = summary;
+    const unlocked = !!summary?.pioneer_unlocked_at;
+    if (unlocked !== this.isPioneer) {
+      this.isPioneer = unlocked;
+      this.updatePlanBadge();
+    }
+    this.inviteSummaryLoaded = true;
+  }
+
+  private loadInviteSummaryIfNeeded(force = false) {
+    if (!force && this.inviteSummaryLoaded) return;
+    this.providerInvites.list().subscribe({
+      next: (response) => {
+        if (response?.success) {
+          this.applyInviteSummary(response.summary || null);
+        } else {
+          this.inviteSummaryLoaded = true;
+        }
+      },
+      error: () => {
+        this.inviteSummaryLoaded = true;
+      }
+    });
+  }
+
+  private updatePlanBadge() {
+    if (this.isFounderAccount && this.isPioneer) {
+      this.topbarPlanBadge = { label: 'Fundador · Pionero', variant: 'founder' };
+    } else if (this.isFounderAccount) {
+      this.topbarPlanBadge = { label: 'Cuenta Fundador', variant: 'founder' };
+    } else if (this.isPioneer) {
+      this.topbarPlanBadge = { label: 'Pionero', variant: 'founder' };
+    } else {
+      this.topbarPlanBadge = null;
+    }
     this.refreshTopbarBadges();
   }
 

@@ -1,0 +1,49 @@
+<div
+  class="golden-invite-modal__backdrop"
+  *ngIf="isOpen"
+  (click)="onBackdropClick($event)"
+>
+  <div class="golden-invite-modal">
+    <button type="button" class="golden-invite-modal__close" (click)="close.emit()" aria-label="Cerrar">
+      ×
+    </button>
+    <div class="golden-invite-modal__icon">🛡️</div>
+    <h2 class="golden-invite-modal__title">¡Bienvenido al Gremio!</h2>
+    <p class="golden-invite-modal__subtitle">
+      Recibiste tres <strong>Invitaciones Doradas</strong> para traer a colegas confiables. Cuando las tres se verifiquen, desbloquearás el estatus <strong>Pionero</strong>.
+    </p>
+
+    <div class="golden-invite-modal__chips" *ngIf="summary">
+      <div class="golden-invite-modal__chip">
+        <span class="label">Emitidas</span>
+        <span class="value">{{ summary.counts?.issued || 0 }}</span>
+      </div>
+      <div class="golden-invite-modal__chip">
+        <span class="label">En proceso</span>
+        <span class="value">{{ summary.counts?.registered || 0 }}</span>
+      </div>
+      <div class="golden-invite-modal__chip">
+        <span class="label">Verificadas</span>
+        <span class="value">{{ summary.counts?.verified || 0 }}</span>
+      </div>
+    </div>
+
+    <p class="golden-invite-modal__hint">
+      Te quedan <strong>{{ remainingInvites() }}</strong> invitaciones activas por usar.
+    </p>
+
+    <div class="golden-invite-modal__actions">
+      <button type="button" class="golden-invite-modal__primary" (click)="onPrimaryAction()">
+        Invitar colegas
+      </button>
+      <button type="button" class="golden-invite-modal__secondary" (click)="close.emit()">
+        Más tarde
+      </button>
+    </div>
+
+    <p class="golden-invite-modal__disclaimer">
+      Solo puedes invitar profesionales que aún no estén verificados en Adomi. Las invitaciones vencen en 30 días.
+    </p>
+  </div>
+</div>
+

@@ -1,6 +1,7 @@
 ﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { InicioHeaderComponent, HeaderData } from '../../../../libs/shared-ui/inicio-header/inicio-header.component';
 import { 
   InicioProximaCitaComponent, 
@@ -24,6 +25,7 @@ import { ProviderProfileService } from '../../../services/provider-profile.servi
 import { AppointmentsService } from '../../../services/appointments.service';
 import { PaymentsService } from '../../../services/payments.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../../services/tbk-onboarding.service';
+import { ProviderInviteService, ProviderInvite, ProviderInviteSummary } from '../../../services/provider-invite.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -37,6 +39,7 @@ import { Subscription } from 'rxjs';
     InicioIngresosDiaComponent,
     InicioSolicitudesComponent,
     InicioGestionDisponibilidadComponent,
+    FormsModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
@@ -47,6 +50,8 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   private appointmentsService = inject(AppointmentsService);
   private paymentsService = inject(PaymentsService);
   private tbkOnboarding = inject(TbkOnboardingService);
+  private providerInvites = inject(ProviderInviteService);
+  private route = inject(ActivatedRoute);
   
   constructor(private router: Router) {}
   
@@ -55,6 +60,17 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   showTbkUrgentBanner = false;
   tbkState: TbkOnboardingState | null = null;
   private tbkStateSub?: Subscription;
+
+  // Invitaciones doradas
+  inviteSummary: ProviderInviteSummary | null = null;
+  invites: ProviderInvite[] = [];
+  inviteLoading = false;
+  inviteError: string | null = null;
+  inviteEmail: string = '';
+  invitePhone: string = '';
+  inviteName: string = '';
+  inviteSubmitting = false;
+  inviteSuccessMessage: string | null = null;
 
   // Datos para el header
   headerData: HeaderData = {
@@ -68,6 +84,14 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.loadNextAppointment();
     this.loadEarningsData();
     this.initializeTbkBanner();
+    this.loadInviteData();
+
+    this.route.queryParamMap.subscribe((params) => {
+      const view = (params.get('view') || '').toLowerCase();
+      if (view === 'invitaciones') {
+        this.loadInviteData(true);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -423,4 +447,145 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       console.warn('[DASH_HOME] No se pudo refrescar el estado TBK:', error);
     });
   }
+
+  loadInviteData(focus = false) {
+    this.inviteLoading = true;
+    this.inviteError = null;
+    this.providerInvites.list().subscribe({
+      next: (response) => {
+        if (response?.success) {
+          this.inviteSummary = response.summary;
+          this.invites = response.invites || [];
+        }
+        this.inviteLoading = false;
+        if (focus) {
+          setTimeout(() => this.scrollToInvites(), 200);
+        }
+      },
+      error: (error) => {
+        this.inviteLoading = false;
+        this.inviteError = error?.error?.error || 'No se pudo cargar las invitaciones.';
+      }
+    });
+  }
+
+  private scrollToInvites() {
+    try {
+      const element = document.getElementById('golden-invite-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } catch {}
+  }
+
+  remainingInvites(): number {
+    if (!this.inviteSummary) return 3;
+    const quota = Number(this.inviteSummary.quota || 3);
+    const active = Number(this.inviteSummary.counts?.issued || 0) + Number(this.inviteSummary.counts?.registered || 0);
+    const verified = Number(this.inviteSummary.counts?.verified || 0);
+    return Math.max(quota - (active + verified), 0);
+  }
+
+  onCreateInvite() {
+    if (this.inviteSubmitting) return;
+    if (!this.inviteEmail && !this.invitePhone) {
+      this.inviteError = 'Ingresa correo o teléfono del colega que quieres invitar.';
+      return;
+    }
+
+    this.inviteSubmitting = true;
+    this.inviteError = null;
+    this.inviteSuccessMessage = null;
+
+    this.providerInvites.create({
+      email: this.inviteEmail || undefined,
+      phone: this.invitePhone || undefined,
+      name: this.inviteName || undefined
+    }).subscribe({
+      next: (response) => {
+        this.inviteSubmitting = false;
+        if (response?.success) {
+          this.inviteSuccessMessage = 'Invitación creada. Comparte el enlace para completar el proceso.';
+          this.resetInviteForm();
+          this.loadInviteData();
+        }
+      },
+      error: (error) => {
+        this.inviteSubmitting = false;
+        const backendError = error?.error?.error;
+        if (backendError === 'invite_quota_reached') {
+          this.inviteError = 'Ya usaste tus invitaciones activas. Espera a que expiren o se verifiquen.';
+        } else if (backendError === 'invitee_already_verified') {
+          this.inviteError = 'Ese correo ya cuenta con una invitación verificada.';
+        } else if (backendError === 'invite_daily_limit_reached') {
+          this.inviteError = 'Has alcanzado el límite diario de invitaciones. Inténtalo mañana.';
+        } else if (backendError === 'invitee_same_provider') {
+          this.inviteError = 'No puedes invitarte a ti mismo.';
+        } else {
+          this.inviteError = backendError || 'No se pudo crear la invitación. Inténtalo nuevamente.';
+        }
+      }
+    });
+  }
+
+  private resetInviteForm() {
+    this.inviteEmail = '';
+    this.invitePhone = '';
+    this.inviteName = '';
+  }
+
+  async copyShareUrl(invite: ProviderInvite) {
+    try {
+      if (navigator?.clipboard) {
+        await navigator.clipboard.writeText(invite.share_url);
+        this.inviteSuccessMessage = 'Enlace copiado al portapapeles.';
+      } else {
+        this.inviteError = 'No se pudo copiar el enlace automáticamente.';
+      }
+    } catch (error) {
+      console.error('[DASH_HOME] Error copiando enlace:', error);
+      this.inviteError = 'No se pudo copiar el enlace.';
+    }
+  }
+
+  shareViaWhatsApp(invite: ProviderInvite) {
+    const message = `Hola 👋, te comparto una Invitación Dorada para unirte a Adomi. Usa este enlace: ${invite.share_url}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank', 'noopener');
+    }
+  }
+
+  getInviteStatusLabel(status: ProviderInvite['status']): string {
+    switch (status) {
+      case 'issued':
+        return 'Enviada';
+      case 'registered':
+        return 'En proceso';
+      case 'verified':
+        return 'Verificada';
+      case 'expired':
+        return 'Expirada';
+      case 'revoked':
+        return 'Revocada';
+      default:
+        return status;
+    }
+  }
+
+  getInviteStatusClass(status: ProviderInvite['status']): string {
+    switch (status) {
+      case 'verified':
+        return 'status-chip--success';
+      case 'registered':
+        return 'status-chip--pending';
+      case 'expired':
+      case 'revoked':
+        return 'status-chip--warning';
+      default:
+        return 'status-chip--default';
+    }
+  }
+
+  trackInvite = (_index: number, invite: ProviderInvite) => invite.id;
 }

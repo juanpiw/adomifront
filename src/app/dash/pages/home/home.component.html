@@ -8,10 +8,118 @@
       (publicProfileClick)="onPublicProfileClick()">
     </app-inicio-header>
 
-   
-<div class="container-pro">
-
+  <div class="container-pro">
     <div class="container-pro-1">
+        <section class="golden-invite" id="golden-invite-section">
+          <div class="golden-invite__header">
+            <div>
+              <h3>Invitaciones Doradas</h3>
+              <p>Comparte tus invitaciones para desbloquear el estatus <strong>Pionero</strong>.</p>
+            </div>
+            <div class="golden-invite__metrics" *ngIf="inviteSummary">
+              <div class="metric">
+                <span class="label">Disponibles</span>
+                <span class="value">{{ remainingInvites() }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Verificadas</span>
+                <span class="value">{{ inviteSummary?.counts?.verified || 0 }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Meta</span>
+                <span class="value">{{ inviteSummary?.quota || 3 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <form class="golden-invite__form" (ngSubmit)="onCreateInvite()">
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Correo electrónico</span>
+                <input type="email" name="inviteEmail" [(ngModel)]="inviteEmail" placeholder="colega@oficio.cl" autocomplete="email">
+              </label>
+              <label class="form-field">
+                <span>Teléfono (opcional)</span>
+                <input type="tel" name="invitePhone" [(ngModel)]="invitePhone" placeholder="+56 9 1234 5678" autocomplete="tel">
+              </label>
+              <label class="form-field">
+                <span>Nombre (opcional)</span>
+                <input type="text" name="inviteName" [(ngModel)]="inviteName" placeholder="Nombre del colega" autocomplete="name">
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="submit" [disabled]="inviteSubmitting || remainingInvites() === 0">
+                {{ inviteSubmitting ? 'Creando…' : 'Enviar invitación' }}
+              </button>
+              <span class="form-hint">Necesitas al menos correo o teléfono para generar la invitación.</span>
+            </div>
+          </form>
+
+          <div class="golden-invite__feedback">
+            <p class="error" *ngIf="inviteError">{{ inviteError }}</p>
+            <p class="success" *ngIf="inviteSuccessMessage">{{ inviteSuccessMessage }}</p>
+          </div>
+
+          <div class="golden-invite__table">
+            <div class="table-header">
+              <h4>Historial de invitaciones</h4>
+              <button type="button" class="refresh-btn" (click)="loadInviteData()">
+                Actualizar
+              </button>
+            </div>
+            <div class="table-body" *ngIf="inviteLoading">
+              <p>Cargando invitaciones…</p>
+            </div>
+            <div class="table-body" *ngIf="!inviteLoading && invites.length === 0">
+              <p>Aún no has enviado invitaciones. Empieza invitando a tu primer colega.</p>
+            </div>
+            <table *ngIf="!inviteLoading && invites.length > 0">
+              <thead>
+                <tr>
+                  <th>Invitado</th>
+                  <th>Contacto</th>
+                  <th>Estado</th>
+                  <th>Creada</th>
+                  <th>Enlace</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let invite of invites; trackBy: trackInvite">
+                  <td>
+                    <div class="cell-main">
+                      <strong>{{ invite.invitee_name || 'Invitación sin nombre' }}</strong>
+                      <span class="code">Código: {{ invite.invite_code }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-secondary">
+                      <span *ngIf="invite.invitee_email">{{ invite.invitee_email }}</span>
+                      <span *ngIf="invite.invitee_phone">{{ invite.invitee_phone }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-chip" [ngClass]="getInviteStatusClass(invite.status)">
+                      {{ getInviteStatusLabel(invite.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="cell-secondary">
+                      {{ invite.created_at | date:'dd MMM' }}
+                      <span *ngIf="invite.expires_at">• expira {{ invite.expires_at | date:'dd MMM' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-actions">
+                      <button type="button" (click)="copyShareUrl(invite)">Copiar enlace</button>
+                      <button type="button" (click)="shareViaWhatsApp(invite)">WhatsApp</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section *ngIf="showTbkUrgentBanner" class="tbk-alert" role="alert">
           <div class="tbk-alert__content">
             <h3 class="tbk-alert__title">Activa Webpay Mall para recibir pagos con tarjeta</h3>
@@ -47,22 +155,19 @@
         (addTimeBlock)="onAddTimeBlock($event)"
         (removeTimeBlock)="onRemoveTimeBlock($event)">
        </app-inicio-gestion-disponibilidad>
-           </div>
-            <div class="ingresos-container">
-                <app-inicio-ingresos-mes 
-                [data]="ingresosData"
-                (viewReportClick)="onViewReportClick($event)"
-                (navigateToReport)="onNavigateToReport($event)">
-              </app-inicio-ingresos-mes>
-              
-              <app-inicio-ingresos-dia 
-                [data]="ingresosDiaData"
-                (viewReportClick)="onViewDayReportClick($event)"
-                (navigateToReport)="onNavigateToReport($event)">
-              </app-inicio-ingresos-dia>
-            </div>
-</div>
-
-
+    </div>
+    <div class="ingresos-container">
+      <app-inicio-ingresos-mes 
+        [data]="ingresosData"
+        (viewReportClick)="onViewReportClick($event)"
+        (navigateToReport)="onNavigateToReport($event)">
+      </app-inicio-ingresos-mes>
+      
+      <app-inicio-ingresos-dia 
+        [data]="ingresosDiaData"
+        (viewReportClick)="onViewDayReportClick($event)"
+        (navigateToReport)="onNavigateToReport($event)">
+      </app-inicio-ingresos-dia>
+    </div>
   </div>
 </div>
