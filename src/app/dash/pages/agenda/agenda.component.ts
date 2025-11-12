@@ -932,7 +932,7 @@ export class DashAgendaComponent implements OnInit {
       console.warn('[AGENDA] No se pudo navegar al perfil del cliente: faltan datos', appointment);
       return;
     }
-    const tree = this.router.createUrlTree(['/client/solicitante', appointment.clientId]);
+    const tree = this.router.createUrlTree(['/dash/clientes', appointment.clientId]);
     const serializedUrl = this.router.serializeUrl(tree);
     const absoluteUrl = this.toAbsoluteUrl(serializedUrl);
     console.log('[AGENDA] Abriendo perfil de cliente en nueva pestaña', {

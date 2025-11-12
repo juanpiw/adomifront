@@ -89,6 +89,7 @@ export const routes: Routes = [
       ,{ path: 'servicios', component: DashServiciosComponent }
       ,{ path: 'perfil', component: DashPerfilComponent }
       ,{ path: 'terminos', component: DashTerminosComponent }
+      ,{ path: 'clientes/:clientId', component: PerfilSolicitanteComponent }
       ,{ path: 'admin-pagos', component: AdminPagosComponent }
     ] },
   { path: '**', redirectTo: '' }
