@@ -4,6 +4,10 @@
     subtitle="Organiza tus cotizaciones premium, responde rápido a los clientes y convierte solicitudes en ventas."
   ></ui-quotes-header>
 
+  <div class="quotes-page__error" *ngIf="error()">
+    <span>{{ error() }}</span>
+  </div>
+
   <ui-quotes-tabs
     [tabs]="tabs()"
     [activeTabId]="activeTab()"
@@ -17,10 +21,11 @@
       (action)="onQuoteAction($event)"
     ></ui-quotes-grid>
 
-    <aside class="quotes-page__sidebar" *ngIf="selectedQuote() as selection">
+    <aside class="quotes-page__sidebar" *ngIf="selectedQuoteForForm() as selection">
       <ui-quotes-form
         [quote]="selection"
         [loading]="loading()"
+        [proposalDetails]="selectedQuote()?.proposal || null"
         (send)="onSendProposal($event)"
         (saveDraft)="onSaveDraft($event)"
         (chat)="onQuoteAction({ quote: selection, action: 'open-chat' })"

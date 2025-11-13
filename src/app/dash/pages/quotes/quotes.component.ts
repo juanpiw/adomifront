@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { QuotesHeaderComponent, QuotesTabsComponent, QuotesGridComponent, QuotesFormComponent } from '../../../../libs/shared-ui/quotes';
-import { Quote, QuoteStatus, QuoteActionEvent } from '../../../../libs/shared-ui/quotes/quotes.models';
+import { QuoteActionEvent } from '../../../../libs/shared-ui/quotes/quotes.models';
 import { QuoteProposal } from '../../../../libs/shared-ui/quotes/quotes-form/quotes-form.component';
-import { QuotesMockService } from '../../../../libs/shared-ui/quotes/services/quotes-mock.service';
-import { take } from 'rxjs';
+import { QuotesStore } from './quotes.store';
 
-type QuotesTabId = QuoteStatus | 'history';
+type QuotesTabId = 'new' | 'sent' | 'accepted' | 'history';
 
 @Component({
   selector: 'app-dash-quotes',
@@ -20,80 +19,52 @@ type QuotesTabId = QuoteStatus | 'history';
   ],
   templateUrl: './quotes.component.html',
   styleUrls: ['./quotes.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [QuotesStore]
 })
 export class DashQuotesComponent implements OnInit {
-  private quotesMock = inject(QuotesMockService);
+  private store = inject(QuotesStore);
 
-  tabs = signal<{ id: QuotesTabId; label: string; badge: number }[]>([
-    { id: 'new', label: 'Nuevas solicitudes', badge: 0 },
-    { id: 'sent', label: 'Enviadas', badge: 0 },
-    { id: 'accepted', label: 'Aceptadas', badge: 0 },
-    { id: 'history', label: 'Historial', badge: 0 }
-  ]);
-
-  activeTab = signal<QuotesTabId>('new');
-  quotes = signal<Quote[]>([]);
-  selectedQuote = signal<Quote | null>(null);
-  loading = signal<boolean>(false);
+  tabs = this.store.tabs;
+  activeTab = this.store.activeTab;
+  quotes = this.store.quotes;
+  selectedQuote = this.store.selectedQuote;
+  selectedQuoteForForm = this.store.selectedQuoteForForm;
+  loading = this.store.loading;
+  error = this.store.error;
 
   ngOnInit(): void {
-    this.refreshTabsCounters();
-    this.loadQuotes();
+    this.store.loadQuotes('new');
   }
 
   onTabChange(tabId: QuotesTabId): void {
-    this.activeTab.set(tabId);
-    this.selectedQuote.set(null);
-    this.loadQuotes();
+    this.store.loadQuotes(tabId);
   }
 
   onQuoteAction(event: QuoteActionEvent): void {
-    if (event.action === 'review') {
-      this.selectedQuote.set(event.quote);
-    } else if (event.action === 'open-chat') {
-      // TODO: Integrar con chat real
+    if (event.action === 'open-chat') {
       console.log('[QUOTES] Abrir chat con cliente', event.quote.client);
-    } else {
-      // view action placeholder
-      console.log('[QUOTES] Ver detalles de cotización', event.quote.id);
+      return;
     }
+    this.store.onQuoteAction(event);
   }
 
   onSendProposal(proposal: QuoteProposal): void {
-    this.loading.set(true);
-    console.log('[QUOTES] Enviar cotización', { quote: this.selectedQuote(), proposal });
-    setTimeout(() => {
-      this.loading.set(false);
-      this.selectedQuote.set(null);
-      this.loadQuotes();
-      this.refreshTabsCounters();
-    }, 800);
+    const selection = this.selectedQuote();
+    if (!selection) return;
+    this.store.sendProposal(Number(selection.id), { ...proposal, submit: true });
   }
 
   onSaveDraft(proposal: QuoteProposal): void {
-    console.log('[QUOTES] Guardar borrador', { quote: this.selectedQuote(), proposal });
+    const selection = this.selectedQuote();
+    if (!selection) return;
+    this.store.sendProposal(Number(selection.id), { ...proposal, submit: false });
   }
 
   onFilesDropped(files: File[]): void {
-    console.log('[QUOTES] Archivos adjuntos', files);
-  }
-
-  private loadQuotes(): void {
-    this.quotesMock.getQuotes(this.activeTab()).pipe(take(1)).subscribe((quotes) => {
-      this.quotes.set(quotes);
-    });
-  }
-
-  private refreshTabsCounters(): void {
-    this.quotesMock.getTabsCounters().pipe(take(1)).subscribe((counters) => {
-      this.tabs.set([
-        { id: 'new', label: 'Nuevas solicitudes', badge: counters['new'] ?? 0 },
-        { id: 'sent', label: 'Enviadas', badge: counters['sent'] ?? 0 },
-        { id: 'accepted', label: 'Aceptadas', badge: counters['accepted'] ?? 0 },
-        { id: 'history', label: 'Historial', badge: counters['history'] ?? 0 }
-      ]);
-    });
+    const selection = this.selectedQuote();
+    if (!selection || !files?.length) return;
+    files.forEach((file) => this.store.uploadAttachment(Number(selection.id), file));
   }
 }
 

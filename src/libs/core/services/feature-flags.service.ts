@@ -6,7 +6,7 @@ export type FeatureKey = 'quotes';
 type SubscriptionTier = 'basic' | 'premium' | 'founder' | null;
 
 const FEATURE_MATRIX: Record<FeatureKey, SubscriptionTier[]> = {
-  quotes: ['premium', 'founder']
+  quotes: ['basic', 'premium', 'founder']
 };
 
 @Injectable({
@@ -21,7 +21,8 @@ export class FeatureFlagsService {
     if (!allowedTiers) {
       return false;
     }
-    return !!tier && allowedTiers.includes(tier);
+    const normalizedTier = tier ?? 'basic';
+    return allowedTiers.includes(normalizedTier);
   }
 }
 

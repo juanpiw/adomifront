@@ -29,6 +29,7 @@ export interface QuoteProposal {
 export class QuotesFormComponent implements OnChanges {
   @Input() quote!: Quote;
   @Input() loading = false;
+  @Input() proposalDetails: { amount?: number | null; details?: string | null; validity?: string | null } | null = null;
   @Output() send = new EventEmitter<QuoteProposal>();
   @Output() saveDraft = new EventEmitter<QuoteProposal>();
   @Output() chat = new EventEmitter<void>();
@@ -47,6 +48,9 @@ export class QuotesFormComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['quote'] && this.quote) {
       this.patchFromQuote(this.quote);
+    }
+    if (changes['proposalDetails'] && this.proposalDetails) {
+      this.patchFromProposal(this.proposalDetails);
     }
   }
 
@@ -73,6 +77,18 @@ export class QuotesFormComponent implements OnChanges {
   private patchFromQuote(quote: Quote): void {
     if (quote.amount) {
       this.form.patchValue({ amount: quote.amount }, { emitEvent: false });
+    }
+  }
+
+  private patchFromProposal(proposal: { amount?: number | null; details?: string | null; validity?: string | null }): void {
+    if (proposal.amount !== undefined && proposal.amount !== null) {
+      this.form.patchValue({ amount: proposal.amount }, { emitEvent: false });
+    }
+    if (proposal.details) {
+      this.form.patchValue({ details: proposal.details }, { emitEvent: false });
+    }
+    if (proposal.validity) {
+      this.form.patchValue({ validity: proposal.validity }, { emitEvent: false });
     }
   }
 }
