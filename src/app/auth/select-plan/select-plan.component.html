@@ -1,91 +1,111 @@
 <div class="plan-selection-container">
   <div class="account-switch-banner" *ngIf="accountSwitchInProgress">
-    <h4>Estás convirtiendo tu cuenta en proveedor</h4>
-    <p>Completa tu plan para habilitar el dashboard profesional y empezar a recibir clientes.</p>
-  </div>
-  <div class="header">
-    <h1>Elige tu plan</h1>
-    <p>Selecciona el plan que mejor se adapte a tus necesidades</p>
-    
-    <!-- Billing Toggle -->
-    <div class="billing-toggle-container">
-      <div class="billing-toggle">
-        <span class="billing-label" [class.active]="!isAnnualBilling">Mensual</span>
-        <div class="toggle-switch" (click)="toggleBilling()">
-          <div class="toggle-slider" [class.annual]="isAnnualBilling"></div>
-        </div>
-        <span class="billing-label" [class.active]="isAnnualBilling">Anual</span>
-      </div>
-      <div *ngIf="isAnnualBilling && getSavingsPercentage() > 0" class="savings-badge">
-        Ahorra hasta {{ getSavingsPercentage() }}%
-      </div>
+    <div class="banner-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.73-.626 1.18-.734l.54-1.636c.26-1.004-.322-2.016-1.34-2.28zM11.42 15.17L5.877 21m6.46-6.46l-1.127-1.127a4.5 4.5 0 00-6.364-6.364l-1.127 1.127" />
+      </svg>
+    </div>
+    <div>
+      <h4>Estás convirtiendo tu cuenta en proveedor</h4>
+      <p>Completa tu plan para habilitar el dashboard profesional y empezar a recibir clientes.</p>
     </div>
   </div>
 
-  <!-- Loading state -->
+  <div class="header">
+    <h1>Elige tu plan</h1>
+    <p>Selecciona el plan que mejor se adapte a tus necesidades</p>
+
+    <div class="billing-toggle-container">
+      <span class="billing-label" [class.active]="!isAnnualBilling">Mensual</span>
+      <button
+        type="button"
+        class="toggle-switch"
+        role="switch"
+        [attr.aria-checked]="isAnnualBilling"
+        (click)="toggleBilling()"
+      >
+        <span class="toggle-slider"></span>
+      </button>
+      <span class="billing-label" [class.active]="isAnnualBilling">Anual</span>
+      <span class="savings-pill">AHORRA 17%</span>
+    </div>
+  </div>
+
   <div *ngIf="loading" class="loading">
     <div class="spinner"></div>
     <p>Cargando planes...</p>
   </div>
 
-  <!-- Error state -->
   <div *ngIf="error" class="error">
     <p>{{ error }}</p>
     <button class="btn-primary" (click)="loadPlans()">Reintentar</button>
   </div>
 
-  <!-- Plans grid -->
   <div *ngIf="!loading && !error" class="plans-grid">
-    <!-- Founder Promo Card -->
-    <div class="plan-card founder-card" [class.selected]="isPromoActive()">
-      <div class="founder-ribbon">¡LIMITADO!</div>
-      <div class="plan-header">
-        <h3>Fundador</h3>
-        <div class="founder-tag">Acceso exclusivo</div>
+    <div class="plan-card plan-card--founder" [class.plan-card--selected]="isPromoActive()">
+      <div class="plan-card__badge">¡LIMITADO!</div>
+      <div class="plan-card__header">
+        <div>
+          <h3>Fundador</h3>
+          <p>Acceso exclusivo “Pioneros”</p>
+        </div>
+        <span class="plan-card__tag">Acceso exclusivo</span>
       </div>
-
-      <div class="plan-price">
-        <span class="price">{{ formatPrice(0) }}</span>
-        <span class="interval">/mes</span>
+      <div class="plan-card__price">
+        <span class="plan-card__price-value">{{ formatPrice(0) }}</span>
+        <span class="plan-card__price-interval">/ 3 meses</span>
       </div>
-
-      <p class="plan-description">
-        Obtén lanzamiento preferente con la comunidad Adomi. Cupos limitados y beneficios especiales durante los primeros meses.
+      <p class="plan-card__description">
+        Lanzamiento preferente con la comunidad Adomi. Beneficios especiales por ser de los primeros.
       </p>
 
-      <ul class="plan-features">
-        <li *ngFor="let feature of (promoPlan?.features?.length ? promoPlan?.features : founderFeatures)">{{ feature }}</li>
-      </ul>
-
-      <div class="plan-limits">
+      <div class="plan-card__limits">
         <div class="limit">
-          <span class="label">Servicios:</span>
+          <span class="label">Servicios</span>
           <span class="value">{{ founderServicesLimitLabel }}</span>
         </div>
         <div class="limit">
-          <span class="label">Reservas:</span>
+          <span class="label">Reservas</span>
           <span class="value">{{ founderBookingsLimitLabel }}</span>
         </div>
       </div>
 
+      <ul class="plan-card__features">
+        <li
+          *ngFor="let feature of getPlanFeatureRows(promoPlan || null)"
+          [class.plan-card__feature--disabled]="!feature.enabled"
+        >
+          <span
+            class="plan-card__feature-icon"
+            [class.plan-card__feature-icon--check]="feature.enabled"
+            [class.plan-card__feature-icon--x]="!feature.enabled"
+          ></span>
+          <div>
+            <span>{{ feature.label }}</span>
+            <small *ngIf="feature.note">{{ feature.note }}</small>
+          </div>
+        </li>
+      </ul>
+
       <div class="promo-input-group" [class.active]="isPromoActive()">
-        <input 
-          type="text" 
-          placeholder="Ingresa tu código Fundador" 
+        <input
+          type="text"
+          placeholder="Ingresa tu código Fundador"
           [(ngModel)]="promoCode"
           [disabled]="promoDisabled || isPromoActive()"
         />
-        <button 
+        <button
           class="btn-apply"
+          type="button"
           (click)="applyPromoCode()"
           [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
         >
-          {{ promoLoading ? 'Validando…' : 'Validar código' }}
+          {{ promoLoading ? 'Validando…' : 'Validar y seleccionar' }}
         </button>
-        <button 
+        <button
           class="btn-clear"
-          *ngIf="isPromoActive()"
           type="button"
+          *ngIf="isPromoActive()"
           (click)="clearPromo()"
         >
           Quitar código
@@ -99,49 +119,75 @@
         <span class="error">{{ promoError }}</span>
       </div>
       <div class="promo-meta" *ngIf="isPromoActive() && promoMeta">
-        <span *ngIf="promoMeta.max_duration_months">Incluye {{ promoMeta.max_duration_months }} meses gratuitos.</span>
+        <span *ngIf="promoMeta.max_duration_months">
+          Incluye {{ promoMeta.max_duration_months }} meses gratuitos.
+        </span>
       </div>
     </div>
 
-    <!-- Regular Plans -->
-    <div 
-      *ngFor="let plan of getCurrentPlans()" 
+    <div
+      *ngFor="let plan of getCurrentPlans()"
       class="plan-card"
-      [class.selected]="selectedPlan?.id === plan.id"
-      [class.recommended]="isPlanRecommended(plan)"
-      [class.disabled]="isPromoActive()"
+      [class.plan-card--selected]="selectedPlan?.id === plan.id"
+      [class.plan-card--recommended]="isPlanRecommended(plan)"
+      [class.plan-card--disabled]="isPromoActive()"
       (click)="selectPlan(plan)"
     >
-      <div class="plan-header">
-        <h3>{{ plan.name }}</h3>
-        <div *ngIf="isPlanRecommended(plan)" class="recommended-badge">Recomendado</div>
+      <div class="plan-card__badge plan-card__badge--recommended" *ngIf="isPlanRecommended(plan)">
+        Recomendado
       </div>
-      
-      <div class="plan-price">
-        <span class="price">{{ formatPrice(plan.price) }}</span>
-        <span class="interval">/{{ plan.interval === 'month' ? 'mes' : 'año' }}</span>
+      <div class="plan-card__header">
+        <div>
+          <h3>{{ plan.name }}</h3>
+          <p>{{ getPlanSubtitle(plan) }}</p>
+        </div>
       </div>
-      
-      <p class="plan-description">{{ plan.description }}</p>
-      
-      <ul class="plan-features">
-        <li *ngFor="let feature of plan.features">{{ feature }}</li>
+      <div class="plan-card__price">
+        <span class="plan-card__price-value">{{ formatPrice(plan.price) }}</span>
+        <span class="plan-card__price-interval">/{{ plan.interval === 'month' ? 'mes' : 'año' }}</span>
+      </div>
+      <p class="plan-card__description">{{ plan.description }}</p>
+
+      <div class="plan-card__limits">
+        <div class="limit">
+          <span class="label">Servicios</span>
+          <span class="value">{{ plan.max_services >= 999 ? 'Ilimitados' : plan.max_services }}</span>
+        </div>
+        <div class="limit">
+          <span class="label">Reservas</span>
+          <span class="value">
+            {{ plan.max_bookings >= 9999 ? 'Ilimitadas' : plan.max_bookings + '/mes' }}
+          </span>
+        </div>
+      </div>
+
+      <ul class="plan-card__features">
+        <li
+          *ngFor="let feature of getPlanFeatureRows(plan)"
+          [class.plan-card__feature--disabled]="!feature.enabled"
+        >
+          <span
+            class="plan-card__feature-icon"
+            [class.plan-card__feature-icon--check]="feature.enabled"
+            [class.plan-card__feature-icon--x]="!feature.enabled"
+          ></span>
+          <div>
+            <span>{{ feature.label }}</span>
+            <small *ngIf="feature.note">{{ feature.note }}</small>
+          </div>
+        </li>
       </ul>
-      
-      <div class="plan-limits">
-        <div class="limit">
-          <span class="label">Servicios:</span>
-          <span class="value">{{ plan.max_services === 999 ? 'Ilimitados' : plan.max_services }}</span>
-        </div>
-        <div class="limit">
-          <span class="label">Reservas:</span>
-          <span class="value">{{ plan.max_bookings === 9999 ? 'Ilimitadas' : plan.max_bookings + '/mes' }}</span>
-        </div>
-      </div>
+
+      <button
+        type="button"
+        class="plan-card__select"
+        (click)="selectPlan(plan); $event.stopPropagation()"
+      >
+        Seleccionar {{ plan.name }}
+      </button>
     </div>
   </div>
 
-  <!-- Payment method selector -->
   <div *ngIf="!loading && !error && requiresPaymentSelection()" class="payment-methods">
     <h3>Selecciona cómo quieres pagar</h3>
     <p>Elige la pasarela de pago que prefieras para completar tu suscripción.</p>
@@ -170,11 +216,13 @@
     </div>
   </div>
 
-  <!-- Action buttons -->
   <div *ngIf="!loading && !error" class="actions">
-    <button class="btn-secondary" (click)="goBack()" [disabled]="promoActivating">Volver</button>
-    <button 
-      class="btn-primary" 
+    <button class="btn-secondary" type="button" (click)="goBack()" [disabled]="promoActivating">
+      Volver
+    </button>
+    <button
+      class="btn-primary"
+      type="button"
       *ngIf="!isPromoActive()"
       [disabled]="!selectedPlan"
       (click)="continueToPayment()"

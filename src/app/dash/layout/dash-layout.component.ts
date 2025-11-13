@@ -32,6 +32,12 @@ import { ProviderInviteService, ProviderInviteSummary } from '../../services/pro
   templateUrl: './dash-layout.component.html',
   styleUrls: ['./dash-layout.component.scss']
 })
+interface PlanTierDescriptor {
+  chip: string;
+  detail: string;
+  variant: 'founder' | 'basic' | 'pro' | 'premium';
+}
+
 export class DashLayoutComponent implements OnInit, OnDestroy {
   isCollapsed = false;
   planInfo: PlanInfo | null = null;
@@ -53,6 +59,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     manualUpdatedAt?: string | null;
   } | null = null;
   isFounderAccount: boolean = false;
+  planTierInfo: PlanTierDescriptor | null = null;
   
   get isAdmin(): boolean {
     try {
@@ -394,10 +401,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             const isFounder = planName.includes('fundador') || planName.includes('founder') || planType.includes('fundador') || planType.includes('founder') || derivedFounder;
             this.isFounderAccount = isFounder;
             this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
+            this.refreshPlanTierDescriptor();
             this.refreshTopbarBadges();
           } else {
             this.isFounderAccount = false;
             this.topbarPlanBadge = null;
+            this.refreshPlanTierDescriptor();
             this.refreshTopbarBadges();
           }
           this.refreshFeatureFlags();
@@ -644,6 +653,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     } else {
       this.topbarPlanBadge = null;
     }
+    this.refreshPlanTierDescriptor();
     this.refreshTopbarBadges();
   }
 
@@ -714,6 +724,52 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     } catch {
       return due;
     }
+  }
+
+  private refreshPlanTierDescriptor(): void {
+    const planName = this.planInfo?.name || null;
+    this.planTierInfo = this.resolvePlanTierDescriptor(planName, this.isFounderAccount);
+  }
+
+  private resolvePlanTierDescriptor(planName: string | null, isFounder: boolean): PlanTierDescriptor | null {
+    if (isFounder) {
+      return {
+        chip: '💎 Fundador',
+        detail: 'Plan promocional · 0% comisión por 3 meses',
+        variant: 'founder'
+      };
+    }
+
+    if (!planName) {
+      return null;
+    }
+    const normalized = planName.toLowerCase();
+
+    if (normalized.includes('premium')) {
+      return {
+        chip: '🚀 Plan Premium',
+        detail: 'Para escalar · $19.990/mes · 10% comisión',
+        variant: 'premium'
+      };
+    }
+
+    if (normalized.includes('pro')) {
+      return {
+        chip: '⭐ Plan Pro',
+        detail: 'Para crecer · $9.990/mes · 14% comisión',
+        variant: 'pro'
+      };
+    }
+
+    if (normalized.includes('básico') || normalized.includes('basico') || normalized.includes('basic')) {
+      return {
+        chip: 'Plan Básico',
+        detail: 'Para empezar · $4.990/mes · 18% comisión',
+        variant: 'basic'
+      };
+    }
+
+    return null;
   }
 
   private async initializeNotifications(): Promise<void> {

@@ -16,12 +16,21 @@ interface Plan {
   features: string[];
   max_services: number;
   max_bookings: number;
+  metadata?: Record<string, any> | null;
+  plan_type?: string;
+  benefits?: string[];
+  commission_rate?: number;
   // id de origen cuando derivamos (mensual <-> anual)
   sourceId?: number;
   isPromo?: boolean;
   promoCode?: string;
   duration_months?: number;
-  commission_rate?: number;
+}
+
+interface PlanFeatureRow {
+  label: string;
+  enabled: boolean;
+  note?: string;
 }
 
 interface TempUserData {
@@ -92,12 +101,50 @@ export class SelectPlanComponent implements OnInit {
   promoMeta: PromoValidationResponse['promo'] | null = null;
   promoActivating = false;
   accountSwitchInProgress = false;
-  founderFeatures: string[] = [
-    '3 meses sin comisión de plataforma',
-    'Prioridad en búsquedas locales',
-    'Soporte directo del equipo Adomi',
-    'Acceso a nuevas funciones beta'
+  readonly founderFeatureRows: PlanFeatureRow[] = [
+    { label: '3 meses sin comisión de plataforma', enabled: true },
+    { label: 'Prioridad en búsquedas locales', enabled: true },
+    { label: 'Soporte directo del equipo Adomi', enabled: true },
+    { label: 'Acceso a nuevas funciones beta', enabled: true },
+    { label: 'Pagos en efectivo habilitados', enabled: true },
+    { label: 'Sistema de cotizaciones incluido', enabled: true }
   ];
+  private readonly planSubtitles: Record<string, string> = {
+    fundador: 'Acceso exclusivo “Pioneros”',
+    basico: 'Para empezar',
+    pro: 'Para crecer',
+    premium: 'Para escalar'
+  };
+  private readonly planFeatureMatrix: Record<string, PlanFeatureRow[]> = {
+    basico: [
+      { label: 'Pagos en efectivo', enabled: false },
+      { label: 'Sistema de cotizaciones', enabled: false },
+      { label: 'Promociones activas', enabled: false },
+      { label: 'Portafolio (5 ítems)', enabled: true },
+      { label: 'Ver rating del cliente', enabled: false },
+      { label: 'Soporte estándar', enabled: true },
+      { label: 'Dashboard básico', enabled: true }
+    ],
+    pro: [
+      { label: 'Pagos en efectivo', enabled: true },
+      { label: 'Sistema de cotizaciones', enabled: false },
+      { label: 'Promociones activas (1)', enabled: true },
+      { label: 'Portafolio (25 ítems)', enabled: true },
+      { label: 'Ver rating del cliente', enabled: true },
+      { label: 'Soporte prioritario', enabled: true },
+      { label: 'Dashboard avanzado', enabled: true }
+    ],
+    premium: [
+      { label: 'Pagos en efectivo', enabled: true },
+      { label: 'Sistema de cotizaciones', enabled: true },
+      { label: 'Promociones ilimitadas', enabled: true },
+      { label: 'Portafolio ilimitado', enabled: true },
+      { label: 'Ver rating del cliente', enabled: true },
+      { label: 'FAQ público en el perfil', enabled: true },
+      { label: 'Exportar reportes (CSV)', enabled: true },
+      { label: 'Soporte dedicado 24/7', enabled: true }
+    ]
+  };
   private readonly founderDefaults = {
     services: 10,
     bookings: 50
@@ -316,7 +363,7 @@ export class SelectPlanComponent implements OnInit {
   }
 
   isPlanRecommended(plan: Plan): boolean {
-    return plan.name.toLowerCase().includes('premium');
+    return this.getPlanKey(plan) === 'pro';
   }
 
   // Promo helpers
@@ -338,6 +385,24 @@ export class SelectPlanComponent implements OnInit {
     const maxBookings = this.promoPlan?.max_bookings ?? this.founderDefaults.bookings;
     if (!maxBookings || maxBookings === 9999) return 'Ilimitadas';
     return `${maxBookings}/mes`;
+  }
+
+  getPlanSubtitle(plan: Plan | null): string {
+    return this.planSubtitles[this.getPlanKey(plan)] || '';
+  }
+
+  getPlanFeatureRows(plan: Plan | null): PlanFeatureRow[] {
+    const key = this.getPlanKey(plan);
+    if (key === 'fundador') return this.founderFeatureRows;
+    return this.planFeatureMatrix[key] || [];
+  }
+
+  private getPlanKey(plan: Plan | null | undefined): 'fundador' | 'basico' | 'pro' | 'premium' {
+    const name = (plan?.name || '').toLowerCase();
+    if (name.includes('fundador')) return 'fundador';
+    if (name.includes('premium')) return 'premium';
+    if (name.includes('pro')) return 'pro';
+    return 'basico';
   }
 
   private trackFunnelEvent(event: string, metadata?: Record<string, any>) {
