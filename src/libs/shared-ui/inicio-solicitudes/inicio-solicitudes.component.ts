@@ -56,6 +56,7 @@ export class InicioSolicitudesComponent implements AfterViewInit {
   totalPages = 1;
   private autoplayTimer: any = null;
   autoplayIntervalMs = 4000;
+  readonly fallbackAvatar = '/assets/default-avatar.png';
 
   ngAfterViewInit(): void {
     // Dar tiempo a que Angular pinte el DOM y calcule tamaños
@@ -66,6 +67,23 @@ export class InicioSolicitudesComponent implements AfterViewInit {
     el.addEventListener('scroll', this.onScrollThrottled, { passive: true });
     window.addEventListener('resize', this.onResizeThrottled);
     this.startAutoplay();
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+
+    const currentSrc = img.getAttribute('src');
+    if (currentSrc === this.fallbackAvatar) {
+      return;
+    }
+
+    console.warn('[InicioSolicitudes] Avatar no disponible, usando fallback.', {
+      previousSrc: currentSrc
+    });
+
+    img.src = this.fallbackAvatar;
+    img.classList.add('inicio-solicitudes__avatar--fallback');
   }
 
   onAcceptClick(solicitud: SolicitudData) {

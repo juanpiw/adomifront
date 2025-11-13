@@ -44,16 +44,17 @@
         <div class="day-detail__appointment-content">
           <h4 class="day-detail__appointment-title">{{ appointment.title }}</h4>
           <button type="button" class="day-detail__appointment-client" (click)="onClientClick($event, appointment)">
-            <span class="day-detail__client-avatar" *ngIf="appointment.clientAvatarUrl; else clientInitials">
-              <img [src]="appointment.clientAvatarUrl"
-                   [alt]="appointment.clientName || 'Cliente'"
-                   loading="lazy" />
-            </span>
-            <ng-template #clientInitials>
-              <span class="day-detail__client-avatar day-detail__client-avatar--placeholder">
+            <span class="day-detail__client-avatar" [class.day-detail__client-avatar--placeholder]="!appointment.clientAvatarUrl">
+              <img
+                loading="lazy"
+                [src]="appointment.clientAvatarUrl || fallbackAvatar"
+                [alt]="appointment.clientName || 'Cliente'"
+                (error)="onClientAvatarError($event, appointment)"
+              />
+              <span *ngIf="!appointment.clientAvatarUrl" class="day-detail__client-initials">
                 {{ getClientInitials(appointment.clientName) }}
               </span>
-            </ng-template>
+            </span>
             <span class="day-detail__client-name">{{ appointment.clientName }}</span>
           </button>
           <p *ngIf="appointment.locationLabel" class="day-detail__appointment-location">

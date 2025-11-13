@@ -205,12 +205,33 @@
       height: 100%;
       object-fit: cover;
       display: block;
+
+      &.day-detail__client-avatar--fallback {
+        display: none;
+      }
     }
 
     &--placeholder {
       background: #e0e7ff;
       color: #4338ca;
     }
+
+    &--fallback {
+      background: #e2e8f0;
+      color: #475569;
+
+      img {
+        display: none;
+      }
+
+      .day-detail__client-initials {
+        display: inline;
+      }
+    }
+  }
+
+  &__client-initials {
+    display: none;
   }
 
   &__client-name {

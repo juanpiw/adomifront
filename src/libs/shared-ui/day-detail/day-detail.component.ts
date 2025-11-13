@@ -42,6 +42,7 @@ export class DayDetailComponent {
   @Input() appointments: DayAppointment[] = [];
   @Input() professionalName: string = 'Nombre (Título)';
   @Input() loading: boolean = false;
+  readonly fallbackAvatar = '/assets/default-avatar.png';
 
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
   @Output() newAppointment = new EventEmitter<Date>();
@@ -135,6 +136,21 @@ export class DayDetailComponent {
   onClientClick(event: Event, appointment: DayAppointment) {
     event.stopPropagation();
     this.viewClientProfile.emit(appointment);
+  }
+
+  onClientAvatarError(event: Event, appointment: DayAppointment) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    const currentSrc = img.getAttribute('src');
+    if (currentSrc === this.fallbackAvatar) return;
+
+    console.warn('[DayDetail] Avatar de cliente no disponible, usando fallback.', {
+      appointmentId: appointment.id,
+      previousSrc: currentSrc
+    });
+
+    img.src = this.fallbackAvatar;
+    img.classList.add('day-detail__client-avatar--fallback');
   }
 
   onClientReviewClick(event: Event, appointment: DayAppointment) {
