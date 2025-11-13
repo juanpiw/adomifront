@@ -132,27 +132,70 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
 
   getAppointmentDate(notification: Notification): string | null {
     const metadata = notification.metadata || {};
-    const dateCandidate =
-      metadata.appointmentDate ??
-      metadata.appointment_date ??
-      metadata.date ??
-      metadata.startDate ??
-      metadata.start_time ??
-      metadata.startTime ??
-      metadata.scheduledFor ??
-      metadata.scheduled_for;
 
-    const baseDateValue = dateCandidate ?? notification.createdAt;
+    const preFormatted =
+      metadata.appointmentFormattedDate ??
+      metadata.appointment_formatted_date ??
+      metadata.appointmentDisplayDate ??
+      metadata.appointment_display_date;
+    if (typeof preFormatted === 'string' && preFormatted.trim().length > 0) {
+      return preFormatted.trim();
+    }
 
-    const date = this.normalizeToDate(baseDateValue);
-    if (!date) return null;
+    const hasAppointmentContext =
+      notification.type === 'appointment' ||
+      metadata.appointmentId !== undefined ||
+      metadata.appointment_id !== undefined ||
+      metadata.appointment !== undefined;
 
-    return date.toLocaleDateString('es-CL', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (!hasAppointmentContext) {
+      return null;
+    }
+
+    const dateTimeCandidate =
+      metadata.appointmentDateTime ??
+      metadata.appointment_datetime ??
+      metadata.appointmentDateTimeIso ??
+      metadata.appointment_datetime_iso ??
+      metadata.datetime ??
+      metadata.dateTime ??
+      metadata.scheduledAt ??
+      metadata.scheduled_at;
+
+    let date = this.normalizeToDate(dateTimeCandidate);
+
+    if (!date) {
+      const datePart =
+        metadata.appointmentDate ??
+        metadata.appointment_date ??
+        metadata.date ??
+        metadata.startDate ??
+        metadata.scheduledFor ??
+        metadata.scheduled_for;
+
+      const timePart =
+        metadata.appointmentTime ??
+        metadata.appointment_time ??
+        metadata.time ??
+        metadata.start_time ??
+        metadata.startTime;
+
+      if (datePart) {
+        const normalizedTime = this.normalizeTimePart(timePart);
+        const combined = normalizedTime ? `${datePart}T${normalizedTime}` : datePart;
+        date = this.normalizeToDate(combined);
+      }
+    }
+
+    if (!date) {
+      date = this.normalizeToDate(notification.createdAt);
+    }
+
+    if (!date) {
+      return null;
+    }
+
+    return this.formatDateLabel(date);
   }
 
   private normalizeToDate(value: any): Date | null {
@@ -194,6 +237,35 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     }
 
     return null;
+  }
+
+  private normalizeTimePart(value: any): string | null {
+    if (!value && value !== 0) {
+      return null;
+    }
+    const raw = String(value).trim();
+    if (!raw) {
+      return null;
+    }
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(raw)) {
+      return raw.slice(0, 5);
+    }
+    if (/^\d{4}$/.test(raw)) {
+      return `${raw.slice(0, 2)}:${raw.slice(2)}`;
+    }
+    if (/^\d{1,2}$/.test(raw)) {
+      return raw.padStart(2, '0') + ':00';
+    }
+    return null;
+  }
+
+  private formatDateLabel(date: Date): string {
+    return date.toLocaleDateString('es-CL', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   }
 }
 

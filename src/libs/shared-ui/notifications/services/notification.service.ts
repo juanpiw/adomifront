@@ -124,13 +124,15 @@ export class NotificationService {
     const createdAt = normalizeDate(notification.createdAt) || new Date();
     const updatedAt = normalizeDate(notification.updatedAt);
     const readAt = normalizeDate(notification.readAt);
+    const metadata = this.normalizeMetadata(notification.metadata);
 
     return {
       ...defaults,
       ...notification,
       createdAt,
       updatedAt,
-      readAt
+      readAt,
+      metadata
     };
   }
 
@@ -172,6 +174,113 @@ export class NotificationService {
     this.notificationsSubject.next(this.getProfileNotifications());
     this.updateUnreadCountValue();
     console.log('🔔 [NOTIFICATION_SERVICE] Después de loadNotifications -> total:', this.notificationsByProfile[this.currentProfile]?.length || 0, 'no leídas:', this.notificationsByProfile[this.currentProfile]?.filter(n => n.status === 'unread').length || 0);
+  }
+
+  private normalizeMetadata(metadata?: Record<string, any>): Record<string, any> | undefined {
+    if (!metadata) {
+      return metadata;
+    }
+    const normalized: Record<string, any> = { ...metadata };
+
+    const rawAppointmentId =
+      normalized.appointment_id ??
+      normalized.appointmentId ??
+      normalized.appointmentID ??
+      normalized.appointment;
+    if (rawAppointmentId !== undefined && rawAppointmentId !== null) {
+      const idString = String(rawAppointmentId);
+      normalized.appointment_id = idString;
+      normalized.appointmentId = idString;
+    }
+
+    const datePartRaw =
+      normalized.appointmentDate ??
+      normalized.appointment_date ??
+      normalized.date ??
+      normalized.startDate ??
+      normalized.scheduledFor ??
+      normalized.scheduled_for;
+    const datePart = this.normalizeDatePart(datePartRaw);
+    if (datePart) {
+      normalized.appointmentDate = datePart;
+      normalized.appointment_date = datePart;
+      if (!normalized.date) {
+        normalized.date = datePart;
+      }
+    }
+
+    const timePartRaw =
+      normalized.appointmentTime ??
+      normalized.appointment_time ??
+      normalized.time ??
+      normalized.start_time ??
+      normalized.startTime;
+    const timePart = this.normalizeTimePart(timePartRaw);
+    if (timePart) {
+      normalized.appointmentTime = timePart;
+      normalized.appointment_time = timePart;
+      normalized.start_time = timePart;
+      normalized.startTime = timePart;
+      if (!normalized.time) {
+        normalized.time = timePart;
+      }
+    }
+
+    if (!normalized.appointmentDateTime && !normalized.appointment_datetime && datePart) {
+      const localIso = `${datePart}T${timePart || '00:00'}`;
+      normalized.appointmentDateTime = localIso;
+      normalized.appointment_datetime = localIso;
+    }
+
+    if (!normalized.appointmentDateTimeIso && !normalized.appointment_datetime_iso && datePart) {
+      const utcIso = `${datePart}T${(timePart || '00:00')}:00Z`;
+      normalized.appointmentDateTimeIso = utcIso;
+      normalized.appointment_datetime_iso = utcIso;
+    }
+
+    return normalized;
+  }
+
+  private normalizeDatePart(value: any): string | null {
+    if (value === undefined || value === null) {
+      return null;
+    }
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.toISOString().slice(0, 10);
+    }
+    const raw = String(value).trim();
+    if (!raw) {
+      return null;
+    }
+    const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+    const parsed = new Date(raw);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().slice(0, 10);
+    }
+    return null;
+  }
+
+  private normalizeTimePart(value: any): string | null {
+    if (!value && value !== 0) {
+      return null;
+    }
+    const raw = String(value).trim();
+    if (!raw) {
+      return null;
+    }
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(raw)) {
+      return raw.slice(0, 5);
+    }
+    if (/^\d{4}$/.test(raw)) {
+      return `${raw.slice(0, 2)}:${raw.slice(2)}`;
+    }
+    if (/^\d{1,2}$/.test(raw)) {
+      return raw.padStart(2, '0') + ':00';
+    }
+    return null;
   }
 
   // Crear nueva notificación
