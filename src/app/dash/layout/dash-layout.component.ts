@@ -25,6 +25,12 @@ import { FeatureFlagsService } from '../../../libs/core/services/feature-flags.s
 import { GoldenInviteModalComponent } from '../../../libs/shared-ui/golden-invite-modal/golden-invite-modal.component';
 import { ProviderInviteService, ProviderInviteSummary } from '../../services/provider-invite.service';
 
+interface PlanTierDescriptor {
+  chip: string;
+  detail: string;
+  variant: 'founder' | 'basic' | 'pro' | 'premium';
+}
+
 @Component({
   selector: 'app-dash-layout',
   standalone: true,
@@ -32,12 +38,6 @@ import { ProviderInviteService, ProviderInviteSummary } from '../../services/pro
   templateUrl: './dash-layout.component.html',
   styleUrls: ['./dash-layout.component.scss']
 })
-interface PlanTierDescriptor {
-  chip: string;
-  detail: string;
-  variant: 'founder' | 'basic' | 'pro' | 'premium';
-}
-
 export class DashLayoutComponent implements OnInit, OnDestroy {
   isCollapsed = false;
   planInfo: PlanInfo | null = null;
