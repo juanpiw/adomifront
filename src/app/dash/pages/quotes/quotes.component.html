@@ -1,0 +1,32 @@
+<section class="quotes-page">
+  <ui-quotes-header
+    title="Gestión de Cotizaciones"
+    subtitle="Organiza tus cotizaciones premium, responde rápido a los clientes y convierte solicitudes en ventas."
+  ></ui-quotes-header>
+
+  <ui-quotes-tabs
+    [tabs]="tabs()"
+    [activeTabId]="activeTab()"
+    (tabChange)="onTabChange($event)"
+  ></ui-quotes-tabs>
+
+  <div class="quotes-page__layout">
+    <ui-quotes-grid
+      class="quotes-page__grid"
+      [quotes]="quotes()"
+      (action)="onQuoteAction($event)"
+    ></ui-quotes-grid>
+
+    <aside class="quotes-page__sidebar" *ngIf="selectedQuote() as selection">
+      <ui-quotes-form
+        [quote]="selection"
+        [loading]="loading()"
+        (send)="onSendProposal($event)"
+        (saveDraft)="onSaveDraft($event)"
+        (chat)="onQuoteAction({ quote: selection, action: 'open-chat' })"
+        (filesDropped)="onFilesDropped($event)"
+      ></ui-quotes-form>
+    </aside>
+  </div>
+</section>
+

@@ -1,0 +1,196 @@
+.quote-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  height: 100%;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  box-shadow: 0 12px 28px -20px rgba(15, 23, 42, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -22px rgba(15, 23, 42, 0.65);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  &__service {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.01em;
+  }
+
+  &__date {
+    margin: 0.15rem 0 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  &__client {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__client-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 2px solid rgba(79, 70, 229, 0.15);
+  }
+
+  &__client-name {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  &__client-meta {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+
+  &__message {
+    margin: 0;
+    padding: 1rem;
+    background: rgba(248, 250, 252, 0.9);
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  &__footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  &__validity {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    .btn {
+      flex: 1;
+      min-width: 140px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid transparent;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #ffffff;
+      box-shadow: 0 15px 30px -18px rgba(79, 70, 229, 0.55);
+
+      &:hover {
+        box-shadow: 0 20px 38px -20px rgba(79, 70, 229, 0.65);
+      }
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #4b5563;
+      border-color: #d1d5db;
+
+      &:hover {
+        background: #f9fafb;
+      }
+    }
+  }
+}
+
+:host-context(.dark-theme) {
+  .quote-card {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(148, 163, 184, 0.18);
+    box-shadow: 0 30px 50px -25px rgba(2, 6, 23, 0.75);
+
+    &__service {
+      color: #f8fafc;
+    }
+
+    &__date {
+      color: #94a3b8;
+    }
+
+    &__client-name {
+      color: #f8fafc;
+    }
+
+    &__client-meta {
+      color: #a5b4fc;
+    }
+
+    &__message {
+      background: rgba(30, 41, 59, 0.7);
+      border-color: rgba(148, 163, 184, 0.25);
+      color: #cbd5f5;
+    }
+
+    &__amount {
+      color: #f8fafc;
+    }
+
+    &__validity {
+      color: #a5b4fc;
+    }
+
+    &__actions {
+      .btn-secondary {
+        background: rgba(15, 23, 42, 0.65);
+        color: #e2e8f0;
+        border-color: rgba(148, 163, 184, 0.25);
+
+        &:hover {
+          background: rgba(30, 41, 59, 0.85);
+        }
+      }
+    }
+  }
+}
+

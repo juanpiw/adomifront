@@ -1,0 +1,18 @@
+<nav class="quotes-tabs" role="tablist">
+  <button
+    *ngFor="let tab of tabs"
+    type="button"
+    (click)="onSelectTab(tab.id)"
+    class="quotes-tabs__button"
+    [class.quotes-tabs__button--active]="tab.id === activeTabId"
+    role="tab"
+    [attr.aria-selected]="tab.id === activeTabId"
+    [attr.tabindex]="tab.id === activeTabId ? 0 : -1"
+  >
+    <span>{{ tab.label }}</span>
+    <span *ngIf="tab.badge !== undefined" class="quotes-tabs__badge">
+      {{ tab.badge }}
+    </span>
+  </button>
+</nav>
+

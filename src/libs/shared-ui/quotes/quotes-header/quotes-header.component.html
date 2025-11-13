@@ -1,0 +1,22 @@
+<header class="quotes-header">
+  <div class="quotes-header__titles">
+    <h2 class="quotes-header__title">
+      <ui-icon *ngIf="icon" [name]="icon" class="quotes-header__title-icon"></ui-icon>
+      {{ title }}
+    </h2>
+    <p *ngIf="subtitle" class="quotes-header__subtitle">
+      {{ subtitle }}
+    </p>
+  </div>
+
+  <button
+    *ngIf="showPremiumBadge"
+    type="button"
+    class="quotes-header__badge"
+    (click)="onInfoClick()"
+  >
+    <ui-icon name="star" class="quotes-header__badge-icon"></ui-icon>
+    {{ badgeLabel }}
+  </button>
+</header>
+

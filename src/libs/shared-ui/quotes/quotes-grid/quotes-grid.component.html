@@ -1,0 +1,15 @@
+<section class="quotes-grid" *ngIf="quotes && quotes.length; else emptyState">
+  <ui-quote-card
+    *ngFor="let quote of quotes; trackBy: trackByQuoteId"
+    [quote]="quote"
+    (action)="onAction($event)"
+  ></ui-quote-card>
+</section>
+
+<ng-template #emptyState>
+  <ui-quotes-empty-state
+    [title]="emptyTitle"
+    [description]="emptyDescription"
+  ></ui-quotes-empty-state>
+</ng-template>
+

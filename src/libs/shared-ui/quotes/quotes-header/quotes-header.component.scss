@@ -1,0 +1,101 @@
+.quotes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-bg, #ffffff);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 25px -20px rgba(15, 23, 42, 0.45);
+
+  &__titles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: clamp(1.5rem, 2vw, 1.875rem);
+    font-weight: 800;
+    color: var(--color-text, #111827);
+    letter-spacing: -0.02em;
+  }
+
+  &__title-icon {
+    font-size: 1.5rem;
+    color: #4f46e5;
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-muted, #64748b);
+    max-width: 42rem;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(17, 24, 39, 0.85);
+    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    color: #fde047;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px -20px rgba(17, 24, 39, 0.8);
+    }
+  }
+
+  &__badge-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .quotes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+
+    &__badge {
+      align-self: flex-start;
+    }
+  }
+}
+
+:host-context(.dark-theme) {
+  .quotes-header {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(148, 163, 184, 0.18);
+    box-shadow: 0 25px 45px -25px rgba(2, 6, 23, 0.75);
+
+    &__title {
+      color: #f8fafc;
+    }
+
+    &__subtitle {
+      color: #cbd5f5;
+    }
+
+    &__badge {
+      border-color: rgba(17, 24, 39, 0.6);
+      box-shadow: 0 12px 30px -22px rgba(250, 204, 21, 0.6);
+    }
+  }
+}
+

@@ -1,0 +1,16 @@
+<label class="dropzone-card" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+  <input
+    type="file"
+    class="dropzone-card__input"
+    [attr.accept]="accept"
+    multiple
+    (change)="onFileInputChange($event)"
+  />
+  <div class="dropzone-card__icon">
+    <ui-icon name="cloud-upload" [size]="28"></ui-icon>
+  </div>
+  <div class="dropzone-card__title">{{ label }}</div>
+  <div class="dropzone-card__description">{{ description }}</div>
+  <div class="dropzone-card__hint">Max {{ maxSizeMb }}MB • {{ accept }}</div>
+</label>
+

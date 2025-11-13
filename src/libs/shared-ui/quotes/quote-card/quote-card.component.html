@@ -1,0 +1,54 @@
+<article class="quote-card">
+  <div class="quote-card__header">
+    <div>
+      <h3 class="quote-card__service">{{ quote.serviceName }}</h3>
+      <p class="quote-card__date">
+        {{ quote.requestedAt | date : 'd MMMM, y' : undefined : 'es-CL' }}
+      </p>
+    </div>
+    <ui-quote-status-pill [status]="quote.status"></ui-quote-status-pill>
+  </div>
+
+  <div class="quote-card__client">
+    <img
+      class="quote-card__client-avatar"
+      [src]="quote.client.avatarUrl || 'https://placehold.co/40x40/1f2937/ffffff?text=' + (quote.client.name | slice:0:1)"
+      [alt]="quote.client.name"
+    />
+    <div>
+      <div class="quote-card__client-name">{{ quote.client.name }}</div>
+      <div *ngIf="quote.client.memberSince" class="quote-card__client-meta">
+        Cliente desde {{ quote.client.memberSince | date : 'dd MMM yyyy' : undefined : 'es-CL' }}
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="quote.message" class="quote-card__message">
+    “{{ quote.message }}”
+  </p>
+
+  <div class="quote-card__footer">
+    <div *ngIf="quote.amount" class="quote-card__meta">
+      <span class="quote-card__amount">{{ quote.amount | currency: quote.currency || 'CLP':'symbol-narrow':'1.0-0':'es-CL' }}</span>
+      <span *ngIf="quote.validUntil" class="quote-card__validity">
+        Válida hasta {{ quote.validUntil | date : 'dd MMM' : undefined : 'es-CL' }}
+      </span>
+    </div>
+
+    <div class="quote-card__actions">
+      <button type="button" class="btn btn-primary" (click)="onPrimaryAction()">
+        {{ primaryLabel }}
+      </button>
+      <button
+        *ngIf="showChatCta"
+        type="button"
+        class="btn btn-secondary"
+        (click)="onChat()"
+      >
+        <ui-icon name="message" [size]="16"></ui-icon>
+        Chatear
+      </button>
+    </div>
+  </div>
+</article>
+

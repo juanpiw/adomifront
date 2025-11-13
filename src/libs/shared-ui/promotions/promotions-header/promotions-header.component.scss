@@ -15,6 +15,14 @@
   margin-bottom: 0;
 }
 
+:host-context(.dark-theme) .promotions-title {
+  color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .promotions-subtitle {
+  color: #94a3b8;
+}
+
 
 
 

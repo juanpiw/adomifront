@@ -1,0 +1,30 @@
+.quotes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  &__layout {
+    display: grid;
+    gap: 1.75rem;
+    grid-template-columns: 1fr minmax(320px, 420px);
+
+    @media (max-width: 1100px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__grid {
+    min-height: 320px;
+  }
+
+  &__sidebar {
+    @media (max-width: 1100px) {
+      order: -1;
+    }
+  }
+}
+
+:host-context(.dark-theme) .quotes-page {
+  color: #f8fafc;
+}
+

@@ -1,0 +1,75 @@
+<div class="quotes-form" *ngIf="quote">
+  <div class="quotes-form__request">
+    <ui-client-request-panel [quote]="quote" (chat)="chat.emit()"></ui-client-request-panel>
+  </div>
+
+  <section class="quotes-form__section">
+    <header class="quotes-form__section-header">
+      <h3>Tu propuesta</h3>
+      <p>Completa los detalles que recibirá el cliente antes de aceptar la cotización.</p>
+    </header>
+
+    <form [formGroup]="form" class="quotes-form__form" (ngSubmit)="onSubmit()">
+      <div class="quotes-form__field-group">
+        <label for="amount">Monto total (CLP)</label>
+        <div class="quotes-form__currency-input">
+          <span>$</span>
+          <input
+            id="amount"
+            type="number"
+            formControlName="amount"
+            min="1000"
+            placeholder="2.500.000"
+          />
+        </div>
+        <small *ngIf="form.controls.amount.invalid && form.controls.amount.touched" class="quotes-form__error">
+          Ingresa un monto válido mayor a $1.000
+        </small>
+      </div>
+
+      <div class="quotes-form__field-group">
+        <label for="validity">Validez de la oferta</label>
+        <select id="validity" formControlName="validity">
+          <option *ngFor="let option of validityOptions" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+
+      <div class="quotes-form__field-group quotes-form__field-group--full">
+        <label for="details">
+          Detalle (qué incluye la cotización)
+          <span>Esto será visible para el cliente</span>
+        </label>
+        <textarea
+          id="details"
+          rows="8"
+          formControlName="details"
+          placeholder="- Materiales incluidos…&#10;- Garantías ofrecidas…&#10;- Consideraciones importantes…"
+        ></textarea>
+        <small *ngIf="form.controls.details.invalid && form.controls.details.touched" class="quotes-form__error">
+          Describe la propuesta con al menos 20 caracteres.
+        </small>
+      </div>
+
+      <div class="quotes-form__attachments quotes-form__field-group--full">
+        <span class="quotes-form__attachments-label">Adjuntar archivos (opcional)</span>
+        <ui-dropzone-card
+          label="Sube PDF, JPG o PNG"
+          description="Arrastra tus documentos o haz clic para seleccionarlos"
+          (filesDropped)="onFilesDropped($event)"
+        ></ui-dropzone-card>
+      </div>
+
+      <footer class="quotes-form__actions">
+        <button type="button" class="btn btn-secondary" (click)="onSaveDraft()" [disabled]="loading">
+          <ui-icon name="inbox" [size]="18"></ui-icon>
+          Guardar borrador
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          <ui-icon name="paper-plane" [size]="18"></ui-icon>
+          Enviar cotización
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+

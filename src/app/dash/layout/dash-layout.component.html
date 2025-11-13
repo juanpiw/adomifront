@@ -55,6 +55,12 @@
         <span *ngIf="pendingAppointmentsCount > 0" class="badge-unread badge-appointment">{{ pendingAppointmentsCount }}</span>
       </a>
       <a class="rail-item" routerLink="/dash/ingresos" routerLinkActive="active" title="Ingresos" (click)="onNav()"><ui-icon name="money" [size]="20"></ui-icon></a>
+      <a *ngIf="hasQuotesFeature" class="rail-item" routerLink="/dash/cotizaciones" routerLinkActive="active" title="Cotizaciones" (click)="onNav()" style="position: relative;">
+        <ui-icon name="file-text" [size]="20"></ui-icon>
+        <span class="badge-premium" title="Función premium">
+          <ui-icon name="star" [size]="10"></ui-icon>
+        </span>
+      </a>
       <a *ngIf="isAdmin" class="rail-item" routerLink="/dash/admin-pagos" routerLinkActive="active" title="Admin Pagos" (click)="onNav()" style="position:relative;">
         <ui-icon name="user" [size]="20"></ui-icon>
         <span *ngIf="adminPendingCount > 0" class="badge-unread" style="position:absolute; top:-6px; right:-6px;">{{ adminPendingCount }}</span>
@@ -100,6 +106,11 @@
         <a routerLink="/dash/home" routerLinkActive="active" (click)="onNav()"><ui-icon name="home"></ui-icon><span>Inicio</span></a>
         <a routerLink="/dash/agenda" routerLinkActive="active" (click)="onNav()"><ui-icon name="calendar"></ui-icon><span>Agenda</span></a>
         <a routerLink="/dash/ingresos" routerLinkActive="active" (click)="onNav()"><ui-icon name="money"></ui-icon><span>Ingresos</span></a>
+      <a *ngIf="hasQuotesFeature" routerLink="/dash/cotizaciones" routerLinkActive="active" (click)="onNav()" class="menu__link-premium">
+        <ui-icon name="file-text"></ui-icon>
+        <span>Cotizaciones</span>
+        <span class="menu__premium-dot" title="Disponible en plan premium"></span>
+      </a>
         <a *ngIf="isAdmin" routerLink="/dash/admin-pagos" routerLinkActive="active" (click)="onNav()" style="position:relative;">
           <ui-icon name="user"></ui-icon><span>Admin Pagos</span>
           <span *ngIf="adminPendingCount > 0" class="badge-unread" style="position:absolute; right:12px;">{{ adminPendingCount }}</span>

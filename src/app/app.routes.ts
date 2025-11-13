@@ -41,6 +41,8 @@ import { AdminPagosComponent } from './dash/pages/admin-pagos/admin-pagos.compon
 import { TbkReturnComponent } from './client/pages/tbk-return/tbk-return.component';
 import { TbkPlanReturnComponent } from './auth/tbk-plan-return/tbk-plan-return.component';
 import { PerfilSolicitanteComponent } from './client/pages/perfil-solicitante/perfil-solicitante.component';
+import { DashQuotesComponent } from './dash/pages/quotes/quotes.component';
+import { quotesFeatureGuard } from './dash/pages/quotes/quotes.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -85,6 +87,7 @@ export const routes: Routes = [
       { path: 'home', component: DashHomeComponent },
       { path: 'agenda', component: DashAgendaComponent },
       { path: 'ingresos', component: DashIngresosComponent },
+      { path: 'cotizaciones', component: DashQuotesComponent, canActivate: [quotesFeatureGuard] },
       { path: 'estadisticas', component: DashEstadisticasComponent },
       { path: 'promocion', component: DashPromocionComponent }
       ,{ path: 'mensajes', component: DashMensajesComponent }

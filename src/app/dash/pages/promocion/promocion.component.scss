@@ -1,5 +1,9 @@
 .promocion-container { padding: 1rem; }
 
+:host-context(.dark-theme) .promocion-container {
+  background: rgba(15, 23, 42, 0.9);
+}
+
 
 
 

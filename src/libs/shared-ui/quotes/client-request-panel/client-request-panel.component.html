@@ -1,0 +1,27 @@
+<section class="request-panel">
+  <header class="request-panel__header">
+    <div class="request-panel__avatar">
+      <img
+        [src]="quote.client.avatarUrl || 'https://placehold.co/64x64/4f46e5/ffffff?text=' + (quote.client.name | slice:0:1)"
+        [alt]="quote.client.name"
+      />
+    </div>
+    <div class="request-panel__titles">
+      <h4>{{ quote.client.name }}</h4>
+      <p *ngIf="quote.client.memberSince">
+        Cliente desde {{ quote.client.memberSince | date : 'dd MMM yyyy' : undefined : 'es-CL' }}
+      </p>
+    </div>
+  </header>
+
+  <div class="request-panel__message">
+    <h5>Mensaje del cliente</h5>
+    <p>{{ quote.message }}</p>
+  </div>
+
+  <button type="button" class="request-panel__chat-button" (click)="onChat()">
+    <ui-icon name="message" [size]="18"></ui-icon>
+    Chatear con el cliente
+  </button>
+</section>
+

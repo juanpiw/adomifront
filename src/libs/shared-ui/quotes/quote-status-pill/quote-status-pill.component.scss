@@ -1,0 +1,63 @@
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+
+  &.status-new {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  &.status-sent {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  &.status-accepted {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &.status-rejected {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &.status-expired {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+:host-context(.dark-theme) {
+  .status-pill {
+    &.status-new {
+      background: rgba(59, 130, 246, 0.18);
+      color: #bfdbfe;
+    }
+    &.status-sent {
+      background: rgba(99, 102, 241, 0.22);
+      color: #c7d2fe;
+    }
+    &.status-accepted {
+      background: rgba(16, 185, 129, 0.2);
+      color: #bbf7d0;
+    }
+    &.status-rejected {
+      background: rgba(248, 113, 113, 0.2);
+      color: #fecaca;
+    }
+    &.status-expired {
+      background: rgba(251, 191, 36, 0.22);
+      color: #fde68a;
+    }
+  }
+}
+

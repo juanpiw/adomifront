@@ -21,6 +21,7 @@ import { Subscription } from 'rxjs';
 import { ProviderVerificationService, VerificationStatus } from '../../services/provider-verification.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../services/tbk-onboarding.service';
 import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
+import { FeatureFlagsService } from '../../../libs/core/services/feature-flags.service';
 import { GoldenInviteModalComponent } from '../../../libs/shared-ui/golden-invite-modal/golden-invite-modal.component';
 import { ProviderInviteService, ProviderInviteSummary } from '../../services/provider-invite.service';
 
@@ -88,6 +89,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private tbkOnboarding = inject(TbkOnboardingService);
   private globalSearch = inject(GlobalSearchService);
   private providerInvites = inject(ProviderInviteService);
+  private featureFlags = inject(FeatureFlagsService);
 
   private pushMessageSub?: Subscription;
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -110,6 +112,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private lastVerificationStatus: VerificationStatus | null = null;
   isPioneer = false;
   private inviteSummaryLoaded = false;
+  hasQuotesFeature = false;
 
   ngOnInit() {
     try {
@@ -128,6 +131,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       userRole: 'provider',
       currentPage: this.router.url
     });
+    this.refreshFeatureFlags();
 
     const user = this.sessionService.getUser();
     if (user && user.role === 'provider') {
@@ -395,12 +399,14 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             this.topbarPlanBadge = null;
             this.refreshTopbarBadges();
           }
+          this.refreshFeatureFlags();
         },
         error: (error) => {
           console.error('Error loading plan info:', error);
           this.isFounderAccount = false;
           this.topbarPlanBadge = null;
           this.refreshTopbarBadges();
+          this.refreshFeatureFlags();
         }
       });
     }
@@ -646,6 +652,10 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       planBadge: this.topbarPlanBadge,
       verificationBadge: this.topbarVerificationBadge
     };
+  }
+
+  private refreshFeatureFlags() {
+    this.hasQuotesFeature = this.featureFlags.hasFeature('quotes');
   }
 
   dismissVerificationPrompt() {
