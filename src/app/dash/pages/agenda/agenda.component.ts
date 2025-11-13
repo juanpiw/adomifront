@@ -42,44 +42,7 @@ import { catchError, map } from 'rxjs/operators';
 })
 export class DashAgendaComponent implements OnInit {
   // Datos del dashboard
-  dashboardMetrics: DashboardMetric[] = [
-    {
-      label: 'Citas Pendientes',
-      value: 42,
-      meta: 'Próximos 7 días'
-    },
-    {
-      label: 'Citas por Pagar (esperan código)',
-      value: 0,
-      meta: 'Pagadas por clientes',
-      onClick: () => this.togglePaidAwaitingPanel()
-    },
-    {
-      label: 'Ingresos (Mes)',
-      value: '$12.5k',
-      meta: 'Meta: $15k'
-    },
-    {
-      label: 'Nuevos Clientes',
-      value: 18,
-      meta: 'Este mes'
-    },
-    {
-      label: 'Citas pagadas en efectivo',
-      value: 0,
-      meta: 'Últimos 7 días'
-    },
-    {
-      label: 'Deuda a la aplicación',
-      value: '$0',
-      meta: 'Comisiones cash pendientes'
-    },
-    {
-      label: 'Tasa de Ocupación',
-      value: '85%',
-      meta: 'Semana actual'
-    }
-  ];
+  dashboardMetrics: DashboardMetric[] = [];
 
   // Datos del calendario
   calendarEvents: CalendarEvent[] = [];
@@ -904,7 +867,36 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private loadDashboardData() {
-    console.log('Cargando datos del dashboard...');
+    this.dashboardMetrics = [
+      {
+        label: 'Citas Pendientes',
+        value: this.calendarEvents.length,
+        meta: 'Próximos 7 días'
+      },
+      {
+        label: 'Citas por Pagar (esperan código)',
+        value: this.paidAwaitingAppointments.length,
+        meta: 'Pagadas por clientes',
+        onClick: () => this.togglePaidAwaitingPanel()
+      },
+      {
+        label: 'Ingresos (Mes)',
+        value: '$0',
+        meta: 'Pendiente: $0 · Liberado: $0'
+      },
+      this.recentClientsMetric,
+      {
+        label: 'Citas pagadas en efectivo',
+        value: 0,
+        meta: 'Últimos 7 días'
+      },
+      {
+        label: 'Deuda a la aplicación',
+        value: '$0',
+        meta: 'Comisiones cash pendientes'
+      },
+      this.occupancyMetric
+    ];
   }
 
   private refreshEarnings(month?: string) {

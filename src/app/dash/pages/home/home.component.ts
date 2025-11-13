@@ -666,6 +666,6 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     }
   }
   goToAvailabilitySettings() {
-    this.router.navigate(['/dash/agenda'], { queryParams: { view: 'configuracion' } });
+    this.router.navigate(['/dash/agenda'], { queryParams: { view: 'config' } });
   }
 }
