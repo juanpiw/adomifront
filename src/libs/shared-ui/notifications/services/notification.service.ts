@@ -183,59 +183,59 @@ export class NotificationService {
     const normalized: Record<string, any> = { ...metadata };
 
     const rawAppointmentId =
-      normalized.appointment_id ??
-      normalized.appointmentId ??
-      normalized.appointmentID ??
-      normalized.appointment;
+      normalized['appointment_id'] ??
+      normalized['appointmentId'] ??
+      normalized['appointmentID'] ??
+      normalized['appointment'];
     if (rawAppointmentId !== undefined && rawAppointmentId !== null) {
       const idString = String(rawAppointmentId);
-      normalized.appointment_id = idString;
-      normalized.appointmentId = idString;
+      normalized['appointment_id'] = idString;
+      normalized['appointmentId'] = idString;
     }
 
     const datePartRaw =
-      normalized.appointmentDate ??
-      normalized.appointment_date ??
-      normalized.date ??
-      normalized.startDate ??
-      normalized.scheduledFor ??
-      normalized.scheduled_for;
+      normalized['appointmentDate'] ??
+      normalized['appointment_date'] ??
+      normalized['date'] ??
+      normalized['startDate'] ??
+      normalized['scheduledFor'] ??
+      normalized['scheduled_for'];
     const datePart = this.normalizeDatePart(datePartRaw);
     if (datePart) {
-      normalized.appointmentDate = datePart;
-      normalized.appointment_date = datePart;
-      if (!normalized.date) {
-        normalized.date = datePart;
+      normalized['appointmentDate'] = datePart;
+      normalized['appointment_date'] = datePart;
+      if (!normalized['date']) {
+        normalized['date'] = datePart;
       }
     }
 
     const timePartRaw =
-      normalized.appointmentTime ??
-      normalized.appointment_time ??
-      normalized.time ??
-      normalized.start_time ??
-      normalized.startTime;
+      normalized['appointmentTime'] ??
+      normalized['appointment_time'] ??
+      normalized['time'] ??
+      normalized['start_time'] ??
+      normalized['startTime'];
     const timePart = this.normalizeTimePart(timePartRaw);
     if (timePart) {
-      normalized.appointmentTime = timePart;
-      normalized.appointment_time = timePart;
-      normalized.start_time = timePart;
-      normalized.startTime = timePart;
-      if (!normalized.time) {
-        normalized.time = timePart;
+      normalized['appointmentTime'] = timePart;
+      normalized['appointment_time'] = timePart;
+      normalized['start_time'] = timePart;
+      normalized['startTime'] = timePart;
+      if (!normalized['time']) {
+        normalized['time'] = timePart;
       }
     }
 
-    if (!normalized.appointmentDateTime && !normalized.appointment_datetime && datePart) {
+    if (!normalized['appointmentDateTime'] && !normalized['appointment_datetime'] && datePart) {
       const localIso = `${datePart}T${timePart || '00:00'}`;
-      normalized.appointmentDateTime = localIso;
-      normalized.appointment_datetime = localIso;
+      normalized['appointmentDateTime'] = localIso;
+      normalized['appointment_datetime'] = localIso;
     }
 
-    if (!normalized.appointmentDateTimeIso && !normalized.appointment_datetime_iso && datePart) {
+    if (!normalized['appointmentDateTimeIso'] && !normalized['appointment_datetime_iso'] && datePart) {
       const utcIso = `${datePart}T${(timePart || '00:00')}:00Z`;
-      normalized.appointmentDateTimeIso = utcIso;
-      normalized.appointment_datetime_iso = utcIso;
+      normalized['appointmentDateTimeIso'] = utcIso;
+      normalized['appointment_datetime_iso'] = utcIso;
     }
 
     return normalized;
