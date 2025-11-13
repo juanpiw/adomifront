@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { QuotesHeaderComponent, QuotesTabsComponent, QuotesGridComponent, QuotesFormComponent, QuotesEmptyStateComponent } from '../../../../libs/shared-ui/quotes';
+import { QuotesHeaderComponent, QuotesTabsComponent, QuotesGridComponent, QuotesFormComponent } from '../../../../libs/shared-ui/quotes';
 import { Quote, QuoteStatus, QuoteActionEvent } from '../../../../libs/shared-ui/quotes/quotes.models';
 import { QuoteProposal } from '../../../../libs/shared-ui/quotes/quotes-form/quotes-form.component';
 import { QuotesMockService } from '../../../../libs/shared-ui/quotes/services/quotes-mock.service';
@@ -16,8 +16,7 @@ type QuotesTabId = QuoteStatus | 'history';
     QuotesHeaderComponent,
     QuotesTabsComponent,
     QuotesGridComponent,
-    QuotesFormComponent,
-    QuotesEmptyStateComponent
+    QuotesFormComponent
   ],
   templateUrl: './quotes.component.html',
   styleUrls: ['./quotes.component.scss'],

@@ -96,10 +96,10 @@ export class QuotesMockService {
           history: 0
         };
         quotes.forEach((quote) => {
-          if (quote.status === 'new') counters.new += 1;
-          if (quote.status === 'sent') counters.sent += 1;
-          if (quote.status === 'accepted') counters.accepted += 1;
-          if (quote.status === 'rejected' || quote.status === 'expired') counters.history += 1;
+          if (quote.status === 'new') counters['new'] += 1;
+          if (quote.status === 'sent') counters['sent'] += 1;
+          if (quote.status === 'accepted') counters['accepted'] += 1;
+          if (quote.status === 'rejected' || quote.status === 'expired') counters['history'] += 1;
         });
         return counters;
       })

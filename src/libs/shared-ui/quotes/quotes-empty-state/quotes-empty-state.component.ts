@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../shared-ui/icon/icon.component';
+import { IconComponent, IconName } from '../../../shared-ui/icon/icon.component';
 
 @Component({
   selector: 'ui-quotes-empty-state',
@@ -13,6 +13,6 @@ import { IconComponent } from '../../../shared-ui/icon/icon.component';
 export class QuotesEmptyStateComponent {
   @Input() title = 'Aún no tienes cotizaciones';
   @Input() description = 'Cuando un cliente solicite una cotización, aparecerá aquí para que puedas responder y convertirla en venta.';
-  @Input() icon = 'sparkles';
+  @Input() icon: IconName = 'sparkles';
 }
 

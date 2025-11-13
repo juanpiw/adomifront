@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { FeatureFlagsService } from '../../../libs/core/services/feature-flags.service';
+import { FeatureFlagsService } from '../../../../libs/core/services/feature-flags.service';
 
 export const quotesFeatureGuard: CanActivateFn = () => {
   const featureFlags = inject(FeatureFlagsService);

@@ -55,7 +55,12 @@ export type IconName =
   | 'type'
   | 'user-plus'
   | 'copy'
-  | 'calendar-clock';
+  | 'calendar-clock'
+  | 'file-text'
+  | 'cloud-upload'
+  | 'sparkles'
+  | 'paper-plane'
+  | 'inbox';
 
 @Component({
   selector: 'ui-icon',

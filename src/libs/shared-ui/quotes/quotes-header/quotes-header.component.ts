@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../shared-ui/icon/icon.component';
+import { IconComponent, IconName } from '../../../shared-ui/icon/icon.component';
 
 @Component({
   selector: 'ui-quotes-header',
@@ -15,7 +15,7 @@ export class QuotesHeaderComponent {
   @Input() subtitle: string | null = 'Administra tus cotizaciones y responde a los clientes premium.';
   @Input() showPremiumBadge = true;
   @Input() badgeLabel = 'Plan Premium';
-  @Input() icon: string | null = 'file-text';
+  @Input() icon: IconName | null = 'file-text';
   @Output() premiumInfo = new EventEmitter<void>();
 
   onInfoClick(): void {

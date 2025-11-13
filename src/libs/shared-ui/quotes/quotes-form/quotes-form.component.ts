@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ClientRequestPanelComponent } from '../client-request-panel/client-request-panel.component';
@@ -36,13 +36,13 @@ export class QuotesFormComponent implements OnChanges {
 
   validityOptions = ['10 días', '15 días', '30 días'];
 
+  private readonly fb = inject(FormBuilder);
+
   form = this.fb.nonNullable.group({
     amount: [null as number | null, [Validators.required, Validators.min(1000)]],
     validity: ['15 días', Validators.required],
     details: ['', [Validators.required, Validators.minLength(20)]]
   });
-
-  constructor(private fb: FormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['quote'] && this.quote) {
