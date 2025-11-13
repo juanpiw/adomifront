@@ -1064,3 +1064,84 @@
     transition: all 0.1s ease;
   }
 }
+
+:host-context(.dark-theme) .faq-manager {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 35px -18px rgba(2, 6, 23, 0.65);
+}
+
+:host-context(.dark-theme) .faq-manager__title {
+  color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .faq-manager__subtitle {
+  color: #94a3b8;
+}
+
+:host-context(.dark-theme) .faq-manager__btn {
+  background: rgba(129, 140, 248, 0.18);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #cbd5f5;
+}
+
+:host-context(.dark-theme) .faq-manager__btn:hover:not(:disabled) {
+  background: rgba(129, 140, 248, 0.32);
+}
+
+:host-context(.dark-theme) .faq-manager__btn--primary {
+  background: linear-gradient(135deg, #4338ca 0%, #7c3aed 100%);
+  border-color: transparent;
+}
+
+:host-context(.dark-theme) .faq-manager__btn--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
+}
+
+:host-context(.dark-theme) .faq-item {
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.75);
+  box-shadow: 0 12px 28px -18px rgba(99, 102, 241, 0.4);
+}
+
+:host-context(.dark-theme) .faq-item__order-btn {
+  background: rgba(129, 140, 248, 0.2);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #dbeafe;
+}
+
+:host-context(.dark-theme) .faq-item__order-btn:hover:not(:disabled) {
+  background: rgba(129, 140, 248, 0.35);
+}
+
+:host-context(.dark-theme) .faq-item__fields label {
+  color: #cbd5f5;
+}
+
+:host-context(.dark-theme) .faq-item__fields input,
+:host-context(.dark-theme) .faq-item__fields textarea {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .faq-item__fields input:focus,
+:host-context(.dark-theme) .faq-item__fields textarea:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+}
+
+:host-context(.dark-theme) .faq-item__delete {
+  background: rgba(220, 38, 38, 0.18);
+  color: #fecaca;
+}
+
+:host-context(.dark-theme) .faq-item__delete:hover {
+  background: rgba(248, 113, 113, 0.25);
+}
+
+:host-context(.dark-theme) .perfil-publico__actions {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 18px 30px -18px rgba(2, 6, 23, 0.6);
+}

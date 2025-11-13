@@ -113,3 +113,47 @@
     }
   }
 }
+
+:host-context(.dark-theme) .seccion-fotos {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 25px 45px -18px rgba(2, 6, 23, 0.65);
+}
+
+:host-context(.dark-theme) .seccion-fotos__title {
+  color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .seccion-fotos__subtitle {
+  color: #94a3b8;
+}
+
+:host-context(.dark-theme) .seccion-fotos__photo-label {
+  color: #cbd5f5;
+}
+
+:host-context(.dark-theme) .seccion-fotos__profile-image,
+:host-context(.dark-theme) .seccion-fotos__cover-image {
+  border-color: rgba(129, 140, 248, 0.25);
+  box-shadow: 0 10px 20px -12px rgba(79, 70, 229, 0.6);
+}
+
+:host-context(.dark-theme) .seccion-fotos__actions .btn {
+  background: rgba(129, 140, 248, 0.22);
+  color: #e0e7ff;
+}
+
+:host-context(.dark-theme) .seccion-fotos__actions .btn:disabled {
+  background: rgba(129, 140, 248, 0.16);
+  color: rgba(226, 232, 240, 0.55);
+}
+
+:host-context(.dark-theme) .seccion-fotos__actions .btn:not(:disabled):hover {
+  background: rgba(99, 102, 241, 0.35);
+}
+
+:host-context(.dark-theme) .seccion-fotos__photo-controls {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}

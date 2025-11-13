@@ -321,3 +321,78 @@
     gap: 0.5rem;
   }
 }
+
+:host-context(.dark-theme) .mis-servicios {
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: 0 25px 45px -18px rgba(2, 6, 23, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:host-context(.dark-theme) .mis-servicios__title {
+  color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .mis-servicios__subtitle {
+  color: #94a3b8;
+}
+
+:host-context(.dark-theme) .mis-servicios__item {
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.78);
+}
+
+:host-context(.dark-theme) .mis-servicios__item:hover {
+  border-color: rgba(129, 140, 248, 0.35);
+  box-shadow: 0 12px 25px -14px rgba(99, 102, 241, 0.45);
+}
+
+:host-context(.dark-theme) .mis-servicios__item-name {
+  color: #f8fafc;
+}
+
+:host-context(.dark-theme) .mis-servicios__item-category {
+  color: #cbd5f5;
+}
+
+:host-context(.dark-theme) .mis-servicios__item-description {
+  color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .mis-servicios__detail {
+  color: #a5b4fc;
+}
+
+:host-context(.dark-theme) .mis-servicios__image-placeholder {
+  background-color: rgba(30, 41, 59, 0.65);
+  color: #94a3b8;
+}
+
+:host-context(.dark-theme) .mis-servicios__action-btn--edit {
+  background-color: rgba(37, 99, 235, 0.16);
+  color: #bfdbfe;
+}
+
+:host-context(.dark-theme) .mis-servicios__action-btn--edit:hover {
+  background-color: rgba(37, 99, 235, 0.25);
+}
+
+:host-context(.dark-theme) .mis-servicios__action-btn--delete {
+  background-color: rgba(220, 38, 38, 0.18);
+  color: #fecaca;
+}
+
+:host-context(.dark-theme) .mis-servicios__action-btn--delete:hover {
+  background-color: rgba(248, 113, 113, 0.2);
+}
+
+:host-context(.dark-theme) .mis-servicios__add-button {
+  background-color: rgba(15, 23, 42, 0.65);
+  border-color: rgba(129, 140, 248, 0.4);
+  color: #cbd5f5;
+}
+
+:host-context(.dark-theme) .mis-servicios__add-button:hover {
+  background-color: rgba(37, 51, 84, 0.8);
+  border-color: rgba(165, 180, 252, 0.65);
+  color: #e0e7ff;
+}

@@ -74,6 +74,32 @@
   z-index: 1;
 }
 
+:host-context(.dark-theme) .servicios-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+}
+
+:host-context(.dark-theme) .servicios-container::before {
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(12px);
+}
+
+:host-context(.dark-theme) .form-header {
+  border-bottom-color: rgba(129, 140, 248, 0.35);
+}
+
+:host-context(.dark-theme) .back-to-list-btn {
+  color: #a5b4fc;
+}
+
+:host-context(.dark-theme) .back-to-list-btn:hover {
+  color: #c7d2fe;
+  background: rgba(129, 140, 248, 0.18);
+}
+
+:host-context(.dark-theme) .form-title {
+  color: #e2e8f0;
+}
+
 
 
 
