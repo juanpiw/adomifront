@@ -16,7 +16,7 @@
     <p>Selecciona el plan que mejor se adapte a tus necesidades</p>
 
     <div class="billing-toggle-container">
-      <span class="billing-label" [class.active]="!isAnnualBilling">Mensual</span>
+      <span class="billing-label" [class.active]="!isAnnualBilling" (click)="isAnnualBilling && !isPromoActive() ? toggleBilling() : null">Mensual</span>
       <button
         type="button"
         class="toggle-switch"
@@ -26,8 +26,8 @@
       >
         <span class="toggle-slider"></span>
       </button>
-      <span class="billing-label" [class.active]="isAnnualBilling">Anual</span>
-      <span class="savings-pill">AHORRA 17%</span>
+      <span class="billing-label" [class.active]="isAnnualBilling" (click)="!isAnnualBilling && !isPromoActive() ? toggleBilling() : null">Anual</span>
+      <span class="savings-pill">AHORRA {{ getSavingsPercentage() || 17 }}%</span>
     </div>
   </div>
 
@@ -42,7 +42,7 @@
   </div>
 
   <div *ngIf="!loading && !error" class="plans-grid">
-    <div class="plan-card plan-card--founder" [class.plan-card--selected]="isPromoActive()">
+    <div class="plan-card plan-card--founder" data-plan="fundador" [class.plan-card--selected]="isPromoActive()">
       <div class="plan-card__badge">¡LIMITADO!</div>
       <div class="plan-card__header">
         <div>
@@ -52,7 +52,7 @@
         <span class="plan-card__tag">Acceso exclusivo</span>
       </div>
       <div class="plan-card__price">
-        <span class="plan-card__price-value">{{ formatPrice(0) }}</span>
+        <span class="plan-card__price-value">{{ formatDisplayPrice(0) }}</span>
         <span class="plan-card__price-interval">/ 3 meses</span>
       </div>
       <p class="plan-card__description">
@@ -128,6 +128,7 @@
     <div
       *ngFor="let plan of getCurrentPlans()"
       class="plan-card"
+      [attr.data-plan]="getPlanKey(plan)"
       [class.plan-card--selected]="selectedPlan?.id === plan.id"
       [class.plan-card--recommended]="isPlanRecommended(plan)"
       [class.plan-card--disabled]="isPromoActive()"
@@ -143,8 +144,11 @@
         </div>
       </div>
       <div class="plan-card__price">
-        <span class="plan-card__price-value">{{ formatPrice(plan.price) }}</span>
-        <span class="plan-card__price-interval">/{{ plan.interval === 'month' ? 'mes' : 'año' }}</span>
+        <span class="plan-card__savings" *ngIf="plan.interval === 'year' && getPlanSavingsLabel(plan)">
+          {{ getPlanSavingsLabel(plan) }}
+        </span>
+        <span class="plan-card__price-value">{{ formatDisplayPrice(plan.price) }}</span>
+        <span class="plan-card__price-interval">{{ getPlanIntervalLabel(plan) }}</span>
       </div>
       <p class="plan-card__description">{{ plan.description }}</p>
 
@@ -227,7 +231,13 @@
       [disabled]="!selectedPlan"
       (click)="continueToPayment()"
     >
-      {{ paymentMethod === 'tbk' && requiresPaymentSelection() ? 'Pagar con Webpay Plus' : 'Pagar con Stripe' }}
+      {{
+        selectedPlan
+          ? (paymentMethod === 'tbk' && requiresPaymentSelection()
+            ? 'Pagar con Webpay Plus'
+            : 'Pagar con Stripe')
+          : 'Selecciona un plan'
+      }}
     </button>
   </div>
 </div>

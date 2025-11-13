@@ -362,6 +362,31 @@ export class SelectPlanComponent implements OnInit {
     }).format(price);
   }
 
+  formatDisplayPrice(price: number): string {
+    const formatter = new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+    const normalized = Number.isFinite(price) ? Math.max(0, price) : 0;
+    return `$${formatter.format(normalized)}`;
+  }
+
+  getPlanIntervalLabel(plan: Plan | null): string {
+    if (!plan) return '';
+    return plan.interval === 'month' ? '/mes' : '/año';
+  }
+
+  getPlanSavingsLabel(plan: Plan | null): string | null {
+    if (!plan || plan.interval !== 'year') return null;
+    const key = this.getPlanKey(plan);
+    const monthlyPeer = this.monthlyPlans.find(p => this.getPlanKey(p) === key);
+    if (!monthlyPeer) return null;
+    const yearlyEquivalent = (monthlyPeer.price || 0) * 12;
+    const savings = Math.round(yearlyEquivalent - (plan.price || 0));
+    if (savings <= 0) return null;
+    return `Ahorras ${this.formatDisplayPrice(savings)}`;
+  }
+
   isPlanRecommended(plan: Plan): boolean {
     return this.getPlanKey(plan) === 'pro';
   }
@@ -397,7 +422,7 @@ export class SelectPlanComponent implements OnInit {
     return this.planFeatureMatrix[key] || [];
   }
 
-  private getPlanKey(plan: Plan | null | undefined): 'fundador' | 'basico' | 'pro' | 'premium' {
+  getPlanKey(plan: Plan | null | undefined): 'fundador' | 'basico' | 'pro' | 'premium' {
     const name = (plan?.name || '').toLowerCase();
     if (name.includes('fundador')) return 'fundador';
     if (name.includes('premium')) return 'premium';
