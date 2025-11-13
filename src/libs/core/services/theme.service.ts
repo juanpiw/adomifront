@@ -43,6 +43,8 @@ export class ThemeService {
   private applyTheme(theme: 'light' | 'dark') {
     if (!this.isBrowser) return;
     const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
+    const isDark = theme === 'dark';
+    root.classList.toggle('dark', isDark);
+    root.classList.toggle('dark-theme', isDark);
   }
 }

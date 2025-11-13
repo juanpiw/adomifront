@@ -57,6 +57,7 @@ export class PromoModalComponent {
 
   // Close modal
   onClose() {
+    this.resetModal();
     this.close.emit();
   }
 
@@ -112,6 +113,7 @@ export class PromoModalComponent {
         this.loading = false;
         if (response.success) {
           this.success = true;
+          this.submit.emit({ ...this.formData });
           // Cerrar modal después de 3 segundos
           setTimeout(() => {
             this.onClose();
@@ -123,7 +125,8 @@ export class PromoModalComponent {
       error: (error) => {
         this.loading = false;
         console.error('Network error:', error);
-        this.errorMessage = 'Error de conexión. Por favor, intenta de nuevo más tarde.';
+        const serverMessage = error?.error?.error || error?.error?.message || error?.message;
+        this.errorMessage = serverMessage || 'Error de conexión. Por favor, intenta de nuevo más tarde.';
       }
     });
   }
