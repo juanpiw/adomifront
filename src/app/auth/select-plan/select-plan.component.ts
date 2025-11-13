@@ -355,13 +355,6 @@ export class SelectPlanComponent implements OnInit {
     this.router.navigateByUrl('/auth/register');
   }
 
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP'
-    }).format(price);
-  }
-
   formatDisplayPrice(price: number): string {
     const formatter = new Intl.NumberFormat('es-CL', {
       minimumFractionDigits: 0,

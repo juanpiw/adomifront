@@ -1,9 +1,28 @@
 <div class="quotes-form" *ngIf="quote">
-  <div class="quotes-form__request">
-    <ui-client-request-panel [quote]="quote" (chat)="chat.emit()"></ui-client-request-panel>
-  </div>
+  <section class="quotes-form__request">
+    <div class="quotes-form__request-card">
+      <ui-client-request-panel [quote]="quote" (chat)="chat.emit()"></ui-client-request-panel>
 
-  <section class="quotes-form__section">
+      <div class="quotes-form__mini-grid">
+        <div class="quotes-form__mini-card">
+          <span>Servicio</span>
+          <strong>{{ quote.serviceName }}</strong>
+        </div>
+        <div class="quotes-form__mini-card">
+          <span>Solicitado</span>
+          <strong>{{ quote.requestedAt | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
+        </div>
+        <div class="quotes-form__mini-card" *ngIf="quote.amount">
+          <span>Último monto</span>
+          <strong>
+            {{ quote.amount | currency: quote.currency || 'CLP':'symbol-narrow':'1.0-0':'es-CL' }}
+          </strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="quotes-form__section quotes-form__proposal">
     <header class="quotes-form__section-header">
       <h3>Tu propuesta</h3>
       <p>Completa los detalles que recibirá el cliente antes de aceptar la cotización.</p>

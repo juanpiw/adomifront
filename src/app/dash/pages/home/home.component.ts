@@ -25,6 +25,7 @@ import { AppointmentsService } from '../../../services/appointments.service';
 import { PaymentsService } from '../../../services/payments.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../../services/tbk-onboarding.service';
 import { ProviderInviteService, ProviderInvite, ProviderInviteSummary } from '../../../services/provider-invite.service';
+import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -49,6 +50,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   private paymentsService = inject(PaymentsService);
   private tbkOnboarding = inject(TbkOnboardingService);
   private providerInvites = inject(ProviderInviteService);
+  private availabilityService = inject(ProviderAvailabilityService);
   private route = inject(ActivatedRoute);
   
   constructor(private router: Router) {}
@@ -58,6 +60,8 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   showTbkUrgentBanner = false;
   tbkState: TbkOnboardingState | null = null;
   private tbkStateSub?: Subscription;
+  showAvailabilityAlert = false;
+  availabilityBlocksCount = 0;
 
   // Invitaciones doradas
   inviteSummary: ProviderInviteSummary | null = null;
@@ -87,6 +91,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.loadNextAppointment();
     this.loadEarningsData();
     this.initializeTbkBanner();
+    this.checkAvailabilitySetup();
     this.loadInviteData();
 
     this.route.queryParamMap.subscribe((params) => {
@@ -263,6 +268,23 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('[DASH_HOME] Error cargando ingresos del día:', error);
+      }
+    });
+  }
+
+  private checkAvailabilitySetup() {
+    console.log('[DASH_HOME] Verificando configuración de disponibilidad...');
+
+    this.availabilityService.getWeekly().subscribe({
+      next: (response) => {
+        const activeBlocks = (response?.blocks || []).filter(block => block.is_active);
+        this.availabilityBlocksCount = activeBlocks.length;
+        this.showAvailabilityAlert = activeBlocks.length === 0;
+        console.log('[DASH_HOME] Bloques activos:', this.availabilityBlocksCount);
+      },
+      error: (error) => {
+        console.error('[DASH_HOME] Error obteniendo disponibilidad semanal:', error);
+        this.showAvailabilityAlert = false;
       }
     });
   }
@@ -642,5 +664,8 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     } catch {
       return null;
     }
+  }
+  goToAvailabilitySettings() {
+    this.router.navigate(['/dash/agenda'], { queryParams: { view: 'configuracion' } });
   }
 }

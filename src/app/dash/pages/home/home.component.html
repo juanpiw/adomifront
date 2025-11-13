@@ -165,6 +165,18 @@
             Configurar ahora
           </button>
         </section>
+
+        <section *ngIf="showAvailabilityAlert" class="availability-alert" role="alert">
+          <div class="availability-alert__content">
+            <h3 class="availability-alert__title">Publica tus horarios para recibir nuevas reservas</h3>
+            <p class="availability-alert__text">
+              Aún no tienes bloques de disponibilidad activos. Mientras no los configures, ningún cliente podrá agendarte desde el marketplace.
+            </p>
+          </div>
+          <button type="button" class="availability-alert__cta" (click)="goToAvailabilitySettings()">
+            Configurar horarios
+          </button>
+        </section>
         <!-- Dashboard Components -->
         <app-inicio-solicitudes 
         [data]="solicitudesData"
