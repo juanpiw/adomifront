@@ -134,51 +134,51 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     const metadata = notification.metadata || {};
 
     const preFormatted =
-      metadata.appointmentFormattedDate ??
-      metadata.appointment_formatted_date ??
-      metadata.appointmentDisplayDate ??
-      metadata.appointment_display_date;
+      metadata['appointmentFormattedDate'] ??
+      metadata['appointment_formatted_date'] ??
+      metadata['appointmentDisplayDate'] ??
+      metadata['appointment_display_date'];
     if (typeof preFormatted === 'string' && preFormatted.trim().length > 0) {
       return preFormatted.trim();
     }
 
     const hasAppointmentContext =
       notification.type === 'appointment' ||
-      metadata.appointmentId !== undefined ||
-      metadata.appointment_id !== undefined ||
-      metadata.appointment !== undefined;
+      metadata['appointmentId'] !== undefined ||
+      metadata['appointment_id'] !== undefined ||
+      metadata['appointment'] !== undefined;
 
     if (!hasAppointmentContext) {
       return null;
     }
 
     const dateTimeCandidate =
-      metadata.appointmentDateTime ??
-      metadata.appointment_datetime ??
-      metadata.appointmentDateTimeIso ??
-      metadata.appointment_datetime_iso ??
-      metadata.datetime ??
-      metadata.dateTime ??
-      metadata.scheduledAt ??
-      metadata.scheduled_at;
+      metadata['appointmentDateTime'] ??
+      metadata['appointment_datetime'] ??
+      metadata['appointmentDateTimeIso'] ??
+      metadata['appointment_datetime_iso'] ??
+      metadata['datetime'] ??
+      metadata['dateTime'] ??
+      metadata['scheduledAt'] ??
+      metadata['scheduled_at'];
 
     let date = this.normalizeToDate(dateTimeCandidate);
 
     if (!date) {
       const datePart =
-        metadata.appointmentDate ??
-        metadata.appointment_date ??
-        metadata.date ??
-        metadata.startDate ??
-        metadata.scheduledFor ??
-        metadata.scheduled_for;
+        metadata['appointmentDate'] ??
+        metadata['appointment_date'] ??
+        metadata['date'] ??
+        metadata['startDate'] ??
+        metadata['scheduledFor'] ??
+        metadata['scheduled_for'];
 
       const timePart =
-        metadata.appointmentTime ??
-        metadata.appointment_time ??
-        metadata.time ??
-        metadata.start_time ??
-        metadata.startTime;
+        metadata['appointmentTime'] ??
+        metadata['appointment_time'] ??
+        metadata['time'] ??
+        metadata['start_time'] ??
+        metadata['startTime'];
 
       if (datePart) {
         const normalizedTime = this.normalizeTimePart(timePart);
