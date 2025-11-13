@@ -109,3 +109,27 @@
     opacity: 0.8;
   }
 }
+
+:host-context(.dark-theme) {
+  .inicio-header {
+    &__title {
+      color: #e2e8f0;
+    }
+
+    &__subtitle {
+      color: #94a3b8;
+    }
+
+    &__notif {
+      color: #cbd5f5;
+
+      &:hover {
+        color: #e0e7ff;
+      }
+    }
+
+    &__notif-dot {
+      border-color: #0f172a;
+    }
+  }
+}

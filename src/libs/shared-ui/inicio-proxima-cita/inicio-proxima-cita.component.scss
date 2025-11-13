@@ -66,6 +66,48 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .inicio-proxima {
+    background-color: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    box-shadow: 0 16px 32px -20px rgba(79, 70, 229, 0.45);
+
+    &__badge {
+      color: #c7d2fe;
+    }
+
+    &__time {
+      border-right-color: rgba(148, 163, 184, 0.25);
+    }
+
+    &__hour {
+      color: #a855f7;
+      text-shadow: 0 1px 2px rgba(168, 85, 247, 0.25);
+    }
+
+    &__meridiem {
+      color: #cbd5f5;
+    }
+
+    &__service {
+      color: #e2e8f0;
+    }
+
+    &__with {
+      color: #94a3b8;
+    }
+
+    &__cta {
+      background-color: rgba(148, 163, 184, 0.25);
+      color: #e2e8f0;
+
+      &:hover {
+        background-color: rgba(148, 163, 184, 0.4);
+      }
+    }
+  }
+}
+
 
 
 

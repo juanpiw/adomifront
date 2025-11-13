@@ -151,3 +151,56 @@
     }
   }
 }
+
+:host-context(.dark-theme) {
+  .inicio-ingresos {
+    background: linear-gradient(135deg,
+      rgba(30, 41, 59, 0.92) 0%,
+      rgba(17, 24, 39, 0.92) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    box-shadow:
+      0 12px 32px -12px rgba(30, 64, 175, 0.45),
+      inset 0 1px 0 rgba(148, 163, 184, 0.2);
+
+    &__title {
+      color: #cbd5f5;
+
+      &::before {
+        content: '💸';
+      }
+    }
+
+    &__amount {
+      color: #34d399;
+      text-shadow: 0 2px 4px rgba(52, 211, 153, 0.25);
+    }
+
+    &__chart {
+      background: linear-gradient(135deg,
+        rgba(52, 211, 153, 0.08) 0%,
+        rgba(16, 185, 129, 0.12) 100%);
+    }
+
+    &__stats {
+      border-top-color: rgba(148, 163, 184, 0.2);
+    }
+
+    &__stat-label {
+      color: #94a3b8;
+    }
+
+    &__stat-value {
+      color: #e2e8f0;
+    }
+
+    &__report-btn {
+      background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+      box-shadow: 0 6px 18px -12px rgba(99, 102, 241, 0.5);
+
+      &:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        box-shadow: 0 10px 24px -12px rgba(99, 102, 241, 0.6);
+      }
+    }
+  }
+}
