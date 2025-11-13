@@ -14,7 +14,7 @@ export interface TimeSlot {
   time: string;
   isAvailable: boolean;
   isSelected?: boolean;
-  reason?: 'booked' | 'blocked'; // 'booked' = cita existente, 'blocked' = bloqueado por proveedor
+  reason?: 'booked' | 'blocked' | 'unavailable'; // 'booked' = cita existente, 'blocked' = bloqueado por proveedor
 }
 
 export interface BookingSummary {
@@ -91,6 +91,10 @@ export class BookingPanelComponent implements OnChanges, OnInit {
 
   constructor(private clientProfile: ClientProfileService) {}
 
+  private readonly fallbackStartMinutes = 8 * 60; // 08:00
+  private readonly fallbackEndMinutes = 21 * 60;  // 21:00
+  private readonly slotIntervalMinutes = 30;
+
   readonly today = new Date().toISOString().slice(0, 10);
 
   ngOnInit(): void {
@@ -105,6 +109,33 @@ export class BookingPanelComponent implements OnChanges, OnInit {
         error: () => { this.loadingPaymentPref = false; }
       });
     }
+  }
+
+  get displayedTimeSlots(): TimeSlot[] {
+    const slots = Array.isArray(this.data?.timeSlots) ? this.data.timeSlots : [];
+    if (slots.length) {
+      return slots;
+    }
+    return this.generateFallbackSlots();
+  }
+
+  private generateFallbackSlots(): TimeSlot[] {
+    const fallback: TimeSlot[] = [];
+    for (let minutes = this.fallbackStartMinutes; minutes <= this.fallbackEndMinutes; minutes += this.slotIntervalMinutes) {
+      fallback.push({
+        time: this.minutesToLabel(minutes),
+        isAvailable: false,
+        isSelected: false,
+        reason: 'unavailable'
+      });
+    }
+    return fallback;
+  }
+
+  private minutesToLabel(totalMinutes: number): string {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   }
 
   onServiceClick(serviceId: string) {
@@ -227,6 +258,8 @@ export class BookingPanelComponent implements OnChanges, OnInit {
       return '🔒 Bloqueado por el profesional';
     } else if (slot.reason === 'booked') {
       return '❌ Ya está ocupado';
+    } else if (slot.reason === 'unavailable') {
+      return '⛔ No disponible en esta fecha';
     } else if (slot.isAvailable) {
       return '✅ Disponible';
     }

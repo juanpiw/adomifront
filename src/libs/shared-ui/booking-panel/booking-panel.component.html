@@ -36,10 +36,11 @@
             <p>Cargando horarios disponibles…</p>
           </div>
           <div class="booking-panel__times" *ngIf="!loadingSlots">
-            <button *ngFor="let slot of data.timeSlots" 
+            <button *ngFor="let slot of displayedTimeSlots" 
                     class="booking-panel__time"
                     [class.booking-panel__time--selected]="slot.isSelected"
                     [class.booking-panel__time--blocked]="slot.reason === 'blocked'"
+                    [class.booking-panel__time--unavailable]="!slot.isAvailable"
                     [disabled]="!slot.isAvailable"
                     [title]="getSlotTooltip(slot)"
                     (click)="onTimeClick(slot.time)">
