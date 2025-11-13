@@ -638,6 +638,387 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .agenda-container {
+    background: #0b1120;
+  }
+
+  .agenda-nav {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(71, 85, 105, 0.6);
+    box-shadow: 0 18px 40px rgba(8, 12, 24, 0.45);
+  }
+
+  .agenda-nav__button {
+    color: #94a3b8;
+
+    svg {
+      color: currentColor;
+    }
+
+    &:hover {
+      background: rgba(30, 41, 59, 0.85);
+      color: #f8fafc;
+    }
+
+    &--active {
+      background: #4338ca;
+      color: #f8fafc;
+      box-shadow: 0 18px 40px rgba(67, 56, 202, 0.4);
+    }
+  }
+
+  .agenda-nav__badge {
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.55);
+  }
+
+  .agenda-content {
+    .reschedule-requests {
+      background: rgba(120, 53, 15, 0.18);
+      border-color: rgba(251, 191, 36, 0.32);
+      box-shadow: 0 18px 40px rgba(120, 53, 15, 0.25);
+
+      &__header h3 {
+        color: #fbbf24;
+      }
+
+      &__loading,
+      &__empty,
+      &__meta {
+        color: #facc15;
+      }
+
+      &__card {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: rgba(251, 191, 36, 0.22);
+      }
+
+      &__title {
+        color: #fde68a;
+      }
+
+      &__actions .reschedule-requests__btn {
+        &--accept {
+          box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35);
+        }
+
+        &--reject {
+          box-shadow: 0 10px 24px rgba(239, 68, 68, 0.35);
+        }
+      }
+    }
+  }
+
+  .cash-title {
+    color: #e2e8f0;
+  }
+
+  .cash-sub {
+    color: #94a3b8;
+  }
+
+  .cash-alert {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(251, 191, 36, 0.08));
+    border-color: rgba(251, 191, 36, 0.35);
+    box-shadow: 0 20px 45px rgba(234, 179, 8, 0.22);
+  }
+
+  .cash-alert__icon {
+    background: rgba(251, 191, 36, 0.25);
+    color: #facc15;
+  }
+
+  .cash-alert__title {
+    color: #fbbf24;
+  }
+
+  .cash-alert__subtitle {
+    color: rgba(250, 204, 21, 0.85);
+  }
+
+  .cash-alert__action {
+    background: #f59e0b;
+    color: #0b1120;
+
+    &:hover:not(:disabled) {
+      background: #d97706;
+    }
+  }
+
+  .cash-summary {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(51, 65, 85, 0.85);
+  }
+
+  .cash-summary__label {
+    color: #94a3b8;
+  }
+
+  .cash-summary__value {
+    color: #f8fafc;
+  }
+
+  .cash-summary__next,
+  .cash-summary__overdue {
+    color: #cbd5f5;
+  }
+
+  .cash-summary__actions {
+    .cash-summary__refresh {
+      background: rgba(51, 65, 85, 0.8);
+      color: #e2e8f0;
+
+      &:hover {
+        background: rgba(59, 130, 246, 0.22);
+      }
+    }
+
+    .cash-summary__pay {
+      background: #4338ca;
+      color: #f8fafc;
+
+      &:hover:not(:disabled) {
+        background: #3730a3;
+      }
+    }
+  }
+
+  .cash-filters__button {
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(71, 85, 105, 0.65);
+    color: #cbd5f5;
+
+    &:hover {
+      background: rgba(30, 41, 59, 0.85);
+    }
+
+    &--active {
+      background: #1f2937;
+      border-color: #4338ca;
+      color: #e0e7ff;
+    }
+  }
+
+  .cash-table {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(51, 65, 85, 0.85);
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(71, 85, 105, 0.75);
+      color: #e2e8f0;
+    }
+  }
+
+  .cash-table__slot {
+    color: #f8fafc;
+  }
+
+  .cash-table__date,
+  .cash-table__loading,
+  .cash-table__empty {
+    color: #94a3b8;
+  }
+
+  .badge {
+    color: #0f172a;
+  }
+
+  .badge--pending {
+    background: rgba(251, 191, 36, 0.35);
+    color: #f7a600;
+  }
+
+  .badge--overdue {
+    background: rgba(248, 113, 113, 0.35);
+    color: #fca5a5;
+  }
+
+  .badge--review {
+    background: rgba(59, 130, 246, 0.25);
+    color: #bfdbfe;
+  }
+
+  .badge--rejected {
+    background: rgba(248, 113, 113, 0.25);
+    color: #fecaca;
+  }
+
+  .badge--paid {
+    background: rgba(34, 197, 94, 0.26);
+    color: #bbf7d0;
+  }
+
+  .cash-payment-modal {
+    background: #0f172a;
+    border: 1px solid rgba(51, 65, 85, 0.85);
+    box-shadow: 0 25px 65px rgba(8, 12, 24, 0.55);
+  }
+
+  .cash-payment-modal__header {
+    border-color: rgba(51, 65, 85, 0.75);
+
+    h3 {
+      color: #e2e8f0;
+    }
+  }
+
+  .cash-payment-modal__close {
+    color: #cbd5f5;
+
+    &:hover {
+      background: rgba(30, 41, 59, 0.85);
+      color: #f8fafc;
+    }
+  }
+
+  .cash-payment-modal__body {
+    background: #0f172a;
+  }
+
+  .cash-payment-modal__footer {
+    border-color: rgba(51, 65, 85, 0.75);
+    background: rgba(15, 23, 42, 0.92);
+  }
+
+  .cash-payment-modal__button {
+    &--ghost {
+      background: rgba(15, 23, 42, 0.92);
+      color: #cbd5f5;
+      border-color: rgba(148, 163, 184, 0.35);
+
+      &:hover:not(:disabled) {
+        background: rgba(30, 41, 59, 0.85);
+      }
+    }
+
+    &--primary {
+      background: #4338ca;
+      box-shadow: 0 18px 40px rgba(67, 56, 202, 0.45);
+
+      &:hover:not(:disabled) {
+        background: #3730a3;
+      }
+    }
+  }
+
+  .cash-payment-amount__label,
+  .cash-payment-section__note {
+    color: #cbd5f5;
+  }
+
+  .cash-payment-amount__value {
+    color: #a5b4fc;
+  }
+
+  .cash-payment-amount__hint {
+    color: #fde68a;
+    background: rgba(251, 191, 36, 0.18);
+  }
+
+  .cash-payment-section h4 {
+    color: #e2e8f0;
+  }
+
+  .cash-payment-bank {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(51, 65, 85, 0.75);
+
+    &__row {
+      span {
+        color: #94a3b8;
+      }
+
+      strong {
+        color: #e2e8f0;
+      }
+    }
+  }
+
+  .cash-payment-upload {
+    border-color: rgba(96, 165, 250, 0.35);
+    background: rgba(30, 41, 59, 0.9);
+
+    &__label {
+      color: #60a5fa;
+    }
+
+    &__hint {
+      color: #94a3b8;
+    }
+
+    &__file {
+      background: rgba(15, 23, 42, 0.95);
+      border-color: rgba(71, 85, 105, 0.75);
+    }
+
+    &__file-name {
+      color: #e2e8f0;
+    }
+
+    &__remove {
+      color: #f87171;
+    }
+
+    &--error {
+      border-color: rgba(248, 113, 113, 0.45);
+      background: rgba(69, 10, 10, 0.45);
+    }
+  }
+
+  .cash-payment-feedback {
+    &--success {
+      background: rgba(34, 197, 94, 0.18);
+      color: #bbf7d0;
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
+    &--error {
+      background: rgba(248, 113, 113, 0.16);
+      color: #fecaca;
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+  }
+
+  .paid-awaiting {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(51, 65, 85, 0.75);
+  }
+
+  .paid-awaiting__title {
+    color: #e2e8f0;
+  }
+
+  .paid-awaiting__empty,
+  .paid-awaiting__meta {
+    color: #94a3b8;
+  }
+
+  .paid-awaiting__card {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(71, 85, 105, 0.65);
+
+    &--cash {
+      border-color: rgba(16, 185, 129, 0.45);
+      background: rgba(6, 95, 70, 0.3);
+    }
+  }
+
+  .cash-badge {
+    background: rgba(13, 148, 136, 0.35);
+    color: #99f6e4;
+  }
+
+  .paid-awaiting__btn {
+    background: #4338ca;
+    color: #f8fafc;
+
+    &:hover {
+      background: #3730a3;
+    }
+  }
+}
+
 @media (max-width: 640px) {
   .cash-payment-modal {
     width: 100%;
