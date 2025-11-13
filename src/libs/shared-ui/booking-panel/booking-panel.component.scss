@@ -121,6 +121,35 @@
     gap: 0.5rem;
   }
 
+  &__loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border-radius: 14px;
+    background: rgba(248, 250, 252, 0.8);
+    border: 1px dashed rgba(148, 163, 184, 0.5);
+    color: #475569;
+    font-size: 0.85rem;
+  }
+
+  &__spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(99, 102, 241, 0.15);
+    border-top-color: #4f46e5;
+    border-radius: 50%;
+    animation: booking-panel-spin 0.8s linear infinite;
+  }
+
+  @keyframes booking-panel-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   &__time-empty {
     grid-column: 1 / -1;
     font-size: 0.85rem;
@@ -246,6 +275,54 @@
   &__error {
     color: #dc2626;
     font-size: 0.75rem;
+  }
+
+  &__success {
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #166534;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  &__future {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  &__future-title {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__chip {
+    border: 1px solid rgba(79, 70, 229, 0.35);
+    background: rgba(99, 102, 241, 0.12);
+    color: #4338ca;
+    border-radius: 9999px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(79, 70, 229, 0.18);
+      border-color: rgba(79, 70, 229, 0.6);
+    }
   }
 }
 

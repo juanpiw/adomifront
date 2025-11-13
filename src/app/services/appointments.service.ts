@@ -184,8 +184,8 @@ export class AppointmentsService {
   }
 
   // Time slots
-  getTimeSlots(provider_id: number, date: string, service_id: number): Observable<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }>{
-    return this.http.get<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }>(
+  getTimeSlots(provider_id: number, date: string, service_id: number): Observable<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }>{
+    return this.http.get<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }>(
       `${this.api}/availability/time-slots`,
       { headers: this.headers(), params: { provider_id, date, service_id } as any }
     );

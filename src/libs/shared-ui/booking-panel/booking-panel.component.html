@@ -22,6 +22,7 @@
           <div class="booking-panel__datepicker">
             <input type="date" 
                    class="booking-panel__date-input"
+                   [min]="today"
                    [value]="data.selectedDate || data.summary.date"
                    (change)="onDateChange($event.target.value || '')">
             <div class="booking-panel__error" *ngIf="errorDate">{{ errorDate }}</div>
@@ -30,7 +31,11 @@
         
         <div class="booking-panel__step">
           <p class="booking-panel__step-title">3. Elige una hora</p>
-          <div class="booking-panel__times">
+          <div *ngIf="loadingSlots" class="booking-panel__loader">
+            <div class="booking-panel__spinner"></div>
+            <p>Cargando horarios disponibles…</p>
+          </div>
+          <div class="booking-panel__times" *ngIf="!loadingSlots">
             <button *ngFor="let slot of data.timeSlots" 
                     class="booking-panel__time"
                     [class.booking-panel__time--selected]="slot.isSelected"
@@ -49,6 +54,20 @@
               {{ data.timeSlotsMessage }}
             </p>
             <div class="booking-panel__error" *ngIf="errorTime">{{ errorTime }}</div>
+            <div class="booking-panel__future" *ngIf="futureSlots?.length">
+              <p class="booking-panel__future-title">Próximos horarios sugeridos</p>
+              <div class="booking-panel__chips">
+                <button class="booking-panel__chip"
+                        type="button"
+                        *ngFor="let suggestion of futureSlots"
+                        (click)="onFutureSlotSuggestionClick(suggestion)">
+                  {{ suggestion.dateLabel }}
+                  <ng-container *ngIf="suggestion.time">
+                    &nbsp;·&nbsp;{{ suggestion.time }}
+                  </ng-container>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -66,6 +85,9 @@
               <p class="booking-panel__label">Precio:</p>
               <p class="booking-panel__value">{{ data.summary.price }}</p>
             </div>
+          </div>
+          <div class="booking-panel__success" *ngIf="successMessage">
+            {{ successMessage }}
           </div>
           <button class="booking-panel__confirm" (click)="onConfirmBooking()">
             Agendar Cita

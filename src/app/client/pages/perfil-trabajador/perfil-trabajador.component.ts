@@ -8,10 +8,11 @@ import { AppointmentsService } from '../../../services/appointments.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { ProfileHeroComponent, ProfileHeroData } from '../../../../libs/shared-ui/profile-hero/profile-hero.component';
-import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
+import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary, FutureSlotSuggestion } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
 import { PortfolioComponent, PortfolioData, PortfolioItem } from '../../../../libs/shared-ui/portfolio/portfolio.component';
 import { ReviewsComponent, ReviewsData, Review } from '../../../../libs/shared-ui/reviews/reviews.component';
 import { FaqComponent, FaqData, FaqItem } from '../../../../libs/shared-ui/faq/faq.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-perfil-trabajador',
@@ -35,6 +36,11 @@ export class PerfilTrabajadorComponent implements OnInit {
   confirmError: string | null = null;
   closeConfirmSignal: number = 0;
   slotSuggestions: string[] = [];
+  futureSlotSuggestions: FutureSlotSuggestion[] = [];
+  timeSlotsLoading = false;
+  bookingSuccessMessage: string | null = null;
+  private pendingAutoSelectTime: string | null = null;
+  private nextAvailabilityLookup = 0;
 
   // Component data
   profileHeroData: ProfileHeroData = {
@@ -261,6 +267,7 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onServiceSelected(serviceId: string): void {
+    this.bookingSuccessMessage = null;
     // Marcar activo en el estado del padre y actualizar resumen
     this.bookingPanelData.services = this.bookingPanelData.services.map(s => ({
       ...s,
@@ -278,6 +285,7 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onDateSelected(date: string): void {
+    this.bookingSuccessMessage = null;
     this.bookingPanelData.summary.date = date;
     const providerId = Number(this.workerId);
     let activeService = this.bookingPanelData.services.find(s => s.isActive);
@@ -292,9 +300,18 @@ export class PerfilTrabajadorComponent implements OnInit {
   }
 
   onTimeSelected(time: string): void {
+    this.bookingSuccessMessage = null;
     this.bookingPanelData.summary.time = time;
     this.confirmError = null;
     this.slotSuggestions = [];
+  }
+
+  onFutureSlotSelected(slot: FutureSlotSuggestion): void {
+    if (!slot) return;
+    this.bookingSuccessMessage = null;
+    this.pendingAutoSelectTime = slot.time || null;
+    this.futureSlotSuggestions = this.futureSlotSuggestions.filter(s => !(s.isoDate === slot.isoDate && s.time === slot.time));
+    this.onDateSelected(slot.isoDate);
   }
 
   onBookingConfirmed(summary: BookingSummary): void {
@@ -343,6 +360,11 @@ export class PerfilTrabajadorComponent implements OnInit {
           console.log('🔵 [BOOKING] ✅ Cita creada exitosamente');
           this.closeConfirmSignal++;
           this.confirming = false;
+          this.bookingSuccessMessage = '✅ Tu cita fue enviada. Te avisaremos cuando el profesional confirme.';
+          this.slotSuggestions = [];
+          this.futureSlotSuggestions = [];
+          // Refrescar disponibilidades para reflejar el nuevo bloqueo
+          this.loadTimeSlots(providerId, summary.date, Number(activeService.id));
           // Crear notificación in-app para el cliente
           this.notifications.setUserProfile('client');
           this.notifications.createNotification({
@@ -387,28 +409,35 @@ export class PerfilTrabajadorComponent implements OnInit {
     this.slotSuggestions = Array.isArray(backendOptions) && backendOptions.length
       ? backendOptions.slice(0, 3)
       : [];
+    this.futureSlotSuggestions = [];
 
     this.appointments.getTimeSlots(providerId, isoDate, serviceId).subscribe({
-      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }>; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }) => {
+      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }>; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }) => {
         const normalizedSlots: TimeSlot[] = (resp.time_slots || []).map((slot: { time: string; is_available: boolean; reason?: string }) => ({
           time: slot.time,
           isAvailable: slot.is_available,
           reason: slot.reason as 'booked' | 'blocked' | undefined
         }));
 
+        const stillAvailable = normalizedSlots.find(slot => slot.time === preservedSummary.time && slot.isAvailable);
+        const fallback = stillAvailable || normalizedSlots.find(slot => slot.isAvailable);
+
         this.bookingPanelData.timeSlots = normalizedSlots.map(slot => ({
           ...slot,
-          isSelected: false
+          isSelected: fallback ? slot.time === fallback.time : false
         }));
 
         const meta = resp.meta || {};
         const allowManual = !!meta.allow_manual;
         const fullyBlocked = !!meta.fully_blocked;
+        const blockedReason = meta.blocked_reason;
 
         if (allowManual) {
           this.bookingPanelData.timeSlotsMessage = 'El profesional no tiene horarios publicados para esta fecha. Ingresa un horario para coordinar.';
         } else if (fullyBlocked) {
-          this.bookingPanelData.timeSlotsMessage = 'Este profesional bloqueó esta fecha. Selecciona otro día.';
+          this.bookingPanelData.timeSlotsMessage = blockedReason
+            ? `Este profesional bloqueó la fecha (${blockedReason}). Selecciona otro día.`
+            : 'Este profesional bloqueó esta fecha. Selecciona otro día.';
         } else if (!normalizedSlots.length) {
           this.bookingPanelData.timeSlotsMessage = 'No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional para coordinar.';
         } else {
@@ -419,7 +448,7 @@ export class PerfilTrabajadorComponent implements OnInit {
         this.bookingPanelData.summary = {
           service: preservedSummary.service,
           date: preservedSummary.date,
-          time: '',
+          time: fallback?.time || '',
           price: preservedSummary.price
         };
 
@@ -428,6 +457,10 @@ export class PerfilTrabajadorComponent implements OnInit {
             .filter(slot => slot.isAvailable && slot.time !== conflictedTime)
             .slice(0, 3)
             .map(slot => slot.time);
+        }
+
+        if ((!fallback || !normalizedSlots.length) && !allowManual) {
+          void this.fetchNextAvailableSlots(providerId, serviceId, isoDate);
         }
       },
       error: () => {
@@ -486,61 +519,78 @@ export class PerfilTrabajadorComponent implements OnInit {
 
   private loadTimeSlots(providerId: number, date: string, serviceId: number) {
     console.log('🟡 [PERFIL] Cargando time slots:', { providerId, date, serviceId });
-    
-    this.appointments.getTimeSlots(providerId, this.toIsoDate(date), serviceId).subscribe({
-      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }>; meta?: { fully_blocked?: boolean; allow_manual?: boolean } }) => {
+    this.timeSlotsLoading = true;
+    this.futureSlotSuggestions = [];
+    this.slotSuggestions = [];
+    const isoDate = this.toIsoDate(date);
+
+    this.appointments.getTimeSlots(providerId, isoDate, serviceId).subscribe({
+      next: (resp: { success: boolean; time_slots: Array<{ time: string; is_available: boolean; reason?: string }>; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }) => {
         console.log('🟡 [PERFIL] Time slots recibidos:', resp.time_slots);
-        
-        const slots = (resp.time_slots || []).map((s: { time: string; is_available: boolean; reason?: string }) => ({ 
-          time: s.time, 
+        this.timeSlotsLoading = false;
+
+        const slots = (resp.time_slots || []).map((s) => ({
+          time: s.time,
           isAvailable: s.is_available,
           reason: s.reason as 'booked' | 'blocked' | undefined
-        }));
-        
-        // Logs para debugging
-        const blocked = slots.filter(s => s.reason === 'blocked').length;
-        const booked = slots.filter(s => s.reason === 'booked').length;
-        const available = slots.filter(s => s.isAvailable).length;
-        
+        })) as Array<TimeSlot & { reason?: 'booked' | 'blocked' }>;
+
         console.log('🟡 [PERFIL] Slots procesados:', {
           total: slots.length,
-          disponibles: available,
-          bloqueados: blocked,
-          ocupados: booked
+          disponibles: slots.filter(s => s.isAvailable).length,
+          bloqueados: slots.filter(s => s.reason === 'blocked').length,
+          ocupados: slots.filter(s => s.reason === 'booked').length
         });
-        
-        this.bookingPanelData.timeSlots = slots;
-        const meta = (resp as any).meta || {};
+
+        const meta = resp.meta || {};
         const allowManual = !!meta.allow_manual;
         const fullyBlocked = !!meta.fully_blocked;
+        const blockedReason = meta.blocked_reason;
 
         if (allowManual) {
           this.bookingPanelData.timeSlotsMessage = 'El profesional no tiene horarios publicados para esta fecha. Ingresa un horario para coordinar.';
         } else if (fullyBlocked) {
-          this.bookingPanelData.timeSlotsMessage = 'Este profesional bloqueó esta fecha. Selecciona otro día.';
+          this.bookingPanelData.timeSlotsMessage = blockedReason
+            ? `Este profesional bloqueó la fecha (${blockedReason}). Selecciona otro día.`
+            : 'Este profesional bloqueó esta fecha. Selecciona otro día.';
         } else if (!slots.length) {
-          this.bookingPanelData.timeSlotsMessage = 'No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional para coordinar.';
+          this.bookingPanelData.timeSlotsMessage = 'No hay horarios publicados para esta fecha. Prueba con otro día o contacta al profesional.';
         } else {
           this.bookingPanelData.timeSlotsMessage = null;
         }
 
         this.bookingPanelData.allowManualTime = allowManual;
-        
-        // Actualizar summary conservando servicio/precio
+
         const active = this.bookingPanelData.services.find((s: Service) => s.isActive);
-        const firstAvail = slots.find((s: any) => s.isAvailable);
+        const previousTime = this.pendingAutoSelectTime || this.bookingPanelData.summary.time;
+        this.pendingAutoSelectTime = null;
+
+        let selectedSlot = slots.find(s => s.time === previousTime && s.isAvailable) || slots.find(s => s.isAvailable);
+
+        this.bookingPanelData.timeSlots = slots.map(slot => ({
+          ...slot,
+          isSelected: selectedSlot ? slot.time === selectedSlot.time : false
+        }));
+
         this.bookingPanelData.summary = {
           service: active?.name || '',
           date: date,
-          time: firstAvail?.time || '',
+          time: selectedSlot?.time || '',
           price: active?.price || ''
         };
+
+        if (!slots.length || !selectedSlot) {
+          void this.fetchNextAvailableSlots(providerId, serviceId, isoDate);
+        }
       },
       error: (err: any) => {
         console.error('🔴 [PERFIL] Error cargando time-slots:', err);
+        this.timeSlotsLoading = false;
         this.bookingPanelData.timeSlots = [];
         this.bookingPanelData.allowManualTime = false;
         this.bookingPanelData.timeSlotsMessage = 'No se pudieron cargar los horarios. Intenta nuevamente.';
+        this.futureSlotSuggestions = [];
+        this.pendingAutoSelectTime = null;
       }
     });
   }
@@ -548,6 +598,45 @@ export class PerfilTrabajadorComponent implements OnInit {
   private formatToday(): string {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  private async fetchNextAvailableSlots(providerId: number, serviceId: number, fromIsoDate: string): Promise<void> {
+    const lookupId = ++this.nextAvailabilityLookup;
+    const baseDate = new Date(`${fromIsoDate}T00:00:00`);
+    const suggestions: FutureSlotSuggestion[] = [];
+
+    for (let offset = 1; offset <= 7 && suggestions.length < 3; offset++) {
+      const candidate = new Date(baseDate);
+      candidate.setDate(candidate.getDate() + offset);
+      const iso = candidate.toISOString().slice(0, 10);
+      try {
+        const resp = await firstValueFrom(this.appointments.getTimeSlots(providerId, iso, serviceId));
+        const available = (resp.time_slots || []).filter((slot: any) => slot.is_available);
+        if (available.length) {
+          suggestions.push({
+            dateLabel: this.formatFriendlyDate(candidate),
+            isoDate: iso,
+            time: available[0].time
+          });
+        }
+      } catch (error) {
+        console.warn('⚠️ [PERFIL] No se pudo cargar disponibilidad futura', { iso, error });
+      }
+    }
+
+    if (lookupId !== this.nextAvailabilityLookup) {
+      return;
+    }
+    this.futureSlotSuggestions = suggestions;
+  }
+
+  private formatFriendlyDate(date: Date): string {
+    const label = new Intl.DateTimeFormat('es-CL', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short'
+    }).format(date).replace(/\.$/, '');
+    return label.charAt(0).toUpperCase() + label.slice(1);
   }
 
   private toIsoDate(date: string): string {

@@ -55,13 +55,17 @@
           [providerName]="profileHeroData.name"
           [data]="bookingPanelData"
           [alternativeSlots]="slotSuggestions"
+          [futureSlots]="futureSlotSuggestions"
+          [loadingSlots]="timeSlotsLoading"
+          [successMessage]="bookingSuccessMessage"
           (serviceSelected)="onServiceSelected($event)"
           (dateSelected)="onDateSelected($event)"
           (timeSelected)="onTimeSelected($event)"
           (bookingConfirmed)="onBookingConfirmed($event)"
           [confirming]="confirming"
           [confirmError]="confirmError"
-          [closeConfirmSignal]="closeConfirmSignal">
+          [closeConfirmSignal]="closeConfirmSignal"
+          (futureSlotSelected)="onFutureSlotSelected($event)">
         </app-booking-panel>
       </div>
 

@@ -35,6 +35,12 @@ export interface BookingPanelData {
   timeSlotsMessage?: string | null;
 }
 
+export interface FutureSlotSuggestion {
+  dateLabel: string;
+  isoDate: string;
+  time: string;
+}
+
 @Component({
   selector: 'app-booking-panel',
   standalone: true,
@@ -63,11 +69,15 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   @Input() confirmError: string | null = null;
   @Input() closeConfirmSignal: number = 0; // aumentar para cerrar modal desde el padre
   @Input() alternativeSlots: string[] = [];
+  @Input() futureSlots: FutureSlotSuggestion[] = [];
+  @Input() loadingSlots: boolean = false;
+  @Input() successMessage: string | null = null;
 
   @Output() serviceSelected = new EventEmitter<string>();
   @Output() dateSelected = new EventEmitter<string>();
   @Output() timeSelected = new EventEmitter<string>();
   @Output() bookingConfirmed = new EventEmitter<BookingSummary>();
+  @Output() futureSlotSelected = new EventEmitter<FutureSlotSuggestion>();
 
   // Modal de confirmación
   isConfirmOpen = false;
@@ -80,6 +90,8 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   errorTime = '';
 
   constructor(private clientProfile: ClientProfileService) {}
+
+  readonly today = new Date().toISOString().slice(0, 10);
 
   ngOnInit(): void {
     // Precargar preferencia para mostrarla sin esperar a abrir el modal
@@ -223,5 +235,9 @@ export class BookingPanelComponent implements OnChanges, OnInit {
 
   onAlternativeSlotClick(slot: string) {
     this.onTimeClick(slot);
+  }
+
+  onFutureSlotSuggestionClick(suggestion: FutureSlotSuggestion) {
+    this.futureSlotSelected.emit(suggestion);
   }
 }
