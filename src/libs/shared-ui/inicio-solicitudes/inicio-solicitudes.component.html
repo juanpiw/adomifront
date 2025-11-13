@@ -11,12 +11,16 @@
     <div #scroller class="inicio-solicitudes__scroller" tabindex="0">
       <div *ngFor="let solicitud of data" class="inicio-solicitudes__card inicio-solicitudes__snap">
         <div class="inicio-solicitudes__row">
-          <img
-            [src]="solicitud.clientAvatar || fallbackAvatar"
-            [alt]="solicitud.clientName"
-            class="inicio-solicitudes__avatar"
-            (error)="onAvatarError($event)"
-          >
+          <div class="inicio-solicitudes__avatar" [class.inicio-solicitudes__avatar--fallback]="!solicitud.clientAvatar">
+            <img
+              [src]="solicitud.clientAvatar || fallbackAvatar"
+              [alt]="solicitud.clientName"
+              (error)="onAvatarError($event)"
+            >
+            <span class="inicio-solicitudes__avatar-initials">
+              {{ getInitials(solicitud.clientName) }}
+            </span>
+          </div>
           <div class="ml-4">
             <p class="inicio-solicitudes__name">{{ solicitud.clientName }}</p>
             <p class="inicio-solicitudes__service">Solicita <span class="font-semibold text-slate-600">{{ solicitud.service }}</span></p>

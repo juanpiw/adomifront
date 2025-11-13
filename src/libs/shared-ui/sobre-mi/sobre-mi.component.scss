@@ -55,3 +55,38 @@
     }
   }
 }
+
+:host-context(.dark-theme) .sobre-mi {
+  background: #0f172a;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4);
+
+  &__title {
+    color: #e2e8f0;
+  }
+
+  &__subtitle {
+    color: #94a3b8;
+  }
+
+  &__textarea {
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: #e2e8f0;
+
+    &:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    &:hover:not(:focus) {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(15, 23, 42, 0.92);
+    }
+
+    &::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+    }
+  }
+}

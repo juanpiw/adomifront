@@ -42,7 +42,7 @@ export class DayDetailComponent {
   @Input() appointments: DayAppointment[] = [];
   @Input() professionalName: string = 'Nombre (Título)';
   @Input() loading: boolean = false;
-  readonly fallbackAvatar = '/assets/default-avatar.png';
+  readonly fallbackAvatar = 'assets/default-avatar.png';
 
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
   @Output() newAppointment = new EventEmitter<Date>();
@@ -150,7 +150,16 @@ export class DayDetailComponent {
     });
 
     img.src = this.fallbackAvatar;
-    img.classList.add('day-detail__client-avatar--fallback');
+    const container = img.closest('.day-detail__client-avatar');
+    if (container) {
+      container.classList.add('day-detail__client-avatar--fallback');
+      const initials = container.querySelector('.day-detail__client-initials') as HTMLElement | null;
+      if (initials) {
+        initials.style.display = 'inline';
+      }
+    } else {
+      img.classList.add('day-detail__client-avatar--fallback');
+    }
   }
 
   onClientReviewClick(event: Event, appointment: DayAppointment) {

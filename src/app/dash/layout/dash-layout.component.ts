@@ -656,7 +656,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   private refreshFeatureFlags() {
-    this.hasQuotesFeature = this.sessionService.isProvider() && this.featureFlags.hasFeature('quotes');
+    this.hasQuotesFeature = this.sessionService.isProvider();
     this.showPromotionsMenu = false;
   }
 

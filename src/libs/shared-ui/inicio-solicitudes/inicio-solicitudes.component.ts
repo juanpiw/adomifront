@@ -56,7 +56,7 @@ export class InicioSolicitudesComponent implements AfterViewInit {
   totalPages = 1;
   private autoplayTimer: any = null;
   autoplayIntervalMs = 4000;
-  readonly fallbackAvatar = '/assets/default-avatar.png';
+  readonly fallbackAvatar = 'assets/default-avatar.png';
 
   ngAfterViewInit(): void {
     // Dar tiempo a que Angular pinte el DOM y calcule tamaños
@@ -73,6 +73,7 @@ export class InicioSolicitudesComponent implements AfterViewInit {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
 
+    const container = img.closest('.inicio-solicitudes__avatar');
     const currentSrc = img.getAttribute('src');
     if (currentSrc === this.fallbackAvatar) {
       return;
@@ -83,7 +84,11 @@ export class InicioSolicitudesComponent implements AfterViewInit {
     });
 
     img.src = this.fallbackAvatar;
-    img.classList.add('inicio-solicitudes__avatar--fallback');
+    if (container) {
+      container.classList.add('inicio-solicitudes__avatar--fallback');
+    } else {
+      img.classList.add('inicio-solicitudes__avatar--fallback');
+    }
   }
 
   onAcceptClick(solicitud: SolicitudData) {
@@ -178,5 +183,16 @@ export class InicioSolicitudesComponent implements AfterViewInit {
       clearInterval(this.autoplayTimer);
       this.autoplayTimer = null;
     }
+  }
+
+  getInitials(name?: string | null): string {
+    if (!name) return 'C';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'C';
+    if (parts.length === 1) return (parts[0][0] || 'C').toUpperCase();
+    const first = parts[0][0] || '';
+    const last = parts[parts.length - 1][0] || '';
+    const initials = `${first}${last}`.trim();
+    return initials ? initials.toUpperCase() : 'C';
   }
 }
