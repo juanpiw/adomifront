@@ -132,7 +132,7 @@ export class QuotesStore {
     }
   }
 
-  private buildTabs(counters: Record<'new' | 'sent' | 'accepted' | 'history', number>): TabDefinition[] {
+  private buildTabs(counters: Record<QuotesTabId, number>): TabDefinition[] {
     return this.defaultTabs.map((tab) => ({
       ...tab,
       badge: counters[tab.id] ?? 0

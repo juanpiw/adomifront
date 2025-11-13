@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { QuoteTab } from '../quotes.models';
+import { QuoteTab, QuotesTabId } from '../quotes.models';
 
 @Component({
   selector: 'ui-quotes-tabs',
@@ -12,10 +12,10 @@ import { QuoteTab } from '../quotes.models';
 })
 export class QuotesTabsComponent {
   @Input() tabs: QuoteTab[] = [];
-  @Input() activeTabId: QuoteTab['id'] = 'new';
-  @Output() tabChange = new EventEmitter<QuoteTab['id']>();
+  @Input() activeTabId: QuotesTabId = 'new';
+  @Output() tabChange = new EventEmitter<QuotesTabId>();
 
-  onSelectTab(tabId: QuoteTab['id']): void {
+  onSelectTab(tabId: QuotesTabId): void {
     if (tabId === this.activeTabId) return;
     this.tabChange.emit(tabId);
   }

@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { QuoteStatus, QuotesTabId as SharedQuotesTabId } from '../../libs/shared-ui/quotes/quotes.models';
 
-export type QuotesTabId = 'new' | 'sent' | 'accepted' | 'history';
+export type QuotesTabId = SharedQuotesTabId;
 
 export interface ProviderQuoteDto {
   id: number;
-  status: 'new' | 'sent' | 'accepted' | 'rejected' | 'expired';
+  status: QuoteStatus | 'draft';
   serviceName: string;
   requestedAt: string;
   client: {
@@ -30,7 +31,7 @@ export interface ProviderQuoteDto {
 export interface ProviderQuotesResponse {
   success: boolean;
   quotes: ProviderQuoteDto[];
-  counters: Record<'new' | 'sent' | 'accepted' | 'history', number>;
+  counters: Record<QuotesTabId, number>;
 }
 
 export interface ProviderQuoteDetailResponse {
@@ -77,7 +78,7 @@ export interface QuoteProposalPayload {
 @Injectable({ providedIn: 'root' })
 export class QuotesService {
   private http = inject(HttpClient);
-  private base = environment.apiUrl;
+  private base = environment.apiBaseUrl;
 
   getProviderQuotes(status: QuotesTabId): Observable<ProviderQuotesResponse> {
     return this.http.get<ProviderQuotesResponse>(`${this.base}/provider/quotes`, {

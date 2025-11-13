@@ -4,8 +4,7 @@ import { QuotesHeaderComponent, QuotesTabsComponent, QuotesGridComponent, Quotes
 import { QuoteActionEvent } from '../../../../libs/shared-ui/quotes/quotes.models';
 import { QuoteProposal } from '../../../../libs/shared-ui/quotes/quotes-form/quotes-form.component';
 import { QuotesStore } from './quotes.store';
-
-type QuotesTabId = 'new' | 'sent' | 'accepted' | 'history';
+import { QuotesTabId } from '../../../services/quotes.service';
 
 @Component({
   selector: 'app-dash-quotes',

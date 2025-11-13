@@ -113,6 +113,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   isPioneer = false;
   private inviteSummaryLoaded = false;
   hasQuotesFeature = false;
+  showPromotionsMenu = false;
 
   ngOnInit() {
     try {
@@ -655,7 +656,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   private refreshFeatureFlags() {
-    this.hasQuotesFeature = this.featureFlags.hasFeature('quotes');
+    this.hasQuotesFeature = this.sessionService.isProvider() && this.featureFlags.hasFeature('quotes');
+    this.showPromotionsMenu = false;
   }
 
   dismissVerificationPrompt() {

@@ -1,4 +1,5 @@
 export type QuoteStatus = 'new' | 'sent' | 'accepted' | 'rejected' | 'expired';
+export type QuotesTabId = 'new' | 'sent' | 'accepted' | 'history';
 
 export interface QuoteClient {
   id: number | string;
@@ -20,7 +21,7 @@ export interface Quote {
 }
 
 export interface QuoteTab {
-  id: QuoteStatus | 'history';
+  id: QuotesTabId;
   label: string;
   badge?: number;
 }
