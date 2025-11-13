@@ -17,4 +17,16 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .statistics-header {
+    h1 {
+      color: #e2e8f0;
+    }
+
+    p {
+      color: #94a3b8;
+    }
+  }
+}
+
 

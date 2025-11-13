@@ -51,6 +51,36 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .dashboard-resumen {
+    &__title {
+      color: #e2e8f0;
+    }
+
+    &__card {
+      background: rgba(15, 23, 42, 0.92);
+      border-color: rgba(51, 65, 85, 0.75);
+      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.75);
+
+      &:hover {
+        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.85);
+      }
+    }
+
+    &__label {
+      color: #c7d2fe;
+    }
+
+    &__value {
+      color: #f8fafc;
+    }
+
+    &__meta {
+      color: #94a3b8;
+    }
+  }
+}
+
 
 
 

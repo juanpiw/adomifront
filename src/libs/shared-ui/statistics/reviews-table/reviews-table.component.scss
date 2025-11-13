@@ -108,6 +108,57 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .reviews-table {
+    h3 {
+      color: #e2e8f0;
+      border-bottom-color: rgba(71, 85, 105, 0.75);
+    }
+
+    .reviews-table-content {
+      thead {
+        background: rgba(15, 23, 42, 0.92);
+
+        th {
+          color: #94a3b8;
+          border-bottom-color: rgba(71, 85, 105, 0.65);
+        }
+      }
+
+      tbody {
+        background: rgba(15, 23, 42, 0.92);
+
+        tr {
+          &:hover {
+            background: rgba(30, 41, 59, 0.85);
+          }
+
+          td {
+            border-bottom-color: rgba(51, 65, 85, 0.75);
+            color: #e2e8f0;
+
+            &.client-name {
+              color: #f8fafc;
+            }
+
+            &.service-name,
+            &.comment,
+            &.placeholder {
+              color: #94a3b8;
+            }
+
+            &.rating {
+              .rating-value {
+                color: #f8fafc;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 
 
 

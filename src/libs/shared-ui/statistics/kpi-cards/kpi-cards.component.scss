@@ -69,4 +69,44 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .kpi-card {
+    .kpi-label {
+      color: #cbd5f5;
+    }
+
+    .kpi-value {
+      color: #f8fafc;
+
+      &.text-indigo-600 {
+        color: #c7d2fe;
+      }
+
+      &.text-teal-600 {
+        color: #5eead4;
+      }
+
+      &.text-yellow-500 {
+        color: #facc15;
+      }
+
+      &.text-purple-600 {
+        color: #c4b5fd;
+      }
+    }
+
+    .kpi-trend {
+      color: #cbd5f5;
+
+      &.text-green-500 {
+        color: #34d399;
+      }
+
+      &.text-red-500 {
+        color: #fca5a5;
+      }
+    }
+  }
+}
+
 

@@ -32,6 +32,22 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .services-chart {
+    h3 {
+      color: #e2e8f0;
+      border-bottom-color: rgba(71, 85, 105, 0.75);
+    }
+
+    .chart-container {
+      .chart-placeholder {
+        background: rgba(15, 23, 42, 0.92);
+        color: #94a3b8;
+      }
+    }
+  }
+}
+
 
 
 

@@ -159,6 +159,72 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .calendar-mensual {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(51, 65, 85, 0.75);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.75);
+
+    &__header {
+      border-bottom-color: rgba(71, 85, 105, 0.65);
+    }
+
+    &__month {
+      color: #e2e8f0;
+    }
+
+    &__btn {
+      background: rgba(30, 41, 59, 0.9);
+      color: #e2e8f0;
+
+      &:hover:not(:disabled) {
+        background: rgba(59, 130, 246, 0.22);
+      }
+    }
+
+    &__grid {
+      border-color: rgba(71, 85, 105, 0.65);
+    }
+
+    &__day-header {
+      background: rgba(30, 41, 59, 0.85);
+      border-right-color: rgba(51, 65, 85, 0.75);
+      color: #cbd5f5;
+    }
+
+    &__day {
+      border-right-color: rgba(51, 65, 85, 0.65);
+      border-bottom-color: rgba(51, 65, 85, 0.65);
+      color: #e2e8f0;
+
+      &:hover {
+        background: rgba(30, 41, 59, 0.85);
+      }
+
+      &--current-month {
+        background: rgba(15, 23, 42, 0.92);
+      }
+
+      &--other-month {
+        background: rgba(15, 23, 42, 0.65);
+        color: rgba(148, 163, 184, 0.75);
+      }
+
+      &--today {
+        background: rgba(99, 102, 241, 0.18);
+        border-color: rgba(99, 102, 241, 0.55);
+      }
+    }
+
+    &__day-indicator {
+      background: rgba(129, 140, 248, 0.12);
+
+      &:hover {
+        background: rgba(129, 140, 248, 0.18);
+      }
+    }
+  }
+}
 /* Responsive */
 @media (max-width: 768px) {
   .calendar-mensual {
