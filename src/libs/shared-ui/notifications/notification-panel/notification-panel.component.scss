@@ -152,6 +152,30 @@
     }
   }
 
+  &__notification-meta {
+    margin-top: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4338ca;
+    background: rgba(79, 70, 229, 0.08);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    width: fit-content;
+  }
+
+  &__notification-meta-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  &__notification-date {
+    white-space: nowrap;
+    text-transform: capitalize;
+  }
+
   &__unread-indicator {
     width: 0.5rem;
     height: 0.5rem;
@@ -218,6 +242,94 @@
     right: -1rem;
     left: -1rem;
     margin: 0.5rem 1rem 0 1rem;
+  }
+}
+
+:host-context(.dark-theme) {
+  .notification-panel {
+    background: rgba(15, 23, 42, 0.98);
+    border-color: rgba(71, 85, 105, 0.65);
+    box-shadow:
+      0 25px 60px -20px rgba(2, 6, 23, 0.85),
+      0 0 0 1px rgba(30, 41, 59, 0.45);
+
+    &__header,
+    &__footer {
+      background: rgba(15, 23, 42, 0.92);
+      border-color: rgba(51, 65, 85, 0.75);
+    }
+
+    &__title {
+      color: #e2e8f0;
+    }
+
+    &__mark-all-btn,
+    &__view-all-btn {
+      color: #a5b4fc;
+
+      &:hover {
+        color: #c7d2fe;
+        background-color: rgba(129, 140, 248, 0.18);
+      }
+    }
+
+    &__content {
+      &::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.85);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.45);
+      }
+    }
+
+    &__section-title {
+      color: #cbd5f5;
+    }
+
+    &__notification {
+      &:hover {
+        background-color: rgba(30, 41, 59, 0.85);
+      }
+
+      &--unread {
+        background-color: rgba(79, 70, 229, 0.18);
+        border-left-color: #818cf8;
+      }
+    }
+
+    &__notification-title {
+      color: #f8fafc;
+    }
+
+    &__notification-time {
+      color: #94a3b8;
+    }
+
+    &__notification-message {
+      color: #cbd5f5;
+
+      ::ng-deep strong {
+        color: #f8fafc;
+      }
+    }
+
+    &__notification-meta {
+      color: #c7d2fe;
+      background: rgba(99, 102, 241, 0.18);
+    }
+
+    &__unread-indicator {
+      background-color: #c7d2fe;
+    }
+
+    &__empty-text {
+      color: #cbd5f5;
+    }
+
+    &__empty-subtext {
+      color: #94a3b8;
+    }
   }
 }
 

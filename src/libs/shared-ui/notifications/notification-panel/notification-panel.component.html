@@ -46,6 +46,12 @@
               </span>
             </div>
             <p class="notification-panel__notification-message" [innerHTML]="notification.message"></p>
+            <div 
+              class="notification-panel__notification-meta" 
+              *ngIf="getAppointmentDate(notification) as appointmentDate">
+              <ui-icon name="calendar" class="notification-panel__notification-meta-icon"></ui-icon>
+              <span class="notification-panel__notification-date">{{ appointmentDate }}</span>
+            </div>
           </div>
           
           <!-- Indicador de no leída -->
@@ -72,6 +78,12 @@
               </span>
             </div>
             <p class="notification-panel__notification-message" [innerHTML]="notification.message"></p>
+            <div 
+              class="notification-panel__notification-meta" 
+              *ngIf="getAppointmentDate(notification) as appointmentDate">
+              <ui-icon name="calendar" class="notification-panel__notification-meta-icon"></ui-icon>
+              <span class="notification-panel__notification-date">{{ appointmentDate }}</span>
+            </div>
           </div>
         </div>
       </div>

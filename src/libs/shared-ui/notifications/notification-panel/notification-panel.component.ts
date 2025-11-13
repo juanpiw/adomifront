@@ -129,6 +129,72 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     };
     return colors[priority as keyof typeof colors] || colors.low;
   }
+
+  getAppointmentDate(notification: Notification): string | null {
+    const metadata = notification.metadata || {};
+    const dateCandidate =
+      metadata.appointmentDate ??
+      metadata.appointment_date ??
+      metadata.date ??
+      metadata.startDate ??
+      metadata.start_time ??
+      metadata.startTime ??
+      metadata.scheduledFor ??
+      metadata.scheduled_for;
+
+    const baseDateValue = dateCandidate ?? notification.createdAt;
+
+    const date = this.normalizeToDate(baseDateValue);
+    if (!date) return null;
+
+    return date.toLocaleDateString('es-CL', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  private normalizeToDate(value: any): Date | null {
+    if (!value) return null;
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+
+      // Support ISO date/time by ensuring timezone if missing
+      const isoCandidate = trimmed.match(/^\d{4}-\d{2}-\d{2}(T.*)?$/)
+        ? trimmed
+        : null;
+
+      const parsed = new Date(isoCandidate || trimmed);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+
+      // Try parsing with appended timezone if missing
+      if (!trimmed.endsWith('Z')) {
+        const withTimezone = `${trimmed}Z`;
+        const parsedWithTimezone = new Date(withTimezone);
+        if (!isNaN(parsedWithTimezone.getTime())) {
+          return parsedWithTimezone;
+        }
+      }
+    }
+
+    if (typeof value === 'number') {
+      const fromNumber = new Date(value);
+      if (!isNaN(fromNumber.getTime())) {
+        return fromNumber;
+      }
+    }
+
+    return null;
+  }
 }
 
 
