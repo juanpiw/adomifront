@@ -33,7 +33,7 @@
           rows="4"
           placeholder="Incluye detalles relevantes: tipo de trabajo, ubicaciones, fechas estimadas, etc."
         ></textarea>
-        <small class="quote-request__error" *ngIf="messageControl?.invalid && (messageControl.dirty || messageControl.touched)">
+        <small class="quote-request__error" *ngIf="messageControl?.invalid && (messageControl?.dirty || messageControl?.touched)">
           El mensaje debe tener al menos 20 caracteres.
         </small>
       </div>
