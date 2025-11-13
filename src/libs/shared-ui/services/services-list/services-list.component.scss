@@ -45,6 +45,21 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .services-loader {
+    color: #a5b4fc;
+  }
+
+  .loading-spinner {
+    border-color: rgba(129, 140, 248, 0.35);
+    border-top-color: #818cf8;
+  }
+
+  .loading-text {
+    color: #c7d2fe;
+  }
+}
+
 
 
 

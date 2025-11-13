@@ -148,6 +148,65 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .service-card {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.55);
+
+    &:hover {
+      border-color: rgba(129, 140, 248, 0.45);
+      box-shadow: 0 24px 65px rgba(30, 41, 59, 0.65);
+    }
+  }
+
+  .category-badge {
+    background: rgba(129, 140, 248, 0.18);
+    color: #c7d2fe;
+    border-color: rgba(129, 140, 248, 0.35);
+  }
+
+  .type-badge {
+    background: rgba(148, 163, 184, 0.18);
+    color: #cbd5f5;
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+
+  .service-name {
+    background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
+  }
+
+  .service-description {
+    color: #cbd5f5;
+  }
+
+  .service-duration {
+    color: #cbd5f5;
+  }
+
+  .edit-btn {
+    background: rgba(245, 158, 11, 0.18);
+    color: #facc15;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.3);
+    }
+  }
+
+  .delete-btn {
+    background: rgba(248, 113, 113, 0.18);
+    color: #fecaca;
+
+    &:hover {
+      background: rgba(248, 113, 113, 0.3);
+    }
+  }
+
+  .service-details {
+    color: #f8fafc;
+  }
+}
+
 
 
 

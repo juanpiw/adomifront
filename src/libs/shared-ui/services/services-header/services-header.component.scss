@@ -52,6 +52,24 @@
   margin-right: 0.5rem;
 }
 
+:host-context(.dark-theme) {
+  .services-header {
+    border-bottom-color: rgba(99, 102, 241, 0.35);
+  }
+
+  .services-title {
+    color: #e2e8f0;
+  }
+
+  .add-service-btn {
+    box-shadow: 0 16px 45px rgba(79, 70, 229, 0.45);
+
+    &:hover {
+      box-shadow: 0 24px 65px rgba(79, 70, 229, 0.55);
+    }
+  }
+}
+
 
 
 
