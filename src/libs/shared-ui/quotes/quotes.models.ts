@@ -38,3 +38,4 @@ export interface QuoteActionEvent {
   action: 'view' | 'review' | 'open-chat';
 }
 
+
