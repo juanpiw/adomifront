@@ -60,3 +60,29 @@
     margin-bottom: 0.5rem;
   }
 }
+
+:host-context(.dark-theme) {
+  .info-basica {
+    background: rgba(15, 23, 42, 0.95);
+    border-color: rgba(71, 85, 105, 0.7);
+    box-shadow: 0 20px 45px -28px rgba(2, 6, 23, 0.9);
+
+    &__title {
+      color: #e2e8f0;
+    }
+
+    &__actions {
+      .btn {
+        box-shadow: none;
+      }
+    }
+
+    &__label {
+      color: #cbd5f5;
+    }
+
+    &__content {
+      gap: 1.75rem;
+    }
+  }
+}
