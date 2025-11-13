@@ -1,0 +1,95 @@
+<section class="quote-request" [class.quote-request--success]="sentQuoteId">
+  <header class="quote-request__header">
+    <div class="quote-request__heading">
+      <ui-icon name="file-text"></ui-icon>
+      <div>
+        <h3>Solicitar cotización</h3>
+        <p>
+          Describe lo que necesitas para que
+          <strong>{{ providerName || 'este profesional' }}</strong>
+          pueda enviarte una propuesta personalizada.
+        </p>
+      </div>
+    </div>
+    <span class="quote-request__badge" *ngIf="isProviderPioneer">Respuesta prioritaria</span>
+  </header>
+
+  <ng-container *ngIf="isClientAuthenticated; else loginPrompt">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="quote-request__field">
+        <label for="service">Servicio o categoría</label>
+        <select id="service" formControlName="service">
+          <option value="">Selecciona una opción</option>
+          <option *ngFor="let option of serviceOptions" [value]="option.name">{{ option.name }}</option>
+        </select>
+        <small>Si no encuentras el servicio, descríbelo en el mensaje.</small>
+      </div>
+
+      <div class="quote-request__field">
+        <label for="message">Cuéntanos qué necesitas *</label>
+        <textarea
+          id="message"
+          formControlName="message"
+          rows="4"
+          placeholder="Incluye detalles relevantes: tipo de trabajo, ubicaciones, fechas estimadas, etc."
+        ></textarea>
+        <small class="quote-request__error" *ngIf="messageControl?.invalid && (messageControl.dirty || messageControl.touched)">
+          El mensaje debe tener al menos 20 caracteres.
+        </small>
+      </div>
+
+      <div class="quote-request__inline">
+        <div class="quote-request__field">
+          <label for="preferredDate">Fecha estimada</label>
+          <input id="preferredDate" type="date" formControlName="preferredDate">
+        </div>
+        <div class="quote-request__field">
+          <label for="preferredTimeRange">Horario preferido</label>
+          <input
+            id="preferredTimeRange"
+            type="text"
+            placeholder="Ej: 10:00 - 13:00"
+            formControlName="preferredTimeRange"
+          >
+        </div>
+      </div>
+
+      <div class="quote-request__field">
+        <label for="attachments">Adjuntar archivos (opcional)</label>
+        <input id="attachments" type="file" multiple (change)="onFileSelected($event)">
+        <small>Puedes subir hasta {{ maxAttachments }} archivos (imágenes, pdf, etc.).</small>
+
+        <ul class="quote-request__attachments" *ngIf="attachments.length">
+          <li *ngFor="let file of attachments; index as i">
+            <span>{{ file.name }}</span>
+            <button type="button" (click)="removeAttachment(i)" aria-label="Eliminar adjunto">
+              <ui-icon name="x"></ui-icon>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="quote-request__feedback">
+        <p class="quote-request__error" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="quote-request__success" *ngIf="successMessage">{{ successMessage }}</p>
+      </div>
+
+      <button type="submit" class="quote-request__submit" [disabled]="sending">
+        <span *ngIf="!sending">Solicitar cotización</span>
+        <span *ngIf="sending" class="quote-request__spinner"></span>
+      </button>
+    </form>
+
+    <div class="quote-request__after" *ngIf="sentQuoteId">
+      <a routerLink="/client/cotizaciones">Ver mis cotizaciones</a>
+    </div>
+  </ng-container>
+
+  <ng-template #loginPrompt>
+    <div class="quote-request__login">
+      <p>Inicia sesión como cliente para solicitar una cotización.</p>
+      <a routerLink="/auth/login" class="quote-request__login-btn">Iniciar sesión</a>
+    </div>
+  </ng-template>
+</section>
+

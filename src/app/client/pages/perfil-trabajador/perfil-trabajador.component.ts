@@ -1,18 +1,20 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { ProviderPublicService, ProviderDetailResponse, ProviderFaqResponse } from '../../services/provider-public.service';
 import { environment } from '../../../../environments/environment';
 import { AppointmentsService } from '../../../services/appointments.service';
-import { AuthService } from '../../../auth/services/auth.service';
+import { AuthService, AuthUser } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { ProfileHeroComponent, ProfileHeroData } from '../../../../libs/shared-ui/profile-hero/profile-hero.component';
 import { BookingPanelComponent, BookingPanelData, Service, TimeSlot, BookingSummary, FutureSlotSuggestion } from '../../../../libs/shared-ui/booking-panel/booking-panel.component';
 import { PortfolioComponent, PortfolioData, PortfolioItem } from '../../../../libs/shared-ui/portfolio/portfolio.component';
 import { ReviewsComponent, ReviewsData, Review } from '../../../../libs/shared-ui/reviews/reviews.component';
 import { FaqComponent, FaqData, FaqItem } from '../../../../libs/shared-ui/faq/faq.component';
+import { QuoteRequestPanelComponent } from '../../../../libs/shared-ui/quote-request-panel/quote-request-panel.component';
 import { firstValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-perfil-trabajador',
@@ -23,12 +25,13 @@ import { firstValueFrom } from 'rxjs';
     BookingPanelComponent,
     PortfolioComponent,
     ReviewsComponent,
-    FaqComponent
+    FaqComponent,
+    QuoteRequestPanelComponent
   ],
   templateUrl: './perfil-trabajador.component.html',
   styleUrls: ['./perfil-trabajador.component.scss']
 })
-export class PerfilTrabajadorComponent implements OnInit {
+export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   workerId: string | null = null;
   workerData: any = null;
   loading: boolean = true;
@@ -41,6 +44,7 @@ export class PerfilTrabajadorComponent implements OnInit {
   bookingSuccessMessage: string | null = null;
   private pendingAutoSelectTime: string | null = null;
   private nextAvailabilityLookup = 0;
+  private authSubscription?: Subscription;
 
   // Component data
   profileHeroData: ProfileHeroData = {
@@ -80,6 +84,11 @@ export class PerfilTrabajadorComponent implements OnInit {
     items: []
   };
 
+  quoteRequestServices: string[] = [];
+  isClientUser = false;
+  clientDisplayName: string | null = null;
+  clientEmail: string | null = null;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private locationSvc = inject(Location);
@@ -97,12 +106,21 @@ export class PerfilTrabajadorComponent implements OnInit {
 
   ngOnInit(): void {
     this.workerId = this.route.snapshot.paramMap.get('workerId');
+
+    this.syncClientContext(this.auth.getCurrentUser());
+    this.authSubscription = this.auth.authState$.subscribe((user) => {
+      this.syncClientContext(user);
+    });
     
     if (this.workerId) {
       this.loadWorkerData();
     } else {
       this.router.navigate(['/client/explorar']);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.authSubscription?.unsubscribe();
   }
 
   private loadWorkerData(): void {
@@ -249,6 +267,8 @@ export class PerfilTrabajadorComponent implements OnInit {
       title: 'Preguntas Frecuentes',
       items: this.faqData.items || []
     };
+
+    this.quoteRequestServices = this.workerData.services.map((service: any) => service.name).filter(Boolean);
   }
 
   goBack(): void {
@@ -593,6 +613,12 @@ export class PerfilTrabajadorComponent implements OnInit {
         this.pendingAutoSelectTime = null;
       }
     });
+  }
+
+  private syncClientContext(user: AuthUser | null): void {
+    this.isClientUser = !!(user && user.role === 'client');
+    this.clientDisplayName = user?.name ?? null;
+    this.clientEmail = user?.email ?? null;
   }
 
   private formatToday(): string {

@@ -67,6 +67,16 @@
           [closeConfirmSignal]="closeConfirmSignal"
           (futureSlotSelected)="onFutureSlotSelected($event)">
         </app-booking-panel>
+
+        <app-quote-request-panel
+          *ngIf="workerData"
+          [providerId]="workerData.id"
+          [providerName]="profileHeroData.name"
+          [services]="quoteRequestServices"
+          [clientName]="clientDisplayName"
+          [clientEmail]="clientEmail"
+          [isClientAuthenticated]="isClientUser">
+        </app-quote-request-panel>
       </div>
 
     </div>
