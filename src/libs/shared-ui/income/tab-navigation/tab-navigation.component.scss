@@ -27,6 +27,26 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .tab-navigation {
+    border-bottom-color: rgba(71, 85, 105, 0.65);
+
+    .tab-button {
+      color: #94a3b8;
+
+      &:hover {
+        color: #c7d2fe;
+        border-bottom-color: rgba(129, 140, 248, 0.6);
+      }
+
+      &--active {
+        color: #c7d2fe;
+        border-bottom-color: #818cf8;
+      }
+    }
+  }
+}
+
 
 
 

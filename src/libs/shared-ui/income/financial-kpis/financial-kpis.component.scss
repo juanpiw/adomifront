@@ -138,6 +138,93 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .financial-kpis {
+    h2 {
+      color: #e2e8f0;
+    }
+
+    .kpi-card {
+      &--indigo {
+        background-color: rgba(76, 29, 149, 0.25);
+        border-color: rgba(129, 140, 248, 0.45);
+
+        .kpi-label {
+          color: #c7d2fe;
+        }
+
+        .kpi-icon {
+          color: #a5b4fc;
+        }
+
+        .kpi-value {
+          color: #e0e7ff;
+        }
+
+        .kpi-description {
+          color: #c7d2fe;
+        }
+      }
+
+      &--red {
+        background-color: rgba(185, 28, 28, 0.2);
+        border-color: rgba(248, 113, 113, 0.4);
+
+        .kpi-label {
+          color: #fecaca;
+        }
+
+        .kpi-icon {
+          color: #f87171;
+        }
+
+        .kpi-value {
+          color: #fee2e2;
+        }
+
+        .kpi-description {
+          color: #fecaca;
+        }
+      }
+
+      &--yellow {
+        background-color: rgba(202, 138, 4, 0.18);
+        border-color: rgba(250, 204, 21, 0.35);
+
+        .kpi-label {
+          color: #facc15;
+        }
+
+        .kpi-icon {
+          color: #fbbf24;
+        }
+
+        .kpi-value {
+          color: #fde68a;
+        }
+
+        .kpi-description {
+          color: #facc15;
+        }
+      }
+
+      .kpi-label,
+      .kpi-value,
+      .kpi-description {
+        color: #e2e8f0;
+      }
+
+      .kpi-action {
+        color: #a5b4fc;
+
+        &:hover {
+          color: #c7d2fe;
+        }
+      }
+    }
+  }
+}
+
 
 
 

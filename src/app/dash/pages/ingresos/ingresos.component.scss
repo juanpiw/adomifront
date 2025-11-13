@@ -872,6 +872,357 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .ingresos-container {
+    background: #020617;
+  }
+
+  .tbk-card,
+  .metric-card {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(51, 65, 85, 0.75);
+    box-shadow: 0 24px 60px -32px rgba(2, 6, 23, 0.85);
+
+    &__title {
+      h3 {
+        color: #e2e8f0;
+      }
+
+      p {
+        color: #94a3b8;
+      }
+    }
+
+    &__chips .chip {
+      background: rgba(30, 41, 59, 0.9);
+      color: #e2e8f0;
+    }
+
+    &__meta {
+      .meta-label {
+        color: #94a3b8;
+      }
+
+      .meta-value {
+        color: #f8fafc;
+      }
+    }
+
+    &__divider {
+      border-top-color: rgba(71, 85, 105, 0.6);
+    }
+
+    &__section-header h4 {
+      color: #f8fafc;
+    }
+
+    &__alert {
+      background: rgba(250, 204, 21, 0.15);
+      border-color: rgba(250, 204, 21, 0.35);
+
+      h4 {
+        color: #fde68a;
+      }
+
+      ul {
+        color: #facc15;
+      }
+
+      .link-as-button {
+        color: #a5b4fc;
+      }
+    }
+
+    &__error {
+      background: rgba(248, 113, 113, 0.2);
+      color: #fecaca;
+    }
+
+    &__loader {
+      color: #e2e8f0;
+    }
+  }
+
+  .tbk-table {
+    thead {
+      background: rgba(15, 23, 42, 0.9);
+
+      th {
+        color: #94a3b8;
+        border-bottom-color: rgba(71, 85, 105, 0.65);
+      }
+    }
+
+    tbody tr {
+      border-bottom-color: rgba(51, 65, 85, 0.75);
+    }
+
+    td {
+      color: #e2e8f0;
+    }
+
+    .actions .link {
+      color: #a5b4fc;
+
+      &:hover {
+        color: #c7d2fe;
+      }
+
+      &--danger {
+        color: #fca5a5;
+      }
+    }
+  }
+
+  .tbk-empty {
+    border-color: rgba(99, 102, 241, 0.35);
+    background: rgba(15, 23, 42, 0.9);
+
+    h5 {
+      color: #f8fafc;
+    }
+
+    p {
+      color: #cbd5f5;
+    }
+  }
+
+  .tbk-btn {
+    background: rgba(30, 41, 59, 0.9);
+    color: #e2e8f0;
+    border: 1px solid rgba(71, 85, 105, 0.65);
+
+    &--primary {
+      background: #4f46e5;
+      color: #f8fafc;
+      box-shadow: 0 18px 40px -24px rgba(76, 29, 149, 0.7);
+    }
+
+    &--secondary {
+      background: rgba(15, 23, 42, 0.95);
+      border-color: rgba(71, 85, 105, 0.65);
+      color: #cbd5f5;
+    }
+  }
+
+  .chip {
+    background: rgba(30, 41, 59, 0.9);
+    color: #cbd5f5;
+
+    &--success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #bbf7d0;
+    }
+
+    &--warning {
+      background: rgba(250, 204, 21, 0.2);
+      color: #fde68a;
+    }
+
+    &--danger {
+      background: rgba(248, 113, 113, 0.2);
+      color: #fecaca;
+    }
+
+    &--neutral {
+      background: rgba(100, 116, 139, 0.35);
+      color: #e2e8f0;
+    }
+  }
+
+  .tbk-modal {
+    &__backdrop {
+      background: rgba(2, 6, 23, 0.75);
+    }
+
+    &__content {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(51, 65, 85, 0.75);
+      box-shadow: 0 32px 80px -28px rgba(2, 6, 23, 0.9);
+    }
+
+    &__header {
+      h3 {
+        color: #f8fafc;
+      }
+
+      p {
+        color: #94a3b8;
+      }
+    }
+
+    &__icon {
+      background: rgba(59, 130, 246, 0.2);
+      color: #bfdbfe;
+    }
+
+    &__body {
+      label {
+        color: #e2e8f0;
+
+        input {
+          border-color: rgba(71, 85, 105, 0.75);
+          background: rgba(15, 23, 42, 0.9);
+          color: #f8fafc;
+
+          &:focus {
+            border-color: rgba(129, 140, 248, 0.75);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+          }
+        }
+
+        small {
+          color: #94a3b8;
+        }
+      }
+
+      .error {
+        color: #fca5a5;
+      }
+    }
+  }
+
+  .tbk-toast {
+    background: #4338ca;
+  }
+
+  .wallet-overview-card h3,
+  .wallet-movements-card__header h3 {
+    color: #f8fafc;
+  }
+
+  .wallet-movements-card__header p {
+    color: #94a3b8;
+  }
+
+  .wallet-stat-card {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(51, 65, 85, 0.75);
+
+    &__label {
+      color: #94a3b8;
+    }
+
+    &__value {
+      color: #f8fafc;
+    }
+
+    &__detail {
+      color: #cbd5f5;
+    }
+
+    &--credit {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    &--debit {
+      background: rgba(248, 113, 113, 0.22);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+
+    &--hold {
+      background: rgba(250, 204, 21, 0.22);
+      border-color: rgba(250, 204, 21, 0.35);
+    }
+  }
+
+  .wallet-filters {
+    background: rgba(30, 41, 59, 0.85);
+  }
+
+  .wallet-filter-btn {
+    color: #cbd5f5;
+
+    &--active {
+      background: #1d4ed8;
+      color: #f8fafc;
+    }
+  }
+
+  .wallet-loader {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(51, 65, 85, 0.75);
+    color: #e2e8f0;
+  }
+
+  .wallet-movements-table {
+    thead {
+      background: rgba(15, 23, 42, 0.9);
+
+      th {
+        color: #94a3b8;
+        border-bottom-color: rgba(71, 85, 105, 0.6);
+      }
+    }
+
+    tbody tr {
+      border-bottom-color: rgba(51, 65, 85, 0.75);
+    }
+
+    td {
+      color: #f8fafc;
+    }
+  }
+
+  .wallet-tag {
+    background: rgba(30, 41, 59, 0.92);
+    color: #cbd5f5;
+
+    &--credit {
+      background: rgba(16, 185, 129, 0.22);
+      color: #99f6e4;
+    }
+
+    &--debit {
+      background: rgba(248, 113, 113, 0.22);
+      color: #fecaca;
+    }
+
+    &--hold {
+      background: rgba(250, 204, 21, 0.22);
+      color: #fde68a;
+    }
+
+    &--release {
+      background: rgba(59, 130, 246, 0.22);
+      color: #bfdbfe;
+    }
+  }
+
+  .wallet-movement__title {
+    color: #f8fafc;
+  }
+
+  .wallet-movement__description,
+  .wallet-reference {
+    color: #94a3b8;
+  }
+
+  .wallet-movement__amount {
+    &--credit {
+      color: #34d399;
+    }
+
+    &--debit {
+      color: #fca5a5;
+    }
+  }
+
+  .wallet-empty {
+    border-color: rgba(99, 102, 241, 0.35);
+    background: rgba(15, 23, 42, 0.92);
+
+    h4 {
+      color: #f8fafc;
+    }
+
+    p {
+      color: #cbd5f5;
+    }
+  }
+}
+
 
 
 

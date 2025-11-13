@@ -157,7 +157,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
             const solicitud = {
               id: String(appt.id),
               clientName: appt.client_name || 'Cliente',
-              clientAvatar: 'https://placehold.co/48x48/FDE68A/4B5563?text=' + (appt.client_name || 'C').charAt(0),
+              clientAvatar: this.getAvatarUrl(appt.client_avatar_url, appt.client_name),
               service: appt.service_name || 'Servicio',
               when: this.formatWhen(appt.date),
               time: this.formatTime(appt.start_time),
@@ -199,7 +199,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
             date: appt.date,
             duration: '45 minutos', // TODO: calcular desde start_time y end_time
             amount: appt.scheduled_price || appt.price || 0,
-            clientAvatar: 'https://placehold.co/40x40/E0E7FF/4338CA?text=' + (appt.client_name || 'C').charAt(0),
+            clientAvatar: this.getAvatarUrl(appt.client_avatar_url, appt.client_name, { size: 40 }),
             location: 'Ubicación por confirmar',
             mapUrl: 'https://maps.google.com/?q=Ubicacion'
           };
@@ -290,6 +290,22 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     if (!timeStr) return 'AM';
     const hour = parseInt(timeStr.substring(0, 2));
     return hour >= 12 ? 'PM' : 'AM';
+  }
+
+  private getAvatarUrl(
+    avatarPath?: string | null,
+    name?: string | null,
+    options?: { size?: number }
+  ): string {
+    if (avatarPath && typeof avatarPath === 'string' && avatarPath.trim().length > 0) {
+      return avatarPath.trim();
+    }
+
+    const letter = (name || 'C').trim().charAt(0).toUpperCase() || 'C';
+    const size = Math.max(32, Math.min(options?.size ?? 48, 200));
+    const background = '6366F1';
+    const color = 'FFFFFF';
+    return `https://ui-avatars.com/api/?background=${background}&color=${color}&name=${encodeURIComponent(letter)}&size=${size}`;
   }
 
   // Datos para la próxima cita (ahora será null inicialmente)

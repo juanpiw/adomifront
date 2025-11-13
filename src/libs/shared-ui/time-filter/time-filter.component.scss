@@ -255,3 +255,92 @@
     }
   }
 }
+
+:host-context(.dark-theme) {
+  .time-filter {
+    background: linear-gradient(135deg,
+      rgba(15, 23, 42, 0.92) 0%,
+      rgba(15, 23, 42, 0.85) 100%);
+    border-color: rgba(51, 65, 85, 0.75);
+    box-shadow:
+      0 16px 32px -20px rgba(2, 6, 23, 0.9),
+      inset 0 1px 0 rgba(148, 163, 184, 0.08);
+
+    &__option {
+      background: linear-gradient(135deg,
+        rgba(30, 41, 59, 0.92) 0%,
+        rgba(15, 23, 42, 0.85) 100%);
+      border-color: rgba(71, 85, 105, 0.65);
+
+      &:hover {
+        border-color: rgba(129, 140, 248, 0.45);
+
+        .time-filter__option-icon {
+          color: #818cf8;
+        }
+      }
+
+      &--active {
+        background: linear-gradient(135deg,
+          rgba(79, 70, 229, 0.22) 0%,
+          rgba(124, 58, 237, 0.18) 100%);
+        border-color: rgba(129, 140, 248, 0.65);
+        box-shadow:
+          0 12px 30px rgba(76, 29, 149, 0.35),
+          inset 0 1px 0 rgba(148, 163, 184, 0.25);
+
+        .time-filter__option-label {
+          color: #c7d2fe;
+        }
+      }
+    }
+
+    &__option-icon {
+      color: #cbd5f5;
+    }
+
+    &__option-label {
+      color: #e2e8f0;
+    }
+
+    &__custom-dates {
+      background: linear-gradient(135deg,
+        rgba(55, 48, 163, 0.18) 0%,
+        rgba(91, 33, 182, 0.15) 100%);
+      border-color: rgba(129, 140, 248, 0.45);
+    }
+
+    &__date-label {
+      color: #c7d2fe;
+    }
+
+    &__date-input {
+      border-color: rgba(129, 140, 248, 0.45);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e2e8f0;
+
+      &:focus {
+        border-color: rgba(129, 140, 248, 0.75);
+        background: rgba(30, 41, 59, 0.95);
+        box-shadow:
+          0 0 0 3px rgba(129, 140, 248, 0.25),
+          0 6px 18px -6px rgba(30, 58, 138, 0.45);
+      }
+
+      &:hover:not(:focus) {
+        border-color: rgba(129, 140, 248, 0.6);
+      }
+    }
+
+    &__info {
+      background: linear-gradient(135deg,
+        rgba(79, 70, 229, 0.18) 0%,
+        rgba(124, 58, 237, 0.15) 100%);
+      border-color: rgba(129, 140, 248, 0.45);
+    }
+
+    &__info-text {
+      color: #c7d2fe;
+    }
+  }
+}

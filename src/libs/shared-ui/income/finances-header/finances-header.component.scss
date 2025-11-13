@@ -26,6 +26,24 @@
   }
 }
 
+:host-context(.dark-theme) {
+  .finances-header {
+    border-bottom-color: rgba(148, 163, 184, 0.25);
+
+    h1 {
+      color: #e2e8f0;
+
+      .header-icon {
+        color: #818cf8;
+      }
+    }
+
+    p {
+      color: #94a3b8;
+    }
+  }
+}
+
 
 
 
