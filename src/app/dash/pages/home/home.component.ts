@@ -71,6 +71,9 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   inviteSuccessMessage: string | null = null;
   inviteCardExpanded = false;
   inviteSummaryLoaded = false;
+  pioneerUnlockedAt: string | null = null;
+  readonly pioneerTooltip =
+    'Beneficios Pionero: prioridad en resultados de búsqueda, insignia destacada para clientes y acceso a invitaciones extra cuando tus colegas se verifican.';
 
   // Datos para el header
   headerData: HeaderData = {
@@ -621,5 +624,23 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   private applyInviteSummary(summary: ProviderInviteSummary | null) {
     this.inviteSummary = summary;
     this.inviteSummaryLoaded = true;
+    this.pioneerUnlockedAt = summary?.pioneer_unlocked_at ?? null;
+  }
+
+  get isPioneerUnlocked(): boolean {
+    return !!this.pioneerUnlockedAt;
+  }
+
+  get pioneerUnlockedLabel(): string | null {
+    if (!this.pioneerUnlockedAt) return null;
+    try {
+      return new Date(this.pioneerUnlockedAt).toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return null;
+    }
   }
 }

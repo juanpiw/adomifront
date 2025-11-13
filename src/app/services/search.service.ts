@@ -53,6 +53,8 @@ export interface Provider {
   live_location?: ProviderLiveLocation | null;
   primary_location?: ProviderPrimaryLocation | null;
   distance_km?: number | null;
+  is_pioneer?: boolean;
+  pioneer_unlocked_at?: string | null;
 }
 
 export interface Service {
@@ -88,6 +90,8 @@ export interface Service {
     primary_region?: string | null;
     live_location?: ProviderLiveLocation | null;
     primary_location?: ProviderPrimaryLocation | null;
+      is_pioneer?: boolean;
+      pioneer_unlocked_at?: string | null;
   };
 }
 

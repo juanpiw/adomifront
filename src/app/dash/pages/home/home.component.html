@@ -17,8 +17,27 @@
         >
           <button type="button" class="golden-invite__header" (click)="toggleInviteCard()">
             <div class="golden-invite__heading">
-              <h3>Invitaciones Doradas</h3>
-              <p>Comparte tus invitaciones para desbloquear el estatus <strong>Pionero</strong>.</p>
+              <div class="golden-invite__title-row">
+                <h3>Invitaciones Doradas</h3>
+                <span class="golden-invite__badge" *ngIf="isPioneerUnlocked">
+                  <span class="golden-invite__badge-icon">🛡️</span>
+                  Pionero activo
+                </span>
+                <span
+                  class="golden-invite__info"
+                  [attr.data-tooltip]="pioneerTooltip"
+                  [attr.title]="pioneerTooltip"
+                  aria-hidden="true"
+                >
+                  ?
+                </span>
+              </div>
+              <p *ngIf="!isPioneerUnlocked">Comparte tus invitaciones para desbloquear el estatus <strong>Pionero</strong>.</p>
+              <p *ngIf="isPioneerUnlocked" class="golden-invite__message">
+                ¡Felicidades! Alcanzaste el estatus <strong>Pionero</strong>
+                <ng-container *ngIf="pioneerUnlockedLabel">el {{ pioneerUnlockedLabel }}</ng-container>.
+                Ahora tus servicios aparecen primero a los clientes que exploran Adomi.
+              </p>
             </div>
             <div class="golden-invite__metrics">
               <div class="metric">
@@ -27,11 +46,15 @@
               </div>
               <div class="metric">
                 <span class="label">Verificadas</span>
-                <span class="value">{{ inviteSummary?.counts?.verified || 0 }}</span>
+                <span class="value" [ngClass]="{'value--goal-met': (inviteSummary?.counts?.verified || 0) >= (inviteSummary?.quota || 3)}">
+                  {{ inviteSummary?.counts?.verified || 0 }}
+                </span>
               </div>
               <div class="metric">
                 <span class="label">Meta</span>
-                <span class="value">{{ inviteSummary?.quota || 3 }}</span>
+                <span class="value" [ngClass]="{'value--goal-met': (inviteSummary?.counts?.verified || 0) >= (inviteSummary?.quota || 3)}">
+                  {{ inviteSummary?.quota || 3 }}
+                </span>
               </div>
               <span class="golden-invite__toggle" [class.golden-invite__toggle--open]="inviteCardExpanded">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
