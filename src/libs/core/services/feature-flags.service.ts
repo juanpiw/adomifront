@@ -17,12 +17,19 @@ export class FeatureFlagsService {
 
   hasFeature(feature: FeatureKey): boolean {
     const tier = this.session.getSubscriptionStatus();
-    const allowedTiers = FEATURE_MATRIX[feature];
-    if (!allowedTiers) {
-      return false;
-    }
+    const allowedTiers = FEATURE_MATRIX[feature] ?? [];
     const normalizedTier = tier ?? 'basic';
-    return allowedTiers.includes(normalizedTier);
+    const hasAccess = allowedTiers.includes(normalizedTier);
+
+    console.log('[FEATURE_FLAGS] hasFeature check', {
+      feature,
+      tier,
+      normalizedTier,
+      allowedTiers,
+      hasAccess
+    });
+
+    return hasAccess;
   }
 }
 
