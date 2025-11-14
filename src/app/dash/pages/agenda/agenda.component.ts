@@ -172,6 +172,10 @@ export class DashAgendaComponent implements OnInit {
 
   private currentProviderId: number | null = null;
 
+  // Dashboard derived metrics
+  private newClientsCount = 0;
+  private occupancyRateValue = 85;
+
   // Datos del gráfico
   chartData: { labels: string[]; datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; tension: number; }[] } | null = null;
 
@@ -897,6 +901,22 @@ export class DashAgendaComponent implements OnInit {
       },
       this.occupancyMetric
     ];
+  }
+
+  private get recentClientsMetric() {
+    return {
+      label: 'Nuevos Clientes',
+      value: this.newClientsCount,
+      meta: 'Este mes'
+    };
+  }
+
+  private get occupancyMetric() {
+    return {
+      label: 'Tasa de Ocupación',
+      value: `${this.occupancyRateValue}%`,
+      meta: 'Semana actual'
+    };
   }
 
   private refreshEarnings(month?: string) {

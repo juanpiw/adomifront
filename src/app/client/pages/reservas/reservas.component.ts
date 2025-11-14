@@ -18,11 +18,13 @@ import { AppointmentsService, AppointmentDto } from '../../../services/appointme
 import { PaymentsService } from '../../../services/payments.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { FavoritesService } from '../../../services/favorites.service';
+import { ClientQuotesComponent } from '../quotes/client-quotes.component';
+import { ClientQuoteTabId } from '../../../services/quotes-client.service';
 
 @Component({ 
   selector:'app-c-reservas', 
   standalone:true, 
-  imports:[CommonModule, FormsModule, ReservasTabsComponent, ProximaCitaCardComponent, PendienteCardComponent, ReservaPasadaCardComponent, CanceladaClienteCardComponent, CanceladaProfesionalCardComponent, ReviewModalComponent, ProfileRequiredModalComponent],
+  imports:[CommonModule, FormsModule, ReservasTabsComponent, ProximaCitaCardComponent, PendienteCardComponent, ReservaPasadaCardComponent, CanceladaClienteCardComponent, CanceladaProfesionalCardComponent, ReviewModalComponent, ProfileRequiredModalComponent, ClientQuotesComponent],
   template:`
   <!-- Modal de Perfil Requerido -->
   <app-profile-required-modal 
@@ -107,7 +109,7 @@ import { FavoritesService } from '../../../services/favorites.service';
     </div>
 
     <ui-reservas-tabs 
-      [tabs]="['Próximas','Pasadas','Canceladas','Pagadas/Realizadas']"
+      [tabs]="['Próximas','Pasadas','Canceladas','Pagadas/Realizadas','Mis Cotizaciones']"
       (tabChange)="activeTab = $event" 
       [badges]="tabBadges"></ui-reservas-tabs>
 
@@ -167,6 +169,10 @@ import { FavoritesService } from '../../../services/favorites.service';
         style="margin-bottom:12px;">
       </ui-reserva-pasada-card>
       <p *ngIf="(realizadasList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes citas pagadas/verificadas.</p>
+    </div>
+
+    <div class="content" *ngIf="activeTab === 4">
+      <app-client-quotes (countersChange)="onQuotesCounters($event)"></app-client-quotes>
     </div>
   </section>
 
@@ -317,7 +323,7 @@ export class ClientReservasComponent implements OnInit {
   private clientProfile = inject(ClientProfileService);
 
   activeTab = 0;
-  tabBadges: Array<number | null> = [null, null, null];
+  tabBadges: Array<number | null> = [null, null, null, null, null];
 
   private resolveAvatar(raw?: string | null): string {
     if (!raw || raw.trim() === '') return '/assets/default-avatar.png';
@@ -339,6 +345,8 @@ export class ClientReservasComponent implements OnInit {
   canceladasClienteList: CanceladaClienteData[] = [];
   canceladasProfesionalList: CanceladaProfesionalData[] = [];
   realizadasList: ReservaPasadaData[] = [];
+  quotesCount: number | null = null;
+  private quotesCounters: Record<ClientQuoteTabId, number> | null = null;
   private favoritesSet: Set<number> = new Set<number>();
 
   private appointmentIndex = new Map<number, (AppointmentDto & any)>();
@@ -394,6 +402,19 @@ export class ClientReservasComponent implements OnInit {
 
   get cashCapCurrency(): string {
     return this.clpFormatter.format(this.cashCap);
+  }
+
+  onQuotesCounters(counters: Record<ClientQuoteTabId, number>) {
+    this.quotesCounters = counters;
+    const total = Object.values(counters || {}).reduce((sum, value) => sum + (value || 0), 0);
+    this.quotesCount = total > 0 ? total : null;
+    this.tabBadges = [
+      this.tabBadges[0] ?? null,
+      this.tabBadges[1] ?? null,
+      this.tabBadges[2] ?? null,
+      this.tabBadges[3] ?? null,
+      this.quotesCount
+    ];
   }
 
   ngOnInit(): void {
@@ -654,7 +675,7 @@ export class ClientReservasComponent implements OnInit {
         const pastCount = past.length;
         const cancelledCount = cancelled.length;
         const realizadasCount = realizadasAll.length;
-        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null, realizadasCount || null];
+        this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null, realizadasCount || null, this.quotesCount || null];
       },
       error: (err) => {
         console.error('Error cargando citas del cliente', err);

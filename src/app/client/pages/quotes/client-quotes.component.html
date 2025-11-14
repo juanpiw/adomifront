@@ -1,0 +1,82 @@
+<section class="client-quotes-page">
+  <ui-quotes-header
+    title="Mis Cotizaciones"
+    subtitle="Consulta el estado de tus solicitudes y revisa las propuestas enviadas por los profesionales."
+  ></ui-quotes-header>
+
+  <ui-quotes-tabs
+    [tabs]="tabs()"
+    [activeTabId]="activeTab()"
+    (tabChange)="onTabChange($event)"
+  ></ui-quotes-tabs>
+
+  <div *ngIf="error() as errorMsg" class="client-quotes-page__error" role="alert">
+    {{ errorMsg }}
+  </div>
+
+  <div class="client-quotes-page__layout">
+    <ui-quotes-grid
+      class="client-quotes-page__grid"
+      [quotes]="quotes()"
+      [emptyTitle]="'Sin cotizaciones todavía'"
+      [emptyDescription]="'Cuando solicites una cotización aparecerá aquí para hacer seguimiento.'"
+      (action)="onQuoteAction($event)"
+    ></ui-quotes-grid>
+
+    <aside class="client-quotes-page__detail" aria-live="polite">
+      <ng-container *ngIf="selectedQuote() as quote; else detailPlaceholder">
+        <div class="detail-card">
+          <div class="detail-card__provider">
+            <img
+              class="detail-card__avatar"
+              [src]="quote.provider.avatarUrl || 'https://placehold.co/64x64/0f172a/ffffff?text=' + (quote.provider.name | slice:0:1)"
+              [alt]="quote.provider.name"
+            />
+            <div>
+              <h3>{{ quote.provider.name }}</h3>
+              <p *ngIf="quote.provider.memberSince">
+                En Adomi desde {{ quote.provider.memberSince | date : 'MMMM yyyy' : undefined : 'es-CL' }}
+              </p>
+            </div>
+          </div>
+
+          <p class="detail-card__service">
+            Servicio: <strong>{{ quote.serviceName }}</strong>
+          </p>
+
+          <p class="detail-card__message" *ngIf="quote.message">
+            “{{ quote.message }}”
+          </p>
+
+          <div class="detail-card__proposal" *ngIf="quote.proposal?.amount as proposalAmount">
+            <div>
+              <span>Monto propuesto</span>
+              <strong>{{ proposalAmount | currency: (quote.proposal?.currency || 'CLP'):'symbol-narrow':'1.0-0':'es-CL' }}</strong>
+            </div>
+            <div *ngIf="quote.proposal?.validUntil as validUntil">
+              <span>Válida hasta</span>
+              <strong>{{ validUntil | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
+            </div>
+          </div>
+
+          <div class="detail-card__actions">
+            <button type="button" class="detail-card__btn detail-card__btn--primary" [disabled]="!quote.proposal?.amount">
+              Aceptar y continuar
+            </button>
+            <button type="button" class="detail-card__btn">
+              Conversar con el profesional
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #detailPlaceholder>
+        <div class="detail-placeholder">
+          <h3>Selecciona una cotización</h3>
+          <p>Elige una solicitud para ver la propuesta del profesional y sus próximos pasos.</p>
+        </div>
+      </ng-template>
+    </aside>
+  </div>
+</section>
+

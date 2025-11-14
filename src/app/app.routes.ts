@@ -43,6 +43,7 @@ import { TbkPlanReturnComponent } from './auth/tbk-plan-return/tbk-plan-return.c
 import { PerfilSolicitanteComponent } from './client/pages/perfil-solicitante/perfil-solicitante.component';
 import { DashQuotesComponent } from './dash/pages/quotes/quotes.component';
 import { quotesFeatureGuard } from './dash/pages/quotes/quotes.guard';
+import { ClientQuotesComponent } from './client/pages/quotes/client-quotes.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -56,6 +57,7 @@ export const routes: Routes = [
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
       { path: 'solicitante/:clientId', component: PerfilSolicitanteComponent },
       { path: 'reservas', component: ClientReservasComponent },
+      { path: 'cotizaciones', component: ClientQuotesComponent },
       { path: 'favoritos', component: FavoritosComponent },
       { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
