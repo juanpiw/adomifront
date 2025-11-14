@@ -91,13 +91,18 @@ export class ClientQuotesStore {
       .pipe(finalize(() => this.loadingSig.set(false)))
       .subscribe({
         next: (resp) => {
+          console.log('[CLIENT_QUOTES] Detail response', {
+            id,
+            raw: resp.quote
+          });
           const mapped = this.mapDetailQuote(resp.quote);
           console.log('[CLIENT_QUOTES] Detail loaded', {
             id: mapped.id,
             status: mapped.status,
             amount: mapped.proposal?.amount ?? mapped.amount,
             validUntil: mapped.proposal?.validUntil ?? mapped.validUntil,
-            attachments: mapped.attachments?.length ?? 0
+            attachments: mapped.attachments?.length ?? 0,
+            items: mapped.items?.length ?? 0
           });
           this.selectedQuoteSig.set(mapped);
         },
