@@ -91,7 +91,15 @@ export class ClientQuotesStore {
       .pipe(finalize(() => this.loadingSig.set(false)))
       .subscribe({
         next: (resp) => {
-          this.selectedQuoteSig.set(this.mapDetailQuote(resp.quote));
+          const mapped = this.mapDetailQuote(resp.quote);
+          console.log('[CLIENT_QUOTES] Detail loaded', {
+            id: mapped.id,
+            status: mapped.status,
+            amount: mapped.proposal?.amount ?? mapped.amount,
+            validUntil: mapped.proposal?.validUntil ?? mapped.validUntil,
+            attachments: mapped.attachments?.length ?? 0
+          });
+          this.selectedQuoteSig.set(mapped);
         },
         error: (err) => {
           const message = err?.error?.error || err?.message || 'No pudimos cargar los detalles de la cotización.';

@@ -28,10 +28,10 @@
   </p>
 
   <div class="quote-card__footer">
-    <div *ngIf="quote.amount" class="quote-card__meta">
-      <span class="quote-card__amount">{{ quote.amount | currency: quote.currency || 'CLP':'symbol-narrow':'1.0-0':'es-CL' }}</span>
-      <span *ngIf="quote.validUntil" class="quote-card__validity">
-        Válida hasta {{ quote.validUntil | date : 'dd MMM' : undefined : 'es-CL' }}
+    <div *ngIf="displayAmount as amount" class="quote-card__meta">
+      <span class="quote-card__amount">{{ amount | currency: displayCurrency:'symbol-narrow':'1.0-0':'es-CL' }}</span>
+      <span *ngIf="displayValidUntil as validUntil" class="quote-card__validity">
+        Válida hasta {{ validUntil | date : 'dd MMM' : undefined : 'es-CL' }}
       </span>
     </div>
 

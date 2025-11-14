@@ -13,9 +13,11 @@ import { IconComponent } from '../../../shared-ui/icon/icon.component';
 })
 export class ClientRequestPanelComponent {
   @Input() quote!: Quote;
+  @Input() enableChat = true;
   @Output() chat = new EventEmitter<void>();
 
   onChat(): void {
+    if (!this.enableChat) return;
     this.chat.emit();
   }
 }

@@ -227,17 +227,6 @@
     font-size: 0.8rem;
   }
 
-  &__attachment-action {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #4f46e5;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
   &__attachments-empty {
     margin: 0;
     font-size: 0.85rem;
@@ -372,10 +361,6 @@
 
     &__attachment-meta {
       color: #94a3b8;
-    }
-
-    &__attachment-action {
-      color: #a5b4fc;
     }
 
     &__attachments-empty {

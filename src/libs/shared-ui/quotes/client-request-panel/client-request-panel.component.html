@@ -19,7 +19,12 @@
     <p>{{ quote.message }}</p>
   </div>
 
-  <button type="button" class="request-panel__chat-button" (click)="onChat()">
+  <button
+    *ngIf="enableChat"
+    type="button"
+    class="request-panel__chat-button"
+    (click)="onChat()"
+  >
     <ui-icon name="message" [size]="18"></ui-icon>
     Chatear con el cliente
   </button>

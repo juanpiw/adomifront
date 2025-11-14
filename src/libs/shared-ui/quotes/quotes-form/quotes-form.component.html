@@ -1,7 +1,11 @@
 <div class="quotes-form" *ngIf="quote">
   <section class="quotes-form__request">
     <div class="quotes-form__request-card">
-      <ui-client-request-panel [quote]="quote" (chat)="chat.emit()"></ui-client-request-panel>
+      <ui-client-request-panel
+        [quote]="quote"
+        [enableChat]="false"
+        (chat)="chat.emit()"
+      ></ui-client-request-panel>
 
       <div class="quotes-form__mini-grid">
         <div class="quotes-form__mini-card">
@@ -98,15 +102,6 @@
                 <span *ngIf="attachment.status === 'uploading'">• Subiendo…</span>
               </small>
             </div>
-            <a
-              *ngIf="attachment.status === 'uploaded' && attachment.url"
-              class="quotes-form__attachment-action"
-              [href]="attachment.url"
-              target="_blank"
-              rel="noopener"
-            >
-              Ver
-            </a>
           </div>
         </div>
         <ng-template #noAttachments>

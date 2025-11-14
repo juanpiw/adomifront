@@ -49,12 +49,17 @@
             “{{ quote.message }}”
           </p>
 
-          <div class="detail-card__proposal" *ngIf="quote.proposal?.amount as proposalAmount">
+          <div class="detail-card__proposal" *ngIf="(quote.proposal?.amount ?? quote.amount) as proposalAmount">
             <div>
               <span>Monto propuesto</span>
-              <strong>{{ proposalAmount | currency: (quote.proposal?.currency || 'CLP'):'symbol-narrow':'1.0-0':'es-CL' }}</strong>
+              <strong>
+                {{
+                  proposalAmount
+                    | currency: (quote.proposal?.currency || quote.currency || 'CLP'):'symbol-narrow':'1.0-0':'es-CL'
+                }}
+              </strong>
             </div>
-            <div *ngIf="quote.proposal?.validUntil as validUntil">
+            <div *ngIf="(quote.proposal?.validUntil ?? quote.validUntil) as validUntil">
               <span>Válida hasta</span>
               <strong>{{ validUntil | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
             </div>

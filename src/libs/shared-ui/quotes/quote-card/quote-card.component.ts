@@ -53,6 +53,25 @@ export class QuoteCardComponent {
     const initial = (name || 'P').trim().charAt(0).toUpperCase() || 'P';
     return `https://placehold.co/40x40/1f2937/ffffff?text=${initial}`;
   }
+
+  get displayAmount(): number | null {
+    if (typeof this.quote?.amount === 'number') return this.quote.amount;
+    const proposalAmount = (this.quote as any)?.proposal?.amount;
+    return typeof proposalAmount === 'number' ? proposalAmount : null;
+  }
+
+  get displayCurrency(): string {
+    return (
+      (this.quote?.currency as string | undefined) ||
+      ((this.quote as any)?.proposal?.currency as string | undefined) ||
+      'CLP'
+    );
+  }
+
+  get displayValidUntil(): string | null {
+    if (this.quote?.validUntil) return this.quote.validUntil;
+    return (this.quote as any)?.proposal?.validUntil ?? null;
+  }
 }
 
 
