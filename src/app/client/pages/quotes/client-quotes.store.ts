@@ -71,7 +71,10 @@ export class ClientQuotesStore {
       )
       .subscribe({
         error: (err) => {
-          const message = err?.error?.error || err?.message || 'No pudimos cargar tus cotizaciones.';
+          let message = err?.error?.error || err?.message || 'No pudimos cargar tus cotizaciones.';
+          if (err?.status === 0) {
+            message = 'No pudimos conectar con el servidor de cotizaciones. Revisa tu conexión o intenta nuevamente en unos segundos.';
+          }
           console.error('[CLIENT_QUOTES] Error loading quotes', { tab, error: err });
           this.errorSig.set(message);
         }
