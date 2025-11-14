@@ -8,6 +8,7 @@ import {
   QuotesTabId,
   QuoteProposalPayload
 } from '../../../services/quotes.service';
+import { environment } from '../../../../environments/environment';
 
 type TabDefinition = { id: QuotesTabId; label: string; badge: number };
 
@@ -142,11 +143,12 @@ export class QuotesStore {
   private mapQuoteDto(dto: ProviderQuoteDto): Quote {
     const clientName = dto.client?.name?.trim() || 'Cliente Adomi';
     const serviceName = dto.serviceName?.trim() || 'Solicitud de servicio';
-    const requestedAt = dto.requestedAt || new Date().toISOString();
+    const requestedAt = this.normalizeDate(dto.requestedAt) || new Date().toISOString();
     const message = dto.message?.trim() || null;
     const amount = typeof dto.amount === 'number' ? dto.amount : null;
     const currency = dto.currency || 'CLP';
-    const validUntil = dto.validUntil || null;
+    const validUntil = this.normalizeDate(dto.validUntil);
+    const avatarUrl = this.buildAssetUrl(dto.client?.avatarUrl);
 
     return {
       id: dto.id,
@@ -156,7 +158,7 @@ export class QuotesStore {
       client: {
         id: dto.client?.id ?? dto.id,
         name: clientName,
-        avatarUrl: dto.client?.avatarUrl || null,
+        avatarUrl,
         memberSince: dto.client?.memberSince || null
       },
       message,
@@ -174,6 +176,20 @@ export class QuotesStore {
       return status;
     }
     return status;
+  }
+
+  private normalizeDate(value?: string | null): string | null {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString();
+  }
+
+  private buildAssetUrl(path?: string | null): string | null {
+    if (!path) return null;
+    if (/^https?:\/\//i.test(path)) return path;
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    return `${environment.apiBaseUrl}${normalized}`;
   }
 }
 

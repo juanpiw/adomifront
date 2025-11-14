@@ -7,6 +7,7 @@ import {
   ClientQuoteTabId,
   QuotesClientService
 } from '../../../services/quotes-client.service';
+import { environment } from '../../../../environments/environment';
 
 type ClientTabDefinition = { id: ClientQuoteTabId; label: string; badge: number };
 
@@ -131,22 +132,28 @@ export class ClientQuotesStore {
       city: null,
       country: null
     };
+    const serviceName = summary.serviceName?.trim() || 'Solicitud enviada';
+    const requestedAt = this.normalizeDate(summary.requestedAt) || null;
+    const message = summary.message?.trim() || null;
+    const amount = typeof summary.amount === 'number' ? summary.amount : null;
+    const currency = summary.currency || 'CLP';
+    const validUntil = this.normalizeDate(summary.validUntil);
 
     return {
       id: summary.id,
       status: this.normalizeStatus(summary.status),
-      serviceName: summary.serviceName,
-      requestedAt: summary.requestedAt,
+      serviceName,
+      requestedAt: requestedAt || new Date().toISOString(),
       client: {
         id: provider.id,
         name: provider.name || 'Profesional Adomi',
-        avatarUrl: provider.avatarUrl,
+        avatarUrl: this.buildAssetUrl(provider.avatarUrl),
         memberSince: provider.memberSince
       },
-      message: summary.message,
-      amount: summary.amount ?? undefined,
-      currency: summary.currency ?? undefined,
-      validUntil: summary.validUntil ?? undefined
+      message,
+      amount: amount ?? undefined,
+      currency: currency ?? undefined,
+      validUntil: validUntil ?? undefined
     };
   }
 
@@ -158,6 +165,20 @@ export class ClientQuotesStore {
       return status;
     }
     return status as QuoteStatus;
+  }
+
+  private normalizeDate(value?: string | null): string | null {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString();
+  }
+
+  private buildAssetUrl(path?: string | null): string | null {
+    if (!path) return null;
+    if (/^https?:\/\//i.test(path)) return path;
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    return `${environment.apiBaseUrl}${normalized}`;
   }
 }
 

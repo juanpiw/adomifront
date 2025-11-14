@@ -3,7 +3,7 @@
 
 /* --- Contenedor de la Tarjeta (Frost/Glass) --- */
 .card {
-  width: 100%;
+  width: auto;
   /* max-width removed to allow full width inside parent containers */
   background-color: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(226, 232, 240, 0.8); /* slate-200 */
