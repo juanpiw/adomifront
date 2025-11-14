@@ -47,6 +47,11 @@ export class QuoteCardComponent {
   get showChatCta(): boolean {
     return this.quote?.status === 'new';
   }
+
+  buildAvatarFallback(name?: string | null): string {
+    const initial = (name || 'P').trim().charAt(0).toUpperCase() || 'P';
+    return `https://placehold.co/40x40/1f2937/ffffff?text=${initial}`;
+  }
 }
 
 

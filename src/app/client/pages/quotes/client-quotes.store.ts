@@ -54,10 +54,17 @@ export class ClientQuotesStore {
       .getQuotes(tab)
       .pipe(
         tap((resp) => {
-          console.log('[CLIENT_QUOTES] Loaded quotes', { tab, count: resp.quotes.length, counters: resp.counters });
+          const mapped = resp.quotes.map((quote) => this.mapQuote(quote));
+          console.log('[CLIENT_QUOTES] Loaded quotes', {
+            tab,
+            count: resp.quotes.length,
+            counters: resp.counters,
+            rawSample: resp.quotes.slice(0, 1),
+            mappedSample: mapped.slice(0, 1)
+          });
           this.countersSig.set(resp.counters);
           this.tabsSig.set(this.buildTabs(resp.counters));
-          this.quotesSig.set(resp.quotes.map((quote) => this.mapQuote(quote)));
+          this.quotesSig.set(mapped);
           this.selectedQuoteSig.set(null);
         }),
         finalize(() => this.loadingSig.set(false))
@@ -112,16 +119,25 @@ export class ClientQuotesStore {
   }
 
   private mapQuote(summary: ClientQuoteSummary): Quote {
+    const provider = summary.provider ?? {
+      id: 0,
+      name: 'Profesional Adomi',
+      avatarUrl: null,
+      memberSince: null,
+      city: null,
+      country: null
+    };
+
     return {
       id: summary.id,
       status: this.normalizeStatus(summary.status),
       serviceName: summary.serviceName,
       requestedAt: summary.requestedAt,
       client: {
-        id: summary.provider.id,
-        name: summary.provider.name,
-        avatarUrl: summary.provider.avatarUrl,
-        memberSince: summary.provider.memberSince
+        id: provider.id,
+        name: provider.name || 'Profesional Adomi',
+        avatarUrl: provider.avatarUrl,
+        memberSince: provider.memberSince
       },
       message: summary.message,
       amount: summary.amount ?? undefined,
@@ -131,7 +147,7 @@ export class ClientQuotesStore {
   }
 
   private normalizeStatus(status: ClientQuoteSummary['status']): QuoteStatus {
-    if (status === 'draft') {
+    if (status === 'draft' || !status) {
       return 'new';
     }
     if (status === 'rejected' || status === 'expired') {
