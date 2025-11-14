@@ -54,6 +54,7 @@ export class ClientQuotesStore {
       .getQuotes(tab)
       .pipe(
         tap((resp) => {
+          console.log('[CLIENT_QUOTES] Loaded quotes', { tab, count: resp.quotes.length, counters: resp.counters });
           this.countersSig.set(resp.counters);
           this.tabsSig.set(this.buildTabs(resp.counters));
           this.quotesSig.set(resp.quotes.map((quote) => this.mapQuote(quote)));
@@ -64,6 +65,7 @@ export class ClientQuotesStore {
       .subscribe({
         error: (err) => {
           const message = err?.error?.error || err?.message || 'No pudimos cargar tus cotizaciones.';
+          console.error('[CLIENT_QUOTES] Error loading quotes', { tab, error: err });
           this.errorSig.set(message);
         }
       });
