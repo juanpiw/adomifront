@@ -140,21 +140,29 @@ export class QuotesStore {
   }
 
   private mapQuoteDto(dto: ProviderQuoteDto): Quote {
+    const clientName = dto.client?.name?.trim() || 'Cliente Adomi';
+    const serviceName = dto.serviceName?.trim() || 'Solicitud de servicio';
+    const requestedAt = dto.requestedAt || new Date().toISOString();
+    const message = dto.message?.trim() || null;
+    const amount = typeof dto.amount === 'number' ? dto.amount : null;
+    const currency = dto.currency || 'CLP';
+    const validUntil = dto.validUntil || null;
+
     return {
       id: dto.id,
       status: this.normalizeStatus(dto.status),
-      serviceName: dto.serviceName,
-      requestedAt: dto.requestedAt,
+      serviceName,
+      requestedAt,
       client: {
-        id: dto.client.id,
-        name: dto.client.name,
-        avatarUrl: dto.client.avatarUrl,
-        memberSince: dto.client.memberSince
+        id: dto.client?.id ?? dto.id,
+        name: clientName,
+        avatarUrl: dto.client?.avatarUrl || null,
+        memberSince: dto.client?.memberSince || null
       },
-      message: dto.message,
-      amount: dto.amount ?? undefined,
-      currency: dto.currency ?? undefined,
-      validUntil: dto.validUntil ?? undefined
+      message,
+      amount: amount ?? undefined,
+      currency: currency ?? undefined,
+      validUntil: validUntil ?? undefined
     };
   }
 

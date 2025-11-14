@@ -14,6 +14,7 @@ import { IconComponent } from '../../../shared-ui/icon/icon.component';
 })
 export class QuoteCardComponent {
   @Input() quote!: Quote;
+  @Input() enableChat = true;
   @Output() action = new EventEmitter<QuoteActionEvent>();
 
   onPrimaryAction(): void {
@@ -45,7 +46,7 @@ export class QuoteCardComponent {
   }
 
   get showChatCta(): boolean {
-    return this.quote?.status === 'new';
+    return this.enableChat && this.quote?.status === 'new';
   }
 
   buildAvatarFallback(name?: string | null): string {

@@ -1,12 +1,12 @@
 <article class="quote-card">
   <div class="quote-card__header">
     <div>
-      <h3 class="quote-card__service">{{ quote.serviceName }}</h3>
-      <p class="quote-card__date">
+      <h3 class="quote-card__service">{{ quote.serviceName || 'Cotización' }}</h3>
+      <p class="quote-card__date" *ngIf="quote.requestedAt">
         {{ quote.requestedAt | date : 'd MMMM, y' : undefined : 'es-CL' }}
       </p>
     </div>
-    <ui-quote-status-pill [status]="quote.status"></ui-quote-status-pill>
+    <ui-quote-status-pill [status]="quote.status || 'new'"></ui-quote-status-pill>
   </div>
 
   <div class="quote-card__client">

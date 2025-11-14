@@ -16,6 +16,7 @@ export class QuotesGridComponent {
   @Input() quotes: Quote[] | null = [];
   @Input() emptyTitle = 'Sin cotizaciones aún';
   @Input() emptyDescription = 'Cuando un cliente solicite una cotización aparecerá aquí para que respondas rápido.';
+  @Input() enableChat = true;
   @Output() action = new EventEmitter<QuoteActionEvent>();
 
   trackByQuoteId(_index: number, quote: Quote): string | number {

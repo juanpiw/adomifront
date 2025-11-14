@@ -20,6 +20,7 @@
       [quotes]="quotes()"
       [emptyTitle]="'Sin cotizaciones todavía'"
       [emptyDescription]="'Cuando solicites una cotización aparecerá aquí para hacer seguimiento.'"
+      [enableChat]="false"
       (action)="onQuoteAction($event)"
     ></ui-quotes-grid>
 
@@ -62,9 +63,6 @@
           <div class="detail-card__actions">
             <button type="button" class="detail-card__btn detail-card__btn--primary" [disabled]="!quote.proposal?.amount">
               Aceptar y continuar
-            </button>
-            <button type="button" class="detail-card__btn">
-              Conversar con el profesional
             </button>
           </div>
         </div>

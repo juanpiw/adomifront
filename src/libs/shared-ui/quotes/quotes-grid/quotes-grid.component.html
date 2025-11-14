@@ -2,6 +2,7 @@
   <ui-quote-card
     *ngFor="let quote of quotes; trackBy: trackByQuoteId"
     [quote]="quote"
+    [enableChat]="enableChat"
     (action)="onAction($event)"
   ></ui-quote-card>
 </section>
