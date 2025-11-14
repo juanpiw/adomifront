@@ -22,14 +22,10 @@
     left: 0;
     height: 100vh;
     z-index: 1001; // Mayor z-index que el overlay
-    transform: translateX(-100%);
+    transform: translateX(0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 280px; // Ancho fijo del sidebar
     pointer-events: auto; // Asegurar que sea clickeable
-  }
-  
-  .sidebar:not(.collapsed) {
-    transform: translateX(0);
   }
   
   .sidebar.collapsed {
