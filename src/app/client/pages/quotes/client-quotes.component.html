@@ -49,6 +49,11 @@
             “{{ quote.message }}”
           </p>
 
+          <div class="detail-card__proposal-details" *ngIf="quote.proposal?.details">
+            <h4>Detalle de la propuesta</h4>
+            <p>{{ quote.proposal?.details }}</p>
+          </div>
+
           <div class="detail-card__proposal" *ngIf="(quote.proposal?.amount ?? quote.amount) as proposalAmount">
             <div>
               <span>Monto propuesto</span>
@@ -69,10 +74,10 @@
             <h4>Archivos adjuntos</h4>
             <ul>
               <li *ngFor="let attachment of quote.attachments">
-                <a [href]="attachment.url" target="_blank" rel="noopener">
-                  {{ attachment.name || 'Archivo' }}
+                <a [href]="attachment.url || '#'" target="_blank" rel="noopener">
+                  {{ attachment.name || 'Archivo adjunto' }}
                 </a>
-                <span *ngIf="attachment.size">· {{ attachment.size / 1024 | number : '1.0-1' }} KB</span>
+                <span *ngIf="formatFileSize(attachment.size)">· {{ formatFileSize(attachment.size) }}</span>
               </li>
             </ul>
           </div>
