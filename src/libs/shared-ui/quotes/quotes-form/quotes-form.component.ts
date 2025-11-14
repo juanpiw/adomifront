@@ -41,7 +41,8 @@ interface AttachmentPreview {
   ],
   templateUrl: './quotes-form.component.html',
   styleUrls: ['./quotes-form.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DecimalPipe]
 })
 export class QuotesFormComponent implements OnChanges {
   @Input() quote!: Quote;

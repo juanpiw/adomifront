@@ -91,7 +91,7 @@ export class ClientQuotesStore {
       .pipe(finalize(() => this.loadingSig.set(false)))
       .subscribe({
         next: (resp) => {
-          this.selectedQuoteSig.set(resp.quote);
+          this.selectedQuoteSig.set(this.mapDetailQuote(resp.quote));
         },
         error: (err) => {
           const message = err?.error?.error || err?.message || 'No pudimos cargar los detalles de la cotización.';
@@ -148,7 +148,7 @@ export class ClientQuotesStore {
         id: provider.id,
         name: provider.name || 'Profesional Adomi',
         avatarUrl: this.buildAssetUrl(provider.avatarUrl),
-        memberSince: provider.memberSince
+        memberSince: this.normalizeDate(provider.memberSince)
       },
       message,
       amount: amount ?? undefined,
@@ -179,6 +179,46 @@ export class ClientQuotesStore {
     if (/^https?:\/\//i.test(path)) return path;
     const normalized = path.startsWith('/') ? path : `/${path}`;
     return `${environment.apiBaseUrl}${normalized}`;
+  }
+
+  private mapDetailQuote(detail: ClientQuoteDetailResponse['quote']) {
+    const provider = detail.provider ?? {
+      id: 0,
+      name: 'Profesional Adomi',
+      avatarUrl: null,
+      memberSince: null,
+      city: null,
+      country: null
+    };
+
+    return {
+      ...detail,
+      requestedAt: this.normalizeDate(detail.requestedAt) || detail.requestedAt,
+      provider: {
+        ...provider,
+        avatarUrl: this.buildAssetUrl(provider.avatarUrl),
+        memberSince: this.normalizeDate(provider.memberSince)
+      },
+      proposal: detail.proposal
+        ? {
+            ...detail.proposal,
+            validUntil: this.normalizeDate(detail.proposal.validUntil) || detail.proposal.validUntil
+          }
+        : undefined,
+      attachments: (detail.attachments || []).map((attachment) => ({
+        ...attachment,
+        url: this.buildAssetUrl(attachment.url) || attachment.url
+      })),
+      events: (detail.events || []).map((event) => ({
+        ...event,
+        created_at: this.normalizeDate(event.created_at) || event.created_at
+      })),
+      messages: (detail.messages || []).map((message) => ({
+        ...message,
+        created_at: this.normalizeDate(message.created_at) || message.created_at,
+        read_at: this.normalizeDate(message.read_at) || message.read_at
+      }))
+    };
   }
 }
 
