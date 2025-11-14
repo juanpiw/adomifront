@@ -166,6 +166,84 @@
     color: #1f2937;
   }
 
+  &__attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  &__attachment-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.9rem;
+    background: #f9fafb;
+    transition: border-color 0.2s ease, background 0.2s ease;
+
+    &--uploading {
+      border-style: dashed;
+      border-color: #c4b5fd;
+      background: #f5f3ff;
+    }
+  }
+
+  &__attachment-icon {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.65rem;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: #4f46e5;
+
+    .quotes-form__attachment-pill--uploading & {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+  }
+
+  &__attachment-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__attachment-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__attachment-meta {
+    color: #6b7280;
+    font-size: 0.8rem;
+  }
+
+  &__attachment-action {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4f46e5;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__attachments-empty {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
   &__actions {
     grid-column: 1 / -1;
     display: flex;
@@ -266,6 +344,42 @@
 
     &__attachments-label {
       color: #cbd5f5;
+    }
+
+    &__attachment-pill {
+      border-color: rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.65);
+
+      &--uploading {
+        border-color: rgba(167, 139, 250, 0.65);
+        background: rgba(76, 29, 149, 0.35);
+      }
+    }
+
+    &__attachment-icon {
+      background: rgba(99, 102, 241, 0.15);
+      color: #c4b5fd;
+
+      .quotes-form__attachment-pill--uploading & {
+        background: rgba(167, 139, 250, 0.2);
+        color: #f5d0fe;
+      }
+    }
+
+    &__attachment-name {
+      color: #f8fafc;
+    }
+
+    &__attachment-meta {
+      color: #94a3b8;
+    }
+
+    &__attachment-action {
+      color: #a5b4fc;
+    }
+
+    &__attachments-empty {
+      color: #a5b4fc;
     }
 
     &__actions {

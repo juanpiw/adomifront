@@ -29,6 +29,7 @@ export class DashQuotesComponent implements OnInit {
   quotes = this.store.quotes;
   selectedQuote = this.store.selectedQuote;
   selectedQuoteForForm = this.store.selectedQuoteForForm;
+  selectedQuoteAttachments = this.store.selectedQuoteAttachments;
   loading = this.store.loading;
   error = this.store.error;
 

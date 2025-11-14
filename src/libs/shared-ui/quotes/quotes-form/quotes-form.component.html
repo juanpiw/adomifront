@@ -79,6 +79,39 @@
           description="Arrastra tus documentos o haz clic para seleccionarlos"
           (filesDropped)="onFilesDropped($event)"
         ></ui-dropzone-card>
+        <div class="quotes-form__attachments-list" *ngIf="attachmentPreviews.length; else noAttachments">
+          <div
+            class="quotes-form__attachment-pill"
+            *ngFor="let attachment of attachmentPreviews; trackBy: trackAttachment"
+            [class.quotes-form__attachment-pill--uploading]="attachment.status === 'uploading'"
+          >
+            <div class="quotes-form__attachment-icon">
+              <ui-icon
+                [name]="attachment.status === 'uploading' ? 'cloud-upload' : 'file-text'"
+                [size]="16"
+              ></ui-icon>
+            </div>
+            <div class="quotes-form__attachment-info">
+              <span class="quotes-form__attachment-name">{{ attachment.name }}</span>
+              <small class="quotes-form__attachment-meta">
+                {{ formatFileSize(attachment.size) }}
+                <span *ngIf="attachment.status === 'uploading'">• Subiendo…</span>
+              </small>
+            </div>
+            <a
+              *ngIf="attachment.status === 'uploaded' && attachment.url"
+              class="quotes-form__attachment-action"
+              [href]="attachment.url"
+              target="_blank"
+              rel="noopener"
+            >
+              Ver
+            </a>
+          </div>
+        </div>
+        <ng-template #noAttachments>
+          <p class="quotes-form__attachments-empty">Aún no adjuntas archivos.</p>
+        </ng-template>
       </div>
 
       <footer class="quotes-form__actions">

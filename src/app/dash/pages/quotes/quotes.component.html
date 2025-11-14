@@ -25,6 +25,7 @@
       <ui-quotes-form
         [quote]="selection"
         [loading]="loading()"
+        [attachments]="selectedQuoteAttachments()"
         [proposalDetails]="selectedQuote()?.proposal || null"
         (send)="onSendProposal($event)"
         (saveDraft)="onSaveDraft($event)"

@@ -41,6 +41,9 @@ export class QuotesStore {
     if (!detail) return null;
     return this.mapQuoteDto(detail);
   });
+  readonly selectedQuoteAttachments = computed(
+    () => this.selectedQuoteSig()?.attachments ?? []
+  );
 
   readonly hasQuotes = computed(() => this.quotesSig().length > 0);
 
