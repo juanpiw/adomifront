@@ -2,8 +2,8 @@
   <div class="quote-card__header">
     <div>
       <h3 class="quote-card__service">{{ quote.serviceName || 'Cotización' }}</h3>
-      <p class="quote-card__date" *ngIf="quote.requestedAt">
-        {{ quote.requestedAt | date : 'd MMMM, y' : undefined : 'es-CL' }}
+      <p class="quote-card__date" *ngIf="safeDate(quote.requestedAt) as requestedAtDate">
+        {{ requestedAtDate | date : 'd MMMM, y' : undefined : 'es-CL' }}
       </p>
     </div>
     <ui-quote-status-pill [status]="quote.status || 'new'"></ui-quote-status-pill>
@@ -17,8 +17,8 @@
     />
     <div>
       <div class="quote-card__client-name">{{ quote.client.name || 'Profesional Adomi' }}</div>
-      <div *ngIf="quote.client.memberSince" class="quote-card__client-meta">
-        Cliente desde {{ quote.client.memberSince | date : 'dd MMM yyyy' : undefined : 'es-CL' }}
+      <div *ngIf="safeDate(quote.client.memberSince) as memberSinceDate" class="quote-card__client-meta">
+        Cliente desde {{ memberSinceDate | date : 'dd MMM yyyy' : undefined : 'es-CL' }}
       </div>
     </div>
   </div>
@@ -30,8 +30,8 @@
   <div class="quote-card__footer">
     <div *ngIf="displayAmount as amount" class="quote-card__meta">
       <span class="quote-card__amount">{{ amount | currency: displayCurrency:'symbol-narrow':'1.0-0':'es-CL' }}</span>
-      <span *ngIf="displayValidUntil as validUntil" class="quote-card__validity">
-        Válida hasta {{ validUntil | date : 'dd MMM' : undefined : 'es-CL' }}
+      <span *ngIf="safeDate(displayValidUntil) as validUntilDate" class="quote-card__validity">
+        Válida hasta {{ validUntilDate | date : 'dd MMM' : undefined : 'es-CL' }}
       </span>
     </div>
 

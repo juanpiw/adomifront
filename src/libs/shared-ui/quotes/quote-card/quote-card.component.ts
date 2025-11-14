@@ -72,6 +72,12 @@ export class QuoteCardComponent {
     if (this.quote?.validUntil) return this.quote.validUntil;
     return (this.quote as any)?.proposal?.validUntil ?? null;
   }
+
+  safeDate(value?: string | null): Date | null {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
 }
 
 
