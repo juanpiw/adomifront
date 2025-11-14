@@ -20,6 +20,7 @@ export interface Quote {
   validUntil?: string | null;
   proposal?: QuoteProposalInfo | null;
   attachments?: QuoteAttachment[] | null;
+  items?: QuoteItem[] | null;
 }
 
 export interface QuoteProposalInfo {
@@ -41,6 +42,15 @@ export interface QuoteAttachment {
   size?: number | null;
   type?: string | null;
   url?: string | null;
+}
+
+export interface QuoteItem {
+  id: number | string;
+  title?: string | null;
+  description?: string | null;
+  quantity?: number | null;
+  unitPrice?: number | null;
+  totalPrice?: number | null;
 }
 
 export interface QuoteActionEvent {

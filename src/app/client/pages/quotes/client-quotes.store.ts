@@ -230,6 +230,14 @@ export class ClientQuotesStore {
         ...message,
         created_at: this.normalizeDate(message.created_at) || message.created_at,
         read_at: this.normalizeDate(message.read_at) || message.read_at
+      })),
+      items: (detail.items || []).map((item) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        quantity: item.quantity ?? null,
+        unitPrice: item.unit_price ?? null,
+        totalPrice: item.total_price ?? null
       }))
     };
   }

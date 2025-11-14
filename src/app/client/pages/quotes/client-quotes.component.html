@@ -35,8 +35,8 @@
             />
             <div>
               <h3>{{ quote.provider.name }}</h3>
-              <p *ngIf="quote.provider.memberSince">
-                En Adomi desde {{ quote.provider.memberSince | date : 'MMMM yyyy' : undefined : 'es-CL' }}
+              <p *ngIf="safeDate(quote.provider.memberSince) as memberSinceDate">
+                En Adomi desde {{ memberSinceDate | date : 'MMMM yyyy' : undefined : 'es-CL' }}
               </p>
             </div>
           </div>
@@ -45,28 +45,46 @@
             Servicio: <strong>{{ quote.serviceName }}</strong>
           </p>
 
-          <p class="detail-card__message" *ngIf="quote.message">
+          <div class="detail-card__message" *ngIf="quote.message">
             “{{ quote.message }}”
-          </p>
+          </div>
+
+          <div class="detail-card__proposal" *ngIf="hasProposalAmount(quote) || getProposalValidUntil(quote)">
+            <div>
+              <span>Monto propuesto</span>
+              <strong *ngIf="hasProposalAmount(quote); else pendingAmount">
+                {{ getProposalAmount(quote) | currency: getProposalCurrency(quote):'symbol-narrow':'1.0-0':'es-CL' }}
+              </strong>
+              <ng-template #pendingAmount>
+                <em class="detail-card__muted">El profesional aún no envía un monto.</em>
+              </ng-template>
+            </div>
+            <div *ngIf="safeDate(getProposalValidUntil(quote)) as validUntilDate">
+              <span>Válida hasta</span>
+              <strong>{{ validUntilDate | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
+            </div>
+          </div>
 
           <div class="detail-card__proposal-details" *ngIf="quote.proposal?.details">
             <h4>Detalle de la propuesta</h4>
             <p>{{ quote.proposal?.details }}</p>
           </div>
 
-          <div class="detail-card__proposal" *ngIf="(quote.proposal?.amount ?? quote.amount) as proposalAmount">
-            <div>
-              <span>Monto propuesto</span>
-              <strong>
-                {{
-                  proposalAmount
-                    | currency: (quote.proposal?.currency || quote.currency || 'CLP'):'symbol-narrow':'1.0-0':'es-CL'
-                }}
-              </strong>
-            </div>
-            <div *ngIf="(quote.proposal?.validUntil ?? quote.validUntil) as validUntil">
-              <span>Válida hasta</span>
-              <strong>{{ validUntil | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
+          <div class="detail-card__items" *ngIf="quote.items?.length">
+            <h4>Conceptos incluidos</h4>
+            <div class="detail-card__items-list">
+              <div class="detail-card__item" *ngFor="let item of quote.items">
+                <div>
+                  <strong>{{ item.title || 'Concepto' }}</strong>
+                  <p *ngIf="item.description">{{ item.description }}</p>
+                </div>
+                <div class="detail-card__item-meta">
+                  <span *ngIf="item.quantity">x{{ item.quantity }}</span>
+                  <strong *ngIf="item.totalPrice">
+                    {{ item.totalPrice | currency: getProposalCurrency(quote):'symbol-narrow':'1.0-0':'es-CL' }}
+                  </strong>
+                </div>
+              </div>
             </div>
           </div>
 
