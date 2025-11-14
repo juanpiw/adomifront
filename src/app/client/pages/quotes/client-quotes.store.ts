@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize, tap } from 'rxjs/operators';
-import { Quote, QuoteActionEvent, QuoteStatus } from '../../../../libs/shared-ui/quotes/quotes.models';
+import { Quote, QuoteActionEvent, QuoteStatus, QuoteProvider, QuoteAttachment, QuoteItem } from '../../../../libs/shared-ui/quotes/quotes.models';
 import {
   ClientQuoteDetailResponse,
   ClientQuoteSummary,
@@ -35,7 +35,7 @@ export class ClientQuotesStore {
   private readonly countersSig = signal<Record<ClientQuoteTabId, number>>({ ...DEFAULT_COUNTERS });
   private readonly loadingSig = signal<boolean>(false);
   private readonly errorSig = signal<string | null>(null);
-  private readonly selectedQuoteSig = signal<ClientQuoteDetailResponse['quote'] | null>(null);
+  private readonly selectedQuoteSig = signal<Quote | null>(null);
 
   readonly activeTab = this.activeTabSig.asReadonly();
   readonly tabs = this.tabsSig.asReadonly();
@@ -147,17 +147,22 @@ export class ClientQuotesStore {
     const currency = summary.currency || 'CLP';
     const validUntil = this.normalizeDate(summary.validUntil);
 
+    const providerView: QuoteProvider = {
+      id: provider.id,
+      name: provider.name || 'Profesional Adomi',
+      avatarUrl: this.buildAssetUrl(provider.avatarUrl),
+      memberSince: this.normalizeDate(provider.memberSince),
+      city: provider.city,
+      country: provider.country
+    };
+
     return {
       id: summary.id,
       status: this.normalizeStatus(summary.status),
       serviceName,
       requestedAt: requestedAt || new Date().toISOString(),
-      client: {
-        id: provider.id,
-        name: provider.name || 'Profesional Adomi',
-        avatarUrl: this.buildAssetUrl(provider.avatarUrl),
-        memberSince: this.normalizeDate(provider.memberSince)
-      },
+      client: { ...providerView },
+      provider: providerView,
       message,
       amount: amount ?? undefined,
       currency: currency ?? undefined,
@@ -189,56 +194,40 @@ export class ClientQuotesStore {
     return `${environment.apiBaseUrl}${normalized}`;
   }
 
-  private mapDetailQuote(detail: ClientQuoteDetailResponse['quote']) {
-    const provider = detail.provider ?? {
-      id: 0,
-      name: 'Profesional Adomi',
-      avatarUrl: null,
-      memberSince: null,
-      city: null,
-      country: null
-    };
-
-    const normalizedValidUntil = detail.proposal?.validUntil || detail.validUntil;
+  private mapDetailQuote(detail: ClientQuoteDetailResponse['quote']): Quote {
+    const base = this.mapQuote(detail);
+    const normalizedValidUntil = this.normalizeDate(detail.proposal?.validUntil || detail.validUntil);
 
     return {
-      ...detail,
-      amount: detail.amount ?? detail.proposal?.amount ?? null,
-      currency: detail.currency || detail.proposal?.currency || 'CLP',
-      validUntil: this.normalizeDate(detail.validUntil) || detail.validUntil || null,
-      requestedAt: this.normalizeDate(detail.requestedAt) || detail.requestedAt,
-      provider: {
-        ...provider,
-        avatarUrl: this.buildAssetUrl(provider.avatarUrl),
-        memberSince: this.normalizeDate(provider.memberSince)
-      },
+      ...base,
+      amount: base.amount ?? detail.proposal?.amount ?? null,
+      currency: base.currency || detail.proposal?.currency || 'CLP',
+      validUntil: base.validUntil || normalizedValidUntil || null,
       proposal: detail.proposal
         ? {
-            ...detail.proposal,
-            validUntil: this.normalizeDate(normalizedValidUntil) || normalizedValidUntil
+            amount: detail.proposal.amount ?? null,
+            currency: detail.proposal.currency || base.currency || 'CLP',
+            details: detail.proposal.details ?? null,
+            validUntil: normalizedValidUntil
           }
-        : undefined,
-      attachments: (detail.attachments || []).map((attachment) => ({
-        ...attachment,
-        url: this.buildAssetUrl(attachment.url) || attachment.url
+        : base.proposal ?? undefined,
+      attachments: (detail.attachments || []).map((attachment): QuoteAttachment => ({
+        id: attachment.id,
+        name: attachment.name || null,
+        size: attachment.size ?? null,
+        type: attachment.type ?? null,
+        url: this.buildAssetUrl(attachment.url) || attachment.url || null
       })),
-      events: (detail.events || []).map((event) => ({
-        ...event,
-        created_at: this.normalizeDate(event.created_at) || event.created_at
-      })),
-      messages: (detail.messages || []).map((message) => ({
-        ...message,
-        created_at: this.normalizeDate(message.created_at) || message.created_at,
-        read_at: this.normalizeDate(message.read_at) || message.read_at
-      })),
-      items: (detail.items || []).map((item) => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        quantity: item.quantity ?? null,
-        unitPrice: item.unit_price ?? null,
-        totalPrice: item.total_price ?? null
-      }))
+      items: (detail.items || []).map(
+        (item): QuoteItem => ({
+          id: item.id,
+          title: item.title,
+          description: item.description ?? null,
+          quantity: item.quantity ?? null,
+          unitPrice: item.unit_price ?? null,
+          totalPrice: item.total_price ?? null
+        })
+      )
     };
   }
 }

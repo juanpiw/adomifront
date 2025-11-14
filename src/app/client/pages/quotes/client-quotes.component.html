@@ -30,12 +30,12 @@
           <div class="detail-card__provider">
             <img
               class="detail-card__avatar"
-              [src]="quote.provider.avatarUrl || 'https://placehold.co/64x64/0f172a/ffffff?text=' + (quote.provider.name | slice:0:1)"
-              [alt]="quote.provider.name"
+              [src]="quote.provider?.avatarUrl || providerPlaceholder(quote.provider?.name)"
+              [alt]="quote.provider?.name || 'Profesional Adomi'"
             />
             <div>
-              <h3>{{ quote.provider.name }}</h3>
-              <p *ngIf="safeDate(quote.provider.memberSince) as memberSinceDate">
+              <h3>{{ quote.provider?.name || 'Profesional Adomi' }}</h3>
+              <p *ngIf="safeDate(quote.provider?.memberSince) as memberSinceDate">
                 En Adomi desde {{ memberSinceDate | date : 'MMMM yyyy' : undefined : 'es-CL' }}
               </p>
             </div>

@@ -78,5 +78,10 @@ export class ClientQuotesComponent implements OnInit {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
   }
+
+  providerPlaceholder(name?: string | null): string {
+    const initial = (name || 'P').trim().charAt(0).toUpperCase() || 'P';
+    return `https://placehold.co/64x64/0f172a/ffffff?text=${initial}`;
+  }
 }
 

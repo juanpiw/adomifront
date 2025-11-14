@@ -14,6 +14,7 @@ export interface Quote {
   status: QuoteStatus;
   requestedAt: string;
   client: QuoteClient;
+  provider?: QuoteProvider;
   message?: string | null;
   amount?: number | null;
   currency?: string;
@@ -51,6 +52,15 @@ export interface QuoteItem {
   quantity?: number | null;
   unitPrice?: number | null;
   totalPrice?: number | null;
+}
+
+export interface QuoteProvider {
+  id: number | string;
+  name: string;
+  avatarUrl?: string | null;
+  memberSince?: string | null;
+  city?: string | null;
+  country?: string | null;
 }
 
 export interface QuoteActionEvent {
