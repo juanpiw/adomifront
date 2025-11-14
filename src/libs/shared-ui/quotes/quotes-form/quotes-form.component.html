@@ -16,10 +16,13 @@
           <span>Solicitado</span>
           <strong>{{ quote.requestedAt | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
         </div>
-        <div class="quotes-form__mini-card" *ngIf="quote.amount">
+        <div class="quotes-form__mini-card" *ngIf="quote.amount || quote.proposal?.amount">
           <span>Último monto</span>
           <strong>
-            {{ quote.amount | currency: quote.currency || 'CLP':'symbol-narrow':'1.0-0':'es-CL' }}
+            {{
+              (quote.amount ?? quote.proposal?.amount)
+                | currency: (quote.currency || quote.proposal?.currency || 'CLP'):'symbol-narrow':'1.0-0':'es-CL'
+            }}
           </strong>
         </div>
       </div>

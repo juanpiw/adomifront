@@ -163,9 +163,16 @@ export class QuotesFormComponent implements OnChanges {
   }
 
   private patchFromQuote(quote: Quote): void {
-    if (quote.amount) {
-      this.form.patchValue({ amount: quote.amount }, { emitEvent: false });
-      this.formattedAmount = this.formatCurrency(quote.amount);
+    const normalizedAmount =
+      typeof quote.amount === 'number'
+        ? quote.amount
+        : typeof quote.proposal?.amount === 'number'
+          ? quote.proposal.amount
+          : null;
+
+    if (normalizedAmount !== null) {
+      this.form.patchValue({ amount: normalizedAmount }, { emitEvent: false });
+      this.formattedAmount = this.formatCurrency(normalizedAmount);
     } else {
       this.formattedAmount = '';
     }

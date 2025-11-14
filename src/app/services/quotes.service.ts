@@ -21,6 +21,12 @@ export interface ProviderQuoteDto {
   amount?: number | null;
   currency?: string | null;
   validUntil?: string | null;
+  proposal?: {
+    amount?: number | null;
+    currency?: string | null;
+    details?: string | null;
+    validUntil?: string | null;
+  };
   appointment?: {
     appointmentId: number;
     date: string | null;
@@ -37,12 +43,6 @@ export interface ProviderQuotesResponse {
 export interface ProviderQuoteDetailResponse {
   success: boolean;
   quote: ProviderQuoteDto & {
-    proposal?: {
-      amount?: number | null;
-      currency?: string | null;
-      details?: string | null;
-      validUntil?: string | null;
-    };
     items: Array<{
       id: number;
       title: string;

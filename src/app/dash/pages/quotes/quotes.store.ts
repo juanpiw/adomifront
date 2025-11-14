@@ -148,9 +148,16 @@ export class QuotesStore {
     const serviceName = dto.serviceName?.trim() || 'Solicitud de servicio';
     const requestedAt = this.normalizeDate(dto.requestedAt) || new Date().toISOString();
     const message = dto.message?.trim() || null;
-    const amount = typeof dto.amount === 'number' ? dto.amount : null;
-    const currency = dto.currency || 'CLP';
-    const validUntil = this.normalizeDate(dto.validUntil);
+    const proposalInfo = dto.proposal;
+    const normalizedAmount =
+      typeof dto.amount === 'number'
+        ? dto.amount
+        : typeof proposalInfo?.amount === 'number'
+          ? proposalInfo.amount
+          : null;
+    const currency = proposalInfo?.currency || dto.currency || 'CLP';
+    const normalizedValidUntil =
+      this.normalizeDate(dto.validUntil) || this.normalizeDate(proposalInfo?.validUntil);
     const avatarUrl = this.buildAssetUrl(dto.client?.avatarUrl);
 
     return {
@@ -165,9 +172,17 @@ export class QuotesStore {
         memberSince: dto.client?.memberSince || null
       },
       message,
-      amount: amount ?? undefined,
+      amount: normalizedAmount ?? undefined,
       currency: currency ?? undefined,
-      validUntil: validUntil ?? undefined
+      validUntil: normalizedValidUntil ?? undefined,
+      proposal: proposalInfo
+        ? {
+            amount: typeof proposalInfo.amount === 'number' ? proposalInfo.amount : normalizedAmount,
+            currency: proposalInfo.currency || currency,
+            details: proposalInfo.details ?? null,
+            validUntil: this.normalizeDate(proposalInfo.validUntil) || normalizedValidUntil
+          }
+        : undefined
     };
   }
 
