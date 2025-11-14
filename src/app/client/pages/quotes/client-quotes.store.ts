@@ -101,6 +101,7 @@ export class ClientQuotesStore {
 
   onQuoteAction(event: QuoteActionEvent): void {
     if (!event?.quote) return;
+    console.log('[CLIENT_QUOTES] onQuoteAction', event);
     const quoteId = Number(event.quote.id);
     if (event.action === 'view' || event.action === 'review') {
       if (!Number.isNaN(quoteId)) {
