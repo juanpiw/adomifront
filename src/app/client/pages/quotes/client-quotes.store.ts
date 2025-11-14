@@ -199,8 +199,13 @@ export class ClientQuotesStore {
       country: null
     };
 
+    const normalizedValidUntil = detail.proposal?.validUntil || detail.validUntil;
+
     return {
       ...detail,
+      amount: detail.amount ?? detail.proposal?.amount ?? null,
+      currency: detail.currency || detail.proposal?.currency || 'CLP',
+      validUntil: this.normalizeDate(detail.validUntil) || detail.validUntil || null,
       requestedAt: this.normalizeDate(detail.requestedAt) || detail.requestedAt,
       provider: {
         ...provider,
@@ -210,7 +215,7 @@ export class ClientQuotesStore {
       proposal: detail.proposal
         ? {
             ...detail.proposal,
-            validUntil: this.normalizeDate(detail.proposal.validUntil) || detail.proposal.validUntil
+            validUntil: this.normalizeDate(normalizedValidUntil) || normalizedValidUntil
           }
         : undefined,
       attachments: (detail.attachments || []).map((attachment) => ({
