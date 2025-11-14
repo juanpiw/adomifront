@@ -35,10 +35,13 @@
           <span>$</span>
           <input
             id="amount"
-            type="number"
+            type="text"
             formControlName="amount"
             min="1000"
             placeholder="2.500.000"
+            [value]="formattedAmount"
+            (input)="onAmountInput($event)"
+            inputmode="numeric"
           />
         </div>
         <small *ngIf="form.controls.amount.invalid && form.controls.amount.touched" class="quotes-form__error">
