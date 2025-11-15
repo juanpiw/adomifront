@@ -14,6 +14,7 @@ export interface Quote {
   status: QuoteStatus;
   requestedAt: string;
   requestedTime?: string | null;
+  appointmentId?: number | string | null;
   client: QuoteClient;
   provider?: QuoteProvider;
   message?: string | null;

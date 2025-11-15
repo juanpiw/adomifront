@@ -17,9 +17,29 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Observable, of, firstValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+
+interface PendingQuoteContext {
+  quoteId: string | null;
+  appointmentId?: number | null;
+  clientId?: string | null;
+  clientName?: string | null;
+  serviceName?: string | null;
+  date: string;
+  time?: string | null;
+  message?: string | null;
+  amount?: string | null;
+}
+
+interface QuoteFocusHint {
+  appointmentId?: number | null;
+  time?: string | null;
+  clientName?: string | null;
+  serviceName?: string | null;
+  message?: string | null;
+}
 
 
 @Component({
@@ -50,6 +70,8 @@ export class DashAgendaComponent implements OnInit {
   // Datos del día seleccionado
   selectedDate: Date | null = null;
   dayAppointments: DayAppointment[] = [];
+  private pendingQuoteContext: PendingQuoteContext | null = null;
+  quoteFocusHint: QuoteFocusHint | null = null;
 
   // Datos de configuración de horarios
   timeBlocks: TimeBlock[] = [];
@@ -191,10 +213,15 @@ export class DashAgendaComponent implements OnInit {
         this.setView(viewParam as 'dashboard' | 'calendar' | 'cash' | 'config');
         this.updatingFromQuery = false;
       }
-      const dateParam = params.get('date');
-      const timeParam = params.get('time');
+      const quoteContext = this.buildPendingQuoteContext(params);
+      if (quoteContext) {
+        this.pendingQuoteContext = quoteContext;
+      }
+      const dateParam = quoteContext?.date ?? params.get('date');
+      const timeParam = quoteContext?.time ?? params.get('time');
+      const quoteIdParam = quoteContext?.quoteId ?? params.get('quoteId');
       if (dateParam) {
-        this.focusDateFromQuery(dateParam, timeParam, params.get('quoteId'));
+        this.focusDateFromQuery(dateParam, timeParam, quoteIdParam);
       }
     });
 
@@ -285,6 +312,7 @@ export class DashAgendaComponent implements OnInit {
         const apps = (resp.appointments || []) as (AppointmentDto & { client_name?: string })[];
         this.dayAppointments = apps.map(a => this.mapAppointmentToDay(a as any));
         this.loading = false;
+        this.applyPendingQuoteContext(dateIso);
       },
       error: () => { this.loading = false; }
     });
@@ -969,9 +997,14 @@ export class DashAgendaComponent implements OnInit {
   }
 
   private focusDateFromQuery(dateParam: string, timeParam: string | null, quoteIdParam: string | null) {
-    const parsed = this.parseIsoDate(dateParam);
+    const normalizedDate = this.normalizeDateParam(dateParam);
+    if (!normalizedDate) {
+      console.warn('[AGENDA] Fecha inválida recibida desde cotizaciones', dateParam);
+      return;
+    }
+    const parsed = this.parseIsoDate(normalizedDate);
     if (!parsed) {
-      console.warn('[AGENDA] No se pudo interpretar la fecha recibida desde cotizaciones', dateParam);
+      console.warn('[AGENDA] No se pudo interpretar la fecha recibida desde cotizaciones', normalizedDate);
       return;
     }
     if (this.currentView !== 'calendar') {
@@ -981,10 +1014,28 @@ export class DashAgendaComponent implements OnInit {
     }
     this.selectedDate = parsed;
     this.loadMonth(parsed.getFullYear(), parsed.getMonth() + 1);
-    this.loadDay(dateParam);
+    this.loadDay(normalizedDate);
     if (quoteIdParam) {
-      console.debug('[AGENDA] Navegando desde cotización aceptada', { quoteId: quoteIdParam, dateParam, timeParam });
+      console.debug('[AGENDA] Navegando desde cotización aceptada', { quoteId: quoteIdParam, dateParam: normalizedDate, timeParam });
     }
+  }
+
+  private applyPendingQuoteContext(dateIso: string) {
+    if (!this.pendingQuoteContext || this.pendingQuoteContext.date !== dateIso) {
+      return;
+    }
+    this.quoteFocusHint = {
+      appointmentId: this.pendingQuoteContext.appointmentId ?? null,
+      time: this.pendingQuoteContext.time ?? null,
+      clientName: this.pendingQuoteContext.clientName ?? null,
+      serviceName: this.pendingQuoteContext.serviceName ?? null,
+      message: this.pendingQuoteContext.message ?? null
+    };
+    this.pendingQuoteContext = null;
+  }
+
+  onQuoteFocusHandled(): void {
+    this.quoteFocusHint = null;
   }
 
   private parseIsoDate(raw: string): Date | null {
@@ -995,8 +1046,60 @@ export class DashAgendaComponent implements OnInit {
     return Number.isNaN(fallback.getTime()) ? null : fallback;
   }
 
+  private buildPendingQuoteContext(params: ParamMap): PendingQuoteContext | null {
+    const normalizedDate = this.normalizeDateParam(params.get('date'));
+    if (!normalizedDate) return null;
+    return {
+      quoteId: params.get('quoteId'),
+      appointmentId: this.normalizeNumberParam(params.get('appointmentId')),
+      clientId: params.get('clientId'),
+      clientName: params.get('clientName'),
+      serviceName: params.get('service'),
+      amount: params.get('amount'),
+      message: params.get('message'),
+      date: normalizedDate,
+      time: this.normalizeTimeParam(params.get('time'))
+    };
+  }
+
+  private normalizeDateParam(raw: string | null): string | null {
+    if (!raw) return null;
+    const trimmed = raw.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private normalizeTimeParam(raw: string | null): string | null {
+    if (!raw) return null;
+    const trimmed = raw.trim();
+    if (/^\d{2}:\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+    if (/^\d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+      return trimmed.slice(0, 5);
+    }
+    return null;
+  }
+
+  private normalizeNumberParam(raw: string | null): number | null {
+    if (!raw) return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
   // Event handlers del calendario
   onDateSelected(date: Date) {
+    this.quoteFocusHint = null;
+    this.pendingQuoteContext = null;
     this.selectedDate = date;
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');

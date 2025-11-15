@@ -227,6 +227,7 @@ export class ClientQuotesStore {
       status: this.normalizeStatus(summary.status),
       serviceName,
       requestedAt: requestedAt || new Date().toISOString(),
+      appointmentId: summary.appointment?.appointmentId ?? null,
       client: { ...providerView },
       provider: providerView,
       message,

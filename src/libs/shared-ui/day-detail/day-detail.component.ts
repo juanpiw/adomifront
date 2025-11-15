@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalAgendarCitaComponent, NuevaCitaData, BloqueoData } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
 
@@ -30,6 +30,14 @@ export interface DayAppointment {
   canReviewClient?: boolean;
 }
 
+type QuoteFocusHintInput = {
+  appointmentId?: string | number | null;
+  time?: string | null;
+  clientName?: string | null;
+  serviceName?: string | null;
+  message?: string | null;
+};
+
 @Component({
   selector: 'app-day-detail',
   standalone: true,
@@ -37,11 +45,12 @@ export interface DayAppointment {
   templateUrl: './day-detail.component.html',
   styleUrls: ['./day-detail.component.scss']
 })
-export class DayDetailComponent {
+export class DayDetailComponent implements OnChanges {
   @Input() selectedDate: Date | null = null;
   @Input() appointments: DayAppointment[] = [];
   @Input() professionalName: string = 'Nombre (Título)';
   @Input() loading: boolean = false;
+  @Input() quoteFocusHint: QuoteFocusHintInput | null = null;
   readonly fallbackAvatar = 'assets/default-avatar.png';
 
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
@@ -56,8 +65,18 @@ export class DayDetailComponent {
   @Output() updateLocation = new EventEmitter<DayAppointment>();
   @Output() viewClientProfile = new EventEmitter<DayAppointment>();
   @Output() reviewClient = new EventEmitter<DayAppointment>();
+  @Output() quoteFocusHandled = new EventEmitter<void>();
 
   isModalOpen: boolean = false;
+  quoteFocusBanner: QuoteFocusHintInput | null = null;
+  private highlightedAppointmentId: string | null = null;
+  private highlightedTime: string | null = null;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['quoteFocusHint']) {
+      this.applyQuoteFocusHint(changes['quoteFocusHint'].currentValue as QuoteFocusHintInput | null);
+    }
+  }
 
   get hasAppointments(): boolean {
     return this.appointments.length > 0;
@@ -165,6 +184,37 @@ export class DayDetailComponent {
   onClientReviewClick(event: Event, appointment: DayAppointment) {
     event.stopPropagation();
     this.reviewClient.emit(appointment);
+  }
+
+  private applyQuoteFocusHint(hint: QuoteFocusHintInput | null): void {
+    if (!hint) {
+      this.quoteFocusBanner = null;
+      this.highlightedAppointmentId = null;
+      this.highlightedTime = null;
+      return;
+    }
+    this.quoteFocusBanner = hint;
+    this.highlightedAppointmentId = hint.appointmentId !== undefined && hint.appointmentId !== null
+      ? String(hint.appointmentId)
+      : null;
+    this.highlightedTime = hint.time || null;
+    this.quoteFocusHandled.emit();
+  }
+
+  dismissQuoteFocus(): void {
+    this.quoteFocusBanner = null;
+    this.highlightedAppointmentId = null;
+    this.highlightedTime = null;
+  }
+
+  isHighlighted(appointment: DayAppointment): boolean {
+    if (this.highlightedAppointmentId) {
+      return String(appointment.id) === this.highlightedAppointmentId;
+    }
+    if (this.highlightedTime) {
+      return appointment.time?.startsWith(this.highlightedTime);
+    }
+    return false;
   }
 
   onNewAppointment() {

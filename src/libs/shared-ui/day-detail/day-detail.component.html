@@ -8,6 +8,22 @@
     </div>
   </div>
 
+  <div class="day-detail__banner" *ngIf="quoteFocusBanner">
+    <div>
+      <strong>{{ quoteFocusBanner.serviceName || 'Cita desde cotización' }}</strong>
+      <p class="day-detail__banner-meta">
+        {{ quoteFocusBanner.clientName || 'Cliente' }}
+        <span *ngIf="quoteFocusBanner.time">• {{ quoteFocusBanner.time }}</span>
+      </p>
+      <p *ngIf="quoteFocusBanner.message" class="day-detail__banner-message">
+        “{{ quoteFocusBanner.message }}”
+      </p>
+    </div>
+    <button type="button" class="day-detail__banner-close" (click)="dismissQuoteFocus()" aria-label="Cerrar recordatorio">
+      ✕
+    </button>
+  </div>
+
   <div class="day-detail__list">
     <!-- Estado vacío -->
     <div *ngIf="!hasAppointments && !loading" class="day-detail__empty">
@@ -27,6 +43,7 @@
         *ngFor="let appointment of sortedAppointments; trackBy: trackByAppointmentId"
         class="day-detail__appointment"
         [class.day-detail__appointment--cancelled]="appointment.status === 'cancelled'"
+        [class.day-detail__appointment--highlight]="isHighlighted(appointment)"
         (click)="onAppointmentClick(appointment)">
         
         <div class="day-detail__appointment-header">

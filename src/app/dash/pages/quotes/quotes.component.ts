@@ -75,39 +75,93 @@ export class DashQuotesComponent implements OnInit {
       quoteId: String(quote.id),
       view: 'calendar'
     };
+    const normalizedDate = this.extractQuoteDate(quote);
+    if (normalizedDate) {
+      queryParams['date'] = normalizedDate;
+    }
+    const normalizedTime = this.extractQuoteTime(quote);
+    if (normalizedTime) {
+      queryParams['time'] = normalizedTime;
+    }
+    if (quote.appointmentId !== undefined && quote.appointmentId !== null) {
+      queryParams['appointmentId'] = String(quote.appointmentId);
+    }
     if (quote.client?.id) {
       queryParams['clientId'] = String(quote.client.id);
+    }
+    if (quote.client?.name) {
+      queryParams['clientName'] = quote.client.name;
     }
     if (quote.serviceName) {
       queryParams['service'] = quote.serviceName;
     }
-    if (quote.amount ?? quote.proposal?.amount) {
-      const amountValue = quote.amount ?? quote.proposal?.amount;
-      if (typeof amountValue === 'number') {
-        queryParams['amount'] = String(amountValue);
-      }
-    }
-    const requestedDate = quote.appointmentDate || quote.requestedAt;
-    if (requestedDate) {
-      const parsed = new Date(requestedDate);
-      if (!Number.isNaN(parsed.getTime())) {
-        queryParams['date'] = `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
-        queryParams['time'] = `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
-      }
-    }
-    if (quote.appointmentTime) {
-      queryParams['time'] = quote.appointmentTime.slice(0, 5);
-    }
-    if (quote.appointmentDate) {
-      queryParams['date'] = quote.appointmentDate;
+    const normalizedAmount = this.extractQuoteAmount(quote);
+    if (normalizedAmount) {
+      queryParams['amount'] = normalizedAmount;
     }
     if (quote.message) {
       queryParams['message'] = quote.message;
     }
-    if (quote.requestedAt) {
-      queryParams['requestedAt'] = quote.requestedAt;
-    }
     this.router.navigate(['/dash/agenda'], { queryParams });
+  }
+
+  private extractQuoteDate(quote: Quote): string | null {
+    const candidates = [quote.appointmentDate, quote.requestedAt];
+    for (const value of candidates) {
+      const normalized = this.normalizeDateOnly(value);
+      if (normalized) return normalized;
+    }
+    return null;
+  }
+
+  private normalizeDateOnly(value?: string | null): string | null {
+    if (!value) return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private extractQuoteTime(quote: Quote): string | null {
+    const candidates = [quote.appointmentTime, quote.requestedTime];
+    for (const value of candidates) {
+      const normalized = this.normalizeTime(value);
+      if (normalized) return normalized;
+    }
+    if (quote.requestedAt) {
+      const parsed = new Date(quote.requestedAt);
+      if (!Number.isNaN(parsed.getTime())) {
+        return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
+      }
+    }
+    return null;
+  }
+
+  private normalizeTime(value?: string | null): string | null {
+    if (!value) return null;
+    const trimmed = value.trim();
+    if (/^\d{2}:\d{2}$/.test(trimmed)) return trimmed;
+    if (/^\d{2}:\d{2}:\d{2}$/.test(trimmed)) return trimmed.slice(0, 5);
+    const parsed = new Date(`1970-01-01T${trimmed}`);
+    if (!Number.isNaN(parsed.getTime())) {
+      return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
+    }
+    return null;
+  }
+
+  private extractQuoteAmount(quote: Quote): string | null {
+    const amountValue = typeof quote.amount === 'number'
+      ? quote.amount
+      : typeof quote.proposal?.amount === 'number'
+        ? quote.proposal.amount
+        : null;
+    if (amountValue === null) return null;
+    return String(Math.round(amountValue));
   }
 }
 

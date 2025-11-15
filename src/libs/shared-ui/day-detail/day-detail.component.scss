@@ -17,6 +17,40 @@
     margin-bottom: 1rem;
   }
 
+  &__banner {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    margin: 0 0.75rem 1rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid #c7d2fe;
+    background: #eef2ff;
+    color: #312e81;
+  }
+
+  &__banner-meta {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #4338ca;
+  }
+
+  &__banner-message {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #4c1d95;
+  }
+
+  &__banner-close {
+    border: none;
+    background: transparent;
+    color: #312e81;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    align-self: flex-start;
+  }
+
   &__day {
     font-size: 1.875rem;
     font-weight: 800;
@@ -116,6 +150,11 @@
     &--cancelled {
       opacity: 0.6;
       background: #f9fafb;
+    }
+
+    &--highlight {
+      border-color: #4338ca;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
     }
   }
 

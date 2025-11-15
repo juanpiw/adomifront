@@ -168,6 +168,7 @@ export class QuotesStore {
       serviceName,
       requestedAt,
       requestedTime,
+      appointmentId: dto.appointment?.appointmentId ?? null,
       client: {
         id: dto.client?.id ?? dto.id,
         name: clientName,
