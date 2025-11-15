@@ -53,6 +53,7 @@ export class QuotesFormComponent implements OnChanges {
   @Output() saveDraft = new EventEmitter<QuoteProposal>();
   @Output() chat = new EventEmitter<void>();
   @Output() filesDropped = new EventEmitter<File[]>();
+  @Output() manageAppointment = new EventEmitter<Quote>();
 
   validityOptions = ['10 días', '15 días', '30 días'];
 
@@ -78,6 +79,10 @@ export class QuotesFormComponent implements OnChanges {
         this.formattedAmount = '';
       }
     });
+  }
+
+  get canManageAppointment(): boolean {
+    return this.quote?.status === 'accepted';
   }
 
   ngOnChanges(changes: SimpleChanges): void {

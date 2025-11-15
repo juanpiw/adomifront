@@ -26,6 +26,16 @@
           </strong>
         </div>
       </div>
+
+      <div class="quotes-form__accepted-banner" *ngIf="canManageAppointment">
+        <div class="quotes-form__accepted-info">
+          <strong>Cotización aceptada</strong>
+          <p>Agenda la cita para coordinar fecha y dejarla como confirmada en tu calendario.</p>
+        </div>
+        <button type="button" class="btn btn-manage" (click)="manageAppointment.emit(quote)">
+          Gestionar cita
+        </button>
+      </div>
     </div>
   </section>
 

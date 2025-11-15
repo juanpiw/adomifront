@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { QuotesHeaderComponent, QuotesTabsComponent, QuotesGridComponent, QuotesFormComponent } from '../../../../libs/shared-ui/quotes';
-import { QuoteActionEvent } from '../../../../libs/shared-ui/quotes/quotes.models';
+import { Quote, QuoteActionEvent } from '../../../../libs/shared-ui/quotes/quotes.models';
 import { QuoteProposal } from '../../../../libs/shared-ui/quotes/quotes-form/quotes-form.component';
 import { QuotesStore } from './quotes.store';
 import { QuotesTabId } from '../../../services/quotes.service';
@@ -23,6 +24,7 @@ import { QuotesTabId } from '../../../services/quotes.service';
 })
 export class DashQuotesComponent implements OnInit {
   private store = inject(QuotesStore);
+  private router = inject(Router);
 
   tabs = this.store.tabs;
   activeTab = this.store.activeTab;
@@ -65,6 +67,23 @@ export class DashQuotesComponent implements OnInit {
     const selection = this.selectedQuote();
     if (!selection || !files?.length) return;
     files.forEach((file) => this.store.uploadAttachment(Number(selection.id), file));
+  }
+
+  onManageAppointment(quote: Quote): void {
+    if (!quote) return;
+    const queryParams: Record<string, string> = {
+      quoteId: String(quote.id)
+    };
+    if (quote.client?.id) {
+      queryParams['clientId'] = String(quote.client.id);
+    }
+    if (quote.serviceName) {
+      queryParams['service'] = quote.serviceName;
+    }
+    if (quote.requestedAt) {
+      queryParams['requestedAt'] = quote.requestedAt;
+    }
+    this.router.navigate(['/dash/agenda'], { queryParams });
   }
 }
 
