@@ -269,6 +269,11 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('[DASH_HOME] Error cargando ingresos del mes:', error);
         this.ingresosData = this.buildFallbackEarnings(this.ingresosData);
+        this.releaseSummary = {
+          pending: '$0',
+          releasable: '$0',
+          released: '$0'
+        };
       }
     });
 
@@ -289,6 +294,11 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   private buildMonthlyEarnings(summary: ProviderEarningsSummary): IngresosData {
     const chart = this.mapSummaryToChart(summary);
+    this.releaseSummary = {
+      pending: this.formatCurrencyCLP(summary.pending || 0),
+      releasable: this.formatCurrencyCLP(summary.releasable || 0),
+      released: this.formatCurrencyCLP(summary.released || 0)
+    };
     return {
       amount: this.formatCurrencyCLP(summary.releasable || 0),
       completedAppointments: summary.paidCount || 0,
@@ -428,6 +438,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     averageRating: 4.8,
     chartData: [],
     chartLabels: []
+  };
+
+  releaseSummary = {
+    pending: '$0',
+    releasable: '$0',
+    released: '$0'
   };
 
   // Datos para solicitudes (ahora será un array)

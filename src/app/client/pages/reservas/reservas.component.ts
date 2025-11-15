@@ -123,6 +123,8 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
           (reprogramar)="onRequestReschedule($event)"
           (contactar)="onContactar(p.appointmentId)"
           (cancelar)="openCancelModal($event)"
+          (finalizarServicio)="openFinalizeModal($event)"
+          (reportarProblema)="openReportModal($event)"
           style="margin-bottom:12px;">
         </ui-proxima-cita-card>
       </ng-container>
@@ -239,6 +241,54 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
       <button class="cancel-modal__btn cancel-modal__btn--danger" (click)="confirmCancel()" [disabled]="cancelModalLoading">
         <span *ngIf="!cancelModalLoading">Cancelar cita</span>
         <span *ngIf="cancelModalLoading">Cancelando...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal finalizar servicio -->
+  <div *ngIf="finalizeModal.open" class="cancel-modal__backdrop" (click)="closeFinalizeModal()"></div>
+  <div *ngIf="finalizeModal.open" class="cancel-modal__container">
+    <div class="cancel-modal__header">
+      <h4>Confirmar que el servicio se completó</h4>
+      <button class="cancel-modal__close" (click)="closeFinalizeModal()">✕</button>
+    </div>
+    <div class="cancel-modal__body">
+      <p class="cancel-modal__warning">
+        Al confirmar, liberaremos el pago retenido al profesional. Usa esta opción solo si el servicio se realizó correctamente.
+      </p>
+      <div *ngIf="finalizeModal.error" class="cancel-modal__error">{{ finalizeModal.error }}</div>
+    </div>
+    <div class="cancel-modal__actions">
+      <button class="cancel-modal__btn" (click)="closeFinalizeModal()" [disabled]="finalizeModal.submitting">Cancelar</button>
+      <button class="cancel-modal__btn cancel-modal__btn--danger" (click)="confirmFinalizeService()" [disabled]="finalizeModal.submitting">
+        <span *ngIf="!finalizeModal.submitting">Confirmar servicio</span>
+        <span *ngIf="finalizeModal.submitting">Procesando...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal reporte de no-show -->
+  <div *ngIf="reportModal.open" class="cancel-modal__backdrop" (click)="closeReportModal()"></div>
+  <div *ngIf="reportModal.open" class="cancel-modal__container">
+    <div class="cancel-modal__header">
+      <h4>Reportar problema / No-Show</h4>
+      <button class="cancel-modal__close" (click)="closeReportModal()">✕</button>
+    </div>
+    <div class="cancel-modal__body">
+      <p class="cancel-modal__warning">
+        Cuéntanos qué ocurrió. Notificaremos al equipo de soporte antes de liberar el pago.
+      </p>
+      <label class="cancel-modal__label">Descripción</label>
+      <textarea [(ngModel)]="reportModal.reason" class="cancel-modal__textarea" rows="4" placeholder="Ej: El profesional no llegó al lugar acordado."></textarea>
+      <label class="cancel-modal__label" style="margin-top:12px;">Enlaces o evidencia (opcional)</label>
+      <textarea [(ngModel)]="reportModal.evidenceText" class="cancel-modal__textarea" rows="3" placeholder="URL de fotos, drive, etc. Separa por coma o salto de línea."></textarea>
+      <div *ngIf="reportModal.error" class="cancel-modal__error">{{ reportModal.error }}</div>
+    </div>
+    <div class="cancel-modal__actions">
+      <button class="cancel-modal__btn" (click)="closeReportModal()" [disabled]="reportModal.submitting">Cerrar</button>
+      <button class="cancel-modal__btn cancel-modal__btn--danger" (click)="submitReport()" [disabled]="reportModal.submitting">
+        <span *ngIf="!reportModal.submitting">Enviar reporte</span>
+        <span *ngIf="reportModal.submitting">Enviando...</span>
       </button>
     </div>
   </div>
@@ -391,6 +441,20 @@ export class ClientReservasComponent implements OnInit {
   cashCap = 150000;
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   payModalLoading = false;
+  finalizeModal = {
+    open: false,
+    appointmentId: null as number | null,
+    submitting: false,
+    error: ''
+  };
+  reportModal = {
+    open: false,
+    appointmentId: null as number | null,
+    reason: '',
+    evidenceText: '',
+    submitting: false,
+    error: ''
+  };
 
   // Cancel modal state
   showCancelModal = false;
@@ -536,7 +600,7 @@ export class ClientReservasComponent implements OnInit {
             if (typeof (a as any).provider_id === 'number') {
               this._providerByApptId[a.id] = Number((a as any).provider_id);
             }
-            const rawPayment = String((a as any).payment_status || '')
+            const rawPayment = String((a as any).payment_status || '').toLowerCase();
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}, rawPrice=${JSON.stringify(a.price)}`);
             const limitReached = Number(a.client_reschedule_count || 0) >= 1;
@@ -553,9 +617,18 @@ export class ClientReservasComponent implements OnInit {
               }
             }
 
+            const paymentPreference = ((a as any).payment_method || null) as 'card'|'cash'|null;
+            const serviceCompletionState = String((a as any).service_completion_state || 'none') as ProximaCitaData['serviceCompletionState'];
+            const disputePending = String(a.status) === 'dispute_pending' || serviceCompletionState === 'dispute_pending';
+            const canFinalize = paymentPreference === 'card' && isPaid && !disputePending && serviceCompletionState === 'none';
+            const canReport = paymentPreference === 'card' && isPaid && !disputePending;
+            const subtitle = disputePending
+              ? 'En revisión'
+              : (isPaid ? 'Cita pagada' : 'Confirmada (Esperando pago)');
+
             const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
-              subtitulo: isPaid ? 'CITA PAGADA' : 'Confirmada (Esperando pago)',
+              subtitulo: subtitle,
               fecha: this.formatDate(a.date),
               hora: this.formatTime(a.start_time),
               diasRestantes: this.daysFromToday(a.date),
@@ -563,12 +636,17 @@ export class ClientReservasComponent implements OnInit {
               appointmentId: a.id,
               successHighlight: isPaid,
               precio: Number(a.price || 30000), // Valor por defecto para testing
-              paymentPreference: (a as any).payment_method || null,
+              paymentPreference,
               verification_code: (a as any).verification_code || undefined,
               cashCap: this.cashCap,
               cashCapLabel: this.cashCapCurrency,
               allowReprogram,
-              reprogramDisabledReason
+              reprogramDisabledReason,
+              serviceCompletionState,
+              disputePending,
+              canFinalize,
+              canReport,
+              paymentStatus: rawPayment as any
             };
 
             if (isPaid) {
@@ -583,9 +661,7 @@ export class ClientReservasComponent implements OnInit {
               console.log('[RESERVAS][TRACE] isPaid=true; verification code requested for appointment', a.id);
             }
             return card;
-          })
-          // Quitar de Próximas si ya está pagada (queda visible en Pagadas/Realizadas)
-          .filter(c => !c.successHighlight);
+          });
 
         // Todas las próximas pendientes
         this.pendientesList = upcoming
@@ -636,9 +712,13 @@ export class ClientReservasComponent implements OnInit {
           });
 
         // Pagadas/Realizadas: incluir completadas o pagadas
-        const isPaidStatus = (s: any) => ['paid','succeeded','completed'].includes(String(s || ''));
+        const isPaidStatus = (s: any) => ['paid','succeeded','completed'].includes(String(s || '').toLowerCase());
         const realizadasAll = list
-          .filter(r => r.status === 'completed' || isPaidStatus((r as any).payment_status))
+          .filter(r => {
+            if (r.status === 'completed') return true;
+            const completionState = String((r as any).service_completion_state || 'none');
+            return ['client_confirmed','auto_completed','completed_refunded'].includes(completionState);
+          })
           .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
 
         this.realizadasList = realizadasAll.map(r => ({
@@ -764,6 +844,14 @@ export class ClientReservasComponent implements OnInit {
     ));
   }
 
+  private parseEvidenceInput(value: string): string[] {
+    if (!value) return [];
+    return value
+      .split(/[\n,]/g)
+      .map(v => v.trim())
+      .filter(Boolean);
+  }
+
   onPagar(appointmentId: number) {
     this.payModalApptId = appointmentId || null;
     this.showPayMethodModal = true;
@@ -792,6 +880,100 @@ export class ClientReservasComponent implements OnInit {
     this.cancelModalAppointmentId = null;
     this.cancelModalLoading = false;
     this.cancelModalError = null;
+  }
+
+  openFinalizeModal(appointmentId?: number | null) {
+    if (!appointmentId) return;
+    this.finalizeModal = {
+      open: true,
+      appointmentId: Number(appointmentId),
+      submitting: false,
+      error: ''
+    };
+  }
+
+  closeFinalizeModal() {
+    this.finalizeModal = {
+      open: false,
+      appointmentId: null,
+      submitting: false,
+      error: ''
+    };
+  }
+
+  confirmFinalizeService(): void {
+    if (!this.finalizeModal.appointmentId || this.finalizeModal.submitting) return;
+    this.finalizeModal.submitting = true;
+    this.finalizeModal.error = '';
+    this.appointments.completeService(this.finalizeModal.appointmentId).subscribe({
+      next: () => {
+        this.notifications.createNotification({
+          type: 'appointment',
+          title: 'Servicio confirmado',
+          message: 'Gracias por confirmar. El pago se liberará al profesional.',
+          priority: 'low',
+          actions: []
+        });
+        this.closeFinalizeModal();
+        this.loadAppointments();
+      },
+      error: (err) => {
+        this.finalizeModal.submitting = false;
+        this.finalizeModal.error = err?.error?.error || 'No pudimos confirmar el servicio. Intenta nuevamente.';
+      }
+    });
+  }
+
+  openReportModal(appointmentId?: number | null): void {
+    if (!appointmentId) return;
+    this.reportModal = {
+      open: true,
+      appointmentId: Number(appointmentId),
+      reason: '',
+      evidenceText: '',
+      submitting: false,
+      error: ''
+    };
+  }
+
+  closeReportModal(): void {
+    this.reportModal = {
+      open: false,
+      appointmentId: null,
+      reason: '',
+      evidenceText: '',
+      submitting: false,
+      error: ''
+    };
+  }
+
+  submitReport(): void {
+    if (!this.reportModal.appointmentId || this.reportModal.submitting) return;
+    const reason = (this.reportModal.reason || '').trim();
+    if (reason.length < 10) {
+      this.reportModal.error = 'Describe el problema con al menos 10 caracteres.';
+      return;
+    }
+    const evidenceUrls = this.parseEvidenceInput(this.reportModal.evidenceText);
+    this.reportModal.submitting = true;
+    this.reportModal.error = '';
+    this.appointments.reportNoShow(this.reportModal.appointmentId, { reason, evidenceUrls }).subscribe({
+      next: () => {
+        this.notifications.createNotification({
+          type: 'system',
+          title: 'Reporte recibido',
+          message: 'Gracias por informarnos. Revisaremos el caso y te avisaremos.',
+          priority: 'medium',
+          actions: []
+        });
+        this.closeReportModal();
+        this.loadAppointments();
+      },
+      error: (err) => {
+        this.reportModal.submitting = false;
+        this.reportModal.error = err?.error?.error || 'No pudimos registrar el reporte. Intenta nuevamente.';
+      }
+    });
   }
 
   onRequestReschedule(appointmentId?: number | null): void {

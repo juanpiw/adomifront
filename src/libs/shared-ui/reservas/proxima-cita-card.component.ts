@@ -21,6 +21,11 @@ export interface ProximaCitaData {
   cashCapLabel?: string;
   allowReprogram?: boolean;
   reprogramDisabledReason?: string;
+  serviceCompletionState?: 'none'|'client_confirmed'|'auto_completed'|'dispute_pending'|'completed_refunded'|null;
+  disputePending?: boolean;
+  canFinalize?: boolean;
+  canReport?: boolean;
+  paymentStatus?: 'pending' | 'paid' | 'refunded' | null;
 }
 
 @Component({
@@ -37,6 +42,8 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   @Output() cancelar = new EventEmitter<number>();
   @Output() pagar = new EventEmitter<number>();
   @Output() pedirDevolucion = new EventEmitter<{ appointmentId: number; reason: string }>();
+  @Output() finalizarServicio = new EventEmitter<number>();
+  @Output() reportarProblema = new EventEmitter<number>();
 
   showRefundArea = false;
   refundReason = '';
@@ -120,6 +127,16 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
       return;
     }
     this.pedirDevolucion.emit({ appointmentId, reason: this.refundReason.trim() });
+  }
+
+  onFinalizarClick(): void {
+    if (!this.data?.appointmentId) return;
+    this.finalizarServicio.emit(this.data.appointmentId);
+  }
+
+  onReportarClick(): void {
+    if (!this.data?.appointmentId) return;
+    this.reportarProblema.emit(this.data.appointmentId);
   }
 }
 

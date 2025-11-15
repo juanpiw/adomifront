@@ -209,6 +209,20 @@
         (viewReportClick)="onViewDayReportClick($event)"
         (navigateToReport)="onNavigateToReport($event)">
       </app-inicio-ingresos-dia>
+      <div class="release-summary">
+        <div class="release-summary__card">
+          <span class="label">Pendiente de liberación</span>
+          <span class="value">{{ releaseSummary.pending }}</span>
+        </div>
+        <div class="release-summary__card">
+          <span class="label">Listo para liberar</span>
+          <span class="value">{{ releaseSummary.releasable }}</span>
+        </div>
+        <div class="release-summary__card">
+          <span class="label">Liberado este mes</span>
+          <span class="value">{{ releaseSummary.released }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -184,6 +184,22 @@ export class AppointmentsService {
     );
   }
 
+  completeService(id: number): Observable<{ success: boolean }>{
+    return this.http.patch<{ success: boolean }>(
+      `${this.api}/appointments/${id}/complete-service`,
+      {},
+      { headers: this.headers() }
+    );
+  }
+
+  reportNoShow(id: number, payload: { reason: string; evidenceUrls?: string[] }): Observable<{ success: boolean }>{
+    return this.http.post<{ success: boolean }>(
+      `${this.api}/appointments/${id}/report-no-show`,
+      payload,
+      { headers: this.headers() }
+    );
+  }
+
   // Time slots
   getTimeSlots(provider_id: number, date: string, service_id: number): Observable<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }>{
     return this.http.get<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }>(
