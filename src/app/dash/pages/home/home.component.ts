@@ -22,7 +22,7 @@ import {
 import { AuthService } from '../../../auth/services/auth.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
 import { AppointmentsService } from '../../../services/appointments.service';
-import { PaymentsService } from '../../../services/payments.service';
+import { PaymentsService, ProviderEarningsSummary } from '../../../services/payments.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../../services/tbk-onboarding.service';
 import { ProviderInviteService, ProviderInvite, ProviderInviteSummary } from '../../../services/provider-invite.service';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
@@ -52,6 +52,13 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   private providerInvites = inject(ProviderInviteService);
   private availabilityService = inject(ProviderAvailabilityService);
   private route = inject(ActivatedRoute);
+  private providerRatingAverage: number | null = null;
+  private readonly clpFormatter = new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
   
   constructor(private router: Router) {}
   
@@ -132,6 +139,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
             userName: name
           };
           console.log('[DASH_HOME] Nombre actualizado desde backend:', name);
+          this.applyProviderRating(profile.rating_average);
         }
       },
       error: (error) => {
@@ -152,6 +160,25 @@ export class DashHomeComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  private applyProviderRating(value?: string | number | null) {
+    if (value === null || value === undefined) return;
+    const parsed =
+      typeof value === 'number'
+        ? value
+        : parseFloat(String(value).replace(',', '.'));
+    if (!Number.isFinite(parsed)) return;
+    const rounded = Math.round(parsed * 10) / 10;
+    this.providerRatingAverage = rounded;
+    this.ingresosData = {
+      ...this.ingresosData,
+      averageRating: rounded
+    };
+    this.ingresosDiaData = {
+      ...this.ingresosDiaData,
+      averageRating: rounded
+    };
   }
 
   private loadPendingRequests() {
@@ -227,49 +254,98 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   private loadEarningsData() {
     console.log('[DASH_HOME] Cargando datos de ingresos...');
-    
-    // Cargar ingresos del mes actual
     const today = new Date();
-    const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-    
-    this.paymentsService.getProviderEarningsSummary(month).subscribe({
+    const monthParam = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    const dayParam = `${monthParam}-${String(today.getDate()).padStart(2, '0')}`;
+
+    this.paymentsService.getProviderEarningsSummary({ month: monthParam }).subscribe({
       next: (response) => {
         console.log('[DASH_HOME] Ingresos del mes recibidos:', response);
         if (response.success && response.summary) {
-          const earnings = response.summary;
-          this.ingresosData = {
-            amount: `$${(earnings.releasable || 0).toLocaleString('es-CL')}`,
-            completedAppointments: earnings.paidCount || 0,
-            averageRating: 4.9, // TODO: obtener rating real
-            chartData: [45, 62, 78, 55, 89, 95, 82] // TODO: datos reales del gráfico
-          };
+          this.ingresosData = this.buildMonthlyEarnings(response.summary);
           console.log('[DASH_HOME] Ingresos del mes mapeados:', this.ingresosData);
         }
       },
       error: (error) => {
         console.error('[DASH_HOME] Error cargando ingresos del mes:', error);
+        this.ingresosData = this.buildFallbackEarnings(this.ingresosData);
       }
     });
 
-    // Cargar ingresos del día actual
-    this.paymentsService.getProviderEarningsSummary().subscribe({
+    this.paymentsService.getProviderEarningsSummary({ day: dayParam }).subscribe({
       next: (response) => {
         console.log('[DASH_HOME] Ingresos del día recibidos:', response);
         if (response.success && response.summary) {
-          const earnings = response.summary;
-          this.ingresosDiaData = {
-            amount: `$${(earnings.releasable || 0).toLocaleString('es-CL')}`,
-            completedAppointments: earnings.paidCount || 0,
-            averageRating: 4.8, // TODO: obtener rating real del día
-            chartData: [8, 12, 15, 18, 25, 22, 20] // TODO: datos reales del gráfico
-          };
+          this.ingresosDiaData = this.buildDailyEarnings(response.summary);
           console.log('[DASH_HOME] Ingresos del día mapeados:', this.ingresosDiaData);
         }
       },
       error: (error) => {
         console.error('[DASH_HOME] Error cargando ingresos del día:', error);
+        this.ingresosDiaData = this.buildFallbackEarnings(this.ingresosDiaData);
       }
     });
+  }
+
+  private buildMonthlyEarnings(summary: ProviderEarningsSummary): IngresosData {
+    const chart = this.mapSummaryToChart(summary);
+    return {
+      amount: this.formatCurrencyCLP(summary.releasable || 0),
+      completedAppointments: summary.paidCount || 0,
+      averageRating: this.providerRatingAverage ?? this.ingresosData.averageRating,
+      chartData: chart.values,
+      chartLabels: chart.labels
+    };
+  }
+
+  private buildDailyEarnings(summary: ProviderEarningsSummary): IngresosDiaData {
+    const chart = this.mapSummaryToChart(summary);
+    return {
+      amount: this.formatCurrencyCLP(summary.releasable || 0),
+      completedAppointments: summary.paidCount || 0,
+      averageRating: this.providerRatingAverage ?? this.ingresosDiaData.averageRating,
+      chartData: chart.values,
+      chartLabels: chart.labels
+    };
+  }
+
+  private mapSummaryToChart(summary: ProviderEarningsSummary): { labels: string[]; values: number[] } {
+    const entries = summary.series || [];
+    if (!entries.length) {
+      return { labels: [], values: [] };
+    }
+    if (summary.scope === 'day') {
+      return {
+        labels: entries.map((point) => point.bucket),
+        values: entries.map((point) => point.total)
+      };
+    }
+    return {
+      labels: entries.map((point) => this.formatChartDayLabel(point.bucket)),
+      values: entries.map((point) => point.total)
+    };
+  }
+
+  private formatChartDayLabel(bucket: string): string {
+    const date = new Date(bucket);
+    if (Number.isNaN(date.getTime())) {
+      return bucket;
+    }
+    return date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+  }
+
+  private formatCurrencyCLP(value: number): string {
+    return this.clpFormatter.format(Math.max(0, Math.round(Number(value) || 0)));
+  }
+
+  private buildFallbackEarnings<T extends IngresosData | IngresosDiaData>(current: T): T {
+    return {
+      ...current,
+      amount: this.formatCurrencyCLP(0),
+      completedAppointments: 0,
+      chartData: [],
+      chartLabels: []
+    };
   }
 
   private checkAvailabilitySetup() {
@@ -338,18 +414,20 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   // Datos para ingresos del mes
   ingresosData: IngresosData = {
-    amount: '$450.000',
-    completedAppointments: 22,
+    amount: '$0',
+    completedAppointments: 0,
     averageRating: 4.9,
-    chartData: [45, 62, 78, 55, 89, 95, 82]
+    chartData: [],
+    chartLabels: []
   };
 
   // Datos para ingresos del día
   ingresosDiaData: IngresosDiaData = {
-    amount: '$25.000',
-    completedAppointments: 3,
+    amount: '$0',
+    completedAppointments: 0,
     averageRating: 4.8,
-    chartData: [8, 12, 15, 18, 25, 22, 20]
+    chartData: [],
+    chartLabels: []
   };
 
   // Datos para solicitudes (ahora será un array)

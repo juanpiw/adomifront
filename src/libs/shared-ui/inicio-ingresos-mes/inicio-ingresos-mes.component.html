@@ -2,7 +2,7 @@
   <h3 class="inicio-ingresos__title">Ingresos del Mes</h3>
   <p class="inicio-ingresos__amount">{{ data.amount }}</p>
   <div class="inicio-ingresos__chart">
-    <canvas id="incomeChart"></canvas>
+    <canvas #chartCanvas [attr.id]="chartId"></canvas>
   </div>
   <div class="inicio-ingresos__stats">
     <div>

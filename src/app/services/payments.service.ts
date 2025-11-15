@@ -5,6 +5,23 @@ import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/services/auth.service';
 
+export interface ProviderEarningsSummaryPoint {
+  bucket: string;
+  total: number;
+}
+
+export interface ProviderEarningsSummary {
+  scope: 'month' | 'day';
+  month: string;
+  day?: string | null;
+  range: { start: string; end: string };
+  releasable: number;
+  pending: number;
+  released: number;
+  paidCount: number;
+  series?: ProviderEarningsSummaryPoint[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentsService {
   private http = inject(HttpClient);
@@ -123,11 +140,12 @@ export class PaymentsService {
   }
 
   // Provider earnings summary
-  getProviderEarningsSummary(month?: string): Observable<{ success: boolean; summary: { month: string; releasable: number; pending: number; released: number; paidCount: number } }>{
-    const params: any = {};
-    if (month) params.month = month;
+  getProviderEarningsSummary(filters?: { month?: string; day?: string }): Observable<{ success: boolean; summary: ProviderEarningsSummary }>{
+    const params: Record<string, string> = {};
+    if (filters?.month) params['month'] = filters.month;
+    if (filters?.day) params['day'] = filters.day;
     console.log('[PAYMENTS_SERVICE] getProviderEarningsSummary ->', params);
-    return this.http.get<{ success: boolean; summary: { month: string; releasable: number; pending: number; released: number; paidCount: number } }>(
+    return this.http.get<{ success: boolean; summary: ProviderEarningsSummary }>(
       `${this.base}/provider/earnings/summary`,
       { headers: this.headers(), params }
     );

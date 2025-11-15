@@ -926,7 +926,7 @@ export class DashAgendaComponent implements OnInit {
 
   private refreshEarnings(month?: string) {
     try {
-      (this.payments as any).getProviderEarningsSummary(month).subscribe({
+      (this.payments as any).getProviderEarningsSummary({ month }).subscribe({
         next: (resp: any) => {
           if (resp?.success && resp.summary) {
             const { releasable, pending, released } = resp.summary;
