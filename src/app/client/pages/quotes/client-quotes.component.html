@@ -83,6 +83,23 @@
             </div>
           </div>
 
+          <div
+            class="detail-card__proposal detail-card__proposal--schedule"
+            *ngIf="quote.proposal?.suggestedDate || quote.proposal?.suggestedTimeRange || quote.providerSuggestedDate || quote.providerSuggestedTimeRange"
+          >
+            <div *ngIf="(quote.proposal?.suggestedDate || quote.providerSuggestedDate) as suggestedDate">
+              <span>Fecha propuesta por el profesional</span>
+              <strong>{{ suggestedDate | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
+            </div>
+            <div *ngIf="quote.proposal?.suggestedTimeRange || quote.providerSuggestedTimeRange">
+              <span>Horario sugerido</span>
+              <strong>{{ quote.proposal?.suggestedTimeRange || quote.providerSuggestedTimeRange }}</strong>
+            </div>
+            <p class="detail-card__helper">
+              Si no puedes en ese horario, coordina con el profesional antes de aceptar.
+            </p>
+          </div>
+
           <div class="detail-card__proposal-details" *ngIf="quote.proposal?.details">
             <h4>Detalle de la propuesta</h4>
             <p>{{ quote.proposal?.details }}</p>

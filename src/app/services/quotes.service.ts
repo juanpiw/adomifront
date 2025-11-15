@@ -13,6 +13,8 @@ export interface ProviderQuoteDto {
   requestedAt: string;
   preferredDate?: string | null;
   preferredTimeRange?: string | null;
+  providerSuggestedDate?: string | null;
+  providerSuggestedTimeRange?: string | null;
   client: {
     id: number;
     name: string;
@@ -28,6 +30,8 @@ export interface ProviderQuoteDto {
     currency?: string | null;
     details?: string | null;
     validUntil?: string | null;
+    suggestedDate?: string | null;
+    suggestedTimeRange?: string | null;
   };
   appointment?: {
     appointmentId: number;
@@ -75,6 +79,8 @@ export interface QuoteProposalPayload {
   details: string;
   validity: string;
   submit?: boolean;
+  suggestedDate?: string | null;
+  suggestedTimeRange?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

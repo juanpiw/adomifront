@@ -106,7 +106,12 @@ export class DashQuotesComponent implements OnInit {
   }
 
   private extractQuoteDate(quote: Quote): string | null {
-    const candidates = [quote.preferredDate, quote.appointmentDate, quote.requestedAt];
+    const candidates = [
+      quote.providerSuggestedDate || quote.proposal?.suggestedDate,
+      quote.preferredDate,
+      quote.appointmentDate,
+      quote.requestedAt
+    ];
     for (const value of candidates) {
       const normalized = this.normalizeDateOnly(value);
       if (normalized) return normalized;
@@ -129,6 +134,7 @@ export class DashQuotesComponent implements OnInit {
 
   private extractQuoteTime(quote: Quote): string | null {
     const candidates = [
+      this.normalizeTime(this.extractStartTimeFromRange(quote.providerSuggestedTimeRange || quote.proposal?.suggestedTimeRange || null)),
       this.normalizeTime(this.extractStartTimeFromRange(quote.preferredTimeRange)),
       quote.appointmentTime,
       quote.requestedTime

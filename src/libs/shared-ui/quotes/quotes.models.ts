@@ -28,6 +28,8 @@ export interface Quote {
   appointmentTime?: string | null;
   preferredDate?: string | null;
   preferredTimeRange?: string | null;
+  providerSuggestedDate?: string | null;
+  providerSuggestedTimeRange?: string | null;
 }
 
 export interface QuoteProposalInfo {
@@ -35,6 +37,8 @@ export interface QuoteProposalInfo {
   currency?: string | null;
   details?: string | null;
   validUntil?: string | null;
+  suggestedDate?: string | null;
+  suggestedTimeRange?: string | null;
 }
 
 export interface QuoteTab {

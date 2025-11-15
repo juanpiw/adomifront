@@ -28,6 +28,8 @@ export interface ClientQuoteSummary {
   requestedAt: string;
   preferredDate?: string | null;
   preferredTimeRange?: string | null;
+  providerSuggestedDate?: string | null;
+  providerSuggestedTimeRange?: string | null;
   provider: {
     id: number;
     name: string;
@@ -61,6 +63,8 @@ export interface ClientQuoteDetailResponse {
       currency?: string | null;
       details?: string | null;
       validUntil?: string | null;
+      suggestedDate?: string | null;
+      suggestedTimeRange?: string | null;
     };
     items: Array<{
       id: number;

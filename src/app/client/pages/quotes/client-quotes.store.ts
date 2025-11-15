@@ -238,7 +238,9 @@ export class ClientQuotesStore {
       appointmentDate: summary.appointment?.date || null,
       appointmentTime: appointmentTime || null,
       preferredDate: summary.preferredDate || null,
-      preferredTimeRange: summary.preferredTimeRange || null
+      preferredTimeRange: summary.preferredTimeRange || null,
+      providerSuggestedDate: summary.providerSuggestedDate || null,
+      providerSuggestedTimeRange: summary.providerSuggestedTimeRange || null
     };
   }
 
@@ -285,12 +287,17 @@ export class ClientQuotesStore {
       amount: base.amount ?? detail.proposal?.amount ?? null,
       currency: base.currency || detail.proposal?.currency || 'CLP',
       validUntil: base.validUntil || normalizedValidUntil || null,
+      providerSuggestedDate: detail.providerSuggestedDate || detail.proposal?.suggestedDate || base.providerSuggestedDate || null,
+      providerSuggestedTimeRange:
+        detail.providerSuggestedTimeRange || detail.proposal?.suggestedTimeRange || base.providerSuggestedTimeRange || null,
       proposal: detail.proposal
         ? {
             amount: detail.proposal.amount ?? null,
             currency: detail.proposal.currency || base.currency || 'CLP',
             details: detail.proposal.details ?? null,
-            validUntil: normalizedValidUntil
+            validUntil: normalizedValidUntil,
+            suggestedDate: detail.proposal.suggestedDate || detail.providerSuggestedDate || null,
+            suggestedTimeRange: detail.proposal.suggestedTimeRange || detail.providerSuggestedTimeRange || null
           }
         : base.proposal ?? undefined,
       attachments: (detail.attachments || []).map((attachment): QuoteAttachment => ({

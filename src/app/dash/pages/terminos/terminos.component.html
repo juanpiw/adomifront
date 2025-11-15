@@ -4,7 +4,7 @@
       <ui-icon name="clipboard"></ui-icon>
     </div>
     <h1 class="terminos-header__title">Términos y Condiciones para Profesionales de Adomiapp</h1>
-    <p class="terminos-header__subtitle">Última actualización: 26 de octubre de 2025</p>
+    <p class="terminos-header__subtitle">Última actualización: 15 de noviembre de 2025</p>
   </div>
 
   <!-- Tabs de navegación -->
@@ -47,7 +47,7 @@
         <li>NO es parte del contrato entre usted y el Cliente.</li>
         <li>NO emplea a los Profesionales, ni supervisa, dirige o controla su trabajo.</li>
         <li>NO garantiza calidad, seguridad o legalidad de los Servicios del Profesional.</li>
-        <li>Puede contener enlaces a recursos de terceros</li>
+        <li>Puede contener enlaces a recursos de terceros.</li>
       </ul>
     </section>
 
@@ -112,22 +112,39 @@
         <li>Usted acepta y cumplirá los términos y políticas de Stripe.</li>
       </ul>
 
-      <h3 class="terminos-subsection__title">6.2. Modelo de Intermediación y Tarifa de Servicio (Pagos con Tarjeta)</h3>
+      <h3 class="terminos-subsection__title">6.2. Modelo de Intermediación y Tarifa de Servicio (Mecanismo Escrow)</h3>
+      <p class="terminos-section__text">
+        Cuando un Cliente paga con tarjeta, el monto total del Servicio es Autorizado y Retenido (Escrow) por el procesador de pagos.
+        La Plataforma mantendrá la retención de estos fondos hasta que se verifique la finalización del Servicio, protegiendo tanto al Cliente como al Profesional.
+      </p>
+      <p class="terminos-section__text">
+        Una vez que el Servicio se verifica como completado, los fondos son Capturados y Stripe ejecuta la división:
+      </p>
       <ul class="terminos-section__list">
-        <li>Cuando un Cliente paga con tarjeta, Stripe divide el pago en el origen:</li>
         <li>El monto neto del Servicio (monto total menos la Tarifa de Servicio) se transfiere directamente a su cuenta de Stripe Connect.</li>
         <li>La Tarifa de Servicio (actualmente 15% del monto total, salvo que se indique otra en su plan) se transfiere a Adomiapp.</li>
-        <li>Los depósitos a su cuenta bancaria ocurren según los plazos de Stripe (usualmente 3–5 días hábiles).</li>
+      </ul>
+      <p class="terminos-section__text">
+        Los depósitos a su cuenta bancaria ocurren según los plazos de Stripe (usualmente 3–5 días hábiles) a partir de la fecha de Captura del fondo.
+      </p>
+
+      <h3 class="terminos-subsection__title">6.3. Verificación de Servicio y Liberación de Fondos (Checkpoint)</h3>
+      <p class="terminos-section__text">
+        Para que el pago retenido (Escrow) sea liberado y capturado en su cuenta Stripe Connect, el Servicio debe ser marcado como completado.
+      </p>
+      <ul class="terminos-section__list">
+        <li><strong>Confirmación del Cliente:</strong> la liberación estándar se activa cuando el Cliente presiona el botón "Finalizar Servicio" en la Plataforma.</li>
+        <li><strong>Liberación Automática:</strong> si el Cliente no realiza la confirmación, la Plataforma ejecutará la liberación y captura de fondos automáticamente a las 48 horas de la hora de término agendada (<code>end_time</code>), siempre que no exista una disputa o reporte de No-Show activo. Usted recibirá una notificación sobre esta liberación automática.</li>
       </ul>
 
-      <h3 class="terminos-subsection__title">6.3. Obligaciones Tributarias del Profesional (Chile)</h3>
+      <h3 class="terminos-subsection__title">6.4. Obligaciones Tributarias del Profesional (Chile)</h3>
       <ul class="terminos-section__list">
         <li><strong>Boleta/Factura al Cliente:</strong> Usted es el único responsable de emitir el documento tributario al Cliente por el monto total del Servicio.</li>
         <li><strong>Factura de Adomiapp:</strong> Adomiapp emitirá una factura por la Tarifa de Servicio (p. ej., 15%) más IVA (19%).</li>
         <li><strong>Declaraciones:</strong> Usted declara y paga los impuestos que correspondan (IVA, Renta u otros).</li>
       </ul>
 
-      <h3 class="terminos-subsection__title">6.4. Comisiones por Pagos en Efectivo</h3>
+      <h3 class="terminos-subsection__title">6.5. Comisiones por Pagos en Efectivo</h3>
       <p class="terminos-section__text">
         Si recibe pagos en efectivo por Servicios agendados en la Plataforma, se generará una deuda de comisión a favor de Adomiapp equivalente a la Tarifa de Servicio. Usted autoriza a Adomiapp a cobrar dicha deuda mediante:
       </p>
@@ -175,11 +192,24 @@
     </section>
 
     <section class="terminos-section">
-      <h2 class="terminos-section__title">9. Cancelaciones y Reembolsos</h2>
+      <h2 class="terminos-section__title">9. Cancelaciones, Reembolsos y Disputas</h2>
       <p class="terminos-section__text">
-        Cancelaciones con +24h sin penalización. Cancelaciones tardías afectan calificación y pueden tener 
-        penalizaciones según plan.
+        Las citas canceladas con más de 24 horas de antelación no conllevan penalización para usted ni para el Cliente.
       </p>
+      <p class="terminos-section__text">
+        Las cancelaciones tardías o el incumplimiento del Servicio afectarán su calificación y están sujetas a penalizaciones financieras automáticas según las reglas activas de su plan.
+      </p>
+      <p class="terminos-section__text">
+        Los reembolsos totales o parciales seguirán la política visible en la Plataforma y se resolverán en base a evidencia objetiva presentada por las partes.
+      </p>
+
+      <h3 class="terminos-subsection__title">9.1. Incumplimiento del Servicio (No-Show) y Proceso de Disputa</h3>
+      <ul class="terminos-section__list">
+        <li><strong>a) Congelamiento de Fondos (Disputa):</strong> el estado de la cita cambiará a <code>dispute_pending</code> y los fondos retenidos (Escrow) serán congelados inmediatamente, impidiendo su liberación automática o manual.</li>
+        <li><strong>b) Requerimiento de Evidencia:</strong> el Cliente deberá aportar evidencia (texto y/o fotos) que sustente el No-Show, y usted tendrá un plazo para presentar contrapruebas o descargos.</li>
+        <li><strong>c) Penalización Automática:</strong> si la Plataforma o el área de Soporte verifica el No-Show, se aplicarán las consecuencias de cancelación definidas en su plan (p. ej., reglas 50/50 o 70/30). El monto de la penalización se registrará como deuda (<code>provider_commission_debts</code>) y se descontará automáticamente de su saldo de Stripe Connect o del siguiente pago liberado.</li>
+        <li><strong>d) Reembolso al Cliente:</strong> el Cliente recibirá el reembolso (en forma de crédito a su <em>wallet</em>) por el monto correspondiente según las políticas de cancelación.</li>
+      </ul>
     </section>
 
     <section class="terminos-section">

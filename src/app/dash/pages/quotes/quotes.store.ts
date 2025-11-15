@@ -162,6 +162,9 @@ export class QuotesStore {
       this.normalizeDate(dto.validUntil) || this.normalizeDate(proposalInfo?.validUntil);
     const avatarUrl = this.buildAssetUrl(dto.client?.avatarUrl);
 
+    const providerSuggestedDate = dto.providerSuggestedDate || proposalInfo?.suggestedDate || null;
+    const providerSuggestedTimeRange = dto.providerSuggestedTimeRange || proposalInfo?.suggestedTimeRange || null;
+
     return {
       id: dto.id,
       status: this.normalizeStatus(dto.status),
@@ -183,12 +186,16 @@ export class QuotesStore {
       appointmentTime: appointmentTime || null,
       preferredDate: dto.preferredDate || null,
       preferredTimeRange: dto.preferredTimeRange || null,
+      providerSuggestedDate,
+      providerSuggestedTimeRange,
       proposal: proposalInfo
         ? {
             amount: typeof proposalInfo.amount === 'number' ? proposalInfo.amount : normalizedAmount,
             currency: proposalInfo.currency || currency,
             details: proposalInfo.details ?? null,
-            validUntil: this.normalizeDate(proposalInfo.validUntil) || normalizedValidUntil
+            validUntil: this.normalizeDate(proposalInfo.validUntil) || normalizedValidUntil,
+            suggestedDate: providerSuggestedDate,
+            suggestedTimeRange: providerSuggestedTimeRange
           }
         : undefined
     };

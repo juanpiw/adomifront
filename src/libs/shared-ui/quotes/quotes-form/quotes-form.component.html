@@ -101,6 +101,31 @@
         </small>
       </div>
 
+      <div class="quotes-form__field-group quotes-form__field-group--schedule quotes-form__field-group--full">
+        <div>
+          <label for="suggestedDate">
+            Fecha sugerida
+            <span>Proponla si el día original no es posible</span>
+          </label>
+          <input id="suggestedDate" type="date" formControlName="suggestedDate" />
+        </div>
+        <div>
+          <label for="suggestedTimeRange">
+            Horario sugerido
+            <span>Ej: 09:00 - 11:00</span>
+          </label>
+          <input
+            id="suggestedTimeRange"
+            type="text"
+            formControlName="suggestedTimeRange"
+            placeholder="Describe la ventana horaria disponible"
+          />
+        </div>
+      </div>
+      <p class="quotes-form__helper quotes-form__field-group--full">
+        El cliente verá esta fecha/horario como propuesta alternativa antes de aceptar.
+      </p>
+
       <div class="quotes-form__attachments quotes-form__field-group--full">
         <span class="quotes-form__attachments-label">Adjuntar archivos (opcional)</span>
         <ui-dropzone-card

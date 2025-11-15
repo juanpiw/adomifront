@@ -10,6 +10,8 @@ export interface QuoteProposal {
   amount: number;
   validity: string;
   details: string;
+  suggestedDate?: string | null;
+  suggestedTimeRange?: string | null;
 }
 
 export interface QuoteAttachmentInput {
@@ -47,7 +49,15 @@ interface AttachmentPreview {
 export class QuotesFormComponent implements OnChanges {
   @Input() quote!: Quote;
   @Input() loading = false;
-  @Input() proposalDetails: { amount?: number | null; details?: string | null; validity?: string | null } | null = null;
+  @Input() proposalDetails:
+    | {
+        amount?: number | null;
+        details?: string | null;
+        validity?: string | null;
+        suggestedDate?: string | null;
+        suggestedTimeRange?: string | null;
+      }
+    | null = null;
   @Input() attachments: QuoteAttachmentInput[] | null = null;
   @Output() send = new EventEmitter<QuoteProposal>();
   @Output() saveDraft = new EventEmitter<QuoteProposal>();
@@ -69,7 +79,9 @@ export class QuotesFormComponent implements OnChanges {
   form = this.fb.nonNullable.group({
     amount: [null as number | null, [Validators.required, Validators.min(1000)]],
     validity: ['15 días', Validators.required],
-    details: ['', [Validators.required, Validators.minLength(20)]]
+    details: ['', [Validators.required, Validators.minLength(20)]],
+    suggestedDate: [''],
+    suggestedTimeRange: ['']
   });
 
   constructor() {
@@ -104,7 +116,7 @@ export class QuotesFormComponent implements OnChanges {
       this.form.markAllAsTouched();
       return;
     }
-    this.send.emit(this.form.getRawValue() as QuoteProposal);
+    this.send.emit(this.buildProposalPayload());
   }
 
   onSaveDraft(): void {
@@ -112,7 +124,7 @@ export class QuotesFormComponent implements OnChanges {
       this.form.markAllAsTouched();
       return;
     }
-    this.saveDraft.emit(this.form.getRawValue() as QuoteProposal);
+    this.saveDraft.emit(this.buildProposalPayload());
   }
 
   onFilesDropped(files: File[]): void {
@@ -183,6 +195,21 @@ export class QuotesFormComponent implements OnChanges {
     } else {
       this.formattedAmount = '';
     }
+
+    const suggestedDate =
+      quote.providerSuggestedDate ||
+      quote.proposal?.suggestedDate ||
+      quote.preferredDate ||
+      '';
+    const suggestedTimeRange =
+      quote.providerSuggestedTimeRange ||
+      quote.proposal?.suggestedTimeRange ||
+      quote.preferredTimeRange ||
+      '';
+    this.patchScheduleFields({
+      suggestedDate,
+      suggestedTimeRange
+    });
   }
 
   private buildRequestedTimeLabel(quote: Quote): string | null {
@@ -198,7 +225,13 @@ export class QuotesFormComponent implements OnChanges {
     return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   }
 
-  private patchFromProposal(proposal: { amount?: number | null; details?: string | null; validity?: string | null }): void {
+  private patchFromProposal(proposal: {
+    amount?: number | null;
+    details?: string | null;
+    validity?: string | null;
+    suggestedDate?: string | null;
+    suggestedTimeRange?: string | null;
+  }): void {
     if (proposal.amount !== undefined && proposal.amount !== null) {
       this.form.patchValue({ amount: proposal.amount }, { emitEvent: false });
       this.formattedAmount = this.formatCurrency(proposal.amount);
@@ -211,6 +244,12 @@ export class QuotesFormComponent implements OnChanges {
     if (proposal.validity) {
       this.form.patchValue({ validity: proposal.validity }, { emitEvent: false });
     }
+    const suggestedDate = proposal.suggestedDate ?? null;
+    const suggestedTimeRange = proposal.suggestedTimeRange ?? null;
+    this.patchScheduleFields({
+      suggestedDate,
+      suggestedTimeRange
+    });
   }
 
   private formatCurrency(value: number): string {
@@ -243,6 +282,47 @@ export class QuotesFormComponent implements OnChanges {
 
   private refreshAttachmentPreviewList(): void {
     this.attachmentPreviews = [...this.pendingUploads, ...this.uploadedAttachments];
+  }
+
+  private buildProposalPayload(): QuoteProposal {
+    const raw = this.form.getRawValue();
+    return {
+      amount: raw.amount!,
+      validity: raw.validity,
+      details: raw.details,
+      suggestedDate: raw.suggestedDate ? raw.suggestedDate : null,
+      suggestedTimeRange: raw.suggestedTimeRange?.trim() ? raw.suggestedTimeRange.trim() : null
+    };
+  }
+
+  private patchScheduleFields(payload: { suggestedDate?: string | null; suggestedTimeRange?: string | null }): void {
+    const normalizedDate = this.normalizeDateInput(payload.suggestedDate);
+    const normalizedRange =
+      payload.suggestedTimeRange !== undefined
+        ? payload.suggestedTimeRange || ''
+        : this.form.controls.suggestedTimeRange.value;
+    this.form.patchValue(
+      {
+        suggestedDate: normalizedDate,
+        suggestedTimeRange: normalizedRange
+      },
+      { emitEvent: false }
+    );
+  }
+
+  private normalizeDateInput(value?: string | null): string {
+    if (!value) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return '';
+    }
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   }
 }
 
