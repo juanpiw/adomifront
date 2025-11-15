@@ -41,6 +41,24 @@
             </div>
           </div>
 
+          <div
+            class="detail-card__status detail-card__status--accepted"
+            *ngIf="quote.status === 'accepted'; else pendingStatus"
+          >
+            <p class="detail-card__status-title">Cotización aceptada</p>
+            <p class="detail-card__status-text">
+              Estamos notificando a {{ quote.provider?.name || 'el profesional' }} para coordinar los siguientes pasos.
+            </p>
+          </div>
+          <ng-template #pendingStatus>
+            <div class="detail-card__status detail-card__status--info" *ngIf="quote.status === 'sent'">
+              <p class="detail-card__status-title">Revisa y acepta para continuar</p>
+              <p class="detail-card__status-text">
+                Al aceptar esta propuesta notificaremos al profesional y podrás coordinar fecha y pago.
+              </p>
+            </div>
+          </ng-template>
+
           <p class="detail-card__service">
             Servicio: <strong>{{ quote.serviceName }}</strong>
           </p>
@@ -101,9 +119,18 @@
           </div>
 
           <div class="detail-card__actions">
-            <button type="button" class="detail-card__btn detail-card__btn--primary" [disabled]="!quote.proposal?.amount">
+            <button
+              type="button"
+              class="detail-card__btn detail-card__btn--primary"
+              [disabled]="!canAcceptQuote(quote) || accepting()"
+              (click)="openAcceptModal(quote)"
+            >
               Aceptar y continuar
             </button>
+            <p class="detail-card__helper" *ngIf="quote.status !== 'accepted' && !canAcceptQuote(quote)">
+              El profesional debe enviar una propuesta para poder aceptarla.
+            </p>
+            <p class="detail-card__error" *ngIf="acceptError()">{{ acceptError() }}</p>
           </div>
         </div>
       </ng-container>
@@ -116,5 +143,17 @@
       </ng-template>
     </aside>
   </div>
+
+  <app-modal-confirmacion
+    [isOpen]="acceptModalOpen"
+    title="¿Aceptar esta cotización?"
+    [message]="acceptModalMessage()"
+    confirmText="Aceptar cotización"
+    cancelText="Volver"
+    type="warning"
+    [loading]="accepting()"
+    (confirm)="confirmAcceptQuote()"
+    (cancel)="closeAcceptModal()"
+  ></app-modal-confirmacion>
 </section>
 

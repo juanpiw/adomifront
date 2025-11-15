@@ -67,6 +67,43 @@
   line-height: 1.5;
 }
 
+.detail-card__status {
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid transparent;
+  background: #f8fafc;
+
+  &-title {
+    margin: 0 0 0.25rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  &-text {
+    margin: 0;
+    color: #475569;
+    font-size: 0.9rem;
+  }
+
+  &--accepted {
+    background: #ecfdf5;
+    border-color: #6ee7b7;
+
+    .detail-card__status-title {
+      color: #047857;
+    }
+  }
+
+  &--info {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+
+    .detail-card__status-title {
+      color: #4338ca;
+    }
+  }
+}
+
 .detail-card__proposal {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -204,6 +241,18 @@
 .detail-card__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.detail-card__helper {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.detail-card__error {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #b91c1c;
 }
 
 .detail-placeholder h3 {

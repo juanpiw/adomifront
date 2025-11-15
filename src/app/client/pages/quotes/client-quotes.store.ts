@@ -36,6 +36,9 @@ export class ClientQuotesStore {
   private readonly loadingSig = signal<boolean>(false);
   private readonly errorSig = signal<string | null>(null);
   private readonly selectedQuoteSig = signal<Quote | null>(null);
+  private readonly acceptLoadingSig = signal<boolean>(false);
+  private readonly acceptErrorSig = signal<string | null>(null);
+  private readonly acceptSuccessSig = signal<boolean>(false);
 
   readonly activeTab = this.activeTabSig.asReadonly();
   readonly tabs = this.tabsSig.asReadonly();
@@ -45,6 +48,9 @@ export class ClientQuotesStore {
   readonly error = this.errorSig.asReadonly();
   readonly selectedQuote = this.selectedQuoteSig.asReadonly();
   readonly hasQuotes = computed(() => this.quotesSig().length > 0);
+  readonly accepting = this.acceptLoadingSig.asReadonly();
+  readonly acceptError = this.acceptErrorSig.asReadonly();
+  readonly acceptSuccess = this.acceptSuccessSig.asReadonly();
 
   loadQuotes(tab: ClientQuoteTabId = this.activeTabSig()): void {
     this.activeTabSig.set(tab);
@@ -80,6 +86,35 @@ export class ClientQuotesStore {
           this.errorSig.set(message);
         }
       });
+  }
+
+  acceptQuote(quoteId: number): void {
+    if (!quoteId || this.acceptLoadingSig()) return;
+    this.acceptErrorSig.set(null);
+    this.acceptSuccessSig.set(false);
+    this.acceptLoadingSig.set(true);
+
+    this.api
+      .acceptQuote(quoteId)
+      .pipe(finalize(() => this.acceptLoadingSig.set(false)))
+      .subscribe({
+        next: (resp) => {
+          this.applyAcceptedQuote(quoteId, resp?.quote ? this.mapDetailQuote(resp.quote) : null);
+          this.acceptSuccessSig.set(true);
+        },
+        error: (err) => {
+          const message =
+            err?.error?.error ||
+            err?.message ||
+            'No pudimos aceptar la cotización. Intenta nuevamente en unos segundos.';
+          this.acceptErrorSig.set(message);
+        }
+      });
+  }
+
+  resetAcceptState(): void {
+    this.acceptErrorSig.set(null);
+    this.acceptSuccessSig.set(false);
   }
 
   loadQuoteDetail(id: number): void {
@@ -134,6 +169,30 @@ export class ClientQuotesStore {
       ...tab,
       badge: counters[tab.id] ?? 0
     }));
+  }
+
+  private applyAcceptedQuote(quoteId: number, detail: Quote | null): void {
+    const currentCounters = this.countersSig();
+    const nextCounters: Record<ClientQuoteTabId, number> = {
+      ...currentCounters,
+      sent: Math.max(0, (currentCounters.sent ?? 0) - 1),
+      accepted: (currentCounters.accepted ?? 0) + 1
+    };
+    this.countersSig.set(nextCounters);
+    this.tabsSig.set(this.buildTabs(nextCounters));
+
+    this.quotesSig.update((quotes) =>
+      quotes.map((quote) => (quote.id === quoteId ? { ...quote, status: 'accepted' as QuoteStatus } : quote))
+    );
+
+    if (detail) {
+      this.selectedQuoteSig.set(detail);
+    } else {
+      const current = this.selectedQuoteSig();
+      if (current?.id === quoteId) {
+        this.selectedQuoteSig.set({ ...current, status: 'accepted' });
+      }
+    }
   }
 
   private mapQuote(summary: ClientQuoteSummary): Quote {

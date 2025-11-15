@@ -142,6 +142,10 @@ export class QuotesClientService {
     });
   }
 
+  acceptQuote(id: number): Observable<ClientQuoteDetailResponse> {
+    return this.http.post<ClientQuoteDetailResponse>(`${this.baseUrl}/client/quotes/${id}/accept`, {}, { headers: this.authHeaders() });
+  }
+
   private authHeaders(): HttpHeaders | undefined {
     const token = this.auth.getAccessToken();
     if (!token) return undefined;
