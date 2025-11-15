@@ -42,6 +42,32 @@
           </p>
         </div>
 
+        <!-- Servicio (solo modo cita) -->
+        <div class="form-group" *ngIf="mode === 'cita'">
+          <label for="eventService" class="form-label">Servicio</label>
+          <ng-container *ngIf="services?.length; else noServicesAvailable">
+            <select
+              id="eventService"
+              formControlName="serviceId"
+              class="form-input"
+              [class.form-input--error]="serviceId?.invalid && serviceId?.touched">
+              <option *ngFor="let svc of services" [ngValue]="svc.id">
+                {{ svc.name }}
+              </option>
+            </select>
+            <p
+              *ngIf="serviceId?.invalid && serviceId?.touched"
+              class="form-error">
+              Debes seleccionar el servicio que vas a realizar.
+            </p>
+          </ng-container>
+          <ng-template #noServicesAvailable>
+            <p class="form-helper">
+              No tienes servicios configurados. Ve a tu perfil para crear uno y poder agendar.
+            </p>
+          </ng-template>
+        </div>
+
         <!-- Cliente (solo en modo cita) -->
         <div class="form-group" *ngIf="mode === 'cita'">
           <label for="eventClient" class="form-label">Cliente (Opcional)</label>

@@ -11,6 +11,7 @@ export interface NuevaCitaData {
   endTime: string;
   notes?: string;
   color: string;
+  serviceId?: number;
 }
 
 export interface BloqueoData {
@@ -19,6 +20,13 @@ export interface BloqueoData {
   endTime?: string;
   reason: string;
   blockWholeDay: boolean;
+}
+
+export interface ProviderServiceOption {
+  id: number;
+  name: string;
+  duration_minutes?: number;
+  price?: number;
 }
 
 @Component({
@@ -47,6 +55,7 @@ export class ModalAgendarCitaComponent implements OnChanges {
   @Input() selectedDate?: Date;
   @Input() mode: 'cita' | 'bloqueo' = 'bloqueo'; // Modo por defecto: bloqueo
   @Input() presetData: Partial<NuevaCitaData> | null = null;
+  @Input() services: ProviderServiceOption[] = [];
   @Output() close = new EventEmitter<void>();
   @Output() citaCreated = new EventEmitter<NuevaCitaData>();
   @Output() espacioBloqueado = new EventEmitter<BloqueoData>();
@@ -70,7 +79,8 @@ export class ModalAgendarCitaComponent implements OnChanges {
       date: ['', Validators.required],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
-      notes: ['']
+      notes: [''],
+      serviceId: [null]
     });
   }
 
@@ -93,6 +103,10 @@ export class ModalAgendarCitaComponent implements OnChanges {
 
     if (changes['presetData'] && this.isOpen && this.mode === 'cita' && changes['presetData'].currentValue) {
       this.applyPreset(changes['presetData'].currentValue as Partial<NuevaCitaData>);
+    }
+
+    if (changes['services'] && this.mode === 'cita') {
+      this.applyDefaultService();
     }
   }
 
@@ -135,6 +149,8 @@ export class ModalAgendarCitaComponent implements OnChanges {
   resetForm(): void {
     this.appointmentForm.reset();
     this.selectedColor = '#4338ca';
+    this.applyDefaultService();
+    this.configureServiceValidators();
   }
 
   private applyPreset(data: Partial<NuevaCitaData>): void {
@@ -157,7 +173,16 @@ export class ModalAgendarCitaComponent implements OnChanges {
     if (typeof data.notes === 'string') {
       patch.notes = data.notes;
     }
+    if (typeof data.serviceId === 'number') {
+      patch.serviceId = data.serviceId;
+    } else if (data.title) {
+      const matched = this.matchServiceIdByName(data.title);
+      if (matched) {
+        patch.serviceId = matched;
+      }
+    }
     this.appointmentForm.patchValue(patch, { emitEvent: false });
+    this.configureServiceValidators();
   }
 
   onSubmit(): void {
@@ -199,6 +224,12 @@ export class ModalAgendarCitaComponent implements OnChanges {
           color: this.selectedColor
         };
 
+        if (!formData.serviceId) {
+          this.appointmentForm.get('serviceId')?.markAsTouched();
+          return;
+        }
+
+        console.log('🗓️ [MODAL] Emitiendo nueva cita desde modal-agendar-cita:', formData);
         this.citaCreated.emit(formData);
         this.closeModal();
       } else {
@@ -236,6 +267,41 @@ export class ModalAgendarCitaComponent implements OnChanges {
   get startTime() { return this.appointmentForm.get('startTime'); }
   get endTime() { return this.appointmentForm.get('endTime'); }
   get notes() { return this.appointmentForm.get('notes'); }
+  get serviceId() { return this.appointmentForm.get('serviceId'); }
+
+  private applyDefaultService(): void {
+    if (this.mode !== 'cita') {
+      this.appointmentForm.get('serviceId')?.setValue(null, { emitEvent: false });
+      return;
+    }
+    const current = this.appointmentForm.get('serviceId')?.value;
+    if (current) return;
+    const firstService = this.services?.[0];
+    if (firstService) {
+      this.appointmentForm.get('serviceId')?.setValue(firstService.id, { emitEvent: false });
+    }
+  }
+
+  private configureServiceValidators(): void {
+    const control = this.appointmentForm.get('serviceId');
+    if (!control) return;
+    if (this.mode === 'cita') {
+      control.setValidators([Validators.required]);
+    } else {
+      control.clearValidators();
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private matchServiceIdByName(name?: string): number | null {
+    if (!name || !this.services?.length) return null;
+    const normalized = name.trim().toLowerCase();
+    if (!normalized) return null;
+    const exact = this.services.find((svc) => svc.name?.trim().toLowerCase() === normalized);
+    if (exact) return exact.id;
+    const partial = this.services.find((svc) => normalized.includes((svc.name || '').trim().toLowerCase()));
+    return partial ? partial.id : null;
+  }
 }
 
 

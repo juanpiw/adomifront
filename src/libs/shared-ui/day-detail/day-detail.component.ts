@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ModalAgendarCitaComponent, NuevaCitaData, BloqueoData } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
+import { ModalAgendarCitaComponent, NuevaCitaData, BloqueoData, ProviderServiceOption } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
 
 export interface DayAppointment {
   id: string;
@@ -44,6 +44,9 @@ type QuoteDraftInput = {
   date?: string | null;
   time?: string | null;
   message?: string | null;
+  serviceId?: number | null;
+  quoteId?: number | null;
+  clientId?: number | null;
 };
 
 @Component({
@@ -60,6 +63,7 @@ export class DayDetailComponent implements OnChanges {
   @Input() loading: boolean = false;
   @Input() quoteFocusHint: QuoteFocusHintInput | null = null;
   @Input() quoteDraft: QuoteDraftInput | null = null;
+  @Input() services: ProviderServiceOption[] = [];
   readonly fallbackAvatar = 'assets/default-avatar.png';
 
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
@@ -236,13 +240,15 @@ export class DayDetailComponent implements OnChanges {
     this.modalMode = 'cita';
     const dateInput = draft.date || (this.selectedDate ? this.formatDateForInput(this.selectedDate) : '');
     const startTime = draft.time || '';
+    const matchedServiceId = draft.serviceId ?? this.matchServiceIdByName(draft.serviceName);
     this.modalPresetData = {
       title: draft.serviceName || 'Nueva cita',
       client: draft.clientName || '',
       date: dateInput,
       startTime,
       endTime: startTime ? this.addMinutesToTime(startTime, 60) : '',
-      notes: draft.message || ''
+      notes: draft.message || '',
+      serviceId: matchedServiceId ?? undefined
     };
     this.isModalOpen = true;
     this.quoteDraftHandled.emit();
@@ -261,6 +267,25 @@ export class DayDetailComponent implements OnChanges {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private matchServiceIdByName(name?: string | null): number | null {
+    if (!this.services?.length) {
+      return null;
+    }
+    if (!name) {
+      return this.services[0]?.id ?? null;
+    }
+    const normalized = name.trim().toLowerCase();
+    if (!normalized) {
+      return this.services[0]?.id ?? null;
+    }
+    const exact = this.services.find((svc) => svc.name?.trim().toLowerCase() === normalized);
+    if (exact) {
+      return exact.id;
+    }
+    const partial = this.services.find((svc) => normalized.includes((svc.name || '').trim().toLowerCase()));
+    return partial ? partial.id : this.services[0]?.id ?? null;
   }
 
   onNewAppointment() {

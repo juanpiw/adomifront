@@ -103,6 +103,7 @@ export class AppointmentsService {
     start_time: string;
     end_time: string;
     notes?: string;
+    quote_id?: number;
   }): Observable<{ success: boolean; appointment: AppointmentDto }>{
     return this.http.post<{ success: boolean; appointment: AppointmentDto }>(
       `${this.api}/appointments`,

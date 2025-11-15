@@ -20,6 +20,7 @@ import { environment } from '../../../../environments/environment';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Observable, of, firstValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { ProviderServicesService, ProviderServiceDto } from '../../../services/provider-services.service';
 
 interface PendingQuoteContext {
   quoteId: string | null;
@@ -47,6 +48,9 @@ interface QuoteDraftContext {
   date?: string | null;
   time?: string | null;
   message?: string | null;
+  serviceId?: number | null;
+  quoteId?: number | null;
+  clientId?: number | null;
 }
 
 
@@ -81,6 +85,10 @@ export class DashAgendaComponent implements OnInit {
   private pendingQuoteContext: PendingQuoteContext | null = null;
   quoteFocusHint: QuoteFocusHint | null = null;
   quoteAppointmentDraft: QuoteDraftContext | null = null;
+  providerServices: ProviderServiceDto[] = [];
+  servicesLoading = false;
+  private activeQuoteLink: { quoteId: number | null; clientId: number | null } | null = null;
+  private creatingAppointment = false;
 
   // Datos de configuración de horarios
   timeBlocks: TimeBlock[] = [];
@@ -198,6 +206,7 @@ export class DashAgendaComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private clientReviews = inject(ProviderClientReviewsService);
+  private providerServicesService = inject(ProviderServicesService);
 
   private updatingFromQuery = false;
 
@@ -214,6 +223,7 @@ export class DashAgendaComponent implements OnInit {
 
   ngOnInit() {
     this.currentProviderName = this.auth.getCurrentUser()?.name || null;
+    this.loadProviderServices();
 
     this.route.queryParamMap.subscribe((params) => {
       const viewParam = (params.get('view') || '').toLowerCase();
@@ -473,6 +483,54 @@ export class DashAgendaComponent implements OnInit {
         this.exceptionsLoading = false;
       }
     });
+  }
+
+  private loadProviderServices(): void {
+    this.servicesLoading = true;
+    this.providerServicesService.list().subscribe({
+      next: (resp) => {
+        this.providerServices = resp?.services ?? [];
+        this.servicesLoading = false;
+        this.ensureQuoteDraftServiceId();
+      },
+      error: (err) => {
+        console.error('[AGENDA] Error cargando servicios del proveedor', err);
+        this.providerServices = [];
+        this.servicesLoading = false;
+      }
+    });
+  }
+
+  private ensureQuoteDraftServiceId(): void {
+    if (!this.quoteAppointmentDraft || this.quoteAppointmentDraft.serviceId) {
+      return;
+    }
+    const matched = this.matchServiceIdByName(this.quoteAppointmentDraft.serviceName);
+    if (matched) {
+      this.quoteAppointmentDraft = {
+        ...this.quoteAppointmentDraft,
+        serviceId: matched
+      };
+    }
+  }
+
+  private matchServiceIdByName(name?: string | null): number | null {
+    if (!this.providerServices?.length) {
+      return null;
+    }
+    if (!name) {
+      return this.providerServices[0]?.id ?? null;
+    }
+    const normalized = name.trim().toLowerCase();
+    if (!normalized) {
+      return this.providerServices[0]?.id ?? null;
+    }
+    const exact = this.providerServices.find((svc) => svc.name?.trim().toLowerCase() === normalized);
+    if (exact) {
+      return exact.id;
+    }
+    const partial = this.providerServices.find((svc) => normalized.includes((svc.name || '').trim().toLowerCase()));
+    return partial ? partial.id : this.providerServices[0]?.id ?? null;
   }
 
   setCashFilter(filter: 'all'|'pending'|'overdue'|'under_review'|'rejected'|'paid') {
@@ -1033,6 +1091,10 @@ export class DashAgendaComponent implements OnInit {
     if (!this.pendingQuoteContext || this.pendingQuoteContext.date !== dateIso) {
       return;
     }
+    const quoteId = this.normalizeNumberParam(this.pendingQuoteContext.quoteId);
+    const clientId = this.normalizeNumberParam(this.pendingQuoteContext.clientId);
+    const matchedServiceId = this.matchServiceIdByName(this.pendingQuoteContext.serviceName);
+
     this.quoteFocusHint = {
       appointmentId: this.pendingQuoteContext.appointmentId ?? null,
       time: this.pendingQuoteContext.time ?? null,
@@ -1045,8 +1107,12 @@ export class DashAgendaComponent implements OnInit {
       clientName: this.pendingQuoteContext.clientName ?? null,
       date: this.pendingQuoteContext.date,
       time: this.pendingQuoteContext.time ?? null,
-      message: this.pendingQuoteContext.message ?? null
+      message: this.pendingQuoteContext.message ?? null,
+      serviceId: matchedServiceId,
+      quoteId,
+      clientId
     };
+    this.activeQuoteLink = { quoteId, clientId };
     this.pendingQuoteContext = null;
   }
 
@@ -1401,8 +1467,59 @@ export class DashAgendaComponent implements OnInit {
   }
 
   // Evento desde DayDetail al confirmar nueva cita en el modal
-  onDayCitaCreated(evt: { title: string; client?: string; date: string; startTime: string; endTime: string; notes?: string; color: string }) {
-    console.log('[AGENDA] citaCreated (UI only placeholder):', evt);
+  onDayCitaCreated(evt: { title: string; client?: string; date: string; startTime: string; endTime: string; notes?: string; color: string; serviceId?: number }) {
+    console.log('[AGENDA] citaCreated (desde modal):', evt);
+    const providerId = this.currentProviderId;
+    const clientId = this.activeQuoteLink?.clientId ?? null;
+    const quoteId = this.activeQuoteLink?.quoteId ?? null;
+    const serviceId = evt.serviceId ?? this.matchServiceIdByName(evt.title);
+
+    if (!providerId) {
+      console.error('[AGENDA] No hay providerId para crear la cita');
+      alert('No pudimos determinar tu cuenta de proveedor. Intenta recargar la página.');
+      return;
+    }
+    if (!clientId) {
+      console.error('[AGENDA] No hay clientId asociado a la cotización aceptada');
+      alert('No encontramos al cliente asociado a esta cotización. Vuelve a abrir la cotización desde el panel.');
+      return;
+    }
+    if (!serviceId) {
+      console.error('[AGENDA] No hay serviceId disponible para la cita', { titulo: evt.title });
+      alert('Debes tener al menos un servicio configurado para poder agendar esta cita.');
+      return;
+    }
+
+    this.creatingAppointment = true;
+    this.appointments.create({
+      provider_id: providerId,
+      client_id: clientId,
+      service_id: serviceId,
+      date: evt.date,
+      start_time: evt.startTime,
+      end_time: evt.endTime,
+      notes: evt.notes,
+      quote_id: quoteId ?? undefined
+    }).subscribe({
+      next: (resp) => {
+        console.log('[AGENDA] Cita creada y vinculada a la cotización', resp);
+        this.creatingAppointment = false;
+        this.activeQuoteLink = null;
+        this.quoteAppointmentDraft = null;
+        const refreshDate = this.selectedDate ?? new Date(`${evt.date}T00:00:00`);
+        if (refreshDate) {
+          const iso = `${refreshDate.getFullYear()}-${String(refreshDate.getMonth() + 1).padStart(2, '0')}-${String(refreshDate.getDate()).padStart(2, '0')}`;
+          this.loadDay(iso);
+        }
+        this.loadMonth(refreshDate.getFullYear(), refreshDate.getMonth() + 1);
+        alert('La cita se creó correctamente y quedó vinculada a la cotización aceptada.');
+      },
+      error: (err) => {
+        this.creatingAppointment = false;
+        console.error('[AGENDA] Error creando cita desde cotización', err);
+        alert(err?.error?.error || 'No pudimos agendar la cita. Por favor intenta nuevamente.');
+      }
+    });
   }
   
   /**
