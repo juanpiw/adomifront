@@ -206,6 +206,8 @@ export class ClientQuotesStore {
     };
     const serviceName = summary.serviceName?.trim() || 'Solicitud enviada';
     const requestedAt = this.normalizeDate(summary.requestedAt) || null;
+    const appointmentTime = this.normalizeTime(summary.appointment?.time);
+    const requestedTime = appointmentTime || (requestedAt ? this.normalizeTime(requestedAt) : null);
     const message = summary.message?.trim() || null;
     const amount = typeof summary.amount === 'number' ? summary.amount : null;
     const currency = summary.currency || 'CLP';
@@ -230,7 +232,10 @@ export class ClientQuotesStore {
       message,
       amount: amount ?? undefined,
       currency: currency ?? undefined,
-      validUntil: validUntil ?? undefined
+      validUntil: validUntil ?? undefined,
+      requestedTime,
+      appointmentDate: summary.appointment?.date || null,
+      appointmentTime: appointmentTime || null
     };
   }
 
@@ -256,6 +261,16 @@ export class ClientQuotesStore {
     if (/^https?:\/\//i.test(path)) return path;
     const normalized = path.startsWith('/') ? path : `/${path}`;
     return `${environment.apiBaseUrl}${normalized}`;
+  }
+
+  private normalizeTime(value?: string | null): string | null {
+    if (!value) return null;
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(value)) {
+      return value.slice(0, 5);
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
 
   private mapDetailQuote(detail: ClientQuoteDetailResponse['quote']): Quote {

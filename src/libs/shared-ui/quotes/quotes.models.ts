@@ -13,6 +13,7 @@ export interface Quote {
   serviceName: string;
   status: QuoteStatus;
   requestedAt: string;
+  requestedTime?: string | null;
   client: QuoteClient;
   provider?: QuoteProvider;
   message?: string | null;
@@ -22,6 +23,8 @@ export interface Quote {
   proposal?: QuoteProposalInfo | null;
   attachments?: QuoteAttachment[] | null;
   items?: QuoteItem[] | null;
+  appointmentDate?: string | null;
+  appointmentTime?: string | null;
 }
 
 export interface QuoteProposalInfo {

@@ -191,6 +191,11 @@ export class DashAgendaComponent implements OnInit {
         this.setView(viewParam as 'dashboard' | 'calendar' | 'cash' | 'config');
         this.updatingFromQuery = false;
       }
+      const dateParam = params.get('date');
+      const timeParam = params.get('time');
+      if (dateParam) {
+        this.focusDateFromQuery(dateParam, timeParam, params.get('quoteId'));
+      }
     });
 
     this.loadDashboardData();
@@ -961,6 +966,33 @@ export class DashAgendaComponent implements OnInit {
     } catch (err) {
       console.warn('[AGENDA] earnings summary exception', err);
     }
+  }
+
+  private focusDateFromQuery(dateParam: string, timeParam: string | null, quoteIdParam: string | null) {
+    const parsed = this.parseIsoDate(dateParam);
+    if (!parsed) {
+      console.warn('[AGENDA] No se pudo interpretar la fecha recibida desde cotizaciones', dateParam);
+      return;
+    }
+    if (this.currentView !== 'calendar') {
+      this.updatingFromQuery = true;
+      this.setView('calendar');
+      this.updatingFromQuery = false;
+    }
+    this.selectedDate = parsed;
+    this.loadMonth(parsed.getFullYear(), parsed.getMonth() + 1);
+    this.loadDay(dateParam);
+    if (quoteIdParam) {
+      console.debug('[AGENDA] Navegando desde cotización aceptada', { quoteId: quoteIdParam, dateParam, timeParam });
+    }
+  }
+
+  private parseIsoDate(raw: string): Date | null {
+    if (!raw) return null;
+    const direct = new Date(raw);
+    if (!Number.isNaN(direct.getTime())) return direct;
+    const fallback = new Date(`${raw}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
   }
 
   // Event handlers del calendario

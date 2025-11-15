@@ -16,6 +16,10 @@
           <span>Solicitado</span>
           <strong>{{ quote.requestedAt | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
         </div>
+        <div class="quotes-form__mini-card" *ngIf="requestedTimeLabel">
+          <span>Hora solicitada</span>
+          <strong>{{ requestedTimeLabel }}</strong>
+        </div>
         <div class="quotes-form__mini-card" *ngIf="quote.amount || quote.proposal?.amount">
           <span>Último monto</span>
           <strong>

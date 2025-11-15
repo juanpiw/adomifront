@@ -147,6 +147,8 @@ export class QuotesStore {
     const clientName = dto.client?.name?.trim() || 'Cliente Adomi';
     const serviceName = dto.serviceName?.trim() || 'Solicitud de servicio';
     const requestedAt = this.normalizeDate(dto.requestedAt) || new Date().toISOString();
+    const appointmentTime = this.normalizeTime(dto.appointment?.time);
+    const requestedTime = appointmentTime || this.normalizeTime(requestedAt);
     const message = dto.message?.trim() || null;
     const proposalInfo = dto.proposal;
     const normalizedAmount =
@@ -165,6 +167,7 @@ export class QuotesStore {
       status: this.normalizeStatus(dto.status),
       serviceName,
       requestedAt,
+      requestedTime,
       client: {
         id: dto.client?.id ?? dto.id,
         name: clientName,
@@ -175,6 +178,8 @@ export class QuotesStore {
       amount: normalizedAmount ?? undefined,
       currency: currency ?? undefined,
       validUntil: normalizedValidUntil ?? undefined,
+      appointmentDate: dto.appointment?.date || null,
+      appointmentTime: appointmentTime || null,
       proposal: proposalInfo
         ? {
             amount: typeof proposalInfo.amount === 'number' ? proposalInfo.amount : normalizedAmount,
@@ -208,6 +213,16 @@ export class QuotesStore {
     if (/^https?:\/\//i.test(path)) return path;
     const normalized = path.startsWith('/') ? path : `/${path}`;
     return `${environment.apiBaseUrl}${normalized}`;
+  }
+
+  private normalizeTime(value?: string | null): string | null {
+    if (!value) return null;
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(value)) {
+      return value.slice(0, 5);
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
 }
 

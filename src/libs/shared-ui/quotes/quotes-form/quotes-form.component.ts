@@ -61,6 +61,7 @@ export class QuotesFormComponent implements OnChanges {
   private readonly decimalPipe = inject(DecimalPipe);
 
   formattedAmount = '';
+  requestedTimeLabel: string | null = null;
   attachmentPreviews: AttachmentPreview[] = [];
   private uploadedAttachments: AttachmentPreview[] = [];
   private pendingUploads: AttachmentPreview[] = [];
@@ -88,6 +89,7 @@ export class QuotesFormComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['quote'] && this.quote) {
       this.patchFromQuote(this.quote);
+      this.requestedTimeLabel = this.buildRequestedTimeLabel(this.quote);
     }
     if (changes['proposalDetails'] && this.proposalDetails) {
       this.patchFromProposal(this.proposalDetails);
@@ -181,6 +183,16 @@ export class QuotesFormComponent implements OnChanges {
     } else {
       this.formattedAmount = '';
     }
+  }
+
+  private buildRequestedTimeLabel(quote: Quote): string | null {
+    if (quote.appointmentTime) {
+      return quote.appointmentTime.slice(0, 5);
+    }
+    if (!quote.requestedAt) return null;
+    const date = new Date(quote.requestedAt);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   }
 
   private patchFromProposal(proposal: { amount?: number | null; details?: string | null; validity?: string | null }): void {

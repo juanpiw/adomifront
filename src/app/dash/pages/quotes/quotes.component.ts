@@ -72,13 +72,37 @@ export class DashQuotesComponent implements OnInit {
   onManageAppointment(quote: Quote): void {
     if (!quote) return;
     const queryParams: Record<string, string> = {
-      quoteId: String(quote.id)
+      quoteId: String(quote.id),
+      view: 'calendar'
     };
     if (quote.client?.id) {
       queryParams['clientId'] = String(quote.client.id);
     }
     if (quote.serviceName) {
       queryParams['service'] = quote.serviceName;
+    }
+    if (quote.amount ?? quote.proposal?.amount) {
+      const amountValue = quote.amount ?? quote.proposal?.amount;
+      if (typeof amountValue === 'number') {
+        queryParams['amount'] = String(amountValue);
+      }
+    }
+    const requestedDate = quote.appointmentDate || quote.requestedAt;
+    if (requestedDate) {
+      const parsed = new Date(requestedDate);
+      if (!Number.isNaN(parsed.getTime())) {
+        queryParams['date'] = `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+        queryParams['time'] = `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
+      }
+    }
+    if (quote.appointmentTime) {
+      queryParams['time'] = quote.appointmentTime.slice(0, 5);
+    }
+    if (quote.appointmentDate) {
+      queryParams['date'] = quote.appointmentDate;
+    }
+    if (quote.message) {
+      queryParams['message'] = quote.message;
     }
     if (quote.requestedAt) {
       queryParams['requestedAt'] = quote.requestedAt;
