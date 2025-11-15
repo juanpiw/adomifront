@@ -1,16 +1,8 @@
 .quotes-grid {
-  display: grid;
+  display: inline-flex;
+  flex-direction: column;
   width: 100%;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1.25rem;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 

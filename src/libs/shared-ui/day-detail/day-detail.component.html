@@ -159,7 +159,8 @@
 <app-modal-agendar-cita
   [isOpen]="isModalOpen"
   [selectedDate]="selectedDate || undefined"
-  [mode]="'bloqueo'"
+  [mode]="modalMode"
+  [presetData]="modalPresetData"
   (close)="onCloseModal()"
   (citaCreated)="onCitaCreated($event)"
   (espacioBloqueado)="onEspacioBloqueado($event)">

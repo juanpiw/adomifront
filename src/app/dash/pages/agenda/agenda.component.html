@@ -156,6 +156,7 @@
         [appointments]="dayAppointments"
         [loading]="loading"
         [quoteFocusHint]="quoteFocusHint"
+        [quoteDraft]="quoteAppointmentDraft"
         (appointmentClick)="onAppointmentClick($event)"
         (newAppointment)="onNewAppointmentForDay($event)"
         (citaCreated)="onDayCitaCreated($event)"
@@ -168,7 +169,8 @@
         (updateLocation)="onUpdateAppointmentLocation($event)"
         (viewClientProfile)="onViewClientProfile($event)"
         (reviewClient)="onReviewClient($event)"
-        (quoteFocusHandled)="onQuoteFocusHandled()">
+        (quoteFocusHandled)="onQuoteFocusHandled()"
+        (quoteDraftHandled)="onQuoteDraftHandled()">
         <ng-template #appointmentActionsTemplate let-appointment="appointment">
           <button *ngIf="appointment.status === 'scheduled'"
                   class="day-detail__action-btn day-detail__action-btn--confirm"

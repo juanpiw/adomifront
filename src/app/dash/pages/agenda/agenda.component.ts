@@ -41,6 +41,14 @@ interface QuoteFocusHint {
   message?: string | null;
 }
 
+interface QuoteDraftContext {
+  serviceName?: string | null;
+  clientName?: string | null;
+  date?: string | null;
+  time?: string | null;
+  message?: string | null;
+}
+
 
 @Component({
   selector: 'app-d-agenda',
@@ -72,6 +80,7 @@ export class DashAgendaComponent implements OnInit {
   dayAppointments: DayAppointment[] = [];
   private pendingQuoteContext: PendingQuoteContext | null = null;
   quoteFocusHint: QuoteFocusHint | null = null;
+  quoteAppointmentDraft: QuoteDraftContext | null = null;
 
   // Datos de configuración de horarios
   timeBlocks: TimeBlock[] = [];
@@ -1031,11 +1040,22 @@ export class DashAgendaComponent implements OnInit {
       serviceName: this.pendingQuoteContext.serviceName ?? null,
       message: this.pendingQuoteContext.message ?? null
     };
+    this.quoteAppointmentDraft = {
+      serviceName: this.pendingQuoteContext.serviceName ?? null,
+      clientName: this.pendingQuoteContext.clientName ?? null,
+      date: this.pendingQuoteContext.date,
+      time: this.pendingQuoteContext.time ?? null,
+      message: this.pendingQuoteContext.message ?? null
+    };
     this.pendingQuoteContext = null;
   }
 
   onQuoteFocusHandled(): void {
     this.quoteFocusHint = null;
+  }
+
+  onQuoteDraftHandled(): void {
+    this.quoteAppointmentDraft = null;
   }
 
   private parseIsoDate(raw: string): Date | null {

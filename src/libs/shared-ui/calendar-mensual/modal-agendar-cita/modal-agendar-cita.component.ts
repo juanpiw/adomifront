@@ -46,6 +46,7 @@ export class ModalAgendarCitaComponent implements OnChanges {
   @Input() isOpen: boolean = false;
   @Input() selectedDate?: Date;
   @Input() mode: 'cita' | 'bloqueo' = 'bloqueo'; // Modo por defecto: bloqueo
+  @Input() presetData: Partial<NuevaCitaData> | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() citaCreated = new EventEmitter<NuevaCitaData>();
   @Output() espacioBloqueado = new EventEmitter<BloqueoData>();
@@ -85,6 +86,13 @@ export class ModalAgendarCitaComponent implements OnChanges {
         const today = this.formatDateForInput(new Date());
         this.appointmentForm.patchValue({ date: today });
       }
+      if (this.mode === 'cita' && this.presetData) {
+        this.applyPreset(this.presetData);
+      }
+    }
+
+    if (changes['presetData'] && this.isOpen && this.mode === 'cita' && changes['presetData'].currentValue) {
+      this.applyPreset(changes['presetData'].currentValue as Partial<NuevaCitaData>);
     }
   }
 
@@ -127,6 +135,29 @@ export class ModalAgendarCitaComponent implements OnChanges {
   resetForm(): void {
     this.appointmentForm.reset();
     this.selectedColor = '#4338ca';
+  }
+
+  private applyPreset(data: Partial<NuevaCitaData>): void {
+    const patch: Partial<NuevaCitaData> = {};
+    if (typeof data.title === 'string') {
+      patch.title = data.title;
+    }
+    if (typeof data.client === 'string') {
+      patch.client = data.client;
+    }
+    if (typeof data.date === 'string' && data.date.trim().length) {
+      patch.date = data.date;
+    }
+    if (typeof data.startTime === 'string') {
+      patch.startTime = data.startTime;
+    }
+    if (typeof data.endTime === 'string') {
+      patch.endTime = data.endTime;
+    }
+    if (typeof data.notes === 'string') {
+      patch.notes = data.notes;
+    }
+    this.appointmentForm.patchValue(patch, { emitEvent: false });
   }
 
   onSubmit(): void {

@@ -135,7 +135,7 @@ export class ClientQuotesComponent implements OnInit {
     const formattedAmount = typeof amount === 'number' ? formatter.format(amount) : 'el monto propuesto';
     const validUntil = this.getProposalValidUntil(quote);
     const dateLabel = validUntil ? ` antes del ${new Date(validUntil).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}` : '';
-    return `Se notificará al profesional y comenzarán los pasos siguientes para coordinar el servicio "${quote.serviceName}". Confirmas que deseas aceptar la propuesta por ${formattedAmount}${dateLabel}?`;
+    return `Se notificará al profesional y comenzarán los pasos siguientes para coordinar el servicio "${quote.serviceName}". Una vez que el profesional gestione la cita, aparecerá en tu sección de reservas. Confirmas que deseas aceptar la propuesta por ${formattedAmount}${dateLabel}?`;
   }
 }
 

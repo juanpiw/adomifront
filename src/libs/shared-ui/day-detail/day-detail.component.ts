@@ -38,6 +38,14 @@ type QuoteFocusHintInput = {
   message?: string | null;
 };
 
+type QuoteDraftInput = {
+  serviceName?: string | null;
+  clientName?: string | null;
+  date?: string | null;
+  time?: string | null;
+  message?: string | null;
+};
+
 @Component({
   selector: 'app-day-detail',
   standalone: true,
@@ -51,6 +59,7 @@ export class DayDetailComponent implements OnChanges {
   @Input() professionalName: string = 'Nombre (Título)';
   @Input() loading: boolean = false;
   @Input() quoteFocusHint: QuoteFocusHintInput | null = null;
+  @Input() quoteDraft: QuoteDraftInput | null = null;
   readonly fallbackAvatar = 'assets/default-avatar.png';
 
   @Output() appointmentClick = new EventEmitter<DayAppointment>();
@@ -66,15 +75,21 @@ export class DayDetailComponent implements OnChanges {
   @Output() viewClientProfile = new EventEmitter<DayAppointment>();
   @Output() reviewClient = new EventEmitter<DayAppointment>();
   @Output() quoteFocusHandled = new EventEmitter<void>();
+  @Output() quoteDraftHandled = new EventEmitter<void>();
 
   isModalOpen: boolean = false;
   quoteFocusBanner: QuoteFocusHintInput | null = null;
   private highlightedAppointmentId: string | null = null;
   private highlightedTime: string | null = null;
+  modalMode: 'cita' | 'bloqueo' = 'bloqueo';
+  modalPresetData: Partial<NuevaCitaData> | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['quoteFocusHint']) {
       this.applyQuoteFocusHint(changes['quoteFocusHint'].currentValue as QuoteFocusHintInput | null);
+    }
+    if (changes['quoteDraft'] && changes['quoteDraft'].currentValue) {
+      this.openQuoteDraft(changes['quoteDraft'].currentValue as QuoteDraftInput);
     }
   }
 
@@ -217,8 +232,41 @@ export class DayDetailComponent implements OnChanges {
     return false;
   }
 
+  private openQuoteDraft(draft: QuoteDraftInput): void {
+    this.modalMode = 'cita';
+    const dateInput = draft.date || (this.selectedDate ? this.formatDateForInput(this.selectedDate) : '');
+    const startTime = draft.time || '';
+    this.modalPresetData = {
+      title: draft.serviceName || 'Nueva cita',
+      client: draft.clientName || '',
+      date: dateInput,
+      startTime,
+      endTime: startTime ? this.addMinutesToTime(startTime, 60) : '',
+      notes: draft.message || ''
+    };
+    this.isModalOpen = true;
+    this.quoteDraftHandled.emit();
+  }
+
+  private addMinutesToTime(time: string, minutesToAdd: number): string {
+    const [hours, minutes] = time.split(':').map(Number);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return '';
+    const date = new Date();
+    date.setHours(hours, minutes + minutesToAdd, 0, 0);
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   onNewAppointment() {
     this.isModalOpen = true;
+    this.modalMode = 'bloqueo';
+    this.modalPresetData = null;
     if (this.selectedDate) {
       this.newAppointment.emit(this.selectedDate);
     }
@@ -226,6 +274,8 @@ export class DayDetailComponent implements OnChanges {
 
   onCloseModal() {
     this.isModalOpen = false;
+    this.modalPresetData = null;
+    this.modalMode = 'bloqueo';
   }
 
   onCitaCreated(citaData: NuevaCitaData) {
