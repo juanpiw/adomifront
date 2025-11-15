@@ -26,4 +26,28 @@ export class ReservaPasadaCardComponent {
   @Output() onReview = new EventEmitter<void>();
   @Output() onReschedule = new EventEmitter<void>();
   @Output() onToggleFavorite = new EventEmitter<void>();
+
+  private avatarBroken = false;
+
+  get avatarSrc(): string {
+    if (!this.data?.avatarUrl || this.avatarBroken) {
+      return this.buildPlaceholder(this.data?.titulo);
+    }
+    return this.data.avatarUrl;
+  }
+
+  onAvatarError(event: Event): void {
+    if (this.avatarBroken) return;
+    this.avatarBroken = true;
+    const img = event.target as HTMLImageElement | null;
+    if (img) {
+      img.src = this.buildPlaceholder(this.data?.titulo);
+    }
+  }
+
+  private buildPlaceholder(text?: string | null): string {
+    const initial = (text || 'A').trim().charAt(0).toUpperCase() || 'A';
+    const encoded = encodeURIComponent(initial);
+    return `https://placehold.co/64x64/0f172a/ffffff?text=${encoded}`;
+  }
 }

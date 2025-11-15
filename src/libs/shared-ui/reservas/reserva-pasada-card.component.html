@@ -10,7 +10,7 @@
     <ui-icon name="heart" class="rp-fav__icon"></ui-icon>
   </button>
   <div class="rp-row">
-    <img [src]="data.avatarUrl" class="rp-avatar" [alt]="data.titulo">
+    <img [src]="avatarSrc" class="rp-avatar" [alt]="data.titulo" (error)="onAvatarError($event)">
     <div class="rp-info">
       <p class="rp-title">{{ data.titulo }}</p>
       <p class="rp-date">{{ data.fecha }}</p>
