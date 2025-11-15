@@ -313,6 +313,10 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     const intendedRole = user?.intendedRole;
     console.log('[GOOGLE_SUCCESS] Rol final para redirección:', { finalRole, pendingRole, intendedRole, mode });
 
+    if (typeof sessionStorage !== 'undefined' && finalRole !== 'provider') {
+      sessionStorage.removeItem('providerOnboarding');
+    }
+
     // Nuevo: si el usuario fue creado como client pero viene con pending_role/intendedRole provider en registro → ir a select-plan
     if ((finalRole === 'provider') || (finalRole === 'client' && (pendingRole === 'provider' || intendedRole === 'provider'))) {
       console.log('[GOOGLE_SUCCESS] Redirigiendo provider, mode:', mode);

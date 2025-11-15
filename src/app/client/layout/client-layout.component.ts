@@ -82,10 +82,18 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       try {
         const po = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('providerOnboarding') : null;
         if (po === '1') {
-          console.log('[CLIENT_LAYOUT] Provider onboarding activo - omitiendo cargas/redirecciones de cliente');
-          return;
+          const authUser = this.auth.getCurrentUser() || this.safeParseLocalUser();
+          if (authUser?.role === 'provider') {
+            console.log('[CLIENT_LAYOUT] Provider onboarding activo - omitiendo cargas/redirecciones de cliente');
+            return;
+          } else {
+            console.log('[CLIENT_LAYOUT] Flag providerOnboarding detectado pero usuario no es proveedor. Limpiando flag.');
+            sessionStorage.removeItem('providerOnboarding');
+          }
         }
-      } catch {}
+      } catch (err) {
+        console.warn('[CLIENT_LAYOUT] Error evaluando providerOnboarding flag', err);
+      }
       this.loadClientData();
       // Inicializar notificaciones push
       this.initializeNotifications();
@@ -225,6 +233,21 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
         this.switchError = message;
       }
     });
+  }
+
+  private safeParseLocalUser(): { role?: string } | null {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+    try {
+      const raw = localStorage.getItem('adomi_user');
+      if (!raw || raw === 'undefined' || raw === 'null') {
+        return null;
+      }
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
   }
 
   private loadClientData() {
