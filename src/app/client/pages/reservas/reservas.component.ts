@@ -909,6 +909,7 @@ export class ClientReservasComponent implements OnInit {
       next: () => {
         this.notifications.createNotification({
           type: 'appointment',
+          profile: 'client',
           title: 'Servicio confirmado',
           message: 'Gracias por confirmar. El pago se liberará al profesional.',
           priority: 'low',
@@ -961,6 +962,7 @@ export class ClientReservasComponent implements OnInit {
       next: () => {
         this.notifications.createNotification({
           type: 'system',
+          profile: 'client',
           title: 'Reporte recibido',
           message: 'Gracias por informarnos. Revisaremos el caso y te avisaremos.',
           priority: 'medium',

@@ -1176,8 +1176,10 @@ export class DashAgendaComponent implements OnInit {
     return null;
   }
 
-  private normalizeNumberParam(raw: string | null): number | null {
-    if (!raw) return null;
+  private normalizeNumberParam(raw: string | number | null | undefined): number | null {
+    if (raw === null || raw === undefined || raw === '') {
+      return null;
+    }
     const parsed = Number(raw);
     return Number.isFinite(parsed) ? parsed : null;
   }
