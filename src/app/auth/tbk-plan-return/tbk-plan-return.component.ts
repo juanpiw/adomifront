@@ -76,6 +76,10 @@ export class TbkPlanReturnComponent implements OnInit {
     }
 
     try {
+      console.log('[TBK_PLAN_RETURN] token_ws:', token);
+    } catch {}
+
+    try {
       const response = await firstValueFrom(this.planService.commitTbkPlanPayment(token));
       if (!response?.ok) {
         this.redirectWithError('commit_failed');
