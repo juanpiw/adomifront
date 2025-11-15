@@ -11,6 +11,8 @@ export interface ProviderQuoteDto {
   status: QuoteStatus | 'draft';
   serviceName: string;
   requestedAt: string;
+  preferredDate?: string | null;
+  preferredTimeRange?: string | null;
   client: {
     id: number;
     name: string;

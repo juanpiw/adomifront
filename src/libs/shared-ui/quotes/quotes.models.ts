@@ -26,6 +26,8 @@ export interface Quote {
   items?: QuoteItem[] | null;
   appointmentDate?: string | null;
   appointmentTime?: string | null;
+  preferredDate?: string | null;
+  preferredTimeRange?: string | null;
 }
 
 export interface QuoteProposalInfo {

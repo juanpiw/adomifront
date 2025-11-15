@@ -106,7 +106,7 @@ export class DashQuotesComponent implements OnInit {
   }
 
   private extractQuoteDate(quote: Quote): string | null {
-    const candidates = [quote.appointmentDate, quote.requestedAt];
+    const candidates = [quote.preferredDate, quote.appointmentDate, quote.requestedAt];
     for (const value of candidates) {
       const normalized = this.normalizeDateOnly(value);
       if (normalized) return normalized;
@@ -128,7 +128,11 @@ export class DashQuotesComponent implements OnInit {
   }
 
   private extractQuoteTime(quote: Quote): string | null {
-    const candidates = [quote.appointmentTime, quote.requestedTime];
+    const candidates = [
+      this.normalizeTime(this.extractStartTimeFromRange(quote.preferredTimeRange)),
+      quote.appointmentTime,
+      quote.requestedTime
+    ];
     for (const value of candidates) {
       const normalized = this.normalizeTime(value);
       if (normalized) return normalized;
@@ -152,6 +156,18 @@ export class DashQuotesComponent implements OnInit {
       return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
     }
     return null;
+  }
+
+  private extractStartTimeFromRange(range?: string | null): string | null {
+    if (!range) return null;
+    const match = range.match(/(\d{1,2})[:.](\d{2})/);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+    const h = String(Math.max(0, Math.min(23, hours))).padStart(2, '0');
+    const m = String(Math.max(0, Math.min(59, minutes))).padStart(2, '0');
+    return `${h}:${m}`;
   }
 
   private extractQuoteAmount(quote: Quote): string | null {

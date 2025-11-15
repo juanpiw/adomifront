@@ -186,6 +186,9 @@ export class QuotesFormComponent implements OnChanges {
   }
 
   private buildRequestedTimeLabel(quote: Quote): string | null {
+    if (quote.preferredTimeRange) {
+      return quote.preferredTimeRange;
+    }
     if (quote.appointmentTime) {
       return quote.appointmentTime.slice(0, 5);
     }

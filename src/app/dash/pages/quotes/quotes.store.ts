@@ -181,6 +181,8 @@ export class QuotesStore {
       validUntil: normalizedValidUntil ?? undefined,
       appointmentDate: dto.appointment?.date || null,
       appointmentTime: appointmentTime || null,
+      preferredDate: dto.preferredDate || null,
+      preferredTimeRange: dto.preferredTimeRange || null,
       proposal: proposalInfo
         ? {
             amount: typeof proposalInfo.amount === 'number' ? proposalInfo.amount : normalizedAmount,

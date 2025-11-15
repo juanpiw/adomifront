@@ -26,6 +26,8 @@ export interface ClientQuoteSummary {
   status: 'new' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'draft';
   serviceName: string;
   requestedAt: string;
+  preferredDate?: string | null;
+  preferredTimeRange?: string | null;
   provider: {
     id: number;
     name: string;

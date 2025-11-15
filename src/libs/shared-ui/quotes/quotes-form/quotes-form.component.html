@@ -20,6 +20,14 @@
           <span>Hora solicitada</span>
           <strong>{{ requestedTimeLabel }}</strong>
         </div>
+        <div class="quotes-form__mini-card" *ngIf="quote.preferredDate">
+          <span>Fecha del servicio</span>
+          <strong>{{ quote.preferredDate | date : 'dd MMM yyyy' : undefined : 'es-CL' }}</strong>
+        </div>
+        <div class="quotes-form__mini-card" *ngIf="quote.preferredTimeRange">
+          <span>Horario preferido</span>
+          <strong>{{ quote.preferredTimeRange }}</strong>
+        </div>
         <div class="quotes-form__mini-card" *ngIf="quote.amount || quote.proposal?.amount">
           <span>Último monto</span>
           <strong>

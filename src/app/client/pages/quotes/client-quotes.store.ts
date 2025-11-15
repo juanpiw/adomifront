@@ -236,7 +236,9 @@ export class ClientQuotesStore {
       validUntil: validUntil ?? undefined,
       requestedTime,
       appointmentDate: summary.appointment?.date || null,
-      appointmentTime: appointmentTime || null
+      appointmentTime: appointmentTime || null,
+      preferredDate: summary.preferredDate || null,
+      preferredTimeRange: summary.preferredTimeRange || null
     };
   }
 
