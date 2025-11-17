@@ -125,10 +125,13 @@
         <span *ngIf="promoMeta.remaining_spots !== null">
           Cupos disponibles: {{ promoMeta.remaining_spots }}.
         </span>
-        <span *ngIf="promoMeta.metadata?.founder_commune">
-          Bienvenido/a Fundador en {{ promoMeta.metadata.founder_commune }}.
+        <span *ngIf="promoMeta.metadata?.['founder_commune'] as founderCommune">
+          Bienvenido/a Fundador en {{ founderCommune }}.
         </span>
-        <span *ngIf="promoMeta.metadata?.founder_region && promoMeta.metadata?.founder_commune" class="promo-meta__badge">
+        <span
+          *ngIf="promoMeta.metadata?.['founder_region'] && promoMeta.metadata?.['founder_commune']"
+          class="promo-meta__badge"
+        >
           Campaña RM
         </span>
       </div>
