@@ -163,6 +163,17 @@ export class AdminPaymentsService {
     const qs = type ? `?type=${type}` : '';
     return this.http.post<any>(`${this.baseUrl}/admin/verification/requests/${id}/reject${qs}`, { reason, notes, type }, { headers: this.headers(secret, token) });
   }
+
+  listFounderCodes(secret: string, token: string | null) {
+    return this.http.get<any>(`${this.baseUrl}/founder-codes`, { headers: this.headers(secret, token) });
+  }
+
+  exportFounderCodes(secret: string, token: string | null) {
+    return this.http.get(`${this.baseUrl}/founder-codes/export.csv`, {
+      headers: this.headers(secret, token),
+      responseType: 'text'
+    });
+  }
 }
 
 

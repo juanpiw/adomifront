@@ -122,6 +122,15 @@
         <span *ngIf="promoMeta.max_duration_months">
           Incluye {{ promoMeta.max_duration_months }} meses gratuitos.
         </span>
+        <span *ngIf="promoMeta.remaining_spots !== null">
+          Cupos disponibles: {{ promoMeta.remaining_spots }}.
+        </span>
+        <span *ngIf="promoMeta.metadata?.founder_commune">
+          Bienvenido/a Fundador en {{ promoMeta.metadata.founder_commune }}.
+        </span>
+        <span *ngIf="promoMeta.metadata?.founder_region && promoMeta.metadata?.founder_commune" class="promo-meta__badge">
+          Campaña RM
+        </span>
       </div>
     </div>
 

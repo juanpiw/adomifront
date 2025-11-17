@@ -324,6 +324,127 @@
   border: 1px solid #fecaca;
 }
 
+.founder-codes-panel {
+  margin: 32px 0;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.founder-codes-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #0f172a;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: #475569;
+    font-size: 14px;
+  }
+}
+
+.founder-codes-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.founder-codes-panel__loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+}
+
+.founder-codes-panel__empty {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.founder-codes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead th {
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  tbody td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f8fafc;
+  }
+}
+
+.founder-codes-table__muted {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.founder-codes-table__chip {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e0f2fe;
+  color: #0369a1;
+
+  &--low {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+.founder-codes-table__status {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-transform: capitalize;
+
+  &--active {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  &--expired {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &--disabled {
+    background: #e2e8f0;
+    color: #475569;
+  }
+}
+
+.founder-codes-table__row--region {
+  background: #f0f9ff !important;
+}
+
 .verification-card {
   margin: 24px 0;
   padding: 20px;

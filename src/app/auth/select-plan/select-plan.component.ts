@@ -50,6 +50,7 @@ interface PromoValidationResponse {
     expires_at?: string;
     max_duration_months?: number;
     remaining_spots?: number;
+    metadata?: Record<string, any> | null;
   };
   error?: string;
 }

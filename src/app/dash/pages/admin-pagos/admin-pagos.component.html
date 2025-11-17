@@ -240,6 +240,82 @@
     <div *ngIf="founderErrorMsg" class="founder-card__message founder-card__message--error">{{ founderErrorMsg }}</div>
   </section>
 
+  <section *ngIf="adminSecret" class="founder-codes-panel">
+    <div class="founder-codes-panel__header">
+      <div>
+        <h3>Códigos Fundador por comuna</h3>
+        <p>Lista oficial para campañas impresas. Cada código expira a los 90 días o cuando se ocupan los cupos.</p>
+      </div>
+      <div class="founder-codes-panel__actions">
+        <button type="button" class="btn-secondary" (click)="loadFounderCodes()" [disabled]="founderCodesLoading">
+          {{ founderCodesLoading ? 'Actualizando…' : 'Refrescar' }}
+        </button>
+        <button type="button" class="btn-primary" (click)="exportFounderCodesCsv()" [disabled]="founderExporting || !founderCodes.length">
+          {{ founderExporting ? 'Generando CSV…' : 'Exportar CSV' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="founderCodesLoading" class="founder-codes-panel__loading">
+      <span class="spinner"></span>
+      Cargando comunas…
+    </div>
+
+    <div *ngIf="founderCodesError" class="founder-card__message founder-card__message--error">
+      {{ founderCodesError }}
+    </div>
+
+    <table *ngIf="!founderCodesLoading && founderCodes.length" class="table founder-codes-table">
+      <thead>
+        <tr>
+          <th>Comuna / Región</th>
+          <th>Código</th>
+          <th>Cupos</th>
+          <th>Usos</th>
+          <th>Restantes</th>
+          <th>Beneficio</th>
+          <th>Vigencia</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of founderCodes" [class.founder-codes-table__row--region]="item.category === 'region'">
+          <td>
+            <strong>{{ item.commune }}</strong>
+            <div class="founder-codes-table__muted">{{ item.region }}</div>
+          </td>
+          <td>{{ item.code }}</td>
+          <td>{{ item.max_uses === null ? '∞' : item.max_uses }}</td>
+          <td>{{ item.current_uses }}</td>
+          <td>
+            <span [ngClass]="{
+              'founder-codes-table__chip': true,
+              'founder-codes-table__chip--low': item.max_uses !== null && (item.max_uses - item.current_uses) <= 5
+            }">
+              {{ item.max_uses === null ? '∞' : (item.max_uses - item.current_uses) }}
+            </span>
+          </td>
+          <td>{{ item.benefit_months || 3 }} meses</td>
+          <td>
+            <div class="founder-codes-table__muted">Desde {{ item.valid_from | date:'dd/MM/yyyy' }}</div>
+            <div class="founder-codes-table__muted">Hasta {{ item.valid_until | date:'dd/MM/yyyy' }}</div>
+          </td>
+          <td>
+            <span class="founder-codes-table__status" [ngClass]="{
+              'founder-codes-table__status--active': item.status === 'active',
+              'founder-codes-table__status--expired': item.status === 'expired',
+              'founder-codes-table__status--disabled': item.status === 'disabled'
+            }">{{ item.status }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="!founderCodesLoading && !founderCodes.length" class="founder-codes-panel__empty">
+      No hay códigos registrados.
+    </p>
+  </section>
+
   <section *ngIf="adminSecret" class="verification-card">
     <div class="verification-card__header">
       <div class="verification-card__header-info">

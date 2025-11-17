@@ -74,6 +74,10 @@ export class AdminPagosComponent implements OnInit {
   founderExpiryMonths: number | null = 6;
   founderNotes = '';
   selectedCashDebtId: number | null = null;
+  founderCodes: any[] = [];
+  founderCodesLoading = false;
+  founderCodesError: string | null = null;
+  founderExporting = false;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -86,6 +90,7 @@ export class AdminPagosComponent implements OnInit {
     if (this.adminSecret) {
       this.cashPayments.setSecret(this.adminSecret);
       this.load();
+      this.loadFounderCodes();
     }
   }
 
@@ -133,6 +138,7 @@ export class AdminPagosComponent implements OnInit {
             this.cashDebts = [];
           }
           this.loadVerificationRequests(this.verificationFilter);
+          this.loadFounderCodes();
         } else {
           this.error = 'Respuesta inválida';
         }
@@ -140,6 +146,48 @@ export class AdminPagosComponent implements OnInit {
       error: (err: any) => {
         this.loading = false;
         this.error = err?.error?.error || 'Error cargando pagos';
+      }
+    });
+  }
+
+  loadFounderCodes() {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.founderCodesLoading = true;
+    this.founderCodesError = null;
+    this.adminApi.listFounderCodes(this.adminSecret, token).subscribe({
+      next: (res: any) => {
+        this.founderCodesLoading = false;
+        this.founderCodes = res?.codes || [];
+      },
+      error: (err: any) => {
+        this.founderCodesLoading = false;
+        this.founderCodesError = err?.error?.error || 'No fue posible cargar los códigos Fundador.';
+        this.founderCodes = [];
+      }
+    });
+  }
+
+  exportFounderCodesCsv() {
+    if (!this.adminSecret || this.founderExporting) return;
+    const token = this.session.getAccessToken();
+    this.founderExporting = true;
+    this.adminApi.exportFounderCodes(this.adminSecret, token).subscribe({
+      next: (text: string) => {
+        this.founderExporting = false;
+        const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `fundadores-rm-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        this.founderExporting = false;
+        this.founderCodesError = err?.error?.error || 'No fue posible exportar los códigos Fundador.';
       }
     });
   }

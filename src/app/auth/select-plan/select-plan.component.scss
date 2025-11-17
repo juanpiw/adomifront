@@ -611,6 +611,20 @@
   gap: 6px;
   color: #cbd5f5;
   font-size: 0.9rem;
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(244, 114, 182, 0.2);
+    color: #f472b6;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
 }
 
 .plan-limits {
