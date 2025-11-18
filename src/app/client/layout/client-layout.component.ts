@@ -14,6 +14,7 @@ import { ChatService, MessageDto } from '../../services/chat.service';
 import { AppointmentsService, AppointmentDto } from '../../services/appointments.service';
 import { NotificationsService } from '../../services/notifications.service';
 import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
+import { ensureTempUserData, needsProviderPlan } from '../../auth/utils/provider-onboarding.util';
 
 @Component({
   selector: 'app-client-layout',
@@ -70,6 +71,21 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
           this.isCollapsed = false;
         }
       });
+    }
+
+    if (isPlatformBrowser(this.platformId)) {
+      const authUser = this.auth.getCurrentUser() || this.safeParseLocalUser();
+      if (needsProviderPlan(authUser)) {
+        console.log('[CLIENT_LAYOUT] Detectado onboarding pendiente. Redirigiendo a /auth/select-plan');
+        ensureTempUserData(authUser);
+        try {
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('providerOnboarding', '1');
+          }
+        } catch {}
+        this.router.navigateByUrl('/auth/select-plan');
+        return;
+      }
     }
 
     // Suscribirse al servicio de menú para controlar el sidebar desde el chat

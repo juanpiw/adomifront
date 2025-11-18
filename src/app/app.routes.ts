@@ -44,6 +44,7 @@ import { PerfilSolicitanteComponent } from './client/pages/perfil-solicitante/pe
 import { DashQuotesComponent } from './dash/pages/quotes/quotes.component';
 import { quotesFeatureGuard } from './dash/pages/quotes/quotes.guard';
 import { ClientQuotesComponent } from './client/pages/quotes/client-quotes.component';
+import { providerOnboardingGuard, providerOnboardingChildGuard } from './auth/guards/provider-onboarding.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -51,7 +52,7 @@ export const routes: Routes = [
   { path: 'tbk/plan-return', component: TbkPlanReturnComponent },
   { path: 'libreria', component: LibraryComponent },
   { path: 'onboarding', component: OnboardingComponent },
-  { path: 'client', component: ClientLayoutComponent, children: [
+  { path: 'client', component: ClientLayoutComponent, canActivate: [providerOnboardingGuard], canActivateChild: [providerOnboardingChildGuard], children: [
       { path: '', redirectTo: 'explorar', pathMatch: 'full' },
       { path: 'explorar', component: ExplorarComponent },
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
@@ -84,7 +85,7 @@ export const routes: Routes = [
           { path: 'google/callback', component: GoogleCallbackComponent },
           { path: 'google/success', component: GoogleSuccessComponent }
         ] },
-  { path: 'dash', component: DashLayoutComponent, children: [
+  { path: 'dash', component: DashLayoutComponent, canActivate: [providerOnboardingGuard], canActivateChild: [providerOnboardingChildGuard], children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: DashHomeComponent },
       { path: 'agenda', component: DashAgendaComponent },

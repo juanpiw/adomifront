@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { GoogleAuthService } from '../services/google-auth.service';
-import { AuthService } from '../services/auth.service';
+import { AuthService, AuthUser } from '../services/auth.service';
+import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
 
 @Component({
   selector: 'app-google-success',
@@ -281,7 +282,7 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     }
   }
 
-  private redirectAfterGoogle(user: any) {
+  private redirectAfterGoogle(user: AuthUser | any) {
     if (!isPlatformBrowser(this.platformId)) return;
     const role = user?.role;
     console.log('[GOOGLE_SUCCESS] redirectAfterGoogle - user:', user, 'role:', role);
@@ -311,43 +312,41 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
     const finalRole = user?.role;
     const pendingRole = user?.pending_role;
     const intendedRole = user?.intendedRole;
-    console.log('[GOOGLE_SUCCESS] Rol final para redirección:', { finalRole, pendingRole, intendedRole, mode });
+    const requiresPlan = needsProviderPlan(user);
+    console.log('[GOOGLE_SUCCESS] Rol final para redirección:', { finalRole, pendingRole, intendedRole, mode, requiresPlan });
 
-    if (typeof sessionStorage !== 'undefined' && finalRole !== 'provider') {
-      sessionStorage.removeItem('providerOnboarding');
-    }
-
-    // Nuevo: si el usuario fue creado como client pero viene con pending_role/intendedRole provider en registro → ir a select-plan
-    if ((finalRole === 'provider') || (finalRole === 'client' && (pendingRole === 'provider' || intendedRole === 'provider'))) {
-      console.log('[GOOGLE_SUCCESS] Redirigiendo provider, mode:', mode);
-      if (mode === 'register') {
-        // Sembrar datos mínimos para el flujo de plan/checkout
-        try {
-          const temp = { email: user?.email || '', name: user?.name || '', role: 'provider' };
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.setItem('tempUserData', JSON.stringify(temp));
+    if (requiresPlan) {
+      console.log('[GOOGLE_SUCCESS] Usuario requiere completar plan. Forzando select-plan.');
+      try {
+        ensureTempUserData(user);
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('providerOnboarding', '1');
+          if (!mode) {
             sessionStorage.setItem('googleAuthMode', 'register');
-            // Marcar onboarding de proveedor para evitar redirecciones del layout de cliente
-            sessionStorage.setItem('providerOnboarding', '1');
           }
-          console.log('[GOOGLE_SUCCESS] Navegando a select-plan con temp data:', temp);
-        } catch {}
-        // Forzar navegación dura para evitar intercepciones
-        if (typeof window !== 'undefined') {
-          clearInterval(this.countdownInterval);
-          window.location.assign('/auth/select-plan');
-          return;
         }
-        this.router.navigate(['/auth/select-plan']);
+      } catch (err) {
+        console.warn('[GOOGLE_SUCCESS] No se pudo asegurar tempUserData', err);
+      }
+      if (typeof window !== 'undefined') {
+        clearInterval(this.countdownInterval);
+        window.location.assign('/auth/select-plan');
         return;
       }
-      // Provider existente → ir al dashboard
-      console.log('[GOOGLE_SUCCESS] Navegando a dash para provider existente');
+      this.router.navigate(['/auth/select-plan']);
+      return;
+    }
+
+    if (finalRole === 'provider') {
+      console.log('[GOOGLE_SUCCESS] Navegando a dash para provider estable');
       this.router.navigate(['/dash']);
       return;
     }
 
-    // Clientes → a su área
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('providerOnboarding');
+    }
+
     console.log('[GOOGLE_SUCCESS] Navegando a client/reservas para cliente');
     this.router.navigate(['/client/reservas']);
   }

@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { AuthService } from '../services/auth.service';
+import { AuthService, AuthUser } from '../services/auth.service';
+import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
 
 interface Plan {
   id: number;
@@ -102,6 +103,7 @@ export class SelectPlanComponent implements OnInit {
   promoMeta: PromoValidationResponse['promo'] | null = null;
   promoActivating = false;
   accountSwitchInProgress = false;
+  requiresPlan = false;
   readonly founderFeatureRows: PlanFeatureRow[] = [
     { label: '3 meses sin comisión de plataforma', enabled: true },
     { label: 'Prioridad en búsquedas locales', enabled: true },
@@ -215,8 +217,22 @@ export class SelectPlanComponent implements OnInit {
       billing: this.isAnnualBilling ? 'annual' : 'monthly'
     });
 
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.authService.getCurrentUser() || this.getLocalUser();
     this.accountSwitchInProgress = !!(currentUser?.account_switch_in_progress || currentUser?.pending_role === 'provider');
+    this.requiresPlan = needsProviderPlan(currentUser);
+
+    if (this.requiresPlan) {
+      ensureTempUserData(currentUser || this.tempUserData || undefined);
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('providerOnboarding', '1');
+        }
+      } catch {}
+    } else if (currentUser?.role === 'client' && !currentUser?.pending_role) {
+      console.warn('[SELECT_PLAN] Usuario cliente sin onboarding activo. Redirigiendo a reservas.');
+      this.router.navigateByUrl('/client/reservas');
+      return;
+    }
   }
 
   loadPlans() {
@@ -569,5 +585,16 @@ export class SelectPlanComponent implements OnInit {
         this.promoActivating = false;
       }
     });
+  }
+
+  private getLocalUser(): AuthUser | null {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem('adomi_user');
+      if (!raw || raw === 'undefined' || raw === 'null') return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
   }
 }

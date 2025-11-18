@@ -4,8 +4,9 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StripeService, StripeError } from '../../services/stripe.service';
-import { AuthService } from '../services/auth.service';
+import { AuthService, AuthUser } from '../services/auth.service';
 import { firstValueFrom } from 'rxjs';
+import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
 
 interface Plan {
   id: number;
@@ -51,6 +52,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   promoCode: string | null = null;
   registeredUserId: number | null = null;
   paymentGateway: 'stripe' | 'tbk' = 'stripe';
+  private requiresPlan = false;
 
   private http = inject(HttpClient);
   private router = inject(Router);
@@ -89,9 +91,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.promoCode = (this.selectedPlan as any).promoCode;
     }
 
-    // Si ya hay token (p.ej., login con Google), no intentamos registrar de nuevo
+    // Determinar si el usuario ya está autenticado y si aún necesita completar el plan
     const token = this.authService.getAccessToken();
-    if (token) {
+    const currentUser = this.authService.getCurrentUser() || this.getLocalUser();
+    this.requiresPlan = needsProviderPlan(currentUser);
+
+    if (token && !this.requiresPlan) {
       this.tempUserData = null;
       try {
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
@@ -100,6 +105,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           console.log('[CHECKOUT] Removidos tempUserData/selectedPlan por sesión activa');
         }
       } catch {}
+    } else if (this.requiresPlan) {
+      ensureTempUserData(currentUser || this.tempUserData || undefined);
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('providerOnboarding', '1');
+      }
     }
   }
 
@@ -410,5 +420,16 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Método para obtener el mensaje de error principal
   getMainError(): string | null {
     return this.stripeError || this.error;
+  }
+
+  private getLocalUser(): AuthUser | null {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem('adomi_user');
+      if (!raw || raw === 'undefined' || raw === 'null') return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
   }
 }
