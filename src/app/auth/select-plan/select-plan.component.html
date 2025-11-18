@@ -72,7 +72,7 @@
 
       <ul class="plan-card__features">
         <li
-          *ngFor="let feature of getPlanFeatureRows(promoPlan || null)"
+          *ngFor="let feature of founderFeatureRows"
           [class.plan-card__feature--disabled]="!feature.enabled"
         >
           <span

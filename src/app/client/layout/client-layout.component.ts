@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
 import { IconComponent } from '../../../libs/shared-ui/icon/icon.component';
 import { TopbarComponent, TopbarConfig } from '../../../libs/shared-ui/topbar/topbar.component';
-import { AuthService } from '../../auth/services/auth.service';
+import { AuthService, AuthUser } from '../../auth/services/auth.service';
 import { ClientProfileService } from '../../services/client-profile.service';
 import { environment } from '../../../environments/environment';
 import { MenuService } from '../services/menu.service';
@@ -251,7 +251,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  private safeParseLocalUser(): { role?: string } | null {
+  private safeParseLocalUser(): Partial<AuthUser> | null {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return null;
     }
@@ -260,10 +260,27 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       if (!raw || raw === 'undefined' || raw === 'null') {
         return null;
       }
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      return this.normalizeAuthUser(parsed);
     } catch {
       return null;
     }
+  }
+
+  private normalizeAuthUser(user: any): Partial<AuthUser> | null {
+    if (!user || typeof user !== 'object') return null;
+    const normalizedRole = this.normalizeRole(user.role);
+    return {
+      ...user,
+      role: normalizedRole
+    };
+  }
+
+  private normalizeRole(role: any): 'client' | 'provider' | undefined {
+    if (role === 'client' || role === 'provider') {
+      return role;
+    }
+    return undefined;
   }
 
   private loadClientData() {
