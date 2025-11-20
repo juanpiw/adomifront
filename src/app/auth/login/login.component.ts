@@ -1,8 +1,8 @@
 ﻿import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
-import { UiInputComponent } from '../../../libs/shared-ui/ui-input/ui-input.component';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';
 import { AuthService, AuthResponse, LoginPayload } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
@@ -12,7 +12,7 @@ import { GoogleAuthService } from '../services/google-auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterLink, UiInputComponent, ThemeSwitchComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ThemeSwitchComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
