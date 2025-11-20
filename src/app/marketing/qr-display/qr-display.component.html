@@ -1,0 +1,96 @@
+<section class="qr-card">
+  <header class="qr-card__header">
+    <div>
+      <p class="eyebrow">Marketing</p>
+      <h2>QR permanente Adomi</h2>
+      <p class="description">
+        Previsualiza el QR oficial, ajusta tamaño y ECC y descarga el archivo listo para impresión o UI.
+        El backend entrega SVG/PNG y respeta los parámetros configurados.
+      </p>
+    </div>
+    <div class="meta" *ngIf="meta() as data">
+      <span>URL base: <strong>{{ data.defaults.url }}</strong></span>
+      <span>Rango tamaño: {{ data.ranges.size.min }}px – {{ data.ranges.size.max }}px</span>
+      <span>ECC recomendado: {{ data.defaults.ecc }}</span>
+    </div>
+  </header>
+
+  <div class="qr-card__status" *ngIf="loading()">Cargando configuración...</div>
+  <div class="qr-card__status error" *ngIf="error()">{{ error() }}</div>
+  <div class="qr-card__status success" *ngIf="infoMessage()">{{ infoMessage() }}</div>
+
+  <div class="qr-card__content" *ngIf="!loading()">
+    <div class="qr-preview">
+      <qrcode
+        [qrdata]="previewData()"
+        [width]="previewSize()"
+        [errorCorrectionLevel]="previewEcc()"
+        [margin]="previewMargin()"
+        [elementType]="form.controls.elementType.value">
+      </qrcode>
+      <div class="qr-preview__info">
+        <p class="label">Destino actual</p>
+        <p class="value">{{ previewData() }}</p>
+        <div class="actions">
+          <button type="button" (click)="copy(previewData(), 'URL destino')">Copiar URL destino</button>
+          <button type="button" (click)="copy(buildDownloadUrl('svg'), 'Enlace SVG')">Copiar enlace backend</button>
+        </div>
+      </div>
+    </div>
+
+    <form class="qr-form" [formGroup]="form">
+      <label>
+        URL destino
+        <input formControlName="url" type="text" placeholder="https://www.adomiapp.cl" />
+      </label>
+
+      <div class="field-grid">
+        <label>
+          Tamaño (px)
+          <input formControlName="size" type="number" min="128" max="4096" step="32" />
+        </label>
+
+        <label>
+          Margen
+          <input formControlName="margin" type="number" min="0" max="16" />
+        </label>
+      </div>
+
+      <div class="field-grid">
+        <label>
+          Error correction
+          <select formControlName="ecc">
+            <option *ngFor="let ecc of eccLevels()" [value]="ecc">{{ ecc }}</option>
+          </select>
+        </label>
+
+        <label>
+          Elemento preview
+          <select formControlName="elementType">
+            <option *ngFor="let option of elementTypes" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <footer class="qr-card__footer">
+    <div class="cta-group">
+      <button type="button" class="primary" (click)="openDownload('svg')">
+        Descargar SVG (Imprenta)
+      </button>
+      <button type="button" class="secondary" (click)="openDownload('png')">
+        Descargar PNG (UI)
+      </button>
+      <a class="link" [href]="buildDownloadUrl('svg')" target="_blank" rel="noreferrer noopener">
+        Ver endpoint `/qr/svg`
+      </a>
+    </div>
+    <div class="notes">
+      <p><strong>Tips impresión:</strong> usar SVG, colocar margen 2 px mínimo y ECC en modo H para tabloide.</p>
+      <p>Este QR se cachea por 24 h. Si regeneras assets, ejecuta `npm run qr:build` y limpia CDN.</p>
+    </div>
+  </footer>
+</section>
+
+

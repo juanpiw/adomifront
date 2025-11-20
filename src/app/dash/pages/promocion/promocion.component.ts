@@ -9,6 +9,7 @@ import {
   PromotionFormData
 } from '../../../../libs/shared-ui/promotions';
 import { PromotionsService, CreatePromotionDto } from '../../../services/promotions.service';
+import { QrDisplayComponent } from '../../../marketing/qr-display/qr-display.component';
 
 @Component({
   selector: 'app-d-promocion',
@@ -18,7 +19,8 @@ import { PromotionsService, CreatePromotionDto } from '../../../services/promoti
     PromotionsHeaderComponent,
     CollapsiblePromoFormComponent,
     ActivePromotionsListComponent,
-    PromotionsHistoryComponent
+    PromotionsHistoryComponent,
+    QrDisplayComponent
   ],
   templateUrl: './promocion.component.html',
   styleUrls: ['./promocion.component.scss']

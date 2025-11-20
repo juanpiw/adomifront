@@ -1,19 +1,19 @@
 ﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { 
-  StatisticsHeaderComponent, 
-  DateFilterComponent, 
-  KpiCardsComponent, 
+import {
+  StatisticsHeaderComponent,
+  DateFilterComponent,
+  KpiCardsComponent,
   RevenueChartComponent,
   ServicesChartComponent,
   ReviewsTableComponent
 } from '../../../../libs/shared-ui/statistics';
 import { DateRange } from '../../../../libs/shared-ui/statistics/date-filter/date-filter.component';
-import { ProviderAnalyticsService, ProviderAnalyticsSummary, ProviderAnalyticsSeries, ProviderServiceRank, ProviderReviewItem, AnalyticsRange } from '../../../services/provider-analytics.service';
+import { ProviderAnalyticsService, ProviderAnalyticsSummary, ProviderAnalyticsSeries, ProviderServiceRank, ProviderReviewItem, AnalyticsRange, ProviderAnalyticsSummaryResponse, ProviderAnalyticsTimeseriesResponse, ProviderAnalyticsServicesResponse, ProviderAnalyticsReviewsResponse } from '../../../services/provider-analytics.service';
 import { SessionService } from '../../../auth/services/session.service';
-import { finalize, filter, take } from 'rxjs/operators';
+import { finalize, filter, take, switchMap, catchError } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, of } from 'rxjs';
 import { AuthUser } from '../../../auth/services/auth.service';
 
 @Component({
@@ -40,6 +40,13 @@ export class DashEstadisticasComponent implements OnInit, OnDestroy {
   timeseriesGroup: 'month' | 'week' = 'month';
   services: ProviderServiceRank[] = [];
   reviews: ProviderReviewItem[] = [];
+  analyticsAccess = {
+    tier: 'basic' as 'basic' | 'advanced',
+    summaryLimited: false,
+    timeseriesLimited: false,
+    servicesLimited: false,
+    reviewsLimited: false
+  };
 
   loading = false;
   error: string | null = null;
@@ -93,41 +100,40 @@ export class DashEstadisticasComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    this.analytics.getDashboardSnapshot(this.providerId, normalized)
-      .pipe(finalize(() => this.loading = false))
+    this.analytics.getSummary(this.providerId, normalized)
+      .pipe(
+        switchMap((summaryResponse) => {
+          this.handleSummaryResponse(summaryResponse);
+
+          const summaryLimited = !!summaryResponse.meta?.limited;
+          if (this.shouldSkipAdvancedAnalytics(summaryLimited)) {
+            this.markAdvancedLimitedState();
+            return of(null);
+          }
+
+          return forkJoin({
+            timeseries: this.analytics.getTimeseries(this.providerId!, normalized, this.timeseriesGroup)
+              .pipe(catchError(() => of<ProviderAnalyticsTimeseriesResponse | null>(null))),
+            services: this.analytics.getTopServices(this.providerId!, normalized, 5)
+              .pipe(catchError(() => of<ProviderAnalyticsServicesResponse | null>(null))),
+            reviews: this.analytics.getRecentReviews(this.providerId!, 5)
+              .pipe(catchError(() => of<ProviderAnalyticsReviewsResponse | null>(null)))
+          });
+        }),
+        finalize(() => this.loading = false)
+      )
       .subscribe({
         next: (result) => {
-          if (result.summary?.success) {
-            this.summary = result.summary.summary;
-          } else {
-            this.summary = null;
+          if (!result) {
+            return;
           }
-
-          if (result.timeseries?.success) {
-            this.timeseries = result.timeseries.series || [];
-            this.timeseriesGroup = result.timeseries.group === 'week' ? 'week' : 'month';
-          } else {
-            this.timeseries = [];
-          }
-
-          if (result.services?.success) {
-            this.services = (result.services.services || []).slice(0, 5);
-          } else {
-            this.services = [];
-          }
-
-          if (result.reviews?.success) {
-            this.reviews = result.reviews.reviews || [];
-          } else {
-            this.reviews = [];
-          }
+          this.handleTimeseriesResponse(result.timeseries);
+          this.handleServicesResponse(result.services);
+          this.handleReviewsResponse(result.reviews);
         },
         error: (err) => {
           this.error = err?.error?.error || err?.message || 'No se pudieron cargar las estadísticas.';
-          this.summary = null;
-          this.timeseries = [];
-          this.services = [];
-          this.reviews = [];
+          this.resetAnalyticsState();
         }
       });
   }
@@ -178,5 +184,82 @@ export class DashEstadisticasComponent implements OnInit, OnDestroy {
 
   private todayIso(): string {
     return new Date().toISOString().split('T')[0];
+  }
+
+  get showUpgradeBanner(): boolean {
+    return this.analyticsAccess.timeseriesLimited || this.analyticsAccess.servicesLimited || this.analyticsAccess.reviewsLimited;
+  }
+
+  private handleSummaryResponse(response: ProviderAnalyticsSummaryResponse) {
+    if (!response?.success) {
+      throw new Error(response?.meta?.reason || 'Resumen no disponible');
+    }
+    this.summary = response.summary;
+    const tier = response.planFeatures?.analyticsTier === 'advanced' ? 'advanced' : 'basic';
+    this.analyticsAccess.tier = tier;
+    this.analyticsAccess.summaryLimited = !!response.meta?.limited;
+    this.error = null;
+  }
+
+  private handleTimeseriesResponse(response: ProviderAnalyticsTimeseriesResponse | null) {
+    if (response?.success) {
+      this.timeseries = response.series || [];
+      this.timeseriesGroup = response.group === 'week' ? 'week' : 'month';
+      this.analyticsAccess.timeseriesLimited = !!response.meta?.limited;
+      return;
+    }
+    this.timeseries = [];
+    this.analyticsAccess.timeseriesLimited = false;
+  }
+
+  private handleServicesResponse(response: ProviderAnalyticsServicesResponse | null) {
+    if (response?.success) {
+      this.services = (response.services || []).slice(0, 5);
+      this.analyticsAccess.servicesLimited = !!response.meta?.limited;
+      return;
+    }
+    this.services = [];
+    this.analyticsAccess.servicesLimited = false;
+  }
+
+  private handleReviewsResponse(response: ProviderAnalyticsReviewsResponse | null) {
+    if (response?.success) {
+      this.reviews = response.reviews || [];
+      this.analyticsAccess.reviewsLimited = !!response.meta?.limited;
+      return;
+    }
+    this.reviews = [];
+    this.analyticsAccess.reviewsLimited = false;
+  }
+
+  private markAdvancedLimitedState() {
+    this.timeseries = [];
+    this.services = [];
+    this.reviews = [];
+    this.analyticsAccess.timeseriesLimited = true;
+    this.analyticsAccess.servicesLimited = true;
+    this.analyticsAccess.reviewsLimited = true;
+  }
+
+  private shouldSkipAdvancedAnalytics(summaryLimited: boolean): boolean {
+    if (summaryLimited) {
+      return true;
+    }
+    const subscriptionStatus = this.session.getSubscriptionStatus();
+    return subscriptionStatus === 'founder';
+  }
+
+  private resetAnalyticsState() {
+    this.summary = null;
+    this.timeseries = [];
+    this.services = [];
+    this.reviews = [];
+    this.analyticsAccess = {
+      tier: 'basic',
+      summaryLimited: false,
+      timeseriesLimited: false,
+      servicesLimited: false,
+      reviewsLimited: false
+    };
   }
 }

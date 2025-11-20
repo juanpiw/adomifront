@@ -43,6 +43,46 @@ export interface AnalyticsRange {
   to: string;
 }
 
+export interface AnalyticsMeta {
+  limited?: boolean;
+  analyticsTier?: string;
+  reason?: string;
+  cap?: string;
+}
+
+export interface ProviderAnalyticsSummaryResponse {
+  success: boolean;
+  summary: ProviderAnalyticsSummary;
+  period: { from: string; to: string };
+  planFeatures?: {
+    analyticsTier: string;
+    csvExportEnabled: boolean;
+    clientRatingVisible: boolean;
+  };
+  meta?: AnalyticsMeta;
+}
+
+export interface ProviderAnalyticsTimeseriesResponse {
+  success: boolean;
+  series: ProviderAnalyticsSeries[];
+  group: string;
+  period: { from: string; to: string };
+  meta?: AnalyticsMeta;
+}
+
+export interface ProviderAnalyticsServicesResponse {
+  success: boolean;
+  services: ProviderServiceRank[];
+  period: { from: string; to: string };
+  meta?: AnalyticsMeta;
+}
+
+export interface ProviderAnalyticsReviewsResponse {
+  success: boolean;
+  reviews: ProviderReviewItem[];
+  meta?: AnalyticsMeta;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProviderAnalyticsService {
   private http = inject(HttpClient);
@@ -71,29 +111,29 @@ export class ProviderAnalyticsService {
     return params;
   }
 
-  getSummary(providerId: number, range: AnalyticsRange): Observable<{ success: boolean; summary: ProviderAnalyticsSummary; period: { from: string; to: string } }> {
-    return this.http.get<{ success: boolean; summary: ProviderAnalyticsSummary; period: { from: string; to: string } }>(
+  getSummary(providerId: number, range: AnalyticsRange): Observable<ProviderAnalyticsSummaryResponse> {
+    return this.http.get<ProviderAnalyticsSummaryResponse>(
       `${this.baseUrl}/providers/${providerId}/analytics/summary`,
       { headers: this.headers(), params: this.buildParams(range) }
     );
   }
 
-  getTimeseries(providerId: number, range: AnalyticsRange, group: 'month' | 'week' = 'month'): Observable<{ success: boolean; series: ProviderAnalyticsSeries[]; group: string; period: { from: string; to: string } }> {
-    return this.http.get<{ success: boolean; series: ProviderAnalyticsSeries[]; group: string; period: { from: string; to: string } }>(
+  getTimeseries(providerId: number, range: AnalyticsRange, group: 'month' | 'week' = 'month'): Observable<ProviderAnalyticsTimeseriesResponse> {
+    return this.http.get<ProviderAnalyticsTimeseriesResponse>(
       `${this.baseUrl}/providers/${providerId}/analytics/revenue-timeseries`,
       { headers: this.headers(), params: this.buildParams(range, { group }) }
     );
   }
 
-  getTopServices(providerId: number, range: AnalyticsRange, limit = 5): Observable<{ success: boolean; services: ProviderServiceRank[]; period: { from: string; to: string } }> {
-    return this.http.get<{ success: boolean; services: ProviderServiceRank[]; period: { from: string; to: string } }>(
+  getTopServices(providerId: number, range: AnalyticsRange, limit = 5): Observable<ProviderAnalyticsServicesResponse> {
+    return this.http.get<ProviderAnalyticsServicesResponse>(
       `${this.baseUrl}/providers/${providerId}/analytics/services-top`,
       { headers: this.headers(), params: this.buildParams(range, { limit }) }
     );
   }
 
-  getRecentReviews(providerId: number, limit = 5): Observable<{ success: boolean; reviews: ProviderReviewItem[] }> {
-    return this.http.get<{ success: boolean; reviews: ProviderReviewItem[] }>(
+  getRecentReviews(providerId: number, limit = 5): Observable<ProviderAnalyticsReviewsResponse> {
+    return this.http.get<ProviderAnalyticsReviewsResponse>(
       `${this.baseUrl}/providers/${providerId}/analytics/reviews`,
       { headers: this.headers(), params: new HttpParams().set('limit', String(limit)) }
     );

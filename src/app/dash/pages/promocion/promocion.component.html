@@ -1,6 +1,8 @@
 <div class="promocion-container">
   <ui-promotions-header></ui-promotions-header>
 
+  <app-qr-display></app-qr-display>
+
   <ui-collapsible-promo-form
     [isExpanded]="isFormExpanded"
     (formToggled)="onFormToggled($event)"

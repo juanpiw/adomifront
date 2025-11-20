@@ -177,6 +177,17 @@
             Configurar horarios
           </button>
         </section>
+        <section *ngIf="showAnalyticsUpgradeCta" class="analytics-upgrade-card" role="region" aria-label="Mejora tu plan para analíticas">
+          <div class="analytics-upgrade-card__content">
+            <h3>Desbloquea estadísticas avanzadas</h3>
+            <p>
+              Tu plan fundador incluye métricas básicas. Mejora para ver reportes completos, desglose semanal y reseñas extendidas en tu panel.
+            </p>
+          </div>
+          <button type="button" class="analytics-upgrade-card__cta" (click)="goToAnalyticsUpgrade()">
+            Mejorar plan
+          </button>
+        </section>
         <!-- Dashboard Components -->
         <app-inicio-solicitudes 
         [data]="solicitudesData"

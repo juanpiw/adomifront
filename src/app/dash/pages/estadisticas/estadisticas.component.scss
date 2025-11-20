@@ -14,6 +14,10 @@
     @media (min-width: 1024px) {
       grid-template-columns: 2fr 1fr; // revenue-chart más ancho, services-chart más estrecho
     }
+
+    .analytics-limited-note {
+      grid-column: 1 / -1;
+    }
   }
 
   .analytics-error {
@@ -25,6 +29,37 @@
     border: 1px solid #fecaca;
     color: #b91c1c;
     font-size: 0.95rem;
+  }
+
+  .analytics-upgrade-banner {
+    margin: 1rem 0 1.5rem;
+    padding: 16px 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #312e81, #5b21b6);
+    color: #f8fafc;
+    box-shadow: 0 25px 55px -25px rgba(49, 46, 129, 0.7);
+
+    h4 {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: rgba(248, 250, 252, 0.9);
+    }
+  }
+
+  .analytics-limited-note {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #0f172a;
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 12px;
+    padding: 10px 12px;
+    border: 1px dashed rgba(15, 23, 42, 0.2);
   }
 
   .analytics-empty {
@@ -59,6 +94,17 @@
       background: rgba(59, 130, 246, 0.18);
       border-color: rgba(59, 130, 246, 0.35);
       color: #bfdbfe;
+    }
+
+    .analytics-upgrade-banner {
+      background: linear-gradient(135deg, rgba(49, 46, 129, 0.85), rgba(91, 33, 182, 0.9));
+      box-shadow: 0 25px 55px -25px rgba(15, 23, 42, 0.9);
+    }
+
+    .analytics-limited-note {
+      background: rgba(15, 23, 42, 0.65);
+      color: #e2e8f0;
+      border-color: rgba(148, 163, 184, 0.25);
     }
   }
 }

@@ -27,6 +27,7 @@ import { TbkOnboardingService, TbkOnboardingState } from '../../../services/tbk-
 import { ProviderInviteService, ProviderInvite, ProviderInviteSummary } from '../../../services/provider-invite.service';
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { Subscription } from 'rxjs';
+import { SessionService } from '../../../auth/services/session.service';
 
 @Component({
   selector: 'app-d-home',
@@ -45,6 +46,7 @@ import { Subscription } from 'rxjs';
 })
 export class DashHomeComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
+  private session = inject(SessionService);
   private providerProfile = inject(ProviderProfileService);
   private appointmentsService = inject(AppointmentsService);
   private paymentsService = inject(PaymentsService);
@@ -85,6 +87,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   pioneerUnlockedAt: string | null = null;
   readonly pioneerTooltip =
     'Beneficios Pionero: prioridad en resultados de búsqueda, insignia destacada para clientes y acceso a invitaciones extra cuando tus colegas se verifican.';
+  showAnalyticsUpgradeCta = false;
 
   // Datos para el header
   headerData: HeaderData = {
@@ -100,6 +103,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.initializeTbkBanner();
     this.checkAvailabilitySetup();
     this.loadInviteData();
+    this.evaluateAnalyticsUpgradeCta();
 
     this.route.queryParamMap.subscribe((params) => {
       const view = (params.get('view') || '').toLowerCase();
@@ -761,5 +765,15 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
   goToAvailabilitySettings() {
     this.router.navigate(['/dash/agenda'], { queryParams: { view: 'config' } });
+  }
+
+  goToAnalyticsUpgrade() {
+    this.router.navigate(['/auth/select-plan'], {
+      queryParams: { source: 'analytics-upgrade' }
+    });
+  }
+
+  private evaluateAnalyticsUpgradeCta() {
+    this.showAnalyticsUpgradeCta = this.session.getSubscriptionStatus() === 'founder';
   }
 }

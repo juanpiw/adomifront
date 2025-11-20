@@ -7,6 +7,12 @@
   </ui-date-filter>
   
   <div *ngIf="error" class="analytics-error">{{ error }}</div>
+  <div *ngIf="showUpgradeBanner" class="analytics-upgrade-banner">
+    <h4>Estadísticas resumidas</h4>
+    <p>
+      Tu plan actual muestra métricas básicas. Actualiza tu suscripción para ver reportes detallados, desgloses semanales y reseñas completas.
+    </p>
+  </div>
   
   <ui-kpi-cards 
     [summary]="summary"
@@ -28,10 +34,16 @@
       [group]="timeseriesGroup"
       [loading]="loading">
     </ui-revenue-chart>
+    <div *ngIf="analyticsAccess.timeseriesLimited" class="analytics-limited-note">
+      Mostrando hasta 3 meses de actividad. Cambia a un plan avanzado para ver periodos más extensos.
+    </div>
     <ui-services-chart 
       [services]="services"
       [loading]="loading">
     </ui-services-chart>
+    <div *ngIf="analyticsAccess.servicesLimited" class="analytics-limited-note">
+      Mostrando sólo los 3 servicios más activos. Desbloquea el ranking completo con un plan avanzado.
+    </div>
   </div>
   
   <!-- Tabla de reseñas -->
@@ -39,6 +51,9 @@
     [reviews]="reviews"
     [loading]="loading">
   </ui-reviews-table>
+  <div *ngIf="analyticsAccess.reviewsLimited" class="analytics-limited-note">
+    Estás viendo una muestra de reseñas recientes. Mejora tu plan para acceder al historial completo.
+  </div>
 </div>
 
 

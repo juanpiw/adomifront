@@ -1,4 +1,11 @@
-.promocion-container { padding: 1rem; }
+.promocion-container {
+  padding: 1rem;
+
+  app-qr-display {
+    margin: 1.5rem 0;
+    display: block;
+  }
+}
 
 :host-context(.dark-theme) .promocion-container {
   background: rgba(15, 23, 42, 0.9);

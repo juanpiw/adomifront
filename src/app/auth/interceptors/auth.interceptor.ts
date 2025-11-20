@@ -31,10 +31,19 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
         sessionExpired.forceRedirect();
       }
 
-      // Si es un error 403 (prohibido)
+      // Si es un error 403 (prohibido) sólo forzamos logout cuando el backend lo indique explícitamente
       if (error.status === 403) {
-        try { sessionService.clearSession(); } catch {}
-        sessionExpired.forceRedirect('Tu sesión no tiene permisos para continuar. Vuelve a entrar.');
+        const forceLogout =
+          (error.error && (error.error.forceLogout || error.error.force_logout)) ||
+          error.headers.get('x-force-logout') === '1';
+
+        if (forceLogout) {
+          try { sessionService.clearSession(); } catch {}
+          sessionExpired.forceRedirect('Tu sesión no tiene permisos para continuar. Vuelve a entrar.');
+          return throwError(() => error);
+        }
+
+        return throwError(() => error);
       }
 
       return throwError(() => error);
