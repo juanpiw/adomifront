@@ -240,6 +240,10 @@
     <div *ngIf="founderErrorMsg" class="founder-card__message founder-card__message--error">{{ founderErrorMsg }}</div>
   </section>
 
+  <section *ngIf="adminSecret" class="qr-panel">
+    <app-qr-display></app-qr-display>
+  </section>
+
   <section *ngIf="adminSecret" class="founder-codes-panel">
     <div class="founder-codes-panel__header">
       <div>

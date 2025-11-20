@@ -184,6 +184,13 @@
   gap: 16px;
 }
 
+.qr-panel {
+  margin: 24px 0;
+  app-qr-display {
+    display: block;
+  }
+}
+
 .founder-card__header {
   display: flex;
   justify-content: space-between;

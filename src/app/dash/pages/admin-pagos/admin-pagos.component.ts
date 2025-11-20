@@ -9,11 +9,12 @@ import { AdminSummaryCardsComponent } from './admin-summary-cards.component';
 import { AdminPaymentsTableComponent } from './admin-payments-table.component';
 import { AdminCashReviewPanelComponent } from './components/admin-cash-review-panel/admin-cash-review-panel.component';
 import { AdminCashPaymentsService } from './services/admin-cash-payments.service';
+import { QrDisplayComponent } from '../../../marketing/qr-display/qr-display.component';
 
 @Component({
   selector: 'app-admin-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminSummaryCardsComponent, AdminCashReviewPanelComponent, AdminPaymentsTableComponent],
+  imports: [CommonModule, FormsModule, AdminSummaryCardsComponent, AdminCashReviewPanelComponent, AdminPaymentsTableComponent, QrDisplayComponent],
   templateUrl: './admin-pagos.component.html',
   styleUrls: ['./admin-pagos.component.scss']
 })
