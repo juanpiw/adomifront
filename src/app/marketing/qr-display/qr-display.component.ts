@@ -47,7 +47,7 @@ export class QrDisplayComponent {
   protected readonly infoMessage = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
-    url: ['', [Validators.required]],
+    url: ['https://www.adomiapp.com', [Validators.required]],
     size: [512, [Validators.min(128), Validators.max(4096)]],
     margin: [2, [Validators.min(0), Validators.max(16)]],
     ecc: ['H' as 'L' | 'M' | 'Q' | 'H'],
@@ -59,7 +59,7 @@ export class QrDisplayComponent {
     if (value) {
       return value;
     }
-    return this.meta()?.defaults?.url || 'https://www.adomiapp.cl';
+    return this.meta()?.defaults?.url || 'https://www.adomiapp.com';
   });
 
   protected readonly previewSize = computed(() => this.form.controls.size.value || 256);
