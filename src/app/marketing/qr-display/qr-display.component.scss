@@ -60,7 +60,7 @@
 
 .qr-card__content {
   display: grid;
-  grid-template-columns: minmax(260px, 320px) 1fr;
+  grid-template-columns: minmax(280px, 420px) 1fr;
   gap: 24px;
 
   @media (max-width: 1024px) {
@@ -75,9 +75,22 @@
   gap: 16px;
 
   qrcode {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #f8fafc;
     padding: 16px;
     border-radius: 24px;
+
+    svg,
+    canvas,
+    img {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100%;
+    }
   }
 
   &__info {

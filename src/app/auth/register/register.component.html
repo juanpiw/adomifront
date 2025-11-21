@@ -1,310 +1,278 @@
-﻿<!-- Contenedor principal con fondo animado -->
-<div class="auth-container">
-  <div class="auth-card">
-    
-    <!-- Paso 1: Selección de Rol -->
-    <div class="form-step" [class.active]="currentStep === 1">
-      <!-- Título con narrativa -->
-      <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Comienza tu viaje</h2>
-        <p class="text-gray-500 mt-2">Elige tu camino en nuestra comunidad.</p>
+<div class="register-page">
+  <section class="register-hero">
+    <div class="hero-noise" aria-hidden="true"></div>
+    <div class="hero-header">
+      <div class="hero-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
       </div>
-      
-      <div class="grid grid-cols-1 gap-6">
-        <!-- Tarjeta Cliente -->
-        <div class="role-card-wrapper">
-          <button 
-            type="button" 
-            (click)="setRole('client')" 
-            [class.active]="selectedRole === 'client'"
-            class="role-card text-left p-6 bg-gray-50 rounded-xl border-2 border-gray-200 transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-lg w-full">
-            <div class="flex items-center">
-              <!-- Icono SVG -->
-              <div class="bg-indigo-100 text-indigo-600 rounded-lg p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <div class="text-lg font-semibold text-gray-800">Soy Cliente</div>
-                <div class="text-sm text-gray-500 mt-1">Encuentra y reserva servicios de profesionales increíbles.</div>
-              </div>
-            </div>
-          </button>
-          
-          <!-- Botón Google para Cliente -->
-          <button 
-            type="button" 
-            (click)="signUpWithGoogleFromRoleSelection('client')" 
-            class="btn-google-role">
-            <svg viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continuar con Google
-          </button>
+      <span>Adomiapp</span>
+    </div>
+    <div class="hero-copy">
+      <div class="hero-pill">Únete hoy</div>
+      <h2 class="hero-title">
+        Comienza tu viaje <br />
+        hacia el <span>éxito.</span>
+      </h2>
+      <p class="hero-subtitle">
+        Ya sea que busques servicios o quieras ofrecer tu talento, este es el lugar donde todo conecta.
+      </p>
+      <div class="hero-proof glass-effect">
+        <div class="hero-stars">
+          <svg *ngFor="let star of [1,2,3,4,5]" viewBox="0 0 24 24">
+            <path d="M12 2l2.39 6.94H22l-5.19 3.77L18.2 20 12 15.88 5.8 20l1.39-7.29L2 8.94h7.61z" />
+          </svg>
+          <span>4.9/5</span>
         </div>
-        
-        <!-- Tarjeta Profesional -->
-        <div class="role-card-wrapper">
-          <button 
-            type="button" 
-            (click)="setRole('provider')" 
-            [class.active]="selectedRole === 'provider'"
-            class="role-card text-left p-6 bg-gray-50 rounded-xl border-2 border-gray-200 transition-all duration-300 hover:transform hover:-translate-y-1 hover:shadow-lg w-full">
-            <div class="flex items-center">
-              <div class="bg-purple-100 text-purple-600 rounded-lg p-3 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <div class="text-lg font-semibold text-gray-800">Soy Profesional</div>
-                <div class="text-sm text-gray-500 mt-1">Ofrece tu talento al mundo y haz crecer tu negocio.</div>
-              </div>
-            </div>
-          </button>
-          
-          <!-- Botón Google para Profesional -->
-          <button 
-            type="button" 
-            (click)="signUpWithGoogleFromRoleSelection('provider')" 
-            class="btn-google-role">
-            <svg viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continuar con Google
-          </button>
+        <p>"La mejor decisión para organizar mi negocio de servicios."</p>
+        <div class="hero-proof-meta">
+          <div class="avatar">JD</div>
+          <span>Juan D. — Electricista Pro</span>
         </div>
       </div>
     </div>
+    <div class="hero-footer">© 2024 Adomiapp Inc.</div>
+  </section>
 
-    <!-- Paso 2: Formulario de Registro -->
-    <div class="form-step" [class.active]="currentStep === 2">
-      <div class="text-center mb-6">
-        <button 
-          type="button" 
-          (click)="goBackToStep1()" 
-          class="absolute top-6 left-6 text-gray-500 hover:text-indigo-600 transition">
-          ← Volver
-        </button>
-        <h2 class="text-3xl font-bold text-gray-800">
-          {{ selectedRole === 'client' ? 'Crea tu cuenta de Cliente' : 'Crea tu perfil Profesional' }}
-        </h2>
-        <p class="text-gray-500 mt-2">
-          {{ selectedRole === 'client' ? 'Estás a un paso de encontrar los mejores servicios.' : '¡Genial! Completa tus datos para empezar.' }}
+  <section class="register-panel">
+    <a class="mobile-back" routerLink="/auth/login">← Iniciar sesión</a>
+    <div class="panel-content">
+      <div class="step-content" [class.active]="currentStep === 1">
+        <div class="step-header">
+          <h1>Elige tu camino</h1>
+          <p>¿Cómo quieres usar Adomiapp?</p>
+        </div>
+        <div class="role-groups">
+          <div class="role-group">
+            <button type="button" class="role-card" [class.role-card--active]="selectedRole === 'client'" (click)="setRole('client')">
+              <div class="role-icon client">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div>
+                <h3>Soy Cliente</h3>
+                <p>Encuentra profesionales confiables en minutos.</p>
+              </div>
+            </button>
+            <button type="button" class="role-google" (click)="signUpWithGoogleFromRoleSelection('client')">
+              <span class="role-google__icon">
+                <svg viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+              </span>
+              Continuar con Google
+            </button>
+          </div>
+
+          <div class="role-group">
+            <button type="button" class="role-card role-card--provider" [class.role-card--active]="selectedRole === 'provider'" (click)="setRole('provider')">
+              <div class="role-icon provider">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              </div>
+              <div>
+                <h3>Soy Profesional</h3>
+                <p>Ofrece tu talento y haz crecer tu negocio.</p>
+              </div>
+            </button>
+            <button type="button" class="role-google" (click)="signUpWithGoogleFromRoleSelection('provider')">
+              <span class="role-google__icon">
+                <svg viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+              </span>
+              Continuar con Google
+            </button>
+          </div>
+        </div>
+        <p class="step-footer">
+          ¿Ya tienes cuenta?
+          <a routerLink="/auth/login">Inicia sesión aquí</a>
         </p>
       </div>
 
-      <form class="space-y-6" (ngSubmit)="onRegister()">
-        <!-- Nombre completo -->
-        <div class="form-group">
-          <input 
-            id="name" 
-            type="text" 
-            placeholder=" " 
-            [(ngModel)]="name"
-            name="name"
-            class="form-input block w-full px-4 h-14 rounded-lg border border-gray-300 bg-white transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-            [class.border-red-500]="nameError">
-          <label for="name" class="form-label">Nombre completo</label>
-          <div *ngIf="nameError" class="text-red-500 text-sm mt-1">{{ nameError }}</div>
-        </div>
-
-        <!-- Email -->
-        <div class="form-group">
-          <input 
-            id="email" 
-            type="email" 
-            placeholder=" " 
-            [(ngModel)]="email"
-            name="email"
-            class="form-input block w-full px-4 h-14 rounded-lg border border-gray-300 bg-white transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-            [class.border-red-500]="emailError">
-          <label for="email" class="form-label">Email</label>
-          <div *ngIf="emailError" class="text-red-500 text-sm mt-1">{{ emailError }}</div>
-        </div>
-
-        <!-- Contraseña -->
-        <div class="form-group relative">
-          <input 
-            id="password" 
-            [type]="showPassword ? 'text' : 'password'" 
-            placeholder=" " 
-            [(ngModel)]="password"
-            name="password"
-            class="form-input block w-full px-4 h-14 rounded-lg border border-gray-300 bg-white transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-            [class.border-red-500]="passwordError">
-          <label for="password" class="form-label">Contraseña</label>
-          <button 
-            type="button" 
-            (click)="togglePasswordVisibility()"
-            class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600">
-            <svg *ngIf="!showPassword" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            <svg *ngIf="showPassword" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-            </svg>
-          </button>
-          <div *ngIf="passwordError" class="text-red-500 text-sm mt-1">{{ passwordError }}</div>
-        </div>
-
-        <!-- Confirmar contraseña -->
-        <div class="form-group relative">
-          <input 
-            id="confirmPassword" 
-            [type]="showConfirmPassword ? 'text' : 'password'" 
-            placeholder=" " 
-            [(ngModel)]="confirmPassword"
-            name="confirmPassword"
-            class="form-input block w-full px-4 h-14 rounded-lg border border-gray-300 bg-white transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-            [class.border-red-500]="confirmPasswordError">
-          <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
-          <button 
-            type="button" 
-            (click)="toggleConfirmPasswordVisibility()"
-            class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600">
-            <svg *ngIf="!showConfirmPassword" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            <svg *ngIf="showConfirmPassword" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-            </svg>
-          </button>
-          <div *ngIf="confirmPasswordError" class="text-red-500 text-sm mt-1">{{ confirmPasswordError }}</div>
-        </div>
-
-        <!-- Requisitos de contraseña -->
-        <div class="password-requirements" *ngIf="password">
-          <div class="text-sm text-gray-600 mb-2">Requisitos de contraseña:</div>
-          <div class="space-y-1">
-            <div class="requirement flex items-center text-sm" [class.valid]="password.length >= 6">
-              <span class="mr-2">{{ password.length >= 6 ? '✓' : '○' }}</span>
-              Mínimo 6 caracteres
-            </div>
-            <div class="requirement flex items-center text-sm" [class.valid]="hasLowerCase(password)">
-              <span class="mr-2">{{ hasLowerCase(password) ? '✓' : '○' }}</span>
-              Al menos una letra minúscula
-            </div>
-            <div class="requirement flex items-center text-sm" [class.valid]="hasUpperCase(password)">
-              <span class="mr-2">{{ hasUpperCase(password) ? '✓' : '○' }}</span>
-              Al menos una letra mayúscula
-            </div>
-            <div class="requirement flex items-center text-sm" [class.valid]="hasNumber(password)">
-              <span class="mr-2">{{ hasNumber(password) ? '✓' : '○' }}</span>
-              Al menos un número
-            </div>
-          </div>
-        </div>
-
-        <!-- Nota sobre el rol seleccionado -->
-        <div class="role-note p-4 rounded-lg" 
-             [class]="selectedRole === 'client' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'">
-          <div *ngIf="selectedRole === 'client'" class="flex items-center">
-            <span class="text-green-600 mr-2">✅</span>
-            <span class="text-green-800 font-medium">Registro Gratuito</span>
-            <span class="text-green-600 ml-2">- Acceso completo a la plataforma</span>
-          </div>
-          <div *ngIf="selectedRole === 'provider'" class="flex items-center">
-            <span class="text-blue-600 mr-2">💰</span>
-            <span class="text-blue-800 font-medium">Requiere Suscripción</span>
-            <span class="text-blue-600 ml-2">- Selecciona tu plan después del registro</span>
-          </div>
-        </div>
-
-        <!-- Términos y Condiciones -->
-        <div class="terms-section">
-          <label class="terms-checkbox">
-            <input 
-              type="checkbox" 
-              [(ngModel)]="termsAccepted" 
-              name="termsAccepted"
-              class="checkbox-input">
-            <span class="checkbox-custom"></span>
-            <span class="checkbox-text">
-              Acepto los 
-              <button type="button" (click)="goToTerms()" class="terms-link">
-                términos y condiciones
-              </button>
-            </span>
-          </label>
-        </div>
-
-        <!-- Botón de registro -->
-        <button 
-          type="submit"
-          [disabled]="loading || !termsAccepted" 
-          class="btn-primary w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-lg shadow-lg transition-all duration-200 hover:transform hover:-translate-y-1 relative overflow-hidden">
-          <span *ngIf="!loading">
-            {{ selectedRole === 'client' ? 'Registrarme Gratis' : 'Continuar a Planes' }}
-          </span>
-          <span *ngIf="loading" class="flex items-center justify-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Registrando…
-          </span>
+      <div class="step-content" [class.active]="currentStep === 2">
+        <button type="button" class="back-link" (click)="goBackToStep1()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Volver a elegir rol
         </button>
 
-        <!-- Divider -->
-        <div class="relative my-6">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500">O continúa con</span>
+        <div class="form-header">
+          <h2>{{ selectedRole === 'client' ? 'Registro de Cliente' : 'Registro de Profesional' }}</h2>
+          <p>{{ selectedRole === 'client' ? 'Encuentra los mejores profesionales en minutos.' : 'Completa tus datos para lanzar tu negocio.' }}</p>
+        </div>
+
+        <div class="pro-alert" *ngIf="selectedRole === 'provider'">
+          <span>🚀</span>
+          <div>
+            <strong>Profesional:</strong> Obtendrás <strong>3 meses sin comisión</strong> al activar tu plan.
           </div>
         </div>
 
-        <!-- Botón Google -->
-        <button 
-          type="button" 
-          (click)="signUpWithGoogle()" 
-          [disabled]="loading || !termsAccepted" 
-          class="btn-google w-full bg-white hover:bg-gray-50 border-2 border-gray-300 text-gray-700 font-medium py-4 px-4 rounded-lg shadow-sm transition-all duration-200 hover:border-gray-400 disabled:opacity-50 flex items-center justify-center gap-3">
-          <svg class="w-5 h-5" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
+        <form novalidate (ngSubmit)="onRegister()">
+          <div class="input-group">
+            <label for="name">Nombre completo</label>
+            <div class="field" [class.field--error]="nameError">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <input id="name" name="name" type="text" placeholder="Ej. Juan Pérez" [(ngModel)]="name" />
+            </div>
+            <p class="field-error" *ngIf="nameError">{{ nameError }}</p>
+          </div>
+
+          <div class="input-group">
+            <label for="email">Email</label>
+            <div class="field" [class.field--error]="emailError">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <polyline points="2,6 12,13 22,6" />
+                </svg>
+              </span>
+              <input id="email" name="email" type="email" placeholder="tu@correo.com" [(ngModel)]="email" />
+            </div>
+            <p class="field-error" *ngIf="emailError">{{ emailError }}</p>
+          </div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <label for="password">Contraseña</label>
+              <div class="field" [class.field--error]="passwordError">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input id="password" name="password" [type]="showPassword ? 'text' : 'password'" placeholder="Crear contraseña" [(ngModel)]="password" />
+                <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+                  <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-5.94" />
+                    <path d="M1 1l22 22" />
+                    <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" />
+                  </svg>
+                </button>
+              </div>
+              <p class="field-error" *ngIf="passwordError">{{ passwordError }}</p>
+            </div>
+
+            <div class="input-group">
+              <label for="confirmPassword">Confirmar</label>
+              <div class="field" [class.field--error]="confirmPasswordError">
+                <span class="field-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input id="confirmPassword" name="confirmPassword" [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Repetir contraseña" [(ngModel)]="confirmPassword" />
+                <button type="button" class="toggle-password" (click)="toggleConfirmPasswordVisibility()">
+                  <svg *ngIf="!showConfirmPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg *ngIf="showConfirmPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-5.94" />
+                    <path d="M1 1l22 22" />
+                    <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" />
+                  </svg>
+                </button>
+              </div>
+              <p class="field-error" *ngIf="confirmPasswordError">{{ confirmPasswordError }}</p>
+            </div>
+          </div>
+
+          <div class="password-checklist" *ngIf="password">
+            <span>Requisitos</span>
+            <div class="checklist">
+              <p [class.valid]="password.length >= 6">{{ password.length >= 6 ? '✓' : '○' }} Mínimo 6 caracteres</p>
+              <p [class.valid]="hasLowerCase(password)">{{ hasLowerCase(password) ? '✓' : '○' }} Minúscula</p>
+              <p [class.valid]="hasUpperCase(password)">{{ hasUpperCase(password) ? '✓' : '○' }} Mayúscula</p>
+              <p [class.valid]="hasNumber(password)">{{ hasNumber(password) ? '✓' : '○' }} Número</p>
+            </div>
+          </div>
+
+          <div class="role-note" [class.role-note--provider]="selectedRole === 'provider'">
+            <ng-container *ngIf="selectedRole === 'client'; else providerNote">
+              ✅ Registro gratuito · Acceso completo a la plataforma
+            </ng-container>
+            <ng-template #providerNote>💼 Requiere plan · Selecciona tu suscripción al continuar</ng-template>
+          </div>
+
+          <label class="terms">
+            <input type="checkbox" [(ngModel)]="termsAccepted" name="termsAccepted" />
+            <span class="terms-box"></span>
+            <span>Acepto los <button type="button" (click)="goToTerms()">términos y condiciones</button></span>
+          </label>
+
+          <button type="submit" class="cta-btn" [disabled]="loading || !termsAccepted">
+            <span *ngIf="!loading">{{ selectedRole === 'client' ? 'Crear cuenta gratis' : 'Continuar a planes' }}</span>
+            <span *ngIf="loading" class="cta-loading">
+              <svg viewBox="0 0 24 24" class="spinner">
+                <circle cx="12" cy="12" r="10" />
+              </svg>
+              Procesando...
+            </span>
+          </button>
+        </form>
+
+        <div class="divider">
+          <span>O continúa con</span>
+        </div>
+
+        <button type="button" class="google-btn" (click)="signUpWithGoogle()" [disabled]="loading || !termsAccepted">
+          <span class="google-icon">
+            <svg viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+          </span>
           <span *ngIf="!loading">Continuar con Google</span>
           <span *ngIf="loading">Procesando...</span>
         </button>
-      </form>
 
-      <!-- Mensajes de feedback -->
-      <div aria-live="polite" class="mt-4">
-        <div *ngIf="serverSuccess" class="p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
-          {{ serverSuccess }}
-        </div>
-        <div *ngIf="serverError" class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
-          {{ serverError }}
-          <!-- Botón de login cuando el email ya existe con otro rol -->
-          <div *ngIf="showLoginLink" class="mt-3">
-            <a routerLink="/auth/login" 
-               class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-              Iniciar Sesión
-            </a>
+        <div class="feedback">
+          <div *ngIf="serverSuccess" class="feedback-success">{{ serverSuccess }}</div>
+          <div *ngIf="serverError" class="feedback-error">
+            {{ serverError }}
+            <div *ngIf="showLoginLink">
+              <a routerLink="/auth/login">Iniciar sesión</a>
+            </div>
           </div>
         </div>
+
+        <p class="step-footer">
+          ¿Ya tienes cuenta?
+          <a routerLink="/auth/login">Inicia sesión</a>
+        </p>
       </div>
-
-      <!-- Link a login -->
-      <p class="text-center text-sm text-gray-500 mt-6">
-        ¿Ya tienes cuenta? 
-        <a routerLink="/auth/login" class="font-medium text-indigo-600 hover:underline">Inicia sesión</a>
-      </p>
     </div>
-
-  </div>
+  </section>
 </div>
+

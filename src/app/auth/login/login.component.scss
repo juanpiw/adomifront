@@ -187,7 +187,11 @@
     position: relative;
 
     @media (min-width: 1024px) {
-      max-width: none;
+      margin: 0;
+      max-width: clamp(420px, 38vw, 560px);
+      flex: 0 0 clamp(420px, 38vw, 560px);
+      min-height: 100vh;
+      box-shadow: -40px 0 80px rgba(15, 23, 42, 0.25);
     }
 
     .theme-switch-wrapper {
