@@ -369,7 +369,21 @@ export class SelectPlanComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigateByUrl('/auth/register');
+    // Al volver se cancela el flujo de selección de plan y se retorna al login principal
+    // Limpiamos cualquier estado temporal relacionado con el onboarding para evitar loops.
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('tempUserData');
+        sessionStorage.removeItem('selectedPlan');
+        sessionStorage.removeItem('promoCode');
+        sessionStorage.removeItem('paymentGateway');
+        sessionStorage.removeItem('providerOnboarding');
+      }
+    } catch {
+      // Ignorado: si no podemos limpiar sessionStorage no bloqueamos la navegación
+    }
+
+    this.router.navigateByUrl('/auth/login');
   }
 
   formatDisplayPrice(price: number): string {
