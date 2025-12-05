@@ -246,9 +246,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const safePassword = (this.tempUserData.password && this.tempUserData.password.length >= 8)
-      ? this.tempUserData.password
-      : this.generateRandomPassword(16);
+    const providedPassword = (this.tempUserData.password || '').trim();
+    if (!providedPassword || providedPassword.length < 6) {
+      this.error = 'No pudimos validar tu contraseña. Vuelve al paso anterior para completar el formulario.';
+      this.loading = false;
+      throw new Error('MISSING_OR_INVALID_PASSWORD');
+    }
+
+    const safePassword = providedPassword;
     this.tempUserData.password = safePassword;
     const registrationEmail = this.tempUserData.email;
 
