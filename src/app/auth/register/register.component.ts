@@ -120,9 +120,21 @@ export class RegisterComponent implements OnInit {
   }
 
   onRegister() {
+    console.log('🟢 [REGISTER] onRegister start', {
+      role: this.selectedRole,
+      name: this.name,
+      email: this.email,
+      ts: new Date().toISOString()
+    });
     this.clearErrors();
     
     if (!this.validateForm()) {
+      console.warn('🟠 [REGISTER] Validación falló', {
+        nameError: this.nameError,
+        emailError: this.emailError,
+        passwordError: this.passwordError,
+        confirmPasswordError: this.confirmPasswordError
+      });
       return;
     }
     
@@ -203,9 +215,12 @@ export class RegisterComponent implements OnInit {
       role: this.selectedRole
     };
 
+    console.log('🟢 [REGISTER] registerClient payload:', registerPayload);
+
     this.auth.register(registerPayload).subscribe({
       next: (response: AuthResponse) => {
         this.loading = false;
+        console.log('🟢 [REGISTER] Respuesta subscribe next:', response);
         
         if (response.success && response.user) {
           // El AuthService ya maneja el guardado del usuario y tokens
@@ -215,10 +230,12 @@ export class RegisterComponent implements OnInit {
           }, 2000);
         } else {
           this.serverError = response.error || 'Error al registrarse';
+          console.warn('🟠 [REGISTER] Respuesta sin success/user, serverError:', this.serverError);
         }
       },
       error: (err) => {
         this.loading = false;
+        console.error('🔴 [REGISTER] Error en subscribe:', err);
         this.handleRegisterError(err);
       }
     });

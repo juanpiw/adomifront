@@ -50,6 +50,11 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
+    console.log('🔵 [LOGIN] submit() start', {
+      email: this.email,
+      hasPassword: !!this.password,
+      ts: new Date().toISOString()
+    });
     // Limpiar errores anteriores
     this.clearErrors();
 
@@ -65,20 +70,25 @@ export class LoginComponent implements OnInit {
       password: this.password
     };
 
+    console.log('🔵 [LOGIN] Payload normalizado:', loginPayload);
+
     this.auth.login(loginPayload)
       .subscribe({
         next: (response: AuthResponse) => { 
           this.loading = false;
+          console.log('🟢 [LOGIN] Respuesta subscribe next:', response);
           
           if (response.success && response.user) {
             // El AuthService ya maneja el guardado del usuario y tokens
             this.redirectToDashboard();
           } else {
             this.errorMessage = response.error || 'Error al iniciar sesión';
+            console.warn('🟠 [LOGIN] Respuesta sin success/user, errorMessage seteado:', this.errorMessage);
           }
         },
         error: (err) => {
           this.loading = false;
+          console.error('🔴 [LOGIN] Error en subscribe:', err);
           this.handleLoginError(err);
         }
       });

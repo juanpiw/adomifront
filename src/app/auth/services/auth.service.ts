@@ -221,23 +221,41 @@ export class AuthService {
 
   // Registro de usuario
   register(payload: RegisterPayload): Observable<AuthResponse> {
+    console.log('[AUTH] 🟢 register() llamado', {
+      email: payload.email,
+      role: payload.role,
+      hasPassword: !!payload.password,
+      hasName: !!payload.name,
+      ts: new Date().toISOString()
+    });
     this.loadingSubject.next(true);
     
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, payload)
       .pipe(
         tap(response => {
+          console.log('[AUTH] 🟢 register() respuesta cruda:', response);
           const data: any = (response as any)?.data || response;
+          console.log('[AUTH] 🟢 register() data normalizada:', data);
           if (response.success && data?.user && data?.accessToken && data?.refreshToken) {
+            console.log('[AUTH] 🟢 register() tokens presentes, guardando en localStorage');
             // Guardar usuario y tokens
             this.authStateSubject.next(data.user);
             this.saveTokens(data.accessToken, data.refreshToken);
             if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
               localStorage.setItem('adomi_user', JSON.stringify(data.user));
             }
+          } else {
+            console.warn('[AUTH] 🟠 register() faltan datos clave en la respuesta', {
+              success: response.success,
+              hasUser: !!data?.user,
+              hasAccess: !!data?.accessToken,
+              hasRefresh: !!data?.refreshToken
+            });
           }
           this.loadingSubject.next(false);
         }),
         catchError(error => {
+          console.error('[AUTH] 🔴 register() catchError', error);
           this.loadingSubject.next(false);
           return this.handleError(error);
         })
@@ -246,23 +264,39 @@ export class AuthService {
 
   // Login de usuario
   login(payload: LoginPayload): Observable<AuthResponse> {
+    console.log('[AUTH] 🟢 login() llamado', {
+      email: payload.email,
+      hasPassword: !!payload.password,
+      ts: new Date().toISOString()
+    });
     this.loadingSubject.next(true);
     
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, payload)
       .pipe(
         tap(response => {
+          console.log('[AUTH] 🟢 login() respuesta cruda:', response);
           const data: any = (response as any)?.data || response;
+          console.log('[AUTH] 🟢 login() data normalizada:', data);
           if (response.success && data?.user && data?.accessToken && data?.refreshToken) {
+            console.log('[AUTH] 🟢 login() tokens presentes, guardando en localStorage');
             // Guardar usuario y tokens
             this.authStateSubject.next(data.user);
             this.saveTokens(data.accessToken, data.refreshToken);
             if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
               localStorage.setItem('adomi_user', JSON.stringify(data.user));
             }
+          } else {
+            console.warn('[AUTH] 🟠 login() faltan datos clave en la respuesta', {
+              success: response.success,
+              hasUser: !!data?.user,
+              hasAccess: !!data?.accessToken,
+              hasRefresh: !!data?.refreshToken
+            });
           }
           this.loadingSubject.next(false);
         }),
         catchError(error => {
+          console.error('[AUTH] 🔴 login() catchError', error);
           this.loadingSubject.next(false);
           return this.handleError(error);
         })
@@ -413,7 +447,12 @@ export class AuthService {
 
   // Manejo de errores
   private handleError(error: any): Observable<never> {
-    console.error('AuthService Error:', error);
+    console.error('[AUTH] ❌ AuthService Error:', {
+      status: error?.status,
+      message: error?.message,
+      errorBody: error?.error,
+      url: error?.url
+    });
     
     let errorMessage = 'Ha ocurrido un error inesperado';
     
