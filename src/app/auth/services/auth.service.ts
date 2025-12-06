@@ -254,6 +254,7 @@ export class AuthService {
           }
           this.loadingSubject.next(false);
         }),
+        map(response => this.normalizeAuthResponse(response)),
         catchError(error => {
           console.error('[AUTH] 🔴 register() catchError', error);
           this.loadingSubject.next(false);
@@ -295,6 +296,7 @@ export class AuthService {
           }
           this.loadingSubject.next(false);
         }),
+        map(response => this.normalizeAuthResponse(response)),
         catchError(error => {
           console.error('[AUTH] 🔴 login() catchError', error);
           this.loadingSubject.next(false);
@@ -469,6 +471,19 @@ export class AuthService {
       status: error.status,
       error: error.error
     }));
+  }
+
+  private normalizeAuthResponse(response: any): AuthResponse {
+    const data: any = response?.data ?? response;
+    const normalized: AuthResponse = {
+      success: response?.success ?? data?.success ?? false,
+      user: data?.user,
+      accessToken: data?.accessToken,
+      refreshToken: data?.refreshToken,
+      expiresIn: data?.expiresIn,
+      error: response?.error ?? data?.error
+    };
+    return normalized;
   }
 
   // Verificar si el token está próximo a expirar
