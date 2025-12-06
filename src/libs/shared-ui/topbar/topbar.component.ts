@@ -61,7 +61,7 @@ export class TopbarComponent implements OnInit {
 
   @Output() helpClick = new EventEmitter<string>();
   @Output() hamburgerClick = new EventEmitter<void>();
-  @Output() notificationClick = new EventEmitter<void>();
+  @Output() notificationClick = new EventEmitter<Notification>();
   @Output() settingsClick = new EventEmitter<void>();
   @Output() notificationAction = new EventEmitter<Notification>();
   @Output() searchSuggestionClick = new EventEmitter<SearchSuggestion>();
@@ -90,8 +90,11 @@ export class TopbarComponent implements OnInit {
     this.hamburgerClick.emit();
   }
 
-  onNotificationClick(): void {
-    this.notificationClick.emit();
+  onNotificationClick(notification: Notification): void {
+    // Reemitimos hacia el padre para navegación contextual
+    this.notificationClick.emit(notification);
+    // Mantener compatibilidad con quien escuche notificationAction
+    this.notificationAction.emit(notification);
   }
 
   onSettingsClick(): void {
@@ -99,7 +102,8 @@ export class TopbarComponent implements OnInit {
   }
 
   onNotificationAction(notification: Notification): void {
-    this.notificationAction.emit(notification);
+    // Alias para compatibilidad: ambos eventos entregan la notificación
+    this.onNotificationClick(notification);
   }
 
   onSearchModalClose(): void {

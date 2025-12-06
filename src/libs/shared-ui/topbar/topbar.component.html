@@ -56,7 +56,7 @@
     <ui-notification-container
       *ngIf="config.showNotifications"
       [userProfile]="config.userProfile || 'client'"
-      (notificationClick)="onNotificationAction($event)">
+      (notificationClick)="onNotificationClick($event)">
     </ui-notification-container>
     
     <button 
