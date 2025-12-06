@@ -450,7 +450,7 @@ export class SelectPlanComponent implements OnInit {
   private async registerAndRedirectForPromo(): Promise<void> {
     this.promoActivating = true;
     try {
-      // Usar tempUserData desde sessionStorage
+      // Usar tempUserData desde sessionStorage si no está en memoria
       if (!this.tempUserData) {
         const raw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('tempUserData') : null;
         if (raw) {
@@ -460,27 +460,55 @@ export class SelectPlanComponent implements OnInit {
         }
       }
 
-      let registeredUserId: number | null = null;
+      const email = this.tempUserData?.email;
+      const password = this.tempUserData?.password;
+      const name = this.tempUserData?.name || email?.split('@')[0] || 'Usuario';
+      const role: 'provider' | 'client' = this.tempUserData?.role || 'provider';
 
-      if (this.tempUserData?.email && this.tempUserData?.password) {
-        console.log('[SELECT_PLAN] Registrando usuario provider antes de activar promo', {
-          email: this.tempUserData.email,
-          role: this.tempUserData.role
-        });
-        const registerResp: any = await firstValueFrom(this.authService.register({
-          email: this.tempUserData.email,
-          password: this.tempUserData.password,
-          role: this.tempUserData.role || 'provider',
-          name: this.tempUserData.name || this.tempUserData.email.split('@')[0] || 'Usuario'
-        }));
-        registeredUserId = registerResp?.user?.id || registerResp?.data?.user?.id || null;
-      } else {
-        console.warn('[SELECT_PLAN] No tempUserData disponible para auto-registro antes de login');
+      if (!email || !password) {
+        console.warn('[SELECT_PLAN] No tempUserData disponible para auto-registro/login antes de activar promo');
+        throw new Error('MISSING_TEMP_USER_DATA');
       }
 
-      // Intentar activar la promo inmediatamente si ya tenemos token y userId
-      const token = this.authService.getAccessToken();
+      console.log('[SELECT_PLAN] Registrando usuario provider antes de activar promo', { email, role });
+
+      let registeredUserId: number | null = null;
+      try {
+        const registerResp: any = await firstValueFrom(
+          this.authService.register({ email, password, role, name })
+        );
+        const registerData = registerResp?.data || registerResp;
+        if (!registerData?.success && !registerResp?.success) {
+          throw new Error(registerResp?.error || registerData?.error || 'Registro fallido');
+        }
+        registeredUserId = registerData?.user?.id || registerResp?.user?.id || null;
+        console.log('[SELECT_PLAN] Registro auto completado', { registeredUserId });
+      } catch (err: any) {
+        const msg = String(err?.message || '').toLowerCase();
+        if (msg.includes('ya tienes una cuenta') || msg.includes('ya existe') || err?.status === 409) {
+          console.warn('[SELECT_PLAN] Usuario ya existe, continuando con login');
+        } else {
+          console.error('[SELECT_PLAN] Error en auto-registro antes de activar promo', err);
+          this.promoError = 'No pudimos completar tu registro. Intenta nuevamente.';
+          this.promoActivating = false;
+          return;
+        }
+      }
+
+      // Login inmediato para obtener token
+      console.log('[SELECT_PLAN] Haciendo login automático para activar promo');
+      try {
+        await firstValueFrom(this.authService.login({ email, password }));
+        await firstValueFrom(this.authService.getCurrentUserInfo());
+      } catch (err) {
+        console.error('[SELECT_PLAN] Error en login automático tras registro', err);
+        this.promoError = 'No pudimos iniciar sesión automáticamente. Intenta iniciar sesión manualmente para activar tu código.';
+        this.promoActivating = false;
+        return;
+      }
+
       const providerId = registeredUserId || this.authService.getCurrentUser()?.id || null;
+      const token = this.authService.getAccessToken();
 
       if (token && providerId && this.promoPlan?.promoCode) {
         try {
@@ -493,20 +521,20 @@ export class SelectPlanComponent implements OnInit {
           );
 
           if (resp?.ok) {
-            console.log('[SELECT_PLAN] Promo aplicada tras auto-registro, navegando a dash/home');
+            console.log('[SELECT_PLAN] Promo aplicada tras auto-registro/login, navegando a dash/home');
             this.cleanupSessionStorage();
             this.promoActivating = false;
             this.router.navigateByUrl('/dash/home');
             return;
           } else {
-            console.warn('[SELECT_PLAN] No se pudo activar promo tras auto-registro. Resp:', resp);
+            console.warn('[SELECT_PLAN] No se pudo activar promo tras auto-registro/login. Resp:', resp);
           }
         } catch (err) {
-          console.error('[SELECT_PLAN] Error aplicando promo tras auto-registro', err);
+          console.error('[SELECT_PLAN] Error aplicando promo tras auto-registro/login', err);
         }
       }
     } catch (err) {
-      console.error('[SELECT_PLAN] Error registrando antes de redirigir a login', err);
+      console.error('[SELECT_PLAN] Error en registro/login antes de activar promo', err);
     } finally {
       try {
         if (typeof sessionStorage !== 'undefined') {
@@ -515,15 +543,14 @@ export class SelectPlanComponent implements OnInit {
       } catch {}
 
       this.promoActivating = false;
-      setTimeout(() => {
-        this.router.navigate(['/auth/login'], {
-          queryParams: {
-            promo_applied: '1',
-            promo: this.promoPlan?.promoCode || null,
-            email: this.tempUserData?.email || null
-          }
-        });
-      }, 800);
+      // Fallback: enviar a login con parámetros para reintentar
+      this.router.navigate(['/auth/login'], {
+        queryParams: {
+          promo_applied: '1',
+          promo: this.promoPlan?.promoCode || null,
+          email: this.tempUserData?.email || null
+        }
+      });
     }
   }
 
