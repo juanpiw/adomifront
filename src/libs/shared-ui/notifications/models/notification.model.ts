@@ -57,6 +57,14 @@ export interface Notification {
   readAt?: Date;
   expiresAt?: Date;
   
+  // Deep link / routing
+  action?: string;
+  entityType?: string;
+  entityId?: string;
+  roleTarget?: UserProfile | 'both';
+  routeHint?: string;
+  params?: Record<string, any>;
+  
   // Enlaces y acciones
   link?: string;
   actions?: NotificationAction[];

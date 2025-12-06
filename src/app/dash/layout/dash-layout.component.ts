@@ -24,6 +24,7 @@ import { GlobalSearchService } from '../../../libs/shared-ui/global-search/servi
 import { FeatureFlagsService } from '../../../libs/core/services/feature-flags.service';
 import { GoldenInviteModalComponent } from '../../../libs/shared-ui/golden-invite-modal/golden-invite-modal.component';
 import { ProviderInviteService, ProviderInviteSummary } from '../../services/provider-invite.service';
+import { Notification } from '../../../libs/shared-ui/notifications/models/notification.model';
 
 interface PlanTierDescriptor {
   chip: string;
@@ -470,9 +471,82 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     return helpContent[context as keyof typeof helpContent] || helpContent.general;
   }
 
-  onNotificationClick(): void {
-    console.log('Notifications clicked');
-    // TODO: Implementar lógica de notificaciones
+  onNotificationClick(notification?: Notification | void): void {
+    if (!notification) {
+      this.router.navigateByUrl('/notificaciones');
+      return;
+    }
+    const target = this.resolveNotificationRoute(notification as Notification, 'provider');
+    if (target.redirectToLogin) {
+      this.router.navigate(['/auth/login'], {
+        queryParams: { redirect: target.url, ...target.queryParams }
+      });
+      return;
+    }
+    if (target.url) {
+      this.router.navigate([target.url], { queryParams: target.queryParams, state: target.state });
+    } else {
+      this.router.navigateByUrl('/notificaciones');
+    }
+  }
+
+  private resolveNotificationRoute(
+    notification: Notification,
+    role: 'client' | 'provider'
+  ): { url: string | null; queryParams?: Record<string, any>; state?: any; redirectToLogin?: boolean } {
+    const hasToken = !!this.auth.getAccessToken();
+    if (!hasToken) {
+      return { url: '/auth/login', queryParams: { redirect: this.router.url }, redirectToLogin: true };
+    }
+
+    const routeHint = notification.routeHint || notification.link;
+    const params = notification.params || {};
+    const metadata = notification.metadata || {};
+    const entityType = notification.entityType || metadata['entity_type'] || notification.type;
+    const entityId =
+      notification.entityId ||
+      metadata['entity_id'] ||
+      metadata['appointment_id'] ||
+      metadata['quote_id'] ||
+      metadata['thread_id'] ||
+      null;
+
+    // Si ya viene un route_hint explícito, úsalo
+    if (routeHint) {
+      return { url: routeHint, queryParams: params };
+    }
+
+    // Resolver por tipo
+    if (entityType === 'appointment' || notification.type === 'appointment' || notification.type === 'booking') {
+      return {
+        url: role === 'provider' ? '/dash/agenda' : '/client/reservas',
+        queryParams: entityId ? { appointmentId: entityId, ...params } : params
+      };
+    }
+
+    if (entityType === 'quote') {
+      return {
+        url: role === 'provider' ? '/dash/cotizaciones' : '/client/cotizaciones',
+        queryParams: entityId ? { quoteId: entityId, ...params } : params
+      };
+    }
+
+    if (entityType === 'message' || notification.type === 'message') {
+      return {
+        url: role === 'provider' ? '/dash/chat' : '/client/chat',
+        queryParams: entityId ? { threadId: entityId, ...params } : params
+      };
+    }
+
+    if (entityType === 'verification') {
+      return { url: '/dash/perfil/identidad', queryParams: params };
+    }
+
+    if (entityType === 'payment') {
+      return { url: '/dash/caja', queryParams: params };
+    }
+
+    return { url: role === 'provider' ? '/dash/home' : '/client/home', queryParams: params };
   }
 
   onSettingsClick(): void {

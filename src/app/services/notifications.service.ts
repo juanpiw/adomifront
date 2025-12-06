@@ -396,12 +396,13 @@ export class NotificationsService {
   private mapBackendNotification(raw: any, profile: UserProfile): Notification {
     const type = this.mapNotificationType(raw?.type);
     let metadata: Record<string, any> | undefined;
+    let parsedData: any = undefined;
 
     if (raw?.data) {
       try {
-        const parsed = JSON.parse(raw.data);
-        if (parsed && typeof parsed === 'object') {
-          metadata = parsed;
+        parsedData = typeof raw.data === 'string' ? JSON.parse(raw.data) : raw.data;
+        if (parsedData && typeof parsedData === 'object') {
+          metadata = parsedData;
         }
       } catch (error) {
         console.warn('[NOTIFICATIONS_SERVICE] 🔔 No se pudo parsear metadata de notificación:', error);
@@ -412,7 +413,19 @@ export class NotificationsService {
     const createdAt = raw?.created_at ? new Date(raw.created_at) : new Date();
     const status: NotificationStatus = raw?.is_read ? 'read' : 'unread';
     const backendId = raw?.id;
-    const link = (metadata?.['link'] ?? metadata?.['url']) || undefined;
+    const link = (metadata?.['link'] ?? metadata?.['url'] ?? metadata?.['route_hint']) || undefined;
+    const action = metadata?.['action'] || raw?.action || undefined;
+    const entityType = metadata?.['entity_type'] || raw?.entity_type || undefined;
+    const entityId =
+      metadata?.['entity_id'] ??
+      metadata?.['appointment_id'] ??
+      metadata?.['quote_id'] ??
+      metadata?.['thread_id'] ??
+      raw?.entity_id ??
+      undefined;
+    const roleTarget = metadata?.['role_target'] || raw?.role_target || 'both';
+    const routeHint = metadata?.['route_hint'] || raw?.route_hint || undefined;
+    const params = metadata?.['params'] || raw?.params || undefined;
 
     const notification: Notification = {
       id: backendId ? String(backendId) : this.generateLocalId(),
@@ -431,7 +444,13 @@ export class NotificationsService {
         notificationId: backendId
       },
       link,
-      actions: Array.isArray(metadata?.['actions']) ? metadata['actions'] : []
+      actions: Array.isArray(metadata?.['actions']) ? metadata['actions'] : [],
+      action,
+      entityType,
+      entityId: entityId ? String(entityId) : undefined,
+      roleTarget: roleTarget as any,
+      routeHint,
+      params
     };
 
     return this.notificationState.enrichNotification(notification);

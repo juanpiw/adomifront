@@ -15,6 +15,7 @@ import { AppointmentsService, AppointmentDto } from '../../services/appointments
 import { NotificationsService } from '../../services/notifications.service';
 import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
 import { ensureTempUserData, needsProviderPlan } from '../../auth/utils/provider-onboarding.util';
+import { Notification } from '../../../libs/shared-ui/notifications/models/notification.model';
 
 @Component({
   selector: 'app-client-layout',
@@ -380,14 +381,83 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
     return helpContent[context as keyof typeof helpContent] || helpContent.general;
   }
 
-  onNotificationClick(): void {
-    console.log('Client notifications clicked');
-    // TODO: Implementar lógica de notificaciones para cliente
+  onNotificationClick(notification?: Notification | void): void {
+    if (!notification) {
+      this.router.navigateByUrl('/notificaciones');
+      return;
+    }
+    const target = this.resolveNotificationRoute(notification as Notification, 'client');
+    if (target.redirectToLogin) {
+      this.router.navigate(['/auth/login'], { queryParams: { redirect: target.url, ...target.queryParams } });
+      return;
+    }
+    if (target.url) {
+      this.router.navigate([target.url], { queryParams: target.queryParams, state: target.state });
+    } else {
+      this.router.navigateByUrl('/notificaciones');
+    }
   }
 
   onSettingsClick(): void {
     this.router.navigate(['/client/configuracion']);
     this.onNav();
+  }
+
+  private resolveNotificationRoute(
+    notification: Notification,
+    role: 'client' | 'provider'
+  ): { url: string | null; queryParams?: Record<string, any>; state?: any; redirectToLogin?: boolean } {
+    const hasToken = !!this.auth.getAccessToken();
+    if (!hasToken) {
+      return { url: '/auth/login', queryParams: { redirect: this.router.url }, redirectToLogin: true };
+    }
+
+    const routeHint = notification.routeHint || notification.link;
+    const params = notification.params || {};
+    const metadata = notification.metadata || {};
+    const entityType = notification.entityType || metadata['entity_type'] || notification.type;
+    const entityId =
+      notification.entityId ||
+      metadata['entity_id'] ||
+      metadata['appointment_id'] ||
+      metadata['quote_id'] ||
+      metadata['thread_id'] ||
+      null;
+
+    if (routeHint) {
+      return { url: routeHint, queryParams: params };
+    }
+
+    if (entityType === 'appointment' || notification.type === 'appointment' || notification.type === 'booking') {
+      return {
+        url: role === 'provider' ? '/dash/agenda' : '/client/reservas',
+        queryParams: entityId ? { appointmentId: entityId, ...params } : params
+      };
+    }
+
+    if (entityType === 'quote') {
+      return {
+        url: role === 'provider' ? '/dash/cotizaciones' : '/client/cotizaciones',
+        queryParams: entityId ? { quoteId: entityId, ...params } : params
+      };
+    }
+
+    if (entityType === 'message' || notification.type === 'message') {
+      return {
+        url: role === 'provider' ? '/dash/chat' : '/client/chat',
+        queryParams: entityId ? { threadId: entityId, ...params } : params
+      };
+    }
+
+    if (entityType === 'verification') {
+      return { url: role === 'provider' ? '/dash/perfil/identidad' : '/client/configuracion', queryParams: params };
+    }
+
+    if (entityType === 'payment') {
+      return { url: role === 'provider' ? '/dash/caja' : '/client/reservas', queryParams: params };
+    }
+
+    return { url: role === 'provider' ? '/dash/home' : '/client/home', queryParams: params };
   }
 
   private async initializeNotifications(): Promise<void> {

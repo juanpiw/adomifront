@@ -4,7 +4,7 @@
     <!-- Header -->
     <app-inicio-header 
       [data]="headerData"
-      (notificationClick)="onNotificationClick()"
+    (notificationClick)="onNotificationClick($event)"
       (publicProfileClick)="onPublicProfileClick()">
     </app-inicio-header>
 

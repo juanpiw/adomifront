@@ -91,7 +91,7 @@
       [config]="topbarConfig"
       (hamburgerClick)="isCollapsed = !isCollapsed"
       (helpClick)="onHelpClick($event)"
-      (notificationClick)="onNotificationClick()"
+      (notificationClick)="onNotificationClick($event)"
       (settingsClick)="onSettingsClick()">
     </app-topbar>
     <div class="main-slot">

@@ -535,6 +535,21 @@ export class SelectPlanComponent implements OnInit {
     return 'basico';
   }
 
+  private cleanupSessionStorage() {
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('tempUserData');
+        sessionStorage.removeItem('selectedPlan');
+        sessionStorage.removeItem('promoCode');
+        sessionStorage.removeItem('paymentGateway');
+        sessionStorage.removeItem('tbkPlanPending');
+        sessionStorage.removeItem('providerOnboarding');
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   private trackFunnelEvent(event: string, metadata?: Record<string, any>) {
     try {
       const payload: any = {

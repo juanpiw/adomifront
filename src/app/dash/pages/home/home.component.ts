@@ -463,9 +463,9 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   };
 
   // Event handlers
-  onNotificationClick() {
-    console.log('Notificación clickeada');
-    // TODO: Implementar lógica de notificaciones
+  onNotificationClick(notification: any) {
+    console.log('Notificación clickeada', notification);
+    // TODO: Implementar lógica de notificaciones en home si se requiere
   }
 
   onPublicProfileClick() {
