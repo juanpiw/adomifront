@@ -6,6 +6,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService, AuthUser } from '../services/auth.service';
 import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
+import { firstValueFrom } from 'rxjs';
 
 interface Plan {
   id: number;
@@ -446,6 +447,86 @@ export class SelectPlanComponent implements OnInit {
     return this.planFeatureMatrix[key] || [];
   }
 
+  private async registerAndRedirectForPromo(): Promise<void> {
+    this.promoActivating = true;
+    try {
+      // Usar tempUserData desde sessionStorage
+      if (!this.tempUserData) {
+        const raw = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('tempUserData') : null;
+        if (raw) {
+          try {
+            this.tempUserData = JSON.parse(raw);
+          } catch {}
+        }
+      }
+
+      let registeredUserId: number | null = null;
+
+      if (this.tempUserData?.email && this.tempUserData?.password) {
+        console.log('[SELECT_PLAN] Registrando usuario provider antes de activar promo', {
+          email: this.tempUserData.email,
+          role: this.tempUserData.role
+        });
+        const registerResp: any = await firstValueFrom(this.authService.register({
+          email: this.tempUserData.email,
+          password: this.tempUserData.password,
+          role: this.tempUserData.role || 'provider',
+          name: this.tempUserData.name || this.tempUserData.email.split('@')[0] || 'Usuario'
+        }));
+        registeredUserId = registerResp?.user?.id || registerResp?.data?.user?.id || null;
+      } else {
+        console.warn('[SELECT_PLAN] No tempUserData disponible para auto-registro antes de login');
+      }
+
+      // Intentar activar la promo inmediatamente si ya tenemos token y userId
+      const token = this.authService.getAccessToken();
+      const providerId = registeredUserId || this.authService.getCurrentUser()?.id || null;
+
+      if (token && providerId && this.promoPlan?.promoCode) {
+        try {
+          const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+          const resp: any = await firstValueFrom(
+            this.http.post(`${environment.apiBaseUrl}/subscriptions/promo/apply`, {
+              providerId,
+              code: this.promoPlan.promoCode
+            }, { headers })
+          );
+
+          if (resp?.ok) {
+            console.log('[SELECT_PLAN] Promo aplicada tras auto-registro, navegando a dash/home');
+            this.cleanupSessionStorage();
+            this.promoActivating = false;
+            this.router.navigateByUrl('/dash/home');
+            return;
+          } else {
+            console.warn('[SELECT_PLAN] No se pudo activar promo tras auto-registro. Resp:', resp);
+          }
+        } catch (err) {
+          console.error('[SELECT_PLAN] Error aplicando promo tras auto-registro', err);
+        }
+      }
+    } catch (err) {
+      console.error('[SELECT_PLAN] Error registrando antes de redirigir a login', err);
+    } finally {
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('promoCode', this.promoPlan?.promoCode || '');
+        }
+      } catch {}
+
+      this.promoActivating = false;
+      setTimeout(() => {
+        this.router.navigate(['/auth/login'], {
+          queryParams: {
+            promo_applied: '1',
+            promo: this.promoPlan?.promoCode || null,
+            email: this.tempUserData?.email || null
+          }
+        });
+      }, 800);
+    }
+  }
+
   getPlanKey(plan: Plan | null | undefined): 'fundador' | 'basico' | 'pro' | 'premium' {
     const name = (plan?.name || '').toLowerCase();
     if (name.includes('fundador')) return 'fundador';
@@ -558,8 +639,9 @@ export class SelectPlanComponent implements OnInit {
     const providerId = currentUser?.id;
 
     if (!token || !providerId) {
-      console.warn('[SELECT_PLAN] No token o providerId disponible, manteniendo flujo manual');
-      this.promoSuccess = 'Código aplicado. Inicia sesión nuevamente para activarlo.';
+      console.warn('[SELECT_PLAN] No token o providerId disponible, registrando y redirigiendo a login...');
+      this.promoSuccess = 'Código aplicado. Te llevamos a iniciar sesión para activarlo.';
+      void this.registerAndRedirectForPromo();
       return;
     }
 
