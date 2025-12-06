@@ -224,10 +224,13 @@ export class RegisterComponent implements OnInit {
         
         if (response.success && response.user) {
           // El AuthService ya maneja el guardado del usuario y tokens
-          this.serverSuccess = '¡Registro exitoso! Redirigiendo...';
+          this.serverSuccess = '¡Registro exitoso! Inicia sesión para continuar.';
+          // Redirigir al login para que el usuario ingrese credenciales
           setTimeout(() => {
-            this.router.navigateByUrl('/onboarding');
-          }, 2000);
+            this.router.navigate(['/auth/login'], {
+              queryParams: { registered: '1', email: this.email.trim().toLowerCase() }
+            });
+          }, 1200);
         } else {
           this.serverError = response.error || 'Error al registrarse';
           console.warn('🟠 [REGISTER] Respuesta sin success/user, serverError:', this.serverError);
