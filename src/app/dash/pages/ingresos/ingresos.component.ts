@@ -92,6 +92,10 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     commerceName: ['', [Validators.required, Validators.minLength(3)]],
     commerceEmail: ['', [Validators.required, Validators.email]]
   });
+  tbkManualForm = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(5)]],
+    email: ['', [Validators.required, Validators.email]]
+  });
   walletSummary: WalletSummary = {
     availableBalance: 0,
     pendingBalance: 0,
@@ -356,6 +360,10 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         if (!this.providerId) {
           this.providerId = profile?.provider_id || profile?.id || null;
         }
+        const presetEmail = this.currentUser?.email || profile?.email || '';
+        if (presetEmail) {
+          this.tbkManualForm.patchValue({ email: presetEmail });
+        }
         this.evaluateKycReadiness(profile, this.currentUser);
         this.loadIncomeGoal();
         void this.loadTbkStatus();
@@ -557,6 +565,9 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   }
 
   get tbkStatusLabel(): string {
+    if (this.tbkSecondaryCode) {
+      return 'Configurado';
+    }
     switch (this.tbkStatus) {
       case 'active':
         return 'Activo';
@@ -607,6 +618,38 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       commerceEmail: presetEmail
     });
     this.tbkModalOpen = true;
+  }
+
+  submitManualCode() {
+    if (!this.providerId) return;
+    if (this.tbkManualForm.invalid) {
+      this.tbkManualForm.markAllAsTouched();
+      return;
+    }
+    this.tbkActionLoading = true;
+    this.tbkCurrentAction = 'create';
+    this.tbkError = null;
+
+    const { code, email } = this.tbkManualForm.value;
+    this.providerProfile.tbkSaveSecondaryCode(this.providerId, {
+      code: code || '',
+      email: email || ''
+    }).subscribe({
+      next: async (resp) => {
+        this.tbkSecondaryCode = resp?.tbk?.code || code || null;
+        this.tbkStatus = (resp?.tbk?.status || 'active') as TbkStatus;
+        await this.loadTbkStatus('status', false);
+        this.showToast('Código guardado y configurado.');
+      },
+      error: (err) => {
+        const detail = err?.error?.error || err?.error?.details || err?.message || 'No se pudo guardar el código';
+        this.tbkError = typeof detail === 'string' ? detail : 'No se pudo guardar el código';
+      },
+      complete: () => {
+        this.tbkActionLoading = false;
+        this.tbkCurrentAction = null;
+      }
+    });
   }
 
   closeTbkModal() {

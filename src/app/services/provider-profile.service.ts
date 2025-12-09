@@ -685,4 +685,16 @@ export class ProviderProfileService {
       { headers: this.getHeaders() }
     );
   }
+
+  /**
+   * Registrar manualmente un código de comercio secundario entregado por TBK.
+   */
+  tbkSaveSecondaryCode(providerId: number, payload: { code: string; email: string }):
+    Observable<{ success: boolean; tbk: { status: string; code: string } }> {
+    return this.http.post<{ success: boolean; tbk: { status: string; code: string } }>(
+      `${this.apiUrl}/providers/${providerId}/tbk/secondary/manual`,
+      payload,
+      { headers: this.getHeaders() }
+    );
+  }
 }

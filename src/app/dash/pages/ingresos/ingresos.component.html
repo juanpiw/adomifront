@@ -51,7 +51,7 @@
 
           <div *ngIf="tbkError" class="tbk-card__error">{{ tbkError }}</div>
 
-          <div *ngIf="!tbkKycReady" class="tbk-card__alert">
+          <div *ngIf="!tbkKycReady && !tbkSecondaryCode" class="tbk-card__alert">
             <h4>Completa estos datos antes de solicitar el alta:</h4>
             <ul>
               <li *ngFor="let item of tbkKycMissing">{{ item }}</li>
@@ -63,12 +63,41 @@
 
           <hr class="tbk-card__divider" />
 
+          <div class="tbk-card__info" *ngIf="!tbkSecondaryCode">
+            <p>
+              Para activar Webpay Mall (Servicio Webpay Oneclick Mall) llama a Transbank al
+              <a href="tel:6006386380">600 638 6380</a> o a tu ejecutivo y solicita tu código de comercio hijo
+              asociado al mall <strong>597053032128</strong>.
+            </p>
+            <p>Ingresa abajo ese código junto a tu correo para validarlo y guardarlo en Adomi.</p>
+            <form [formGroup]="tbkManualForm" (ngSubmit)="submitManualCode()" class="tbk-inline-form">
+              <label>
+                Código de comercio hijo
+                <input type="text" formControlName="code" placeholder="Ej. 5970XXXXXXXX" />
+                <small>Debe ser el código que Transbank te entregó.</small>
+                <div class="error" *ngIf="tbkManualForm.get('code')?.touched && tbkManualForm.get('code')?.invalid">
+                  Ingresa un código válido.
+                </div>
+              </label>
+              <label>
+                Correo de contacto
+                <input type="email" formControlName="email" placeholder="tu-correo@ejemplo.com" />
+                <small>Validaremos que coincida con tu cuenta en Adomi.</small>
+                <div class="error" *ngIf="tbkManualForm.get('email')?.touched && tbkManualForm.get('email')?.invalid">
+                  Ingresa un correo válido.
+                </div>
+              </label>
+              <div class="tbk-inline-form__actions">
+                <button type="submit" class="tbk-btn tbk-btn--primary" [disabled]="tbkActionLoading">
+                  <span *ngIf="tbkActionLoading && tbkCurrentAction === 'create'; else saveCodeLabel">Guardando…</span>
+                  <ng-template #saveCodeLabel>Guardar código</ng-template>
+                </button>
+              </div>
+            </form>
+          </div>
+
           <div class="tbk-card__section-header">
             <h4>Mis Comercios Secundarios</h4>
-            <button type="button" class="tbk-btn tbk-btn--primary" (click)="openTbkModal()" [disabled]="!tbkCanCreate || !tbkKycReady || tbkActionLoading">
-              <span *ngIf="tbkActionLoading && tbkCurrentAction === 'create'; else createBtnLabel">Crear Comercio Secundario</span>
-              <ng-template #createBtnLabel>Crear Comercio Secundario</ng-template>
-            </button>
           </div>
 
           <div class="tbk-table-wrapper" *ngIf="tbkSecondaryShops.length; else tbkEmptyState">
