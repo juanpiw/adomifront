@@ -360,7 +360,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         if (!this.providerId) {
           this.providerId = profile?.provider_id || profile?.id || null;
         }
-        const presetEmail = this.currentUser?.email || profile?.email || '';
+        const presetEmail = this.currentUser?.email || '';
         if (presetEmail) {
           this.tbkManualForm.patchValue({ email: presetEmail });
         }
