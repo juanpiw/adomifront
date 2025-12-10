@@ -489,7 +489,7 @@ export class ClientReservasComponent implements OnInit {
             this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
           },
           error: (err) => {
-            console.error('[RESERVAS][ONECLICK] Authorization error', err);
+            console.error('[RESERVAS][ONECLICK] Authorization error', err, err?.error);
             this.ocReturnProcessing = false;
             this.ocReturnError = err?.error?.error || 'No se pudo autorizar el pago.';
             this.loadAppointments();
