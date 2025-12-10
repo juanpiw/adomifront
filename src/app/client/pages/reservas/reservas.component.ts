@@ -269,6 +269,10 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
         <span *ngIf="!payModalLoading">Pagar con Tarjeta</span>
         <span *ngIf="payModalLoading">Procesando...</span>
       </button>
+      <button *ngIf="tbkNeedsInscription" class="pay-modal__btn" (click)="startOcInscription()" [disabled]="payModalInscribing">
+        <span *ngIf="!payModalInscribing">Inscribir tarjeta (Oneclick)</span>
+        <span *ngIf="payModalInscribing">Redirigiendo...</span>
+      </button>
     </div>
   </div>
 
@@ -518,6 +522,7 @@ export class ClientReservasComponent implements OnInit {
   cashCap = 150000;
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   payModalLoading = false;
+  payModalInscribing = false;
   tbkInfoByProvider: Record<number, { code: string | null; status: string; email: string | null }> = {};
   tbkClientProfile: { tbk_user?: string | null; username?: string | null } | null = null;
   tbkNeedsInscription = false;
@@ -1065,6 +1070,43 @@ export class ClientReservasComponent implements OnInit {
     if (!info?.code) return false;
     if (this.tbkNeedsInscription) return false;
     return true;
+  }
+
+  startOcInscription() {
+    if (!this.payModalApptId || this.payModalInscribing) return;
+    this.payModalInscribing = true;
+    const apptId = this.payModalApptId;
+    // Usa la URL de retorno configurada en backend (TBK_ONECLICK_RETURN_URL); si quieres override, pásala aquí.
+    this.payments.ocStartInscription(apptId, undefined, undefined).subscribe({
+      next: (resp) => {
+        this.payModalInscribing = false;
+        if (resp?.success && resp?.url_webpay && resp?.token) {
+          try {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = String(resp.url_webpay);
+            form.style.display = 'none';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'TBK_TOKEN';
+            input.value = String(resp.token);
+            form.appendChild(input);
+            console.log('[RESERVAS] Enviando TBK_TOKEN a Webpay Oneclick', resp.token);
+            document.body.appendChild(form);
+            form.submit();
+          } catch (e) {
+            console.error('[RESERVAS] Error redirigiendo a Webpay Oneclick', e);
+            window.location.href = String(resp.url_webpay);
+          }
+        } else {
+          console.error('[RESERVAS] ocStartInscription sin url_webpay/token', resp);
+        }
+      },
+      error: (err) => {
+        this.payModalInscribing = false;
+        console.error('[RESERVAS] Error iniciando inscripción Oneclick', err);
+      }
+    });
   }
 
   private ensureClaimData(appointmentId: number) {
