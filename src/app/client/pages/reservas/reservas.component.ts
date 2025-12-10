@@ -462,6 +462,42 @@ export class ClientReservasComponent implements OnInit {
     if (raw.startsWith('/uploads')) return `${environment.apiBaseUrl}${raw}`;
     return `${environment.apiBaseUrl}/${raw.replace(/^\//, '')}`;
   }
+
+  private processOneclickReturn(tbkToken: string, appointmentId: number) {
+    console.log('[RESERVAS][ONECLICK] Processing return', { tbkToken: tbkToken ? `${tbkToken.substring(0,8)}...` : '', appointmentId });
+    this.ocReturnProcessing = true;
+    this.ocReturnError = null;
+    // 1) Finish inscription to save tbk_user
+    this.payments.ocFinishInscription(tbkToken, appointmentId).subscribe({
+      next: (finishResp) => {
+        console.log('[RESERVAS][ONECLICK] Finish inscription OK', finishResp);
+        this.tbkNeedsInscription = false;
+        // 2) Authorize payment for the appointment
+        this.payments.ocAuthorize(appointmentId).subscribe({
+          next: (authResp) => {
+            console.log('[RESERVAS][ONECLICK] Authorization OK', authResp);
+            this.ocReturnProcessing = false;
+            this.loadAppointments();
+            this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
+          },
+          error: (err) => {
+            console.error('[RESERVAS][ONECLICK] Authorization error', err);
+            this.ocReturnProcessing = false;
+            this.ocReturnError = err?.error?.error || 'No se pudo autorizar el pago.';
+            this.loadAppointments();
+            this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
+          }
+        });
+      },
+      error: (err) => {
+        console.error('[RESERVAS][ONECLICK] Finish inscription error', err);
+        this.ocReturnProcessing = false;
+        this.ocReturnError = err?.error?.error || 'No se pudo finalizar la inscripción.';
+        this.loadAppointments();
+        this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
+      }
+    });
+  }
   
   // Profile validation
   showProfileModal: boolean = false;
@@ -530,6 +566,8 @@ export class ClientReservasComponent implements OnInit {
   tbkInfoByProvider: Record<number, { code: string | null; status: string; email: string | null }> = {};
   tbkClientProfile: { tbk_user?: string | null; username?: string | null } | null = null;
   tbkNeedsInscription = false;
+  ocReturnProcessing = false;
+  ocReturnError: string | null = null;
   finalizeModal = {
     open: false,
     appointmentId: null as number | null,
@@ -574,9 +612,15 @@ export class ClientReservasComponent implements OnInit {
     this.validateProfile();
     // Preferencia de pago del cliente
     try { this.clientProfile.getPaymentPreference().subscribe({ next: (res:any) => this.clientPaymentPref = (res?.preference ?? null) as any, error: () => this.clientPaymentPref = null }); } catch {}
-    // Si venimos de Stripe success/cancel, procesar query y luego cargar
+    // Si venimos de Oneclick (TBK_TOKEN) o Stripe success/cancel, procesar query y luego cargar
+    const tbkToken = this.route.snapshot.queryParamMap.get('tbk_token');
+    const appointmentIdOc = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    if (tbkToken && appointmentIdOc) {
+      this.processOneclickReturn(tbkToken, appointmentIdOc);
+      return;
+    }
     if (appointmentId && sessionId) {
       console.log('[RESERVAS] Processing payment return from Stripe:', { appointmentId, sessionId });
       this.payments.confirmAppointmentPayment(appointmentId, sessionId).subscribe({
