@@ -937,13 +937,16 @@ export class ClientReservasComponent implements OnInit {
     if (appointmentId) {
       const providerId = this._providerByApptId[appointmentId];
       if (providerId) {
-        this.payments.getTbkSecondaryInfo(providerId).subscribe({
+        this.payments.getTbkSecondaryInfo(providerId, appointmentId).subscribe({
           next: (resp) => {
             if (resp?.success) {
               this.tbkInfoByProvider[providerId] = resp.tbk;
+              console.log('[TBK][PAY_MODAL] secondary info', { providerId, appointmentId, tbk: resp.tbk });
             }
           },
-          error: () => {}
+          error: (err) => {
+            console.warn('[TBK][PAY_MODAL] secondary info error', { providerId, appointmentId, err });
+          }
         });
       }
     }

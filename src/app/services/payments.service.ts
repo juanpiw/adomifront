@@ -123,10 +123,10 @@ export class PaymentsService {
     );
   }
 
-  getTbkSecondaryInfo(providerId: number): Observable<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>{
+  getTbkSecondaryInfo(providerId: number, appointmentId?: number): Observable<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>{
     return this.http.get<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>(
       `${this.base}/providers/${providerId}/tbk/secondary/info`,
-      { headers: this.headers() }
+      { headers: this.headers(), params: appointmentId ? { appointmentId } as any : undefined }
     );
   }
 
