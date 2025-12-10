@@ -269,13 +269,13 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
         <span *ngIf="!payModalLoading">Pagar con Tarjeta</span>
         <span *ngIf="payModalLoading">Procesando...</span>
       </button>
-      <div *ngIf="tbkNeedsInscription && !payModalLoading && !canPayWithCard(payModalApptId)" class="pay-modal__hint">
-        Necesitas inscribir tu tarjeta Oneclick antes de pagar con tarjeta.
-      </div>
       <button *ngIf="tbkNeedsInscription" class="pay-modal__btn" (click)="startOcInscription()" [disabled]="payModalInscribing">
         <span *ngIf="!payModalInscribing">Inscribir tarjeta (Oneclick)</span>
         <span *ngIf="payModalInscribing">Redirigiendo...</span>
       </button>
+    </div>
+    <div *ngIf="tbkNeedsInscription && !payModalLoading && !canPayWithCard(payModalApptId)" class="pay-modal__hint">
+      Necesitas inscribir tu tarjeta Oneclick antes de pagar con tarjeta.
     </div>
   </div>
 

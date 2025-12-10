@@ -49,6 +49,7 @@ import { providerOnboardingGuard, providerOnboardingChildGuard } from './auth/gu
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'tbk/return', component: TbkReturnComponent },
+  { path: 'tbk/oneclick/finish', component: TbkReturnComponent },
   { path: 'tbk/plan-return', component: TbkPlanReturnComponent },
   { path: 'libreria', component: LibraryComponent },
   { path: 'onboarding', component: OnboardingComponent },

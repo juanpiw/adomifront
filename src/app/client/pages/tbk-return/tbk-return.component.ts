@@ -22,8 +22,19 @@ export class TbkReturnComponent implements OnInit {
   ngOnInit(): void {
     const qp = this.route.snapshot.queryParamMap;
     const token = qp.get('token_ws') || qp.get('TBK_TOKEN') || '';
+    const hasTokenWs = !!qp.get('token_ws');
+    const hasTbkToken = !!qp.get('TBK_TOKEN');
+    const isOneclickFinish = hasTbkToken && !hasTokenWs;
     console.log('[TBK_RETURN] query params:', Object.fromEntries(qp.keys.map(k => [k, qp.get(k)] as any)));
-    console.log('[TBK_RETURN] token_ws detected:', !!token);
+    console.log('[TBK_RETURN] token_ws detected:', hasTokenWs, 'TBK_TOKEN detected:', hasTbkToken);
+
+    if (isOneclickFinish && token) {
+      // Flujo Oneclick: solo redirige a reservas (finish inscripción se hace en app/reservas)
+      console.log('[TBK_RETURN] Oneclick finish detected, redirecting to /client/reservas');
+      this.router.navigate(['/client/reservas'], { queryParams: { tbk_token: token } });
+      return;
+    }
+
     if (!token) {
       // Si no hay token, ir a reservas
       console.warn('[TBK_RETURN] Missing token_ws, redirecting to /client/reservas');
