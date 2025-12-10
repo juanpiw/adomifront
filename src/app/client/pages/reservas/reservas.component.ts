@@ -269,6 +269,9 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
         <span *ngIf="!payModalLoading">Pagar con Tarjeta</span>
         <span *ngIf="payModalLoading">Procesando...</span>
       </button>
+      <div *ngIf="tbkNeedsInscription && !payModalLoading && !canPayWithCard(payModalApptId)" class="pay-modal__hint">
+        Necesitas inscribir tu tarjeta Oneclick antes de pagar con tarjeta.
+      </div>
       <button *ngIf="tbkNeedsInscription" class="pay-modal__btn" (click)="startOcInscription()" [disabled]="payModalInscribing">
         <span *ngIf="!payModalInscribing">Inscribir tarjeta (Oneclick)</span>
         <span *ngIf="payModalInscribing">Redirigiendo...</span>
@@ -394,6 +397,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     .pay-modal__actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid #e5e7eb}
     .pay-modal__btn{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;color:#374151;font-weight:700;cursor:pointer}
     .pay-modal__btn--primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
+    .pay-modal__hint{margin-top:6px;font-size:13px;color:#047857;font-weight:600}
     .pay-modal__cash-limit-warning{display:flex;gap:8px;align-items:flex-start;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px;margin-bottom:12px}
     .pay-modal__cash-limit-icon{font-size:18px;line-height:1}
     .pay-modal__cash-limit-content{flex:1}
