@@ -519,6 +519,8 @@ export class ClientReservasComponent implements OnInit {
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   payModalLoading = false;
   tbkInfoByProvider: Record<number, { code: string | null; status: string; email: string | null }> = {};
+  tbkClientProfile: { tbk_user?: string | null; username?: string | null } | null = null;
+  tbkNeedsInscription = false;
   finalizeModal = {
     open: false,
     appointmentId: null as number | null,
@@ -933,7 +935,7 @@ export class ClientReservasComponent implements OnInit {
   onPagar(appointmentId: number) {
     this.payModalApptId = appointmentId || null;
     this.showPayMethodModal = true;
-    // Traer info TBK hijo para habilitar pago con tarjeta
+    // Traer info TBK hijo para habilitar pago con tarjeta (Oneclick Mall)
     if (appointmentId) {
       const providerId = this._providerByApptId[appointmentId];
       if (providerId) {
@@ -949,6 +951,18 @@ export class ClientReservasComponent implements OnInit {
           }
         });
       }
+      // Perfil Oneclick del cliente
+      this.payments.ocProfile().subscribe({
+        next: (resp) => {
+          this.tbkClientProfile = resp || null;
+          this.tbkNeedsInscription = !resp?.tbk_user;
+          console.log('[TBK][PAY_MODAL] client oc profile', resp);
+        },
+        error: (err) => {
+          console.warn('[TBK][PAY_MODAL] oc profile error', err);
+          this.tbkNeedsInscription = true;
+        }
+      });
     }
     // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
   }
@@ -1048,7 +1062,9 @@ export class ClientReservasComponent implements OnInit {
     const providerId = this._providerByApptId[appointmentId];
     if (!providerId) return false;
     const info = this.tbkInfoByProvider[providerId];
-    return !!info?.code;
+    if (!info?.code) return false;
+    if (this.tbkNeedsInscription) return false;
+    return true;
   }
 
   private ensureClaimData(appointmentId: number) {
@@ -1374,40 +1390,24 @@ export class ClientReservasComponent implements OnInit {
     this.payModalLoading = true;
     const apptId = this.payModalApptId;
     console.log('[RESERVAS] payWithCard clicked for appt:', apptId);
-    this.payments.tbkCreateMallTransaction({
-      appointment_id: apptId,
-      client_reference: `appt-${apptId}`
-    }).subscribe({
+    // Oneclick authorize (cliente)
+    this.payments.ocAuthorize(apptId).subscribe({
       next: (resp) => {
         this.payModalLoading = false;
         this.closePayModal();
-        console.log('[RESERVAS] tbkCreateMallTransaction resp:', resp);
-        if (resp?.success && resp?.url && resp?.token) {
-          try {
-            // TBK requiere POST con token_ws al URL entregado
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = String(resp.url);
-            form.style.display = 'none';
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'token_ws';
-            input.value = String(resp.token);
-            form.appendChild(input);
-            console.log('[RESERVAS] Submitting POST to TBK with token_ws:', resp.token);
-            document.body.appendChild(form);
-            form.submit();
-          } catch (e) {
-            console.error('[RESERVAS] Error enviando POST a TBK', e);
-            window.location.href = String(resp.url);
-          }
+        console.log('[RESERVAS] ocAuthorize resp:', resp);
+        if (resp?.success) {
+          // Marcar la cita como pagada en UI
+          this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+            card.appointmentId === apptId ? { ...card, successHighlight: true, mostrarPagar: false, subtitulo: 'Cita pagada' } : card
+          ));
         } else {
-          console.error('[RESERVAS] TBK create tx sin URL', resp);
+          console.error('[RESERVAS] ocAuthorize sin success', resp);
         }
       },
       error: (err) => {
         this.payModalLoading = false;
-        console.error('[RESERVAS] Error creando transacción TBK', err);
+        console.error('[RESERVAS] Error autorizando Oneclick', err);
       }
     });
   }

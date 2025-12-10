@@ -123,6 +123,38 @@ export class PaymentsService {
     );
   }
 
+  // Oneclick (cliente)
+  ocProfile(): Observable<{ success: boolean; tbk_user?: string | null; username?: string | null }>{
+    return this.http.get<{ success: boolean; tbk_user?: string | null; username?: string | null }>(
+      `${this.base}/client/tbk/oneclick/profile`,
+      { headers: this.headers() }
+    );
+  }
+
+  ocStartInscription(appointmentId: number, responseUrl?: string, email?: string): Observable<{ success: boolean; token: string; url_webpay: string; userName: string }>{
+    return this.http.post<{ success: boolean; token: string; url_webpay: string; userName: string }>(
+      `${this.base}/client/tbk/oneclick/inscriptions`,
+      { appointmentId, responseUrl, email },
+      { headers: this.headers() }
+    );
+  }
+
+  ocFinishInscription(token: string, appointmentId?: number): Observable<{ success: boolean; inscription: any }>{
+    return this.http.put<{ success: boolean; inscription: any }>(
+      `${this.base}/client/tbk/oneclick/inscriptions/${token}`,
+      { appointmentId },
+      { headers: this.headers() }
+    );
+  }
+
+  ocAuthorize(appointmentId: number): Observable<{ success: boolean; transaction: any }>{
+    return this.http.post<{ success: boolean; transaction: any }>(
+      `${this.base}/client/tbk/oneclick/transactions`,
+      { appointment_id: appointmentId },
+      { headers: this.headers() }
+    );
+  }
+
   getTbkSecondaryInfo(providerId: number, appointmentId?: number): Observable<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>{
     return this.http.get<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>(
       `${this.base}/providers/${providerId}/tbk/secondary/info`,
