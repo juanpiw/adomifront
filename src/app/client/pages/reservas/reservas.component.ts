@@ -124,9 +124,60 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
           (contactar)="onContactar(p.appointmentId)"
           (cancelar)="openCancelModal($event)"
           (finalizarServicio)="openFinalizeModal($event)"
-          (reportarProblema)="openReportModal($event)"
+          (reportarProblema)="openClaimFlow($event)"
           style="margin-bottom:12px;">
         </ui-proxima-cita-card>
+
+        <!-- Flujo de reclamo embebido por cita -->
+        <ng-container *ngFor="let p of proximasConfirmadas">
+          <ng-container [ngSwitch]="getClaimState(p.appointmentId)">
+            <div *ngSwitchCase="'claim'" class="claim-panel">
+              <div class=\"claim-panel__header\">
+                <div class=\"claim-panel__title\">
+                  <span class=\"chip chip--danger\">Reclamo / Devolución</span>
+                  <p class=\"claim-panel__subtitle\">Transacción #{{ p.appointmentId }} • Tarjeta</p>
+                </div>
+                <button class=\"claim-panel__close\" (click)=\"closeClaim(p.appointmentId)\">✕</button>
+              </div>
+              <div class=\"claim-panel__body\">
+                <p class=\"claim-panel__context\">Estas reportando un problema con el cobro. Un especialista revisará tu caso.</p>
+                <form (ngSubmit)=\"submitClaim(p.appointmentId)\">
+                  <label class=\"claim-panel__label\">
+                    Motivo del reclamo
+                    <select [(ngModel)]=\"getClaimData(p.appointmentId).reason\" name=\"reason-{{p.appointmentId}}\" required>
+                      <option value=\"\" disabled selected>Selecciona un motivo</option>
+                      <option value=\"cobro_duplicado\">Cobro duplicado en mi tarjeta</option>
+                      <option value=\"monto_incorrecto\">El monto cobrado no corresponde</option>
+                      <option value=\"cancelacion_fallida\">Cancelé pero me cobraron igual</option>
+                      <option value=\"otro\">Otro problema con el pago</option>
+                    </select>
+                  </label>
+
+                  <label class=\"claim-panel__label\">
+                    Descripción detallada
+                    <textarea [(ngModel)]=\"getClaimData(p.appointmentId).description\" name=\"description-{{p.appointmentId}}\" rows=\"3\" placeholder=\"Explícanos qué sucedió...\"></textarea>
+                  </label>
+
+                  <div class=\"claim-panel__actions\">
+                    <button type=\"button\" class=\"btn ghost\" (click)=\"closeClaim(p.appointmentId)\" [disabled]=\"getClaimData(p.appointmentId).loading\">Cancelar</button>
+                    <button type=\"submit\" class=\"btn primary\" [disabled]=\"!getClaimData(p.appointmentId).reason || getClaimData(p.appointmentId).loading\">
+                      <span *ngIf=\"!getClaimData(p.appointmentId).loading\">Enviar solicitud</span>
+                      <span *ngIf=\"getClaimData(p.appointmentId).loading\">Enviando…</span>
+                    </button>
+                  </div>
+                  <div class=\"claim-panel__error\" *ngIf=\"getClaimData(p.appointmentId).error\">{{ getClaimData(p.appointmentId).error }}</div>
+                </form>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'success'" class="claim-success">
+              <div class=\"claim-success__icon\">✓</div>
+              <h4>Solicitud recibida</h4>
+              <p>Ticket: {{ getClaimData(p.appointmentId).ticketId || ('REQ-' + p.appointmentId) }}</p>
+              <button class=\"btn primary\" (click)=\"resetClaim(p.appointmentId)\">Volver a mis reservas</button>
+            </div>
+          </ng-container>
+        </ng-container>
       </ng-container>
       <ng-template #noConfirmadas></ng-template>
 
@@ -357,6 +408,28 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     .cancel-modal__actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #e2e8f0;background:#f8fafc}
     .cancel-modal__btn{padding:8px 12px;border-radius:8px;border:1px solid #cbd5f5;background:#fff;color:#1f2937;font-weight:700;cursor:pointer}
     .cancel-modal__btn--danger{background:#ef4444;border-color:#ef4444;color:#fff}
+
+    /* Reclamo de pago */
+    .claim-panel{margin:12px 0 24px;border:1px solid #fee2e2;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(248,113,113,0.08)}
+    .claim-panel__header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fef2f2;border-bottom:1px solid #fee2e2}
+    .claim-panel__title{display:flex;flex-direction:column;gap:4px}
+    .claim-panel__subtitle{margin:0;font-size:12px;color:#9f1239}
+    .claim-panel__close{background:none;border:none;cursor:pointer;color:#dc2626;font-weight:700}
+    .claim-panel__body{padding:14px}
+    .claim-panel__context{font-size:13px;color:#334155;margin-bottom:12px;background:#f8fafc;padding:10px;border-radius:8px;border:1px solid #e2e8f0}
+    .claim-panel__label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:14px;color:#0f172a}
+    .claim-panel__label select,
+    .claim-panel__label textarea{border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-size:14px}
+    .claim-panel__actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+    .claim-panel__error{margin-top:8px;color:#b91c1c;font-size:13px}
+    .btn{border:none;border-radius:8px;padding:10px 12px;cursor:pointer;font-weight:600}
+    .btn.primary{background:#dc2626;color:#fff}
+    .btn.primary:disabled{opacity:.6;cursor:not-allowed}
+    .btn.ghost{background:#fff;border:1px solid #e5e7eb;color:#475569}
+    .chip{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+    .chip--danger{background:#fee2e2;color:#b91c1c}
+    .claim-success{margin:12px 0 24px;padding:24px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:12px;text-align:center}
+    .claim-success__icon{width:48px;height:48px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px}
   `]
 })
 export class ClientReservasComponent implements OnInit {
@@ -431,6 +504,10 @@ export class ClientReservasComponent implements OnInit {
   reviewWorkerName = '';
   reviewServiceName = '';
   reviewAppointmentId = '';
+
+  // Reclamos de pago (estado por cita)
+  claimViewState: Record<number, 'details' | 'claim' | 'success'> = {};
+  claimData: Record<number, { reason: string; description: string; loading?: boolean; error?: string; ticketId?: string }> = {};
 
   // Mapa local: appointmentId -> providerId (para Contactar)
   private _providerByApptId: Record<number, number> = {};
@@ -935,6 +1012,69 @@ export class ClientReservasComponent implements OnInit {
       submitting: false,
       error: ''
     };
+  }
+
+  getClaimState(appointmentId: number | null | undefined): 'details' | 'claim' | 'success' {
+    if (!appointmentId) return 'details';
+    return this.claimViewState[appointmentId] || 'details';
+  }
+
+  getClaimData(appointmentId: number | null | undefined) {
+    if (!appointmentId) return { reason: '', description: '' };
+    this.ensureClaimData(appointmentId);
+    return this.claimData[appointmentId];
+  }
+
+  private ensureClaimData(appointmentId: number) {
+    if (!this.claimData[appointmentId]) {
+      this.claimData[appointmentId] = { reason: '', description: '' };
+    }
+  }
+
+  openClaimFlow(appointmentId?: number | null): void {
+    if (!appointmentId) return;
+    this.ensureClaimData(appointmentId);
+    this.claimData[appointmentId].error = '';
+    this.claimData[appointmentId].loading = false;
+    this.claimViewState[appointmentId] = 'claim';
+  }
+
+  closeClaim(appointmentId?: number | null): void {
+    if (!appointmentId) return;
+    this.claimData[appointmentId] = { reason: '', description: '' };
+    this.claimViewState[appointmentId] = 'details';
+  }
+
+  resetClaim(appointmentId?: number | null): void {
+    this.closeClaim(appointmentId);
+  }
+
+  submitClaim(appointmentId?: number | null): void {
+    if (!appointmentId) return;
+    this.ensureClaimData(appointmentId);
+    const claim = this.claimData[appointmentId];
+    if (!claim.reason || claim.reason.trim().length < 3) {
+      this.claimData[appointmentId].error = 'Selecciona un motivo válido.';
+      return;
+    }
+    claim.loading = true;
+    claim.error = '';
+    this.appointments.reportPaymentClaim(appointmentId, {
+      reason: claim.reason,
+      description: claim.description || ''
+    }).subscribe({
+      next: (resp) => {
+        this.claimData[appointmentId].ticketId = resp?.ticketId || undefined;
+        this.claimViewState[appointmentId] = 'success';
+      },
+      error: (err) => {
+        this.claimData[appointmentId].loading = false;
+        this.claimData[appointmentId].error = err?.error?.error || 'No pudimos registrar el reclamo. Intenta nuevamente.';
+      },
+      complete: () => {
+        this.claimData[appointmentId].loading = false;
+      }
+    });
   }
 
   closeReportModal(): void {

@@ -200,6 +200,14 @@ export class AppointmentsService {
     );
   }
 
+  reportPaymentClaim(id: number, payload: { reason: string; description?: string; evidenceUrls?: string[] }): Observable<{ success: boolean; ticketId?: string }>{
+    return this.http.post<{ success: boolean; ticketId?: string }>(
+      `${this.api}/appointments/${id}/claims/payment`,
+      payload,
+      { headers: this.headers() }
+    );
+  }
+
   // Time slots
   getTimeSlots(provider_id: number, date: string, service_id: number): Observable<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }>{
     return this.http.get<{ success: boolean; time_slots: TimeSlotDto[]; meta?: { fully_blocked?: boolean; allow_manual?: boolean; blocked_reason?: string } }>(
