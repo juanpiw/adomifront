@@ -265,7 +265,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
         <span *ngIf="!payModalLoading">Pagar en Efectivo</span>
         <span *ngIf="payModalLoading">Procesando...</span>
       </button>
-      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()" [disabled]="payModalLoading">
+      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()" [disabled]="payModalLoading || !canPayWithCard(payModalApptId)">
         <span *ngIf="!payModalLoading">Pagar con Tarjeta</span>
         <span *ngIf="payModalLoading">Procesando...</span>
       </button>
@@ -518,6 +518,7 @@ export class ClientReservasComponent implements OnInit {
   cashCap = 150000;
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   payModalLoading = false;
+  tbkInfoByProvider: Record<number, { code: string | null; status: string; email: string | null }> = {};
   finalizeModal = {
     open: false,
     appointmentId: null as number | null,
@@ -932,6 +933,20 @@ export class ClientReservasComponent implements OnInit {
   onPagar(appointmentId: number) {
     this.payModalApptId = appointmentId || null;
     this.showPayMethodModal = true;
+    // Traer info TBK hijo para habilitar pago con tarjeta
+    if (appointmentId) {
+      const providerId = this._providerByApptId[appointmentId];
+      if (providerId) {
+        this.payments.getTbkSecondaryInfo(providerId).subscribe({
+          next: (resp) => {
+            if (resp?.success) {
+              this.tbkInfoByProvider[providerId] = resp.tbk;
+            }
+          },
+          error: () => {}
+        });
+      }
+    }
     // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
   }
   closePayModal(){
@@ -1023,6 +1038,14 @@ export class ClientReservasComponent implements OnInit {
     if (!appointmentId) return { reason: '', description: '' };
     this.ensureClaimData(appointmentId);
     return this.claimData[appointmentId];
+  }
+
+  canPayWithCard(appointmentId: number | null): boolean {
+    if (!appointmentId) return false;
+    const providerId = this._providerByApptId[appointmentId];
+    if (!providerId) return false;
+    const info = this.tbkInfoByProvider[providerId];
+    return !!info?.code;
   }
 
   private ensureClaimData(appointmentId: number) {

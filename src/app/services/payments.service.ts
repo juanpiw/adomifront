@@ -123,6 +123,13 @@ export class PaymentsService {
     );
   }
 
+  getTbkSecondaryInfo(providerId: number): Observable<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>{
+    return this.http.get<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>(
+      `${this.base}/providers/${providerId}/tbk/secondary/info`,
+      { headers: this.headers() }
+    );
+  }
+
   getPaymentStatus(appointmentId: number): Observable<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>{
     console.log('[PAYMENTS_SERVICE] getPaymentStatus ->', { appointmentId });
     return this.http.get<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>(
