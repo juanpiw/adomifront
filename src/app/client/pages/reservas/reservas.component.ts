@@ -467,6 +467,13 @@ export class ClientReservasComponent implements OnInit {
     console.log('[RESERVAS][ONECLICK] Processing return', { tbkToken: tbkToken ? `${tbkToken.substring(0,8)}...` : '', appointmentId });
     this.ocReturnProcessing = true;
     this.ocReturnError = null;
+    if (!appointmentId) {
+      console.error('[RESERVAS][ONECLICK] Falta appointmentId para autorizar');
+      this.ocReturnProcessing = false;
+      this.ocReturnError = 'Falta appointmentId para completar el pago.';
+      this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
+      return;
+    }
     // 1) Finish inscription to save tbk_user
     this.payments.ocFinishInscription(tbkToken, appointmentId).subscribe({
       next: (finishResp) => {
@@ -478,6 +485,7 @@ export class ClientReservasComponent implements OnInit {
             console.log('[RESERVAS][ONECLICK] Authorization OK', authResp);
             this.ocReturnProcessing = false;
             this.loadAppointments();
+            this.clearOcPendingAppt();
             this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
           },
           error: (err) => {
@@ -485,6 +493,7 @@ export class ClientReservasComponent implements OnInit {
             this.ocReturnProcessing = false;
             this.ocReturnError = err?.error?.error || 'No se pudo autorizar el pago.';
             this.loadAppointments();
+            this.clearOcPendingAppt();
             this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
           }
         });
@@ -494,9 +503,24 @@ export class ClientReservasComponent implements OnInit {
         this.ocReturnProcessing = false;
         this.ocReturnError = err?.error?.error || 'No se pudo finalizar la inscripción.';
         this.loadAppointments();
+        this.clearOcPendingAppt();
         this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
       }
     });
+  }
+
+  private loadOcPendingAppt(): string | null {
+    try {
+      return sessionStorage.getItem(this.ocPendingKey);
+    } catch {
+      return null;
+    }
+  }
+
+  private clearOcPendingAppt(): void {
+    try {
+      sessionStorage.removeItem(this.ocPendingKey);
+    } catch {}
   }
   
   // Profile validation
@@ -568,6 +592,7 @@ export class ClientReservasComponent implements OnInit {
   tbkNeedsInscription = false;
   ocReturnProcessing = false;
   ocReturnError: string | null = null;
+  private readonly ocPendingKey = 'adomi_oc_pending_appt';
   finalizeModal = {
     open: false,
     appointmentId: null as number | null,
@@ -614,7 +639,7 @@ export class ClientReservasComponent implements OnInit {
     try { this.clientProfile.getPaymentPreference().subscribe({ next: (res:any) => this.clientPaymentPref = (res?.preference ?? null) as any, error: () => this.clientPaymentPref = null }); } catch {}
     // Si venimos de Oneclick (TBK_TOKEN) o Stripe success/cancel, procesar query y luego cargar
     const tbkToken = this.route.snapshot.queryParamMap.get('tbk_token');
-    const appointmentIdOc = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
+    const appointmentIdOc = Number(this.route.snapshot.queryParamMap.get('appointmentId') || this.loadOcPendingAppt());
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
     if (tbkToken && appointmentIdOc) {
@@ -1124,6 +1149,7 @@ export class ClientReservasComponent implements OnInit {
     if (!this.payModalApptId || this.payModalInscribing) return;
     this.payModalInscribing = true;
     const apptId = this.payModalApptId;
+    try { sessionStorage.setItem(this.ocPendingKey, String(apptId)); } catch {}
     // Usa la URL de retorno configurada en backend (TBK_ONECLICK_RETURN_URL); si quieres override, pásala aquí.
     this.payments.ocStartInscription(apptId, undefined, undefined).subscribe({
       next: (resp) => {
