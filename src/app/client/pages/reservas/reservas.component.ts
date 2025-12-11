@@ -475,7 +475,7 @@ export class ClientReservasComponent implements OnInit {
       return;
     }
     // 1) Finish inscription to save tbk_user
-    this.payments.ocFinishInscription(tbkToken, appointmentId).subscribe({
+    this.payments.ocFinishInscription(tbkToken, appointmentId, this.loadOcPendingUsername() || undefined).subscribe({
       next: (finishResp) => {
         console.log('[RESERVAS][ONECLICK] Finish inscription OK', finishResp);
         this.tbkNeedsInscription = false;
