@@ -370,8 +370,7 @@ export class SelectPlanComponent implements OnInit {
   }
 
   goBack() {
-    // Al volver se cancela el flujo de selección de plan y se retorna al login principal
-    // Limpiamos cualquier estado temporal relacionado con el onboarding para evitar loops.
+    // Al volver cancelamos el flujo de plan. Si el usuario es cliente con switch en progreso, lo limpiamos y volvemos a su dash.
     try {
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.removeItem('tempUserData');
@@ -384,7 +383,27 @@ export class SelectPlanComponent implements OnInit {
       // Ignorado: si no podemos limpiar sessionStorage no bloqueamos la navegación
     }
 
-    this.router.navigateByUrl('/auth/login');
+    const current = this.authService.getCurrentUser();
+    const isClient = current?.role === 'client';
+    if (isClient) {
+      this.authService.clearProviderSwitch();
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const stored = localStorage.getItem('adomi_user');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            parsed.pending_role = null;
+            parsed.account_switch_in_progress = false;
+            parsed.account_switch_started_at = null;
+            parsed.account_switch_source = null;
+            localStorage.setItem('adomi_user', JSON.stringify(parsed));
+          }
+        }
+      } catch {}
+      this.router.navigateByUrl('/client/reservas');
+    } else {
+      this.router.navigateByUrl('/auth/login');
+    }
   }
 
   formatDisplayPrice(price: number): string {

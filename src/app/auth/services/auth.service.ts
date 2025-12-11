@@ -305,6 +305,25 @@ export class AuthService {
       );
   }
 
+  clearProviderSwitch(): void {
+    const current = this.authStateSubject.value;
+    if (!current) return;
+    const updated: AuthUser = {
+      ...current,
+      pending_role: null,
+      account_switch_in_progress: false,
+      account_switch_started_at: null,
+      account_switched_at: current.account_switched_at || null,
+      account_switch_source: null
+    };
+    this.authStateSubject.next(updated);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('adomi_user', JSON.stringify(updated));
+      }
+    } catch {}
+  }
+
   // Renovar access token
   refreshAccessToken(): Observable<RefreshTokenResponse> {
     const refreshToken = this.getRefreshToken();
