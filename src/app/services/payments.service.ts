@@ -139,10 +139,10 @@ export class PaymentsService {
     );
   }
 
-  ocFinishInscription(token: string, appointmentId?: number): Observable<{ success: boolean; inscription: any }>{
+  ocFinishInscription(token: string, appointmentId?: number, username?: string): Observable<{ success: boolean; inscription: any }>{
     return this.http.put<{ success: boolean; inscription: any }>(
       `${this.base}/client/tbk/oneclick/inscriptions/${token}`,
-      { appointmentId },
+      { appointmentId, username },
       { headers: this.headers() }
     );
   }

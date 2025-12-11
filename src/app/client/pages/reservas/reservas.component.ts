@@ -482,7 +482,10 @@ export class ClientReservasComponent implements OnInit {
         // 2) Authorize payment for the appointment
         // Pasamos tbk_user/username devueltos por finish para evitar race si DB aún no replica
         const tbk_user = (finishResp as any)?.inscription?.tbk_user || (finishResp as any)?.inscription?.tbkUser;
-        const username = (finishResp as any)?.inscription?.username;
+        const username =
+          (finishResp as any)?.inscription?.username ||
+          this.loadOcPendingUsername() ||
+          undefined;
         this.payments.ocAuthorize(appointmentId, tbk_user, username).subscribe({
           next: (authResp) => {
             console.log('[RESERVAS][ONECLICK] Authorization OK', authResp);
@@ -527,7 +530,16 @@ export class ClientReservasComponent implements OnInit {
   private clearOcPendingAppt(): void {
     try {
       sessionStorage.removeItem(this.ocPendingKey);
+      sessionStorage.removeItem(this.ocPendingUsernameKey);
     } catch {}
+  }
+
+  private loadOcPendingUsername(): string | null {
+    try {
+      return sessionStorage.getItem(this.ocPendingUsernameKey);
+    } catch {
+      return null;
+    }
   }
   
   // Profile validation
@@ -600,6 +612,7 @@ export class ClientReservasComponent implements OnInit {
   ocReturnProcessing = false;
   ocReturnError: string | null = null;
   private readonly ocPendingKey = 'adomi_oc_pending_appt';
+  private readonly ocPendingUsernameKey = 'adomi_oc_pending_username';
   finalizeModal = {
     open: false,
     appointmentId: null as number | null,
@@ -1162,6 +1175,8 @@ export class ClientReservasComponent implements OnInit {
       next: (resp) => {
         this.payModalInscribing = false;
         if (resp?.success && resp?.url_webpay && resp?.token) {
+          const pendingUsername = (resp as any)?.username || (resp as any)?.userName || '';
+          try { sessionStorage.setItem(this.ocPendingUsernameKey, pendingUsername); } catch {}
           try {
             const form = document.createElement('form');
             form.method = 'POST';
