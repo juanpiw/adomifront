@@ -480,7 +480,10 @@ export class ClientReservasComponent implements OnInit {
         console.log('[RESERVAS][ONECLICK] Finish inscription OK', finishResp);
         this.tbkNeedsInscription = false;
         // 2) Authorize payment for the appointment
-        this.payments.ocAuthorize(appointmentId).subscribe({
+        // Pasamos tbk_user/username devueltos por finish para evitar race si DB aún no replica
+        const tbk_user = (finishResp as any)?.inscription?.tbk_user || (finishResp as any)?.inscription?.tbkUser;
+        const username = (finishResp as any)?.inscription?.username;
+        this.payments.ocAuthorize(appointmentId, tbk_user, username).subscribe({
           next: (authResp) => {
             console.log('[RESERVAS][ONECLICK] Authorization OK', authResp);
             this.ocReturnProcessing = false;

@@ -147,10 +147,10 @@ export class PaymentsService {
     );
   }
 
-  ocAuthorize(appointmentId: number): Observable<{ success: boolean; transaction: any }>{
+  ocAuthorize(appointmentId: number, tbk_user?: string, username?: string): Observable<{ success: boolean; transaction: any }>{
     return this.http.post<{ success: boolean; transaction: any }>(
       `${this.base}/client/tbk/oneclick/transactions`,
-      { appointment_id: appointmentId },
+      { appointment_id: appointmentId, tbk_user, username },
       { headers: this.headers() }
     );
   }
