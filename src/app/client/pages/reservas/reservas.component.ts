@@ -491,6 +491,9 @@ export class ClientReservasComponent implements OnInit {
           error: (err) => {
             const tbkData = (err as any)?.error?.tbkData || (err as any)?.error?.details || (err as any)?.error;
             console.error('[RESERVAS][ONECLICK] Authorization error', err, tbkData);
+            if (tbkData) {
+              console.error('[RESERVAS][ONECLICK] Authorization tbkData detail:', JSON.stringify(tbkData));
+            }
             this.ocReturnProcessing = false;
             this.ocReturnError = err?.error?.error || 'No se pudo autorizar el pago.';
             this.loadAppointments();
