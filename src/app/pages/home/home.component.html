@@ -436,6 +436,21 @@
           </div>
         </div>
       </div>
+
+      <!-- FAQ Item 4 -->
+      <div class="faq-item">
+        <div class="faq-question p-6 cursor-pointer flex justify-between items-center" (click)="toggleFaq(3)">
+          <h3 class="text-lg font-semibold text-gray-900">¿Adomiapp presta el servicio?</h3>
+          <svg class="faq-icon w-6 h-6 text-gray-500" [class.rotated]="faqOpen[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+        <div class="faq-answer" [class.active]="faqOpen[3]">
+          <div class="px-6 pb-6 text-gray-600">
+            <p>Adomiapp es una plataforma de intermediación que facilita el contacto y la contratación entre Clientes y Proveedores. El servicio es ejecutado por el Proveedor seleccionado, quien actúa por cuenta propia e independiente.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

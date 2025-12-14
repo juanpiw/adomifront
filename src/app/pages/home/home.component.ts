@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   modalEmail = '';
   showModal = false;
   showPromoModal = false;
-  faqOpen: boolean[] = [false, false, false];
+  faqOpen: boolean[] = [false, false, false, false];
 
   constructor(private promoService: PromoService) {}
 
