@@ -1,0 +1,20 @@
+<button
+  type="button"
+  class="geo-btn"
+  [class.geo-btn--loading]="loading"
+  (click)="onClick($event)">
+  <span *ngIf="!loading">{{ label }}</span>
+  <span *ngIf="loading">Registrando…</span>
+</button>
+
+<div class="geo-meta" *ngIf="badgeText || error">
+  <span *ngIf="badgeText" class="geo-badge" [class.geo-badge--good]="lastResult?.is_match" [class.geo-badge--bad]="lastResult?.is_match === false">
+    {{ badgeText }}
+    <ng-container *ngIf="lastResult?.distance_m !== undefined && lastResult?.radius_m !== undefined">
+      • {{ lastResult?.distance_m }}m / {{ lastResult?.radius_m }}m
+    </ng-container>
+  </span>
+  <span *ngIf="error" class="geo-error">{{ error }}</span>
+</div>
+
+

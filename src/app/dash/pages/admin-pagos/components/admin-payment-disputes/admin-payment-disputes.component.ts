@@ -31,7 +31,7 @@ export class AdminPaymentDisputesComponent implements OnInit {
 
   // Modal
   selected: any | null = null;
-  modalTab: 'actions' | 'evidence' | 'tbk' = 'actions';
+  modalTab: 'actions' | 'evidence' | 'tbk' | 'geo' = 'actions';
   evidenceText = '';
   evidenceHash: string | null = null;
   actionLoading = false;
@@ -43,6 +43,10 @@ export class AdminPaymentDisputesComponent implements OnInit {
 
   tbkStatusLoading = false;
   tbkStatus: any | null = null;
+
+  geoLoading = false;
+  geoEvents: any[] = [];
+  geoError: string | null = null;
 
   ngOnInit(): void {
     // Cargar si ya hay secret
@@ -84,6 +88,32 @@ export class AdminPaymentDisputesComponent implements OnInit {
     this.actionError = null;
     this.refundResult = null;
     this.tbkStatus = null;
+    this.geoEvents = [];
+    this.geoError = null;
+    this.geoLoading = false;
+  }
+
+  loadGeo(): void {
+    if (!this.selected || !this.adminSecret) return;
+    const appointmentId = Number(this.selected?.appointment_id || 0);
+    if (!appointmentId) {
+      this.geoError = 'Sin appointment_id en disputa.';
+      return;
+    }
+    this.geoLoading = true;
+    this.geoError = null;
+    const token = this.token();
+    this.api.getAppointmentLocationEvents(this.adminSecret, token, appointmentId).subscribe({
+      next: (res: any) => {
+        this.geoLoading = false;
+        this.geoEvents = res?.data || [];
+      },
+      error: (err: any) => {
+        this.geoLoading = false;
+        this.geoError = err?.error?.error || err?.error?.message || 'No fue posible cargar eventos de ubicación.';
+        this.geoEvents = [];
+      }
+    });
   }
 
   close(): void {

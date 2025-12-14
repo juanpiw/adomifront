@@ -86,6 +86,7 @@
       <button type="button" class="tab" [class.tab--active]="modalTab==='actions'" (click)="modalTab='actions'">Acciones</button>
       <button type="button" class="tab" [class.tab--active]="modalTab==='evidence'" (click)="modalTab='evidence'">Evidencia</button>
       <button type="button" class="tab" [class.tab--active]="modalTab==='tbk'" (click)="modalTab='tbk'">TBK</button>
+      <button type="button" class="tab" [class.tab--active]="modalTab==='geo'" (click)="modalTab='geo'; loadGeo()">Geo</button>
     </div>
 
     <div class="modal__body" *ngIf="modalTab==='actions'">
@@ -142,6 +143,42 @@
       <button type="button" class="btn-secondary" (click)="fetchTbkStatus()" [disabled]="tbkStatusLoading">Consultar estado TBK</button>
       <div class="muted" *ngIf="tbkStatusLoading">Consultando…</div>
       <pre class="json" *ngIf="tbkStatus">{{ tbkStatus | json }}</pre>
+    </div>
+
+    <div class="modal__body" *ngIf="modalTab==='geo'">
+      <p class="muted">Evidencia de geolocalización del proveedor (eventos de llegada/salida). No es tracking continuo.</p>
+      <button type="button" class="btn-secondary" (click)="loadGeo()" [disabled]="geoLoading">Refrescar geo</button>
+      <div class="muted" *ngIf="geoLoading">Cargando…</div>
+      <div *ngIf="geoError" class="error-message">{{ geoError }}</div>
+
+      <table class="table" *ngIf="!geoLoading && geoEvents.length">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Recibido</th>
+            <th>Distancia</th>
+            <th>Radio</th>
+            <th>Match</th>
+            <th>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of geoEvents">
+            <td><strong>{{ e.event_type }}</strong></td>
+            <td>{{ e.received_at ? (e.received_at | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+            <td>{{ e.distance_to_destination_m !== null && e.distance_to_destination_m !== undefined ? (e.distance_to_destination_m + 'm') : '—' }}</td>
+            <td>{{ e.match_radius_m !== null && e.match_radius_m !== undefined ? (e.match_radius_m + 'm') : '—' }}</td>
+            <td>
+              <span [class]="e.is_match ? 'badge badge--good' : (e.is_match === false ? 'badge badge--bad' : 'badge badge--muted')">
+                {{ e.is_match === true ? 'match' : (e.is_match === false ? 'no-match' : 'n/a') }}
+              </span>
+            </td>
+            <td>{{ e.accuracy_m !== null && e.accuracy_m !== undefined ? (e.accuracy_m + 'm') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!geoLoading && !geoEvents.length && !geoError" class="muted">Sin eventos de geolocalización para esta cita.</p>
     </div>
   </div>
 </div>

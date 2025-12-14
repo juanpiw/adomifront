@@ -146,6 +146,17 @@ export class AdminPaymentsService {
     );
   }
 
+  // ==========================
+  // Provider geo evidence (appointments)
+  // ==========================
+
+  getAppointmentLocationEvents(secret: string, token: string | null, appointmentId: number) {
+    return this.http.get<any>(
+      `${this.baseUrl}/admin/appointments/${appointmentId}/location-events`,
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   decideRefund(secret: string, token: string | null, id: number, decision: 'approved'|'denied'|'cancelled', notes?: string) {
     return this.http.post<any>(`${this.baseUrl}/admin/refunds/${id}/decision`, { decision, notes }, { headers: this.headers(secret, token) });
   }

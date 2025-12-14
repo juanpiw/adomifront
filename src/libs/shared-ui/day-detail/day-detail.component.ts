@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ModalAgendarCitaComponent, NuevaCitaData, BloqueoData, ProviderServiceOption } from '../calendar-mensual/modal-agendar-cita/modal-agendar-cita.component';
+import { ProviderLocationCheckinButtonComponent } from '../provider-location-checkin-button/provider-location-checkin-button.component';
 
 export interface DayAppointment {
   id: string;
@@ -52,7 +53,7 @@ type QuoteDraftInput = {
 @Component({
   selector: 'app-day-detail',
   standalone: true,
-  imports: [CommonModule, ModalAgendarCitaComponent],
+  imports: [CommonModule, ModalAgendarCitaComponent, ProviderLocationCheckinButtonComponent],
   templateUrl: './day-detail.component.html',
   styleUrls: ['./day-detail.component.scss']
 })

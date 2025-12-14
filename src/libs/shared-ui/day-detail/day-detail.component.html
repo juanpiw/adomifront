@@ -140,6 +140,22 @@
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
             <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>
           </div>
+
+          <!-- Evidencia: geolocalización del proveedor (check-in/out, sin tracking continuo) -->
+          <div
+            class="day-detail__geo"
+            *ngIf="appointment.type === 'appointment' && appointment.status === 'confirmed'">
+            <app-provider-location-checkin-button
+              [appointmentId]="+appointment.id"
+              eventType="arrive"
+              label="Llegué">
+            </app-provider-location-checkin-button>
+            <app-provider-location-checkin-button
+              [appointmentId]="+appointment.id"
+              eventType="finish"
+              label="Terminé">
+            </app-provider-location-checkin-button>
+          </div>
         </div>
       </div>
     </div>

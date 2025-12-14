@@ -104,9 +104,25 @@ export class AppointmentsService {
     end_time: string;
     notes?: string;
     quote_id?: number;
+    // Optional: snapshot de coordenadas del destino (evidencia de llegada proveedor)
+    service_lat?: number;
+    service_lng?: number;
+    service_location_accuracy_m?: number;
   }): Observable<{ success: boolean; appointment: AppointmentDto }>{
     return this.http.post<{ success: boolean; appointment: AppointmentDto }>(
       `${this.api}/appointments`,
+      payload,
+      { headers: this.headers() }
+    );
+  }
+
+  // Provider: registrar evento de ubicación (arrive/finish) como evidencia
+  providerLocationEvent(
+    id: number,
+    payload: { event_type: 'arrive' | 'finish'; lat: number; lng: number; accuracy_m?: number; captured_at?: string }
+  ): Observable<{ success: boolean; appointmentId?: number; event_type?: string; distance_m?: number; radius_m?: number; is_match?: boolean; error?: string; message?: string }>{
+    return this.http.post<{ success: boolean; appointmentId?: number; event_type?: string; distance_m?: number; radius_m?: number; is_match?: boolean; error?: string; message?: string }>(
+      `${this.api}/appointments/${id}/provider/location-events`,
       payload,
       { headers: this.headers() }
     );

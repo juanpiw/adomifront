@@ -360,7 +360,7 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
     const duration = this.parseDuration(activeService.duration);
     const endTime = this.addMinutes(summary.time, duration);
     
-    const appointmentData = {
+    const appointmentData: any = {
       provider_id: providerId,
       client_id: clientId,
       service_id: Number(activeService.id),
@@ -369,10 +369,13 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
       end_time: endTime
     };
     
-    console.log('🔵 [BOOKING] Datos de la cita a crear:', appointmentData);
-    console.log('🔵 [BOOKING] Enviando POST al backend...');
-    
-    this.appointments.create(appointmentData).subscribe({
+    console.log('🔵 [BOOKING] Datos de la cita a crear (base):', appointmentData);
+
+    // Snapshot opcional de coordenadas del destino (para evidencia de llegada del proveedor).
+    // No bloquea la reserva si el usuario no da permiso.
+    const createWithOptionalCoords = () => {
+      console.log('🔵 [BOOKING] Enviando POST al backend...', appointmentData);
+      this.appointments.create(appointmentData).subscribe({
       next: (resp: { success: boolean }) => {
         console.log('🔵 [BOOKING] ✅ Respuesta del backend recibida:', resp);
         
@@ -416,6 +419,38 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
         }
       }
     });
+    };
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos?.coords?.latitude;
+            const lng = pos?.coords?.longitude;
+            const acc = pos?.coords?.accuracy;
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+              appointmentData.service_lat = lat;
+              appointmentData.service_lng = lng;
+              if (Number.isFinite(acc)) appointmentData.service_location_accuracy_m = acc;
+              console.log('🔵 [BOOKING] Coordenadas destino adjuntas:', {
+                service_lat: appointmentData.service_lat,
+                service_lng: appointmentData.service_lng,
+                service_location_accuracy_m: appointmentData.service_location_accuracy_m
+              });
+            }
+            createWithOptionalCoords();
+          },
+          () => {
+            createWithOptionalCoords();
+          },
+          { enableHighAccuracy: false, timeout: 2500, maximumAge: 600000 }
+        );
+      } else {
+        createWithOptionalCoords();
+      }
+    } catch {
+      createWithOptionalCoords();
+    }
   }
 
   private handleSlotTaken(
