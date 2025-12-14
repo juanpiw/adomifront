@@ -115,58 +115,89 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
 
     <div class="content" *ngIf="activeTab === 0">
       <ng-container *ngIf="(proximasConfirmadas?.length || 0) > 0; else noConfirmadas">
-        <ui-proxima-cita-card 
-          *ngFor="let p of proximasConfirmadas" 
-          [data]="p" 
-          (pagar)="onPagar($event)"
-          (pedirDevolucion)="onRefund($event)"
-          (reprogramar)="onRequestReschedule($event)"
-          (contactar)="onContactar(p.appointmentId)"
-          (cancelar)="openCancelModal($event)"
-          (finalizarServicio)="openFinalizeModal($event)"
-          (reportarProblema)="openClaimFlow($event)"
-          style="margin-bottom:12px;">
-        </ui-proxima-cita-card>
-
-        <!-- Flujo de reclamo embebido por cita -->
         <ng-container *ngFor="let p of proximasConfirmadas">
+          <ui-proxima-cita-card 
+            [data]="p" 
+            (pagar)="onPagar($event)"
+            (pedirDevolucion)="onRefund($event)"
+            (reprogramar)="onRequestReschedule($event)"
+            (contactar)="onContactar(p.appointmentId)"
+            (cancelar)="openCancelModal($event)"
+            (finalizarServicio)="openFinalizeModal($event)"
+            (reportarProblema)="openClaimFlow($event)"
+            style="margin-bottom:12px;">
+          </ui-proxima-cita-card>
+
+          <!-- Flujo de reclamo embebido por cita (mismo ngFor: evita duplicados) -->
           <ng-container [ngSwitch]="getClaimState(p.appointmentId)">
             <div *ngSwitchCase="'claim'" class="claim-panel">
-              <ng-container *ngIf="claimData[p.appointmentId] as claim">
+              <ng-container *ngIf="p.appointmentId as apptId">
+                <ng-container *ngIf="claimData[apptId] as claim">
                 <div class="claim-panel__header">
                   <div class="claim-panel__title">
                     <span class="chip chip--danger">Reclamo / Devolución</span>
-                    <p class="claim-panel__subtitle">Transacción #{{ p.appointmentId }} • Tarjeta</p>
+                    <p class="claim-panel__subtitle">Transacción #{{ apptId }} • Tarjeta</p>
                   </div>
-                  <button class="claim-panel__close" (click)="closeClaim(p.appointmentId)">✕</button>
+                  <button class="claim-panel__close" (click)="closeClaim(apptId)">✕</button>
                 </div>
+
                 <div class="claim-panel__body">
-                  <p class="claim-panel__context">Estas reportando un problema con el cobro. Un especialista revisará tu caso.</p>
-                  <form (ngSubmit)="submitClaim(p.appointmentId)">
+                  <div class="claim-panel__notice">
+                    <p><strong>Antes de ir al banco:</strong> repórtalo aquí primero. Esto acelera la solución y nos permite gestionar reembolso o evidencia si fuese necesario.</p>
+                    <p class="muted">Tiempo de respuesta estimado: {{ claimSlaText }}</p>
+                  </div>
+
+                  <form (ngSubmit)="submitClaim(apptId)">
                     <label class="claim-panel__label">
                       Motivo del reclamo
-                      <select [(ngModel)]="claim.reason" name="reason-{{p.appointmentId}}" required>
+                      <select [(ngModel)]="claim.reason" name="reason-{{apptId}}" required>
                         <option value="" disabled>Selecciona un motivo</option>
+                        <option value="fraude_no_reconozco">No reconozco este cargo (posible fraude)</option>
+                        <option value="proveedor_no_show">El proveedor no asistió (no-show)</option>
+                        <option value="servicio_no_prestado">El servicio no se realizó</option>
+                        <option value="servicio_incompleto">El servicio fue incompleto / distinto</option>
+                        <option value="cancelacion_proveedor">Cancelación por proveedor</option>
                         <option value="cobro_duplicado">Cobro duplicado en mi tarjeta</option>
                         <option value="monto_incorrecto">El monto cobrado no corresponde</option>
                         <option value="cancelacion_fallida">Cancelé pero me cobraron igual</option>
-                        <option value="otro">Otro problema con el pago</option>
+                        <option value="otro">Otro</option>
                       </select>
                     </label>
 
+                    <div class="claim-panel__triage" *ngIf="claim.reason === 'fraude_no_reconozco'">
+                      <p class="warn"><strong>Importante:</strong> si no reconoces el cargo, cambia tu contraseña y cierra sesión en tus dispositivos. Soporte te contactará para validar.</p>
+                    </div>
+                    <div class="claim-panel__triage" *ngIf="claim.reason === 'cobro_duplicado' || claim.reason === 'monto_incorrecto'">
+                      <p class="muted">Sugerido: pega una captura del banco/comprobante en “Evidencia” (URLs) para resolver más rápido.</p>
+                    </div>
+                    <div class="claim-panel__triage" *ngIf="claim.reason === 'proveedor_no_show' || claim.reason === 'servicio_no_prestado' || claim.reason === 'servicio_incompleto'">
+                      <p class="muted">Cuéntanos qué pasó y adjunta evidencia (chat/fotos/ubicación si aplica). Esto ayuda a decidir devolución vs defensa.</p>
+                    </div>
+
                     <label class="claim-panel__label">
                       Descripción detallada
-                      <textarea [(ngModel)]="claim.description" name="description-{{p.appointmentId}}" rows="3" placeholder="Explícanos qué sucedió..."></textarea>
+                      <textarea [(ngModel)]="claim.description" name="description-{{apptId}}" rows="3" placeholder="Explícanos qué sucedió..."></textarea>
+                      <small class="muted">Mínimo 10 caracteres.</small>
                     </label>
 
                     <label class="claim-panel__label">
                       Evidencia (opcional)
-                      <textarea [(ngModel)]="claim.evidenceText" name="evidence-{{p.appointmentId}}" rows="2" placeholder="Pega links (uno por línea) o URLs de fotos/comprobantes"></textarea>
+                      <textarea [(ngModel)]="claim.evidenceText" name="evidence-{{apptId}}" rows="2" placeholder="Pega links (uno por línea) o URLs de fotos/comprobantes"></textarea>
+                      <small class="muted">Por ahora aceptamos URLs.</small>
+                    </label>
+
+                    <label class="claim-panel__check">
+                      <input type="checkbox" [(ngModel)]="claim.confirmTruth" name="truth-{{apptId}}" />
+                      Declaro que la información entregada es verdadera.
+                    </label>
+                    <label class="claim-panel__check">
+                      <input type="checkbox" [(ngModel)]="claim.confirmChargebackInfo" name="cb-{{apptId}}" />
+                      Entiendo que abrir un contracargo puede retrasar la resolución en Adomi.
                     </label>
 
                     <div class="claim-panel__actions">
-                      <button type="button" class="btn ghost" (click)="closeClaim(p.appointmentId)" [disabled]="claim.loading">Cancelar</button>
-                      <button type="submit" class="btn primary" [disabled]="!claim.reason || claim.loading">
+                      <button type="button" class="btn ghost" (click)="closeClaim(apptId)" [disabled]="claim.loading">Cancelar</button>
+                      <button type="submit" class="btn primary" [disabled]="claim.loading">
                         <span *ngIf="!claim.loading">Enviar solicitud</span>
                         <span *ngIf="claim.loading">Enviando…</span>
                       </button>
@@ -174,15 +205,19 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
                     <div class="claim-panel__error" *ngIf="claim.error">{{ claim.error }}</div>
                   </form>
                 </div>
+                </ng-container>
               </ng-container>
             </div>
 
             <div *ngSwitchCase="'success'" class="claim-success">
-              <div class=\"claim-success__icon\">✓</div>
-              <h4>Solicitud recibida</h4>
-              <p *ngIf="claimData[p.appointmentId]?.ticketId as tid">Ticket: {{ tid }}</p>
-              <p *ngIf="!claimData[p.appointmentId]?.ticketId">Ticket: {{ 'REQ-' + p.appointmentId }}</p>
-              <button class=\"btn primary\" (click)=\"resetClaim(p.appointmentId)\">Volver a mis reservas</button>
+              <ng-container *ngIf="p.appointmentId as apptId">
+                <div class="claim-success__icon">✓</div>
+                <h4>Solicitud recibida</h4>
+                <p *ngIf="claimData[apptId]?.ticketId as tid">Ticket: {{ tid }}</p>
+                <p *ngIf="!claimData[apptId]?.ticketId">Ticket: {{ 'REQ-' + apptId }}</p>
+                <p class="muted">Mientras revisamos, el pago al proveedor queda retenido.</p>
+                <button class="btn primary" (click)="resetClaim(apptId)">Volver a mis reservas</button>
+              </ng-container>
             </div>
           </ng-container>
         </ng-container>
@@ -602,7 +637,17 @@ export class ClientReservasComponent implements OnInit {
 
   // Reclamos de pago (estado por cita)
   claimViewState: Record<number, 'details' | 'claim' | 'success'> = {};
-  claimData: Record<number, { reason: string; description: string; evidenceText?: string; loading?: boolean; error?: string; ticketId?: string }> = {};
+  claimSlaText = '24–48 horas hábiles';
+  claimData: Record<number, {
+    reason: string;
+    description: string;
+    evidenceText?: string;
+    confirmTruth?: boolean;
+    confirmChargebackInfo?: boolean;
+    loading?: boolean;
+    error?: string;
+    ticketId?: string;
+  }> = {};
 
   // Mapa local: appointmentId -> providerId (para Contactar)
   private _providerByApptId: Record<number, number> = {};
@@ -1215,7 +1260,13 @@ export class ClientReservasComponent implements OnInit {
 
   private ensureClaimData(appointmentId: number) {
     if (!this.claimData[appointmentId]) {
-      this.claimData[appointmentId] = { reason: '', description: '', evidenceText: '' };
+      this.claimData[appointmentId] = {
+        reason: '',
+        description: '',
+        evidenceText: '',
+        confirmTruth: false,
+        confirmChargebackInfo: false
+      };
     }
   }
 
@@ -1229,7 +1280,13 @@ export class ClientReservasComponent implements OnInit {
 
   closeClaim(appointmentId?: number | null): void {
     if (!appointmentId) return;
-    this.claimData[appointmentId] = { reason: '', description: '', evidenceText: '' };
+    this.claimData[appointmentId] = {
+      reason: '',
+      description: '',
+      evidenceText: '',
+      confirmTruth: false,
+      confirmChargebackInfo: false
+    };
     this.claimViewState[appointmentId] = 'details';
   }
 
@@ -1245,8 +1302,22 @@ export class ClientReservasComponent implements OnInit {
       this.claimData[appointmentId].error = 'Selecciona un motivo válido.';
       return;
     }
-    if (claim.reason === 'otro' && (claim.description || '').trim().length < 10) {
+    const descLen = (claim.description || '').trim().length;
+    const needsDesc = new Set([
+      'fraude_no_reconozco',
+      'proveedor_no_show',
+      'servicio_no_prestado',
+      'servicio_incompleto',
+      'cancelacion_proveedor',
+      'cancelacion_fallida',
+      'otro'
+    ]);
+    if (needsDesc.has(claim.reason) && descLen < 10) {
       this.claimData[appointmentId].error = 'Cuéntanos el detalle (mínimo 10 caracteres).';
+      return;
+    }
+    if (!claim.confirmTruth || !claim.confirmChargebackInfo) {
+      this.claimData[appointmentId].error = 'Debes confirmar las casillas antes de enviar.';
       return;
     }
     claim.loading = true;

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SessionService } from '../../../../auth/services/session.service';
+import { SessionService } from '../../../../../auth/services/session.service';
 import { AdminPaymentsService } from '../../admin-payments.service';
 
 type DisputeStatus = 'open' | 'need_evidence' | 'represented' | 'won' | 'lost' | 'cancelled';
