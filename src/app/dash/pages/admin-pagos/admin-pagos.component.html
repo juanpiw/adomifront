@@ -22,6 +22,9 @@
 
   <app-admin-summary-cards [summary]="summary"></app-admin-summary-cards>
 
+  <!-- Disputas/Contracargos (TBK Oneclick) -->
+  <app-admin-payment-disputes *ngIf="adminSecret" [adminSecret]="adminSecret"></app-admin-payment-disputes>
+
   <section *ngIf="gateway === 'cash' && adminSecret" class="admin-cash">
     <div class="admin-cash__header">
       <div>

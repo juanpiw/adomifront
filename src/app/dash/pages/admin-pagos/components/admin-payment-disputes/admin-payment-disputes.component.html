@@ -1,0 +1,149 @@
+<section class="disputes" *ngIf="adminSecret">
+  <div class="disputes__header">
+    <div>
+      <h3>Disputas / Contracargos (TBK)</h3>
+      <p>Gestiona <strong>chargebacks</strong> (payment_disputes) y ejecuta refund Oneclick Mall por child cuando corresponda.</p>
+    </div>
+    <div class="disputes__actions">
+      <button type="button" class="btn-secondary" (click)="load()" [disabled]="loading">Refrescar</button>
+    </div>
+  </div>
+
+  <div class="disputes__filters">
+    <label>
+      Estado
+      <select [(ngModel)]="statusFilter">
+        <option value="">Todos</option>
+        <option value="open">open</option>
+        <option value="need_evidence">need_evidence</option>
+        <option value="represented">represented</option>
+        <option value="won">won</option>
+        <option value="lost">lost</option>
+        <option value="cancelled">cancelled</option>
+      </select>
+    </label>
+    <label>
+      Payment ID
+      <input [(ngModel)]="qPaymentId" placeholder="Ej: 1234" />
+    </label>
+    <label>
+      Appointment ID
+      <input [(ngModel)]="qAppointmentId" placeholder="Ej: 79" />
+    </label>
+    <button type="button" class="btn-primary" (click)="load()" [disabled]="loading">Aplicar</button>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="loading" class="disputes__loading"><span class="spinner"></span> Cargando disputas...</div>
+
+  <table class="table" *ngIf="!loading && disputes.length">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Estado</th>
+        <th>Deadline</th>
+        <th>Pago</th>
+        <th>Cita</th>
+        <th>Cliente</th>
+        <th>Proveedor</th>
+        <th>Monto</th>
+        <th>Gateway</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of disputes">
+        <td><strong>#{{ d.id }}</strong></td>
+        <td><span [class]="badgeClass(d.status)">{{ d.status }}</span></td>
+        <td>{{ d.deadline_at ? (d.deadline_at | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+        <td>{{ d.payment_id }}</td>
+        <td>{{ d.appointment_id }}</td>
+        <td>{{ d.client_email || ('ID ' + d.client_id) }}</td>
+        <td>{{ d.provider_email || ('ID ' + d.provider_id) }}</td>
+        <td>{{ d.amount | currency:(d.currency || 'CLP'):'symbol':'1.0-0':'es-CL' }}</td>
+        <td>{{ d.gateway || '—' }}</td>
+        <td><button type="button" class="link" (click)="open(d)">Abrir</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && !disputes.length" class="muted">No hay disputas para los filtros seleccionados.</p>
+</section>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="selected" (click)="close()"></div>
+<div class="modal" *ngIf="selected">
+  <div class="modal__panel" (click)="$event.stopPropagation()">
+    <div class="modal__header">
+      <div>
+        <h4>Disputa #{{ selected.id }}</h4>
+        <p class="muted">payment: {{ selected.payment_id }} · appt: {{ selected.appointment_id }} · estado: <strong>{{ selected.status }}</strong></p>
+      </div>
+      <button type="button" class="modal__close" (click)="close()">✕</button>
+    </div>
+
+    <div class="modal__tabs">
+      <button type="button" class="tab" [class.tab--active]="modalTab==='actions'" (click)="modalTab='actions'">Acciones</button>
+      <button type="button" class="tab" [class.tab--active]="modalTab==='evidence'" (click)="modalTab='evidence'">Evidencia</button>
+      <button type="button" class="tab" [class.tab--active]="modalTab==='tbk'" (click)="modalTab='tbk'">TBK</button>
+    </div>
+
+    <div class="modal__body" *ngIf="modalTab==='actions'">
+      <div class="grid">
+        <div class="card">
+          <div class="label">Estado</div>
+          <div class="value"><span [class]="badgeClass(selected.status)">{{ selected.status }}</span></div>
+          <div class="row">
+            <button type="button" class="btn-secondary" (click)="updateStatus('need_evidence')" [disabled]="actionLoading">need_evidence</button>
+            <button type="button" class="btn-secondary" (click)="updateStatus('represented')" [disabled]="actionLoading">represented</button>
+            <button type="button" class="btn-primary" (click)="updateStatus('won')" [disabled]="actionLoading">won</button>
+            <button type="button" class="btn-danger" (click)="updateStatus('lost')" [disabled]="actionLoading">lost</button>
+            <button type="button" class="btn-ghost" (click)="updateStatus('cancelled')" [disabled]="actionLoading">cancelled</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="label">Refund Oneclick (por child)</div>
+          <div class="value">{{ selected.amount | currency:(selected.currency || 'CLP'):'symbol':'1.0-0':'es-CL' }}</div>
+          <div class="row">
+            <label>
+              Scope
+              <select [(ngModel)]="refundScope">
+                <option value="total">total</option>
+                <option value="proveedor">proveedor</option>
+                <option value="plataforma">plataforma</option>
+              </select>
+            </label>
+            <button type="button" class="btn-primary" (click)="refund()" [disabled]="refundLoading">Ejecutar refund</button>
+            <div class="muted" *ngIf="refundLoading">Procesando refund…</div>
+            <pre class="json" *ngIf="refundResult">{{ refundResult | json }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="actionError" class="error-message">{{ actionError }}</div>
+    </div>
+
+    <div class="modal__body" *ngIf="modalTab==='evidence'">
+      <p class="muted">Bloquear evidencia registra hash SHA256 en backend (integridad). Aquí puedes pegar un resumen/links internos.</p>
+      <label class="block">
+        Evidencia / notas
+        <textarea [(ngModel)]="evidenceText" rows="4" placeholder="Links, timestamps, resumen de chat, etc."></textarea>
+      </label>
+      <div class="row">
+        <button type="button" class="btn-primary" (click)="lockEvidence()" [disabled]="actionLoading">Bloquear evidencia</button>
+        <span class="muted" *ngIf="evidenceHash">hash: {{ evidenceHash }}</span>
+      </div>
+      <div *ngIf="actionError" class="error-message">{{ actionError }}</div>
+    </div>
+
+    <div class="modal__body" *ngIf="modalTab==='tbk'">
+      <p class="muted">Consulta status TBK por <code>buy_order_parent</code> (usando payment_tbk_details).</p>
+      <button type="button" class="btn-secondary" (click)="fetchTbkStatus()" [disabled]="tbkStatusLoading">Consultar estado TBK</button>
+      <div class="muted" *ngIf="tbkStatusLoading">Consultando…</div>
+      <pre class="json" *ngIf="tbkStatus">{{ tbkStatus | json }}</pre>
+    </div>
+  </div>
+</div>
+
+

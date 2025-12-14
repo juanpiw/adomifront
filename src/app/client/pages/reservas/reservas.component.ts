@@ -132,48 +132,56 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
         <ng-container *ngFor="let p of proximasConfirmadas">
           <ng-container [ngSwitch]="getClaimState(p.appointmentId)">
             <div *ngSwitchCase="'claim'" class="claim-panel">
-              <div class=\"claim-panel__header\">
-                <div class=\"claim-panel__title\">
-                  <span class=\"chip chip--danger\">Reclamo / Devolución</span>
-                  <p class=\"claim-panel__subtitle\">Transacción #{{ p.appointmentId }} • Tarjeta</p>
-                </div>
-                <button class=\"claim-panel__close\" (click)=\"closeClaim(p.appointmentId)\">✕</button>
-              </div>
-              <div class=\"claim-panel__body\">
-                <p class=\"claim-panel__context\">Estas reportando un problema con el cobro. Un especialista revisará tu caso.</p>
-                <form (ngSubmit)=\"submitClaim(p.appointmentId)\">
-                  <label class=\"claim-panel__label\">
-                    Motivo del reclamo
-                    <select [(ngModel)]=\"getClaimData(p.appointmentId).reason\" name=\"reason-{{p.appointmentId}}\" required>
-                      <option value=\"\" disabled selected>Selecciona un motivo</option>
-                      <option value=\"cobro_duplicado\">Cobro duplicado en mi tarjeta</option>
-                      <option value=\"monto_incorrecto\">El monto cobrado no corresponde</option>
-                      <option value=\"cancelacion_fallida\">Cancelé pero me cobraron igual</option>
-                      <option value=\"otro\">Otro problema con el pago</option>
-                    </select>
-                  </label>
-
-                  <label class=\"claim-panel__label\">
-                    Descripción detallada
-                    <textarea [(ngModel)]=\"getClaimData(p.appointmentId).description\" name=\"description-{{p.appointmentId}}\" rows=\"3\" placeholder=\"Explícanos qué sucedió...\"></textarea>
-                  </label>
-
-                  <div class=\"claim-panel__actions\">
-                    <button type=\"button\" class=\"btn ghost\" (click)=\"closeClaim(p.appointmentId)\" [disabled]=\"getClaimData(p.appointmentId).loading\">Cancelar</button>
-                    <button type=\"submit\" class=\"btn primary\" [disabled]=\"!getClaimData(p.appointmentId).reason || getClaimData(p.appointmentId).loading\">
-                      <span *ngIf=\"!getClaimData(p.appointmentId).loading\">Enviar solicitud</span>
-                      <span *ngIf=\"getClaimData(p.appointmentId).loading\">Enviando…</span>
-                    </button>
+              <ng-container *ngIf="claimData[p.appointmentId] as claim">
+                <div class="claim-panel__header">
+                  <div class="claim-panel__title">
+                    <span class="chip chip--danger">Reclamo / Devolución</span>
+                    <p class="claim-panel__subtitle">Transacción #{{ p.appointmentId }} • Tarjeta</p>
                   </div>
-                  <div class=\"claim-panel__error\" *ngIf=\"getClaimData(p.appointmentId).error\">{{ getClaimData(p.appointmentId).error }}</div>
-                </form>
-              </div>
+                  <button class="claim-panel__close" (click)="closeClaim(p.appointmentId)">✕</button>
+                </div>
+                <div class="claim-panel__body">
+                  <p class="claim-panel__context">Estas reportando un problema con el cobro. Un especialista revisará tu caso.</p>
+                  <form (ngSubmit)="submitClaim(p.appointmentId)">
+                    <label class="claim-panel__label">
+                      Motivo del reclamo
+                      <select [(ngModel)]="claim.reason" name="reason-{{p.appointmentId}}" required>
+                        <option value="" disabled>Selecciona un motivo</option>
+                        <option value="cobro_duplicado">Cobro duplicado en mi tarjeta</option>
+                        <option value="monto_incorrecto">El monto cobrado no corresponde</option>
+                        <option value="cancelacion_fallida">Cancelé pero me cobraron igual</option>
+                        <option value="otro">Otro problema con el pago</option>
+                      </select>
+                    </label>
+
+                    <label class="claim-panel__label">
+                      Descripción detallada
+                      <textarea [(ngModel)]="claim.description" name="description-{{p.appointmentId}}" rows="3" placeholder="Explícanos qué sucedió..."></textarea>
+                    </label>
+
+                    <label class="claim-panel__label">
+                      Evidencia (opcional)
+                      <textarea [(ngModel)]="claim.evidenceText" name="evidence-{{p.appointmentId}}" rows="2" placeholder="Pega links (uno por línea) o URLs de fotos/comprobantes"></textarea>
+                    </label>
+
+                    <div class="claim-panel__actions">
+                      <button type="button" class="btn ghost" (click)="closeClaim(p.appointmentId)" [disabled]="claim.loading">Cancelar</button>
+                      <button type="submit" class="btn primary" [disabled]="!claim.reason || claim.loading">
+                        <span *ngIf="!claim.loading">Enviar solicitud</span>
+                        <span *ngIf="claim.loading">Enviando…</span>
+                      </button>
+                    </div>
+                    <div class="claim-panel__error" *ngIf="claim.error">{{ claim.error }}</div>
+                  </form>
+                </div>
+              </ng-container>
             </div>
 
             <div *ngSwitchCase="'success'" class="claim-success">
               <div class=\"claim-success__icon\">✓</div>
               <h4>Solicitud recibida</h4>
-              <p>Ticket: {{ getClaimData(p.appointmentId).ticketId || ('REQ-' + p.appointmentId) }}</p>
+              <p *ngIf="claimData[p.appointmentId]?.ticketId as tid">Ticket: {{ tid }}</p>
+              <p *ngIf="!claimData[p.appointmentId]?.ticketId">Ticket: {{ 'REQ-' + p.appointmentId }}</p>
               <button class=\"btn primary\" (click)=\"resetClaim(p.appointmentId)\">Volver a mis reservas</button>
             </div>
           </ng-container>
@@ -594,7 +602,7 @@ export class ClientReservasComponent implements OnInit {
 
   // Reclamos de pago (estado por cita)
   claimViewState: Record<number, 'details' | 'claim' | 'success'> = {};
-  claimData: Record<number, { reason: string; description: string; loading?: boolean; error?: string; ticketId?: string }> = {};
+  claimData: Record<number, { reason: string; description: string; evidenceText?: string; loading?: boolean; error?: string; ticketId?: string }> = {};
 
   // Mapa local: appointmentId -> providerId (para Contactar)
   private _providerByApptId: Record<number, number> = {};
@@ -1207,7 +1215,7 @@ export class ClientReservasComponent implements OnInit {
 
   private ensureClaimData(appointmentId: number) {
     if (!this.claimData[appointmentId]) {
-      this.claimData[appointmentId] = { reason: '', description: '' };
+      this.claimData[appointmentId] = { reason: '', description: '', evidenceText: '' };
     }
   }
 
@@ -1221,7 +1229,7 @@ export class ClientReservasComponent implements OnInit {
 
   closeClaim(appointmentId?: number | null): void {
     if (!appointmentId) return;
-    this.claimData[appointmentId] = { reason: '', description: '' };
+    this.claimData[appointmentId] = { reason: '', description: '', evidenceText: '' };
     this.claimViewState[appointmentId] = 'details';
   }
 
@@ -1237,11 +1245,17 @@ export class ClientReservasComponent implements OnInit {
       this.claimData[appointmentId].error = 'Selecciona un motivo válido.';
       return;
     }
+    if (claim.reason === 'otro' && (claim.description || '').trim().length < 10) {
+      this.claimData[appointmentId].error = 'Cuéntanos el detalle (mínimo 10 caracteres).';
+      return;
+    }
     claim.loading = true;
     claim.error = '';
+    const evidenceUrls = this.parseEvidenceInput(claim.evidenceText || '');
     this.appointments.reportPaymentClaim(appointmentId, {
       reason: claim.reason,
-      description: claim.description || ''
+      description: claim.description || '',
+      evidenceUrls
     }).subscribe({
       next: (resp) => {
         this.claimData[appointmentId].ticketId = resp?.ticketId || undefined;

@@ -85,6 +85,67 @@ export class AdminPaymentsService {
     return this.http.get<any>(`${this.baseUrl}/admin/refunds`, { headers: this.headers(secret, token) });
   }
 
+  // ==========================
+  // Payment Disputes (chargebacks)
+  // ==========================
+
+  listPaymentDisputes(
+    secret: string,
+    token: string | null,
+    options: { status?: string; payment_id?: number; appointment_id?: number; limit?: number; offset?: number } = {}
+  ) {
+    const params = new URLSearchParams();
+    if (options.status) params.set('status', options.status);
+    if (options.payment_id) params.set('payment_id', String(options.payment_id));
+    if (options.appointment_id) params.set('appointment_id', String(options.appointment_id));
+    if (typeof options.limit === 'number') params.set('limit', String(options.limit));
+    if (typeof options.offset === 'number') params.set('offset', String(options.offset));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/payment-disputes${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  createPaymentDispute(
+    secret: string,
+    token: string | null,
+    payload: { payment_id?: number; appointment_id?: number; source?: string | null; deadline_at?: string | null; notes?: string | null; metadata?: any }
+  ) {
+    return this.http.post<any>(`${this.baseUrl}/admin/payment-disputes`, payload || {}, { headers: this.headers(secret, token) });
+  }
+
+  updatePaymentDispute(
+    secret: string,
+    token: string | null,
+    id: number,
+    payload: { status?: string; deadline_at?: string | null; notes?: string | null; metadata?: any }
+  ) {
+    return this.http.patch<any>(`${this.baseUrl}/admin/payment-disputes/${id}`, payload || {}, { headers: this.headers(secret, token) });
+  }
+
+  lockPaymentDisputeEvidence(
+    secret: string,
+    token: string | null,
+    id: number,
+    payload: { evidence?: any; evidence_hash?: string | null }
+  ) {
+    return this.http.post<any>(`${this.baseUrl}/admin/payment-disputes/${id}/evidence/lock`, payload || {}, { headers: this.headers(secret, token) });
+  }
+
+  // ==========================
+  // TBK Oneclick Admin helpers
+  // ==========================
+
+  tbkOneclickStatus(secret: string, token: string | null, paymentId: number) {
+    return this.http.get<any>(`${this.baseUrl}/admin/payments/${paymentId}/tbk/oneclick/status`, { headers: this.headers(secret, token) });
+  }
+
+  tbkOneclickRefund(secret: string, token: string | null, paymentId: number, scope: 'proveedor'|'plataforma'|'total' = 'total') {
+    return this.http.post<any>(
+      `${this.baseUrl}/admin/payments/${paymentId}/tbk/oneclick/refund`,
+      { scope },
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   decideRefund(secret: string, token: string | null, id: number, decision: 'approved'|'denied'|'cancelled', notes?: string) {
     return this.http.post<any>(`${this.baseUrl}/admin/refunds/${id}/decision`, { decision, notes }, { headers: this.headers(secret, token) });
   }
