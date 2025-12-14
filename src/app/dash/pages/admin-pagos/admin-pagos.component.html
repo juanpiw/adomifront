@@ -22,6 +22,9 @@
 
   <app-admin-summary-cards [summary]="summary"></app-admin-summary-cards>
 
+  <!-- Monitor de transacciones (vista unificada tipo captured_hold/released/disputed/refunded) -->
+  <app-admin-transactions-monitor *ngIf="adminSecret" [rows]="rows"></app-admin-transactions-monitor>
+
   <!-- Disputas/Contracargos (TBK Oneclick) -->
   <app-admin-payment-disputes *ngIf="adminSecret" [adminSecret]="adminSecret"></app-admin-payment-disputes>
 

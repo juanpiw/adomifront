@@ -1,0 +1,81 @@
+<section class="tx-monitor">
+  <div class="tx-monitor__header">
+    <div>
+      <h3>Monitor de Transacciones</h3>
+      <p>Vista unificada de pagos (hold/released/disputa/refund) basada en <code>/admin/payments</code>.</p>
+    </div>
+  </div>
+
+  <div class="tx-monitor__kpis">
+    <div class="kpi">
+      <div class="kpi__label">Volumen Total</div>
+      <div class="kpi__value">{{ totalVolume() | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__label">En Hold (payout)</div>
+      <div class="kpi__value kpi__value--hold">{{ heldVolume() | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__label">Liberado (payout)</div>
+      <div class="kpi__value kpi__value--released">{{ releasedVolume() | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi__label">Reembolsado</div>
+      <div class="kpi__value kpi__value--refunded">{{ refundedVolume() | currency:'CLP':'symbol':'1.0-0':'es-CL' }}</div>
+    </div>
+  </div>
+
+  <div class="tx-monitor__filters">
+    <label>
+      Estado
+      <select [(ngModel)]="statusFilter">
+        <option value="">Todos</option>
+        <option value="captured_hold">captured_hold</option>
+        <option value="released">released</option>
+        <option value="disputed_lock">disputed_lock</option>
+        <option value="refunded">refunded</option>
+      </select>
+    </label>
+    <label class="tx-monitor__search">
+      Buscar
+      <input [(ngModel)]="q" placeholder="ID, email, gateway, etc." />
+    </label>
+  </div>
+
+  <table class="table" *ngIf="filteredRows().length">
+    <thead>
+      <tr>
+        <th>Payment</th>
+        <th>Cita</th>
+        <th>Fecha</th>
+        <th>Cliente</th>
+        <th>Proveedor</th>
+        <th>Monto</th>
+        <th>Payout</th>
+        <th>Gateway</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of filteredRows()">
+        <td>#{{ r.id }}</td>
+        <td>#{{ r.appointment_id }}</td>
+        <td>{{ r.paid_at ? (r.paid_at | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+        <td>{{ r.client_name || r.client_email || ('ID ' + r.client_id) }}</td>
+        <td>{{ r.provider_name || r.provider_email || ('ID ' + r.provider_id) }}</td>
+        <td>{{ r.amount | currency:(r.currency || 'CLP'):'symbol':'1.0-0':'es-CL' }}</td>
+        <td>{{ r.provider_amount | currency:(r.currency || 'CLP'):'symbol':'1.0-0':'es-CL' }}</td>
+        <td>{{ r.gateway || '—' }}</td>
+        <td>
+          <span [class]="badgeClass(r.tx_status)">{{ r.tx_status }}</span>
+          <span class="flag flag--bad" *ngIf="r.has_in_app_dispute">in_app</span>
+          <span class="flag flag--warn" *ngIf="r.has_active_chargeback">chargeback</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="muted" *ngIf="!filteredRows().length">No hay transacciones para los filtros actuales.</p>
+</section>
+
+
