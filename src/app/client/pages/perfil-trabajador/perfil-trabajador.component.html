@@ -50,33 +50,65 @@
 
       <!-- Right Sidebar - Booking Panel -->
       <div class="perfil-trabajador-right">
-        <app-booking-panel 
-          [providerId]="workerId || undefined"
-          [providerName]="profileHeroData.name"
-          [data]="bookingPanelData"
-          [alternativeSlots]="slotSuggestions"
-          [futureSlots]="futureSlotSuggestions"
-          [loadingSlots]="timeSlotsLoading"
-          [successMessage]="bookingSuccessMessage"
-          (serviceSelected)="onServiceSelected($event)"
-          (dateSelected)="onDateSelected($event)"
-          (timeSelected)="onTimeSelected($event)"
-          (bookingConfirmed)="onBookingConfirmed($event)"
-          [confirming]="confirming"
-          [confirmError]="confirmError"
-          [closeConfirmSignal]="closeConfirmSignal"
-          (futureSlotSelected)="onFutureSlotSelected($event)">
-        </app-booking-panel>
+        <section class="interaction-panel" aria-label="Reserva o Cotización">
+          <div class="interaction-panel__tabs" role="tablist" aria-label="Opciones de contacto">
+            <button
+              type="button"
+              class="interaction-panel__tab"
+              role="tab"
+              [attr.aria-selected]="interactionMode === 'book'"
+              [class.interaction-panel__tab--active]="interactionMode === 'book'"
+              (click)="setInteractionMode('book')"
+            >
+              Reserva Directa
+            </button>
+            <button
+              type="button"
+              class="interaction-panel__tab"
+              role="tab"
+              [attr.aria-selected]="interactionMode === 'quote'"
+              [class.interaction-panel__tab--active]="interactionMode === 'quote'"
+              (click)="setInteractionMode('quote')"
+            >
+              Cotizar Proyecto
+            </button>
+          </div>
 
-        <app-quote-request-panel
-          *ngIf="workerData"
-          [providerId]="workerData.id"
-          [providerName]="profileHeroData.name"
-          [services]="quoteRequestServices"
-          [clientName]="clientDisplayName"
-          [clientEmail]="clientEmail"
-          [isClientAuthenticated]="isClientUser">
-        </app-quote-request-panel>
+          <div class="interaction-panel__content">
+            <!-- Mantener ambos montados para no perder estado al cambiar de pestaña -->
+            <div role="tabpanel" [hidden]="interactionMode !== 'book'">
+              <app-booking-panel 
+                [providerId]="workerId || undefined"
+                [providerName]="profileHeroData.name"
+                [data]="bookingPanelData"
+                [alternativeSlots]="slotSuggestions"
+                [futureSlots]="futureSlotSuggestions"
+                [loadingSlots]="timeSlotsLoading"
+                [successMessage]="bookingSuccessMessage"
+                (serviceSelected)="onServiceSelected($event)"
+                (dateSelected)="onDateSelected($event)"
+                (timeSelected)="onTimeSelected($event)"
+                (bookingConfirmed)="onBookingConfirmed($event)"
+                [confirming]="confirming"
+                [confirmError]="confirmError"
+                [closeConfirmSignal]="closeConfirmSignal"
+                (futureSlotSelected)="onFutureSlotSelected($event)">
+              </app-booking-panel>
+            </div>
+
+            <div role="tabpanel" [hidden]="interactionMode !== 'quote'">
+              <app-quote-request-panel
+                *ngIf="workerData"
+                [providerId]="workerData.id"
+                [providerName]="profileHeroData.name"
+                [services]="quoteRequestServices"
+                [clientName]="clientDisplayName"
+                [clientEmail]="clientEmail"
+                [isClientAuthenticated]="isClientUser">
+              </app-quote-request-panel>
+            </div>
+          </div>
+        </section>
       </div>
 
     </div>

@@ -147,11 +147,13 @@
             *ngIf="appointment.type === 'appointment' && appointment.status === 'confirmed'">
             <app-provider-location-checkin-button
               [appointmentId]="+appointment.id"
+              [destinationLabel]="appointment.locationLabel"
               eventType="arrive"
               label="Llegué">
             </app-provider-location-checkin-button>
             <app-provider-location-checkin-button
               [appointmentId]="+appointment.id"
+              [destinationLabel]="appointment.locationLabel"
               eventType="finish"
               label="Terminé">
             </app-provider-location-checkin-button>

@@ -3,6 +3,15 @@ import { CommonModule } from '@angular/common';
 import { AppointmentsService } from '../../../app/services/appointments.service';
 
 type GeoEventType = 'arrive' | 'finish';
+type GeoModalState =
+  | 'checking'
+  | 'match'
+  | 'no_match'
+  | 'permission_denied'
+  | 'position_unavailable'
+  | 'timeout'
+  | 'no_dest_coords'
+  | 'server_error';
 
 @Component({
   selector: 'app-provider-location-checkin-button',
@@ -17,10 +26,15 @@ export class ProviderLocationCheckinButtonComponent {
   @Input({ required: true }) appointmentId!: number;
   @Input({ required: true }) eventType!: GeoEventType;
   @Input() label = 'Registrar';
+  @Input() destinationLabel: string | null | undefined = null;
 
   loading = false;
   lastResult: { is_match?: boolean; distance_m?: number; radius_m?: number } | null = null;
   error: string | null = null;
+
+  modalOpen = false;
+  modalState: GeoModalState | null = null;
+  modalMessage: string | null = null;
 
   onClick(evt: MouseEvent): void {
     evt.stopPropagation();
@@ -34,11 +48,33 @@ export class ProviderLocationCheckinButtonComponent {
       return;
     }
 
+    this.openModalAndAttempt();
+  }
+
+  closeModal(evt?: Event): void {
+    try { evt?.stopPropagation(); } catch {}
+    this.modalOpen = false;
+    this.modalState = null;
+    this.modalMessage = null;
+  }
+
+  retry(evt?: Event): void {
+    try { evt?.stopPropagation(); } catch {}
+    if (this.loading) return;
+    this.openModalAndAttempt(true);
+  }
+
+  private openModalAndAttempt(forceFresh = false): void {
+    this.modalOpen = true;
+    this.modalState = 'checking';
+    this.modalMessage = 'Verificando tu ubicación…';
+
     this.loading = true;
     this.error = null;
     this.lastResult = null;
 
     const startedAt = Date.now();
+    const enableHighAccuracy = this.eventType === 'arrive' ? true : false;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = pos.coords;
@@ -48,6 +84,8 @@ export class ProviderLocationCheckinButtonComponent {
         if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
           this.loading = false;
           this.error = 'No pudimos obtener coordenadas válidas.';
+          this.modalState = 'position_unavailable';
+          this.modalMessage = 'No pudimos obtener una ubicación válida. Activa tu GPS e inténtalo otra vez.';
           return;
         }
 
@@ -63,6 +101,8 @@ export class ProviderLocationCheckinButtonComponent {
             this.loading = false;
             if (!resp?.success) {
               this.error = resp?.message || resp?.error || 'No se pudo registrar.';
+              this.modalState = 'server_error';
+              this.modalMessage = this.error;
               return;
             }
             this.lastResult = {
@@ -70,10 +110,40 @@ export class ProviderLocationCheckinButtonComponent {
               distance_m: resp?.distance_m,
               radius_m: resp?.radius_m
             };
+
+            if (resp?.is_match === true) {
+              this.modalState = 'match';
+              this.modalMessage = 'Listo: detectamos que estás en la ubicación del servicio.';
+              // Cierre suave para no molestar
+              setTimeout(() => {
+                if (this.modalOpen && this.modalState === 'match') this.closeModal();
+              }, 1200);
+              return;
+            }
+
+            if (resp?.is_match === false) {
+              this.modalState = 'no_match';
+              this.modalMessage = 'No detectamos que estés en la ubicación del servicio. Activa tu GPS (alta precisión) y reintenta.';
+              return;
+            }
+
+            // registrado pero sin match (backend no calculó match)
+            this.modalState = 'server_error';
+            this.modalMessage = 'Registramos tu ubicación, pero no pudimos validar el match. Reintenta en unos segundos.';
           },
           error: (err: any) => {
             this.loading = false;
-            this.error = err?.error?.message || err?.error?.error || 'No se pudo registrar la ubicación.';
+            const backendErr = err?.error?.message || err?.error?.error || 'No se pudo registrar la ubicación.';
+            this.error = backendErr;
+
+            if (String(err?.error?.error || '').includes('DESTINATION_COORDS_MISSING')) {
+              this.modalState = 'no_dest_coords';
+              this.modalMessage = 'Esta cita no tiene coordenadas de destino. Solicita al cliente actualizar la ubicación/dirección y reintenta.';
+              return;
+            }
+
+            this.modalState = 'server_error';
+            this.modalMessage = backendErr;
           }
         });
       },
@@ -81,12 +151,25 @@ export class ProviderLocationCheckinButtonComponent {
         this.loading = false;
         // https://developer.mozilla.org/en-US/docs/Web/API/GeolocationPositionError/code
         const code = (geoErr as any)?.code;
-        if (code === 1) this.error = 'Permiso de ubicación denegado.';
-        else if (code === 2) this.error = 'No se pudo determinar tu ubicación.';
-        else if (code === 3) this.error = 'Tiempo de espera agotado al obtener ubicación.';
-        else this.error = 'No se pudo obtener la ubicación.';
+        if (code === 1) {
+          this.error = 'Permiso de ubicación denegado.';
+          this.modalState = 'permission_denied';
+          this.modalMessage = 'No tenemos permiso para usar tu ubicación. Activa la ubicación en tu navegador y reintenta.';
+        } else if (code === 2) {
+          this.error = 'No se pudo determinar tu ubicación.';
+          this.modalState = 'position_unavailable';
+          this.modalMessage = 'No pudimos determinar tu ubicación. Activa tu GPS y reintenta.';
+        } else if (code === 3) {
+          this.error = 'Tiempo de espera agotado al obtener ubicación.';
+          this.modalState = 'timeout';
+          this.modalMessage = 'Se agotó el tiempo de espera. Activa alta precisión y reintenta.';
+        } else {
+          this.error = 'No se pudo obtener la ubicación.';
+          this.modalState = 'position_unavailable';
+          this.modalMessage = 'No se pudo obtener la ubicación. Reintenta.';
+        }
       },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 }
+      { enableHighAccuracy, timeout: 12000, maximumAge: forceFresh ? 0 : 10_000 }
     );
   }
 

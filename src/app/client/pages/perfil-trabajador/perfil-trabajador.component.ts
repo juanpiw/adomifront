@@ -89,6 +89,9 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   clientDisplayName: string | null = null;
   clientEmail: string | null = null;
 
+  // UX: Booking vs Cotización (pestañas)
+  interactionMode: 'book' | 'quote' = 'book';
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private locationSvc = inject(Location);
@@ -117,6 +120,10 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['/client/explorar']);
     }
+  }
+
+  setInteractionMode(mode: 'book' | 'quote'): void {
+    this.interactionMode = mode;
   }
 
   ngOnDestroy(): void {

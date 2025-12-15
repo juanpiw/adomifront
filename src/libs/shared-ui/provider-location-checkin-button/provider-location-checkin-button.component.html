@@ -17,4 +17,43 @@
   <span *ngIf="error" class="geo-error">{{ error }}</span>
 </div>
 
+<!-- Modal de verificación de ubicación -->
+<div class="geo-modal" *ngIf="modalOpen" (click)="closeModal($event)">
+  <div class="geo-modal__dialog" (click)="$event.stopPropagation()">
+    <div class="geo-modal__header">
+      <h4 class="geo-modal__title">Verificación de ubicación</h4>
+      <button type="button" class="geo-modal__close" (click)="closeModal($event)">×</button>
+    </div>
+
+    <div class="geo-modal__body">
+      <div class="geo-modal__section" *ngIf="destinationLabel">
+        <div class="geo-modal__label">Ubicación del servicio</div>
+        <div class="geo-modal__value">📍 {{ destinationLabel }}</div>
+      </div>
+
+      <div class="geo-modal__message" [class.geo-modal__message--good]="modalState === 'match'" [class.geo-modal__message--bad]="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'no_dest_coords'">
+        {{ modalMessage || 'Verificando…' }}
+      </div>
+
+      <div class="geo-modal__metrics" *ngIf="lastResult?.distance_m !== undefined && lastResult?.radius_m !== undefined">
+        <span>Distancia: <strong>{{ lastResult?.distance_m }}m</strong></span>
+        <span>Radio permitido: <strong>{{ lastResult?.radius_m }}m</strong></span>
+      </div>
+
+      <ul class="geo-modal__tips" *ngIf="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'timeout' || modalState === 'position_unavailable'">
+        <li>Activa <strong>Ubicación/GPS</strong> en tu teléfono.</li>
+        <li>En Android/iPhone: habilita <strong>alta precisión</strong>.</li>
+        <li>Si lo negaste, habilita permisos de ubicación para el navegador.</li>
+      </ul>
+    </div>
+
+    <div class="geo-modal__actions">
+      <button type="button" class="geo-modal__btn" (click)="closeModal($event)">Cerrar</button>
+      <button type="button" class="geo-modal__btn geo-modal__btn--primary" [disabled]="loading" (click)="retry($event)">
+        {{ loading ? 'Reintentando…' : 'Reintentar / Recargar ubicación' }}
+      </button>
+    </div>
+  </div>
+</div>
+
 
