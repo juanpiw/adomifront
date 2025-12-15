@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { map, combineLatest } from 'rxjs';
 import { SupportEmptyStateComponent } from '../../../../libs/shared-ui/support/support-empty-state/support-empty-state.component';
 import { SupportKpisComponent } from '../../../../libs/shared-ui/support/support-kpis/support-kpis.component';
@@ -23,7 +23,7 @@ import { SupportTicket } from '../../../../libs/shared-ui/support/models/support
   templateUrl: './dash-support.component.html',
   styleUrls: ['./dash-support.component.scss']
 })
-export class DashSupportComponent {
+export class DashSupportComponent implements OnInit {
   private readonly store = inject(SupportStoreService);
 
   readonly categories = ['Pagos', 'Clientes', 'Servicios', 'App'];
@@ -35,6 +35,10 @@ export class DashSupportComponent {
     this.store.stats$('provider')
   ]).pipe(map(([tickets, stats]) => ({ tickets, stats })));
 
+  ngOnInit(): void {
+    this.store.load('provider').subscribe();
+  }
+
   showForm(): void {
     this.isCreating.set(true);
   }
@@ -44,8 +48,9 @@ export class DashSupportComponent {
   }
 
   onCreate(ticket: { category: string; subject: string; description: string }): void {
-    this.store.create('provider', ticket);
-    this.isCreating.set(false);
+    this.store.create('provider', ticket).subscribe(() => {
+      this.isCreating.set(false);
+    });
   }
 
   onCancel(): void {

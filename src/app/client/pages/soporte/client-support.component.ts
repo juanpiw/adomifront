@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { combineLatest, map } from 'rxjs';
 import { SupportEmptyStateComponent } from '../../../../libs/shared-ui/support/support-empty-state/support-empty-state.component';
 import { SupportKpisComponent } from '../../../../libs/shared-ui/support/support-kpis/support-kpis.component';
@@ -23,7 +23,7 @@ import { SupportTicket } from '../../../../libs/shared-ui/support/models/support
   templateUrl: './client-support.component.html',
   styleUrls: ['./client-support.component.scss']
 })
-export class ClientSupportComponent {
+export class ClientSupportComponent implements OnInit {
   private readonly store = inject(SupportStoreService);
 
   readonly categories = ['Pagos', 'Servicio', 'App', 'Cuenta'];
@@ -35,6 +35,10 @@ export class ClientSupportComponent {
     this.store.stats$('client')
   ]).pipe(map(([tickets, stats]) => ({ tickets, stats })));
 
+  ngOnInit(): void {
+    this.store.load('client').subscribe();
+  }
+
   showForm(): void {
     this.isCreating.set(true);
   }
@@ -44,8 +48,9 @@ export class ClientSupportComponent {
   }
 
   onCreate(ticket: { category: string; subject: string; description: string }): void {
-    this.store.create('client', ticket);
-    this.isCreating.set(false);
+    this.store.create('client', ticket).subscribe(() => {
+      this.isCreating.set(false);
+    });
   }
 
   onCancel(): void {
