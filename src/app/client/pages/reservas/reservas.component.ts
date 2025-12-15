@@ -899,7 +899,7 @@ export class ClientReservasComponent implements OnInit {
             if (isPaid) {
               this.clearClientConfirmed(a.id);
             }
-            const readyToPay = !isPaid && clientConfirmed;
+            const readyToPay = !isPaid; // mostrar selector de pago siempre que no esté pagado
             const canConfirmService = !isPaid && !clientConfirmed && !disputePending;
             const canFinalize = false;
             const canReport = paymentPreference === 'card' && (clientConfirmed || isPaid) && !disputePending;
@@ -1193,6 +1193,18 @@ export class ClientReservasComponent implements OnInit {
   onPagarEfectivo(appointmentId: number) {
     if (!appointmentId || this.payModalLoading) return;
     const apptId = appointmentId;
+    const card = (this.proximasConfirmadas || []).find(c => c.appointmentId === apptId);
+    if (card && !card.clientConfirmed && !card.successHighlight && !card.verification_code) {
+      this.notifications.createNotification({
+        type: 'system',
+        profile: 'client',
+        title: 'Confirma el servicio',
+        message: 'Primero confirma que el servicio se realizó para habilitar el pago.',
+        priority: 'medium',
+        actions: []
+      });
+      return;
+    }
     this.payModalLoading = true;
     // Marcar la cita como pago en efectivo y obtener código
     this.payments.selectCash(apptId).subscribe({
