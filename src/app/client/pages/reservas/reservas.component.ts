@@ -834,6 +834,14 @@ export class ClientReservasComponent implements OnInit {
         console.log('[RESERVAS] Citas cargadas:', list);
         console.log('[RESERVAS] Precios en datos:', list.map(a => ({ id: a.id, price: a.price, service_name: a.service_name })));
         console.log('[RESERVAS] Estado de pago por cita:', list.map(a => ({ id: a.id, payment_status: (a as any).payment_status, status: a.status })));
+        console.log('[RESERVAS][TRACE] raw statuses:', list.map(a => ({
+          id: a.id,
+          status: a.status,
+          service_state: (a as any).service_completion_state,
+          payment_status: (a as any).payment_status,
+          date: a.date,
+          start: a.start_time
+        })));
         this.appointmentIndex = new Map();
         list.forEach(entry => this.appointmentIndex.set(Number(entry.id), entry as any));
         const pendingReschedules = list.filter(a => a.status === 'pending_reschedule');
@@ -862,6 +870,12 @@ export class ClientReservasComponent implements OnInit {
         const realizadasCompletadas = list.filter(a => a.status === 'completed')
                                   .sort((a,b) => (b.date + b.start_time).localeCompare(a.date + a.start_time));
         const cancelled = list.filter(a => ['cancelled', 'expired'].includes(String(a.status)));
+        console.log('[RESERVAS][TRACE] buckets', {
+          upcoming: upcoming.length,
+          past: past.length,
+          completed: realizadasCompletadas.length,
+          cancelled: cancelled.length
+        });
 
         // Todas las próximas confirmadas
         // Resetear mapa antes de reconstruir listas
@@ -1304,6 +1318,7 @@ export class ClientReservasComponent implements OnInit {
       next: () => {
         const apptId = this.finalizeModal.appointmentId!;
         this.markClientConfirmed(apptId);
+        console.log('[RESERVAS][FINALIZE] confirmed service', { apptId });
         this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
           card.appointmentId === apptId
             ? {
