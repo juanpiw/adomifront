@@ -196,9 +196,50 @@
         (reservaAccepted)="onReservaAccepted($event)"
         (reservaRejected)="onReservaRejected($event)">
        </app-inicio-solicitudes>
-       
-       
-       
+
+       <!-- Citas pagadas (próximas): para saber altiro a cuál ir primero -->
+       <section class="paid-upcoming">
+        <div class="paid-upcoming__header">
+          <div>
+            <h3 class="paid-upcoming__title">Citas pagadas (próximas)</h3>
+            <p class="paid-upcoming__subtitle">Ordenadas por fecha y hora. La primera es tu próxima prioridad.</p>
+          </div>
+          <button type="button" class="paid-upcoming__cta" (click)="goToAgenda()">Ver en Agenda</button>
+        </div>
+
+        <p class="paid-upcoming__error" *ngIf="paidUpcomingError">{{ paidUpcomingError }}</p>
+        <p class="paid-upcoming__loading" *ngIf="paidUpcomingLoading">Cargando citas pagadas…</p>
+
+        <div class="paid-upcoming__empty" *ngIf="!paidUpcomingLoading && !paidUpcomingError && paidUpcoming.length === 0">
+          No tienes citas pagadas próximas.
+        </div>
+
+        <div class="paid-upcoming__list" *ngIf="!paidUpcomingLoading && paidUpcoming.length > 0">
+          <div class="paid-upcoming__card" *ngFor="let ap of paidUpcoming; let i = index">
+            <div class="paid-upcoming__row">
+              <div class="paid-upcoming__avatar" [class.paid-upcoming__avatar--fallback]="!ap.clientAvatar">
+                <img [src]="ap.clientAvatar || 'assets/default-avatar.png'" [alt]="ap.clientName" />
+              </div>
+              <div class="paid-upcoming__main">
+                <div class="paid-upcoming__line1">
+                  <span class="paid-upcoming__badge" [class.paid-upcoming__badge--first]="i === 0">{{ i === 0 ? 'PRIMERA' : 'PAGADA' }}</span>
+                  <strong class="paid-upcoming__service">{{ ap.service }}</strong>
+                </div>
+                <div class="paid-upcoming__line2">
+                  con <span class="paid-upcoming__client">{{ ap.clientName }}</span>
+                </div>
+                <div class="paid-upcoming__meta">
+                  <span>{{ ap.when }}</span> • <span>{{ ap.time }}</span>
+                </div>
+                <div class="paid-upcoming__meta paid-upcoming__meta--location" *ngIf="ap.location">
+                  📍 {{ ap.location }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+       </section>
+
        <app-inicio-proxima-cita 
         *ngIf="proximaCitaData"
         [data]="proximaCitaData"

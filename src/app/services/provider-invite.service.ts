@@ -46,6 +46,7 @@ export interface ProviderInviteListResponse {
 export interface ProviderInviteCreateResponse {
   success: boolean;
   invite: ProviderInvite;
+  email?: { attempted: boolean; sent: boolean; error?: string | null };
 }
 
 export interface ProviderInviteCreatePayload {

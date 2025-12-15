@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { SessionService } from '../services/session.service';
@@ -17,7 +17,21 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   // Agregar token de autorización si existe
   const authReq = addTokenToRequest(req, sessionService);
 
-  return next(authReq).pipe(
+  // Si el token está por expirar y tenemos refresh token, refrescar ANTES de disparar 401,
+  // para que la sesión sea "sliding" mientras el usuario usa la app.
+  const shouldPreRefresh =
+    !!sessionService.getAccessToken() &&
+    !!sessionService.getRefreshToken() &&
+    sessionService.isTokenNearExpiry() &&
+    !isRefreshRequest(req);
+
+  const request$ = shouldPreRefresh
+    ? refreshTokens(authService, sessionService, sessionExpired).pipe(
+        switchMap(() => next(addTokenToRequest(req, sessionService)))
+      )
+    : next(authReq);
+
+  return request$.pipe(
     catchError((error: HttpErrorResponse) => {
       // Si es un error 401 (no autorizado)
       if (error.status === 401) {
@@ -51,6 +65,15 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
+function isRefreshRequest(req: any): boolean {
+  try {
+    const url = String(req?.url || '');
+    return url.includes('/auth/refresh');
+  } catch {
+    return false;
+  }
+}
+
 function addTokenToRequest(req: any, sessionService: SessionService): any {
   const token = sessionService.getAccessToken();
   
@@ -65,14 +88,18 @@ function addTokenToRequest(req: any, sessionService: SessionService): any {
   return req;
 }
 
-function handle401Error(req: any, next: any, authService: AuthService, sessionService: SessionService, sessionExpired: SessionExpiredService): Observable<any> {
+function refreshTokens(
+  authService: AuthService,
+  sessionService: SessionService,
+  sessionExpired: SessionExpiredService
+): Observable<string> {
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);
 
     const refreshToken = sessionService.getRefreshToken();
-    
     if (!refreshToken) {
+      isRefreshing = false;
       sessionExpired.open();
       return throwError(() => new Error('No refresh token available'));
     }
@@ -80,19 +107,22 @@ function handle401Error(req: any, next: any, authService: AuthService, sessionSe
     return authService.refreshToken(refreshToken).pipe(
       switchMap((response: any) => {
         isRefreshing = false;
-        
-        if (response.success && response.accessToken) {
-          // Guardar el nuevo access token
-          sessionService.setAccessToken(response.accessToken);
-          refreshTokenSubject.next(response.accessToken);
-          
-          // Reintentar la petición original con el nuevo token
-          return next(addTokenToRequest(req, sessionService));
-        } else {
-          // Si el refresh falla
-          sessionExpired.open();
-          return throwError(() => new Error('Token refresh failed'));
+        const accessToken = response?.accessToken || response?.data?.accessToken;
+        const newRefreshToken = response?.refreshToken || response?.data?.refreshToken;
+        const ok = !!(response?.success ?? response?.data?.success) && !!accessToken;
+
+        if (ok) {
+          sessionService.setAccessToken(accessToken);
+          if (newRefreshToken) {
+            // Importante: algunos backends rotan refresh tokens. Si no lo guardamos, la sesión "expira" aunque el usuario esté activo.
+            sessionService.setRefreshToken(newRefreshToken);
+          }
+          refreshTokenSubject.next(accessToken);
+          return of(accessToken);
         }
+
+        sessionExpired.open();
+        return throwError(() => new Error('Token refresh failed'));
       }),
       catchError((error) => {
         isRefreshing = false;
@@ -100,12 +130,18 @@ function handle401Error(req: any, next: any, authService: AuthService, sessionSe
         return throwError(() => error);
       })
     );
-  } else {
-    // Si ya se está refrescando, esperar a que termine
-    return refreshTokenSubject.pipe(
-      filter(token => token !== null),
-      take(1),
-      switchMap((token) => next(addTokenToRequest(req, sessionService)))
-    );
   }
+
+  // Si ya se está refrescando, esperar a que termine
+  return refreshTokenSubject.pipe(
+    filter(token => token !== null),
+    take(1),
+    switchMap((token) => of(token as string))
+  );
+}
+
+function handle401Error(req: any, next: any, authService: AuthService, sessionService: SessionService, sessionExpired: SessionExpiredService): Observable<any> {
+  return refreshTokens(authService, sessionService, sessionExpired).pipe(
+    switchMap(() => next(addTokenToRequest(req, sessionService)))
+  );
 }

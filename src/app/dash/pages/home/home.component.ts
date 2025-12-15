@@ -95,9 +95,25 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     hasNotifications: true
   };
 
+  // Citas pagadas (próximas) - para que el proveedor vea de inmediato cuál va primero
+  paidUpcomingLoading = false;
+  paidUpcomingError: string | null = null;
+  paidUpcoming: Array<{
+    id: string;
+    clientName: string;
+    clientAvatar: string;
+    service: string;
+    when: string;
+    time: string;
+    date: string;
+    estimatedIncome: number;
+    location?: string;
+  }> = [];
+
   ngOnInit() {
     this.loadProviderName();
     this.loadPendingRequests();
+    this.loadPaidUpcoming();
     this.loadNextAppointment();
     this.loadEarningsData();
     this.initializeTbkBanner();
@@ -234,6 +250,60 @@ export class DashHomeComponent implements OnInit, OnDestroy {
         this.solicitudesData = [];
       }
     });
+  }
+
+  private loadPaidUpcoming() {
+    this.paidUpcomingLoading = true;
+    this.paidUpcomingError = null;
+    this.paidUpcoming = [];
+
+    this.appointmentsService.listPaidAppointments().subscribe({
+      next: (resp: any) => {
+        this.paidUpcomingLoading = false;
+        const rows = resp?.success && Array.isArray(resp?.appointments) ? resp.appointments : [];
+        const now = new Date();
+
+        // Solo futuras (o hoy, hora >= ahora) y con pago completado
+        const upcomingPaid = rows
+          .filter((a: any) => {
+            const dateStr = String(a?.date || '').slice(0, 10);
+            const timeStr = String(a?.start_time || '').slice(0, 5);
+            const payStatus = String(a?.payment_status || '').toLowerCase();
+            const isPaid = payStatus === 'completed' || payStatus === 'paid' || payStatus === 'succeeded';
+            if (!dateStr || !timeStr || !isPaid) return false;
+            const dt = new Date(`${dateStr}T${timeStr}:00`);
+            if (Number.isNaN(dt.getTime())) return false;
+            return dt >= now;
+          })
+          .sort((a: any, b: any) => {
+            const adt = new Date(`${String(a.date).slice(0, 10)}T${String(a.start_time).slice(0, 5)}:00`).getTime();
+            const bdt = new Date(`${String(b.date).slice(0, 10)}T${String(b.start_time).slice(0, 5)}:00`).getTime();
+            return adt - bdt;
+          })
+          .slice(0, 5);
+
+        this.paidUpcoming = upcomingPaid.map((appt: any) => ({
+          id: String(appt.id),
+          clientName: appt.client_name || 'Cliente',
+          clientAvatar: this.getAvatarUrl(appt.client_avatar_url, appt.client_name),
+          service: appt.service_name || 'Servicio',
+          when: this.formatWhen(appt.date),
+          time: this.formatTime(appt.start_time),
+          date: String(appt.date || '').slice(0, 10),
+          estimatedIncome: appt.scheduled_price || appt.price || appt.amount || 0,
+          location: appt.client_location_label || appt.client_location || 'Dirección por confirmar'
+        }));
+      },
+      error: (err: any) => {
+        this.paidUpcomingLoading = false;
+        this.paidUpcomingError = err?.error?.error || 'No se pudieron cargar tus citas pagadas.';
+        this.paidUpcoming = [];
+      }
+    });
+  }
+
+  goToAgenda(): void {
+    this.router.navigate(['/dash/agenda']);
   }
 
   private loadNextAppointment() {
@@ -665,7 +735,16 @@ export class DashHomeComponent implements OnInit, OnDestroy {
         this.inviteSubmitting = false;
         if (response?.success) {
           this.inviteCardExpanded = true;
-          this.inviteSuccessMessage = 'Invitación creada. Comparte el enlace para completar el proceso.';
+          const attempted = !!(response as any)?.email?.attempted;
+          const sent = !!(response as any)?.email?.sent;
+          if (attempted && sent) {
+            this.inviteSuccessMessage = 'Invitación enviada por correo. También puedes compartir el enlace.';
+          } else if (attempted && !sent) {
+            this.inviteError = 'La invitación se creó, pero no se pudo enviar el correo. Copia el enlace y compártelo por WhatsApp.';
+            this.inviteSuccessMessage = null;
+          } else {
+            this.inviteSuccessMessage = 'Invitación creada. Copia el enlace y compártelo con tu colega.';
+          }
           this.resetInviteForm();
           this.loadInviteData();
         }
