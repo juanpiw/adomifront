@@ -81,6 +81,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
 
   // Modal de confirmación
   isConfirmOpen = false;
+  isGeoInfoOpen = false;
   paymentPref: 'card' | 'cash' | null = null;
   loadingPaymentPref = false;
 
@@ -219,6 +220,14 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   // Confirmación
   closeConfirm() {
     this.isConfirmOpen = false;
+  }
+
+  toggleGeoInfo(): void {
+    this.isGeoInfoOpen = !this.isGeoInfoOpen;
+  }
+
+  closeGeoInfo(): void {
+    this.isGeoInfoOpen = false;
   }
 
   confirmBookingNow() {

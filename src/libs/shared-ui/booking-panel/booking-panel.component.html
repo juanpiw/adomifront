@@ -113,6 +113,31 @@
         <span>Método de pago:</span>
         <strong>{{ paymentMethodText() }}</strong>
       </div>
+
+      <!-- Info no-técnica: por qué pedimos ubicación (opcional) -->
+      <div class="booking-confirm__info">
+        <button type="button" class="booking-confirm__info-link" (click)="toggleGeoInfo()">
+          ¿Por qué podríamos pedir tu ubicación?
+          <span class="booking-confirm__info-icon">i</span>
+        </button>
+        <div class="booking-confirm__info-popover" *ngIf="isGeoInfoOpen">
+          <div class="booking-confirm__info-popover-head">
+            <strong>¿Para qué sirve?</strong>
+            <button type="button" class="booking-confirm__info-close" (click)="closeGeoInfo()">✕</button>
+          </div>
+          <p>
+            Al confirmar, es posible que tu teléfono te pida permiso de ubicación.
+            Esto nos ayuda a tener un <strong>punto de referencia del lugar del servicio</strong> y así
+            <strong>resolver más rápido</strong> si alguien reporta “no llegó / no se prestó el servicio”.
+          </p>
+          <ul>
+            <li><strong>No te rastreamos</strong>: no hacemos seguimiento en segundo plano.</li>
+            <li>Se usa solo como <strong>evidencia</strong> si hay un reclamo.</li>
+            <li>Si eliges <strong>“No permitir”</strong>, la cita igual se agenda.</li>
+          </ul>
+        </div>
+      </div>
+
       <p class="booking-confirm__error" *ngIf="confirmError">{{ confirmError }}</p>
       <div class="booking-confirm__suggestions" *ngIf="alternativeSlots?.length">
         <p class="booking-confirm__suggestions-title">Horarios que siguen disponibles:</p>
