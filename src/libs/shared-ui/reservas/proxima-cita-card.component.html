@@ -104,13 +104,8 @@
         Reprogramar
       </button>
       <button class="pc-btn danger ghost" (click)="onCancelarClick()">Cancelar Cita</button>
-      <button *ngIf="data.canConfirmService" class="pc-btn secondary ghost" (click)="onFinalizarClick()">
-        Confirmar servicio
-      </button>
-      <button class="pc-btn primary pay-cta" [disabled]="!data.clientConfirmed" (click)="selectedMethod === 'card' ? onPagarTarjetaClick() : onPagarEfectivoClick()">
-        {{ selectedMethod === 'card'
-          ? (data.clientConfirmed ? ('Pagar ' + (data.precio ? ('$' + (data.precio | number:'1.0-0')) : '')) : 'Confirma el servicio para pagar')
-          : (data.clientConfirmed ? 'Confirmar pago en efectivo' : 'Confirma el servicio para pagar') }}
+      <button class="pc-btn primary pay-cta" (click)="onPrimaryAction()">
+        {{ primaryCtaLabel }}
       </button>
     </div>
   </div>

@@ -53,6 +53,7 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   showRefundArea = false;
   refundReason = '';
   selectedMethod: 'card' | 'cash' = 'card';
+  primaryCtaLabel = 'Confirmar servicio';
 
   ngOnInit(): void {
     try {
@@ -80,6 +81,7 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
       });
       const pref = (this.data?.paymentPreference || 'card') as 'card'|'cash';
       this.selectedMethod = pref;
+      this.updatePrimaryLabel();
     } catch {}
   }
 
@@ -110,6 +112,19 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
 
   onSelectMethod(method: 'card' | 'cash'): void {
     this.selectedMethod = method;
+    this.updatePrimaryLabel();
+  }
+
+  onPrimaryAction(): void {
+    if (!this.data?.clientConfirmed) {
+      this.onFinalizarClick();
+      return;
+    }
+    if (this.selectedMethod === 'card') {
+      this.onPagarTarjetaClick();
+    } else {
+      this.onPagarEfectivoClick();
+    }
   }
 
   onContactarClick(): void {
@@ -159,6 +174,22 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   onReportarClick(): void {
     if (!this.data?.appointmentId) return;
     this.reportarProblema.emit(this.data.appointmentId);
+  }
+
+  private updatePrimaryLabel(): void {
+    if (!this.data) {
+      this.primaryCtaLabel = 'Procesando...';
+      return;
+    }
+    if (!this.data.clientConfirmed) {
+      this.primaryCtaLabel = 'Confirmar servicio';
+      return;
+    }
+    if (this.selectedMethod === 'card') {
+      this.primaryCtaLabel = this.data.precio ? `Pagar $${(this.data.precio as number).toLocaleString('es-CL')}` : 'Pagar con tarjeta';
+    } else {
+      this.primaryCtaLabel = 'Confirmar pago en efectivo';
+    }
   }
 }
 
