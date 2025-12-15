@@ -190,9 +190,24 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.appointmentsService.listPendingRequests().subscribe({
       next: (response) => {
         console.log('[DASH_HOME] 📦 Respuesta completa de solicitudes pendientes:', response);
-        if (response.success && response.appointments && response.appointments.length > 0) {
-          console.log('[DASH_HOME] 📋 Citas confirmadas sin pagar encontradas:', response.appointments.length);
-          this.solicitudesData = response.appointments.map((appt: any) => {
+        const raw = (response && response.success && Array.isArray((response as any).appointments))
+          ? (response as any).appointments
+          : [];
+
+        // Filtro defensivo: nunca mostrar solicitudes con fecha/hora pasada
+        const now = new Date();
+        const upcoming = raw.filter((appt: any) => {
+          const dateStr = String(appt?.date || '').slice(0, 10);
+          const timeStr = String(appt?.start_time || '').slice(0, 5); // HH:mm
+          if (!dateStr || dateStr.length !== 10 || !timeStr) return false;
+          const dt = new Date(`${dateStr}T${timeStr}:00`);
+          if (Number.isNaN(dt.getTime())) return false;
+          return dt >= now;
+        });
+
+        if (upcoming.length > 0) {
+          console.log('[DASH_HOME] 📋 Citas confirmadas sin pagar encontradas (filtradas):', upcoming.length);
+          this.solicitudesData = upcoming.map((appt: any) => {
             const solicitud = {
               id: String(appt.id),
               clientName: appt.client_name || 'Cliente',

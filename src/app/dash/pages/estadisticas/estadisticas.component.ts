@@ -162,8 +162,9 @@ export class DashEstadisticasComponent implements OnInit, OnDestroy {
     start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
     return {
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0]
+      // Importante: usar fecha LOCAL (no UTC) para no “correr” el día en Chile.
+      startDate: this.toLocalIsoDate(start),
+      endDate: this.toLocalIsoDate(end)
     };
   }
 
@@ -183,7 +184,15 @@ export class DashEstadisticasComponent implements OnInit, OnDestroy {
   }
 
   private todayIso(): string {
-    return new Date().toISOString().split('T')[0];
+    // Importante: usar fecha LOCAL (no UTC) para evitar rangos que terminen “mañana” en Chile.
+    return this.toLocalIsoDate(new Date());
+  }
+
+  private toLocalIsoDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   get showUpgradeBanner(): boolean {
