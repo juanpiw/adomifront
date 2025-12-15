@@ -1,0 +1,39 @@
+<ng-container *ngIf="vm$ | async as vm">
+  <ui-support-shell
+    title="Soporte para proveedores"
+    subtitle="Reporta problemas operativos, pagos o app. Te contactaremos rápido."
+    [actionLabel]="!isCreating() ? 'Nuevo ticket' : ''"
+    actionIcon="plus"
+    (action)="showForm()">
+    <ui-support-kpis [open]="vm.stats.open" [closed]="vm.stats.closed"></ui-support-kpis>
+
+    <ng-container *ngIf="!isCreating(); else formTpl">
+      <ng-container *ngIf="vm.tickets.length; else emptyTpl">
+        <ui-support-ticket-list
+          [tickets]="vm.tickets"
+          [selectedId]="selectedTicketId()"
+          (select)="onSelect($event)">
+        </ui-support-ticket-list>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #formTpl>
+      <ui-support-ticket-form
+        [categories]="categories"
+        submitLabel="Enviar ticket"
+        (submitTicket)="onCreate($event)"
+        (cancel)="onCancel()">
+      </ui-support-ticket-form>
+    </ng-template>
+
+    <ng-template #emptyTpl>
+      <ui-support-empty-state
+        title="No tienes tickets como proveedor"
+        description="Cuéntanos si necesitas ayuda con clientes, pagos o la app."
+        actionLabel="Crear ticket"
+        (action)="showForm()">
+      </ui-support-empty-state>
+    </ng-template>
+  </ui-support-shell>
+</ng-container>
+

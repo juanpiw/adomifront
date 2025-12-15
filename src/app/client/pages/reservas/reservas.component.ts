@@ -147,6 +147,10 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
                   <div class="claim-panel__notice">
                     <p><strong>Antes de ir al banco:</strong> repórtalo aquí primero. Esto acelera la solución y nos permite gestionar reembolso o evidencia si fuese necesario.</p>
                     <p class="muted">Tiempo de respuesta estimado: {{ claimSlaText }}</p>
+                    <p class="muted">
+                      Recordatorio: confirmaste que el servicio se completó antes de pagar. Revisa nuestros
+                      <a href="/terminos" target="_blank" rel="noopener">Términos y Condiciones</a>.
+                    </p>
                   </div>
 
                   <form (ngSubmit)="submitClaim(apptId)">
@@ -1680,9 +1684,8 @@ export class ClientReservasComponent implements OnInit {
   }
 
   closeRescheduleModal(): void {
-    if (this.rescheduleForm.loading) {
-      return;
-    }
+    // Permitir cerrar aunque esté en loading para evitar bloqueo en fallas
+    this.rescheduleForm.loading = false;
     this.showRescheduleModal = false;
     this.rescheduleActionLoadingId = null;
     this.rescheduleForm = {
@@ -1733,6 +1736,7 @@ export class ClientReservasComponent implements OnInit {
 
     this.appointments.requestReschedule(this.rescheduleForm.appointmentId, payload).subscribe({
       next: () => {
+        this.rescheduleForm.loading = false;
         const appointmentId = this.rescheduleForm.appointmentId!;
         const isLate = this.rescheduleForm.isLate;
         const message = isLate

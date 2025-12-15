@@ -1,0 +1,33 @@
+<form class="support-ticket-form" (submit)="onSubmit($event)">
+  <div class="form-grid">
+    <label class="form-field">
+      <span class="form-label">Categoría</span>
+      <select [(ngModel)]="model.category" name="category" required>
+        <option value="" disabled selected>Selecciona un tema</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+      </select>
+    </label>
+
+    <label class="form-field">
+      <span class="form-label">Asunto</span>
+      <input [(ngModel)]="model.subject" name="subject" type="text" placeholder="Ej: Doble cobro en tarjeta" required />
+    </label>
+  </div>
+
+  <label class="form-field">
+    <span class="form-label">Descripción detallada</span>
+    <textarea
+      [(ngModel)]="model.description"
+      name="description"
+      rows="4"
+      placeholder="Describe qué sucedió, incluye fechas y detalles relevantes..."></textarea>
+  </label>
+
+  <div class="actions">
+    <button type="button" class="btn-secondary" (click)="onCancel()">Cancelar</button>
+    <button type="submit" class="btn-primary" [disabled]="isSubmitting || !model.category || !model.subject">
+      {{ isSubmitting ? 'Enviando...' : submitLabel }}
+    </button>
+  </div>
+</form>
+

@@ -69,6 +69,7 @@
         <span *ngIf="unreadTotal > 0" class="badge-unread">{{ unreadTotal }}</span>
       </a>
       <a class="rail-item" routerLink="/dash/servicios" routerLinkActive="active" title="Servicios" (click)="onNav()"><ui-icon name="briefcase" [size]="20"></ui-icon></a>
+      <a class="rail-item" routerLink="/dash/soporte" routerLinkActive="active" title="Soporte" (click)="onNav()"><ui-icon name="help-circle" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/perfil" routerLinkActive="active" title="Perfil" (click)="onNav()"><ui-icon name="user" [size]="20"></ui-icon></a>
       <div class="spacer"></div>
       <a class="rail-item" (click)="logout()" title="Salir" style="cursor: pointer;"><ui-icon name="logout" [size]="20"></ui-icon></a>
@@ -118,6 +119,7 @@
         <a routerLink="/dash/estadisticas" routerLinkActive="active" (click)="onNav()"><ui-icon name="chart"></ui-icon><span>Estadísticas</span></a>
         <a routerLink="/dash/mensajes" routerLinkActive="active" (click)="onNav()"><ui-icon name="message"></ui-icon><span>Mensajes</span></a>
         <a routerLink="/dash/servicios" routerLinkActive="active" (click)="onNav()"><ui-icon name="briefcase"></ui-icon><span>Mis Servicios</span></a>
+        <a routerLink="/dash/soporte" routerLinkActive="active" (click)="onNav()"><ui-icon name="help-circle"></ui-icon><span>Soporte</span></a>
         <a *ngIf="showPromotionsMenu" routerLink="/dash/promocion" routerLinkActive="active" (click)="onNav()"><ui-icon name="star"></ui-icon><span>Promoción</span></a>
         <a routerLink="/dash/perfil" routerLinkActive="active" (click)="onNav()"><ui-icon name="user"></ui-icon><span>Mi Perfil</span></a>
       </nav>

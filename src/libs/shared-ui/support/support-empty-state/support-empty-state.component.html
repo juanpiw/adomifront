@@ -1,0 +1,13 @@
+<div class="support-empty">
+  <div class="support-empty__icon">
+    <ui-icon name="help-circle" [size]="28"></ui-icon>
+  </div>
+  <div class="support-empty__text">
+    <h4>{{ title }}</h4>
+    <p>{{ description }}</p>
+  </div>
+  <button type="button" class="support-empty__action" (click)="action.emit()">
+    {{ actionLabel }}
+  </button>
+</div>
+

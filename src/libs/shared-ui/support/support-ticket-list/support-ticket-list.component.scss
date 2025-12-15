@@ -1,0 +1,127 @@
+.support-ticket-list {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.ticket-row {
+  padding: 16px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.ticket-row:last-child {
+  border-bottom: none;
+}
+
+.ticket-row:hover {
+  background: #f8fafc;
+  border-color: #dfe7f2;
+}
+
+.ticket-row--active {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.ticket-row__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.ticket-row__id {
+  font-family: 'Inter', monospace;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.ticket-row__category {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+.ticket-row__subject {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.ticket-row__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ticket-row__description {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticket-row__date {
+  white-space: nowrap;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: currentColor;
+}
+
+.badge--open {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
+.badge--progress {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge--closed {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.support-ticket-list__empty {
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+  color: #94a3b8;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+

@@ -1,0 +1,29 @@
+<div class="support-ticket-list" *ngIf="tickets && tickets.length; else emptyState">
+  <div
+    class="ticket-row"
+    *ngFor="let ticket of tickets; trackBy: trackById"
+    [class.ticket-row--active]="ticket.id === selectedId"
+    (click)="onSelect(ticket)">
+    <div class="ticket-row__top">
+      <div class="ticket-row__id">#{{ ticket.id }}</div>
+      <div class="ticket-row__category">{{ ticket.category }}</div>
+      <span class="{{ badgeClass(ticket.status) }}">
+        <span class="dot"></span>
+        {{ ticket.status === 'abierto' ? 'Abierto' : ticket.status === 'en_proceso' ? 'En proceso' : 'Cerrado' }}
+      </span>
+    </div>
+    <div class="ticket-row__subject">{{ ticket.subject }}</div>
+    <div class="ticket-row__meta">
+      <div class="ticket-row__description">{{ ticket.description }}</div>
+      <div class="ticket-row__date">Creado el {{ ticket.date }}</div>
+    </div>
+  </div>
+</div>
+
+<ng-template #emptyState>
+  <div class="support-ticket-list__empty">
+    <ui-icon name="help-circle" [size]="28"></ui-icon>
+    <p>No hay tickets aún.</p>
+  </div>
+</ng-template>
+

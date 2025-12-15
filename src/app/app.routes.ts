@@ -69,6 +69,7 @@ export const routes: Routes = [
       { path: 'pago/cancelado', component: ClientReservasComponent },
       { path: 'configuracion', component: ClientConfiguracionComponent },
       { path: 'terminos', component: ClientTerminosComponent },
+      { path: 'soporte', loadComponent: () => import('./client/pages/soporte/client-support.component').then(m => m.ClientSupportComponent) },
       { path: 'validacion-datos-trabajador', component: ValidacionDatosTrabajadorComponent }
     ] },
       { path: 'auth', children: [
@@ -100,6 +101,7 @@ export const routes: Routes = [
       ,{ path: 'terminos', component: DashTerminosComponent }
       ,{ path: 'clientes/:clientId', component: PerfilSolicitanteComponent }
       ,{ path: 'admin-pagos', component: AdminPagosComponent }
+      ,{ path: 'soporte', loadComponent: () => import('./dash/pages/soporte/dash-support.component').then(m => m.DashSupportComponent) }
     ] },
   { path: '**', redirectTo: '' }
 ];

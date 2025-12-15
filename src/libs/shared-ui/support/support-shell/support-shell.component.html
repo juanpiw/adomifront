@@ -1,0 +1,21 @@
+<div class="support-shell">
+  <div class="support-shell__header">
+    <div>
+      <h2 class="support-shell__title">{{ title }}</h2>
+      <p *ngIf="subtitle" class="support-shell__subtitle">{{ subtitle }}</p>
+    </div>
+    <button
+      *ngIf="actionLabel"
+      type="button"
+      class="support-shell__action"
+      (click)="onAction()"
+      [disabled]="actionDisabled">
+      <ui-icon [name]="actionIcon" [size]="16"></ui-icon>
+      <span>{{ actionLabel }}</span>
+    </button>
+  </div>
+  <div class="support-shell__body">
+    <ng-content></ng-content>
+  </div>
+</div>
+
