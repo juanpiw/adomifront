@@ -119,6 +119,8 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
           <ui-proxima-cita-card 
             [data]="p" 
             (pagar)="onPagar($event)"
+            (pagarTarjeta)="onPagar($event)"
+            (pagarEfectivo)="onPagarEfectivo($event)"
             (pedirDevolucion)="onRefund($event)"
             (reprogramar)="onRequestReschedule($event)"
             (contactar)="onContactar(p.appointmentId)"
@@ -1186,6 +1188,57 @@ export class ClientReservasComponent implements OnInit {
       });
     }
     // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
+  }
+
+  onPagarEfectivo(appointmentId: number) {
+    if (!appointmentId || this.payModalLoading) return;
+    const apptId = appointmentId;
+    this.payModalLoading = true;
+    // Marcar la cita como pago en efectivo y obtener código
+    this.payments.selectCash(apptId).subscribe({
+      next: (res) => {
+        this.setCashCapFromResponse((res as any)?.cashCap);
+        const code = String((res as any)?.code || '').trim();
+        const card = (this.proximasConfirmadas || []).find(c => c.appointmentId === apptId);
+        const serviceName = card?.titulo ? String(card.titulo).split(' con ')[0] : 'Tu servicio';
+        const fecha = card?.fecha || '';
+        const hora = card?.hora || '';
+        const messageSuffix = code ? ` Entrega el código ${code} al profesional.` : '';
+        this.notifications.createNotification({
+          type: 'system',
+          profile: 'client',
+          title: `Pago en efectivo: ${serviceName}`,
+          message: `Pagarás en efectivo al finalizar. Fecha: ${fecha} • Hora: ${hora}.${messageSuffix}`,
+          priority: 'low',
+          actions: []
+        });
+        this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+          card.appointmentId === apptId
+            ? { ...card, paymentPreference: 'cash', mostrarPagar: false, verification_code: code || (card as any).verification_code, cashCap: this.cashCap, cashCapLabel: this.cashCapCurrency }
+            : card
+        ));
+        this.appointments.getVerificationCode(apptId).subscribe({
+          next: (vc) => {
+            if (vc?.success && vc?.code) {
+              this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+                card.appointmentId === apptId ? { ...card, verification_code: vc.code } : card
+              ));
+            }
+          },
+          error: () => {}
+        });
+        this.clientPaymentPref = 'cash';
+        this.payModalLoading = false;
+        this.loadAppointments();
+      },
+      error: (err) => {
+        this.payModalLoading = false;
+        console.error('[RESERVAS] Error seleccionando efectivo', err);
+        const errorMessage = err?.error?.error || 'No pudimos seleccionar pago en efectivo. Intenta nuevamente.';
+        this.setCashCapFromResponse(err?.error?.cashCap);
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: errorMessage, priority: 'high', actions: [] });
+      }
+    });
   }
   closePayModal(){
     this.showPayMethodModal = false;

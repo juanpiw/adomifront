@@ -44,12 +44,15 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   @Output() reprogramar = new EventEmitter<number>();
   @Output() cancelar = new EventEmitter<number>();
   @Output() pagar = new EventEmitter<number>();
+  @Output() pagarTarjeta = new EventEmitter<number>();
+  @Output() pagarEfectivo = new EventEmitter<number>();
   @Output() pedirDevolucion = new EventEmitter<{ appointmentId: number; reason: string }>();
   @Output() finalizarServicio = new EventEmitter<number>();
   @Output() reportarProblema = new EventEmitter<number>();
 
   showRefundArea = false;
   refundReason = '';
+  selectedMethod: 'card' | 'cash' = 'card';
 
   ngOnInit(): void {
     try {
@@ -75,6 +78,8 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
         mostrarPagar: this.data?.mostrarPagar,
         successHighlight: this.data?.successHighlight
       });
+      const pref = (this.data?.paymentPreference || 'card') as 'card'|'cash';
+      this.selectedMethod = pref;
     } catch {}
   }
 
@@ -91,6 +96,20 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
       });
     } catch {}
     this.pagar.emit(this.data?.appointmentId || 0);
+  }
+
+  onPagarTarjetaClick(): void {
+    this.selectedMethod = 'card';
+    this.pagarTarjeta.emit(this.data?.appointmentId || 0);
+  }
+
+  onPagarEfectivoClick(): void {
+    this.selectedMethod = 'cash';
+    this.pagarEfectivo.emit(this.data?.appointmentId || 0);
+  }
+
+  onSelectMethod(method: 'card' | 'cash'): void {
+    this.selectedMethod = method;
   }
 
   onContactarClick(): void {
