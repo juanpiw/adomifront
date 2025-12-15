@@ -889,10 +889,14 @@ export class ClientReservasComponent implements OnInit {
               this._providerByApptId[a.id] = Number((a as any).provider_id);
             }
             const rawPayment = String((a as any).payment_status || '').toLowerCase();
-            const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment);
+            const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment) || !!(a as any).verification_code;
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}, rawPrice=${JSON.stringify(a.price)}`);
             const limitReached = Number(a.client_reschedule_count || 0) >= 1;
-            let allowReprogram = !(a.status === 'confirmed' && !isPaid);
+            let allowReprogram = true;
+            // Si no está pagada y está confirmada, bloquear
+            if (a.status === 'confirmed' && !isPaid) {
+              allowReprogram = false;
+            }
             if (limitReached) {
               allowReprogram = false;
             }
