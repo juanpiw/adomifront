@@ -10,6 +10,7 @@ export interface ProximaCitaData {
   hora: string;
   diasRestantes: number;
   mostrarPagar?: boolean;
+  clientConfirmed?: boolean;
   appointmentId?: number;
   successHighlight?: boolean;
   verification_code?: string;
@@ -24,8 +25,10 @@ export interface ProximaCitaData {
   serviceCompletionState?: 'none'|'client_confirmed'|'auto_completed'|'dispute_pending'|'completed_refunded'|null;
   disputePending?: boolean;
   canFinalize?: boolean;
+  canConfirmService?: boolean;
   canReport?: boolean;
   paymentStatus?: 'pending' | 'paid' | 'refunded' | null;
+  paymentStatusLabel?: string;
 }
 
 @Component({

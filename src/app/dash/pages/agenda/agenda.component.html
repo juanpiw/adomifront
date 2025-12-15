@@ -95,6 +95,19 @@
       </section>
 
       <!-- Dashboard Resumen -->
+      <section class="payment-states">
+        <h3 class="payment-states__title">Estados de pago</h3>
+        <ul class="payment-states__list">
+          <li>💰 Pago confirmado por el cliente (liberado).</li>
+          <li>⏳ Pago pendiente de confirmación del cliente.</li>
+          <li>⛔ Pago en revisión por reclamo del cliente.</li>
+          <li>⚠️ Pago ajustado por contracargo bancario.</li>
+        </ul>
+        <div class="payment-states__note">
+          ⚠️ Este servicio tiene un reclamo del cliente. Estamos revisando el caso. El pago podría ser ajustado según el resultado de la investigación.
+        </div>
+      </section>
+
       <app-dashboard-resumen 
         [metrics]="dashboardMetrics"
         [loading]="loading">

@@ -355,7 +355,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
     <div class="cancel-modal__body">
       <p class="cancel-modal__warning">
-        Al confirmar, liberaremos el pago retenido al profesional. Usa esta opción solo si el servicio se realizó correctamente.
+          Al confirmar habilitaremos el pago al profesional. Usa esta opción solo si el servicio se realizó correctamente. Los reembolsos podrán requerir revisión adicional.
       </p>
       <div *ngIf="finalizeModal.error" class="cancel-modal__error">{{ finalizeModal.error }}</div>
     </div>
@@ -584,6 +584,44 @@ export class ClientReservasComponent implements OnInit {
       return null;
     }
   }
+
+  private loadClientConfirmedFromStorage(): void {
+    try {
+      const raw = localStorage.getItem(this.clientConfirmedKey);
+      if (!raw) {
+        this.clientConfirmedSet = new Set<number>();
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const clean = parsed.map((v) => Number(v)).filter((v) => Number.isFinite(v) && v > 0);
+        this.clientConfirmedSet = new Set<number>(clean);
+      }
+    } catch {
+      this.clientConfirmedSet = new Set<number>();
+    }
+  }
+
+  private persistClientConfirmed(): void {
+    try {
+      const arr = Array.from(this.clientConfirmedSet.values());
+      localStorage.setItem(this.clientConfirmedKey, JSON.stringify(arr));
+    } catch {}
+  }
+
+  private markClientConfirmed(apptId: number): void {
+    if (!Number.isFinite(apptId) || apptId <= 0) return;
+    this.clientConfirmedSet.add(apptId);
+    this.persistClientConfirmed();
+  }
+
+  private clearClientConfirmed(apptId: number): void {
+    if (!Number.isFinite(apptId) || apptId <= 0) return;
+    if (this.clientConfirmedSet.has(apptId)) {
+      this.clientConfirmedSet.delete(apptId);
+      this.persistClientConfirmed();
+    }
+  }
   
   // Profile validation
   showProfileModal: boolean = false;
@@ -666,6 +704,8 @@ export class ClientReservasComponent implements OnInit {
   ocReturnError: string | null = null;
   private readonly ocPendingKey = 'adomi_oc_pending_appt';
   private readonly ocPendingUsernameKey = 'adomi_oc_pending_username';
+  private readonly clientConfirmedKey = 'adomi_client_confirmed_services';
+  private clientConfirmedSet = new Set<number>();
   finalizeModal = {
     open: false,
     appointmentId: null as number | null,
@@ -707,6 +747,7 @@ export class ClientReservasComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadClientConfirmedFromStorage();
     this.validateProfile();
     // Preferencia de pago del cliente
     try { this.clientProfile.getPaymentPreference().subscribe({ next: (res:any) => this.clientPaymentPref = (res?.preference ?? null) as any, error: () => this.clientPaymentPref = null }); } catch {}
@@ -851,11 +892,25 @@ export class ClientReservasComponent implements OnInit {
             const paymentPreference = ((a as any).payment_method || null) as 'card'|'cash'|null;
             const serviceCompletionState = String((a as any).service_completion_state || 'none') as ProximaCitaData['serviceCompletionState'];
             const disputePending = String(a.status) === 'dispute_pending' || serviceCompletionState === 'dispute_pending';
-            const canFinalize = paymentPreference === 'card' && isPaid && !disputePending && serviceCompletionState === 'none';
-            const canReport = paymentPreference === 'card' && isPaid && !disputePending;
+            const clientConfirmedLocal = this.clientConfirmedSet.has(a.id);
+            const clientConfirmed = clientConfirmedLocal || serviceCompletionState === 'client_confirmed' || serviceCompletionState === 'auto_completed';
+            if (isPaid) {
+              this.clearClientConfirmed(a.id);
+            }
+            const readyToPay = !isPaid && clientConfirmed;
+            const canConfirmService = !isPaid && !clientConfirmed && !disputePending;
+            const canFinalize = false;
+            const canReport = paymentPreference === 'card' && (clientConfirmed || isPaid) && !disputePending;
             const subtitle = disputePending
               ? 'En revisión'
-              : (isPaid ? 'Cita pagada' : 'Confirmada (Esperando pago)');
+              : (isPaid
+                ? 'Cita pagada'
+                : (clientConfirmed ? 'Servicio confirmado (pago pendiente)' : 'Confirmada (falta tu confirmación)'));
+            const paymentStatusLabel = isPaid
+              ? 'Pago confirmado por el cliente (liberado)'
+              : (disputePending
+                ? 'Pago en revisión por reclamo del cliente'
+                : (clientConfirmed ? 'Pago pendiente de procesar (cliente confirmó)' : 'Pago pendiente de confirmación del cliente'));
 
             const card: ProximaCitaData & { verification_code?: string } = {
               titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
@@ -863,7 +918,8 @@ export class ClientReservasComponent implements OnInit {
               fecha: this.formatDate(a.date),
               hora: this.formatTime(a.start_time),
               diasRestantes: this.daysFromToday(a.date),
-              mostrarPagar: !isPaid,
+              mostrarPagar: readyToPay,
+              clientConfirmed,
               appointmentId: a.id,
               successHighlight: isPaid,
               precio: Number(a.price || 30000), // Valor por defecto para testing
@@ -877,7 +933,9 @@ export class ClientReservasComponent implements OnInit {
               disputePending,
               canFinalize,
               canReport,
-              paymentStatus: rawPayment as any
+              canConfirmService,
+              paymentStatus: rawPayment as any,
+              paymentStatusLabel
             };
 
             if (isPaid) {
@@ -1084,6 +1142,18 @@ export class ClientReservasComponent implements OnInit {
   }
 
   onPagar(appointmentId: number) {
+    const card = (this.proximasConfirmadas || []).find(c => c.appointmentId === appointmentId);
+    if (card && !card.clientConfirmed && !card.successHighlight && !card.verification_code) {
+      this.notifications.createNotification({
+        type: 'system',
+        profile: 'client',
+        title: 'Confirma el servicio',
+        message: 'Primero confirma que el servicio se realizó para habilitar el pago.',
+        priority: 'medium',
+        actions: []
+      });
+      return;
+    }
     this.payModalApptId = appointmentId || null;
     this.showPayMethodModal = true;
     // Traer info TBK hijo para habilitar pago con tarjeta (Oneclick Mall)
@@ -1167,11 +1237,25 @@ export class ClientReservasComponent implements OnInit {
     this.finalizeModal.error = '';
     this.appointments.completeService(this.finalizeModal.appointmentId).subscribe({
       next: () => {
+        const apptId = this.finalizeModal.appointmentId!;
+        this.markClientConfirmed(apptId);
+        this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+          card.appointmentId === apptId
+            ? {
+                ...card,
+                clientConfirmed: true,
+                canConfirmService: false,
+                mostrarPagar: !card.successHighlight && !card.verification_code,
+                subtitulo: 'Servicio confirmado (pago pendiente)',
+                paymentStatusLabel: 'Pago pendiente de confirmación del cliente'
+              }
+            : card
+        ));
         this.notifications.createNotification({
           type: 'appointment',
           profile: 'client',
           title: 'Servicio confirmado',
-          message: 'Gracias por confirmar. El pago se liberará al profesional.',
+          message: 'Gracias por confirmar. Ahora puedes completar el pago al profesional.',
           priority: 'low',
           actions: []
         });
@@ -1620,9 +1704,10 @@ export class ClientReservasComponent implements OnInit {
         this.closePayModal();
         console.log('[RESERVAS] ocAuthorize resp:', resp);
         if (resp?.success) {
+          this.clearClientConfirmed(apptId);
           // Marcar la cita como pagada en UI
           this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
-            card.appointmentId === apptId ? { ...card, successHighlight: true, mostrarPagar: false, subtitulo: 'Cita pagada' } : card
+            card.appointmentId === apptId ? { ...card, successHighlight: true, mostrarPagar: false, clientConfirmed: true, paymentStatusLabel: 'Pago confirmado por el cliente (liberado)', subtitulo: 'Cita pagada' } : card
           ));
         } else {
           console.error('[RESERVAS] ocAuthorize sin success', resp);
@@ -1681,6 +1766,7 @@ export class ClientReservasComponent implements OnInit {
       next: (res) => {
         this.setCashCapFromResponse((res as any)?.cashCap);
         const code = String((res as any)?.code || '').trim();
+        this.clearClientConfirmed(apptId);
         // Buscar datos para enriquecer notificación
         const card = (this.proximasConfirmadas || []).find(c => c.appointmentId === apptId);
         const serviceName = card?.titulo ? String(card.titulo).split(' con ')[0] : 'Tu servicio';
