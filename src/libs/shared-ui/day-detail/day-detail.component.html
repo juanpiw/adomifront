@@ -136,7 +136,9 @@
             </p>
           </div>
 
-          <div class="day-detail__appointment-actions" *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'expired'">
+          <div
+            class="day-detail__appointment-actions"
+            *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'expired' && appointment.paymentStatus !== 'paid'">
             <button *ngIf="appointment.status === 'scheduled'" class="day-detail__action-btn day-detail__action-btn--confirm" (click)="onConfirmClick($event, appointment)">Confirmar</button>
             <button class="day-detail__action-btn day-detail__action-btn--delete" (click)="onDeleteClick($event, appointment)">Cancelar</button>
           </div>
