@@ -1,0 +1,216 @@
+.earnings-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.earnings-modal {
+  width: min(980px, 100%);
+  max-height: min(82vh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.earnings-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.earnings-modal__header h3 {
+  margin: 0;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.earnings-modal__subtitle {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.earnings-modal__close {
+  border: none;
+  background: transparent;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.earnings-modal__close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.earnings-modal__body {
+  padding: 14px 18px 18px;
+  overflow: auto;
+}
+
+.earnings-modal__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.earnings-modal__kpi {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.earnings-modal__kpi span {
+  display: block;
+  color: #64748b;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.earnings-modal__kpi strong {
+  display: block;
+  color: #0f172a;
+  font-weight: 900;
+  margin-top: 2px;
+}
+
+.earnings-modal__error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  margin: 10px 0 12px;
+}
+
+.earnings-modal__table-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.earnings-modal__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.earnings-modal__table thead th {
+  text-align: left;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 900;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.earnings-modal__table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+  color: #0f172a;
+}
+
+.earnings-modal__table tr:last-child td {
+  border-bottom: none;
+}
+
+.earnings-modal__table .right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.earnings-modal__loading,
+.earnings-modal__empty {
+  text-align: center;
+  color: #64748b;
+  font-weight: 800;
+  padding: 16px 12px;
+}
+
+.earnings-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 18px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.earnings-modal__btn {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.earnings-modal__btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.earnings-modal__btn--ghost:hover {
+  background: #f8fafc;
+}
+
+.earnings-modal__btn--primary {
+  background: #4338ca;
+  border-color: #4338ca;
+  color: #ffffff;
+}
+
+.earnings-modal__btn--primary:hover {
+  background: #3730a3;
+  border-color: #3730a3;
+}
+
+@media (max-width: 720px) {
+  .earnings-modal__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .earnings-modal__table thead {
+    display: none;
+  }
+  .earnings-modal__table,
+  .earnings-modal__table tbody,
+  .earnings-modal__table tr,
+  .earnings-modal__table td {
+    display: block;
+    width: 100%;
+  }
+  .earnings-modal__table tr {
+    border-bottom: 1px solid #eef2f7;
+    padding: 10px 12px;
+  }
+  .earnings-modal__table td {
+    border: none;
+    padding: 4px 0;
+  }
+  .earnings-modal__table td.right {
+    text-align: left;
+  }
+}
+
+

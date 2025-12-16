@@ -13,6 +13,8 @@ import { ProviderAvailabilityService } from '../../../services/provider-availabi
 import { AppointmentsService, AppointmentDto } from '../../../services/appointments.service';
 import { ProviderClientReviewsService } from '../../../services/provider-client-reviews.service';
 import { PaymentsService } from '../../../services/payments.service';
+import { FinancesService, FinanceTransactionDto } from '../../../services/finances.service';
+import { ProviderEarningsMonthModalComponent } from '../../../../libs/shared-ui/provider-earnings-month-modal/provider-earnings-month-modal.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -67,6 +69,7 @@ interface QuoteDraftContext {
     ExcepcionesFeriadosComponent,
     ModalVerificarServicioComponent,
     ReviewModalComponent,
+    ProviderEarningsMonthModalComponent,
     FormsModule
   ],
   templateUrl: './agenda.component.html',
@@ -202,6 +205,7 @@ export class DashAgendaComponent implements OnInit {
   availabilityLoading = false;
   private appointments = inject(AppointmentsService);
   private payments = inject(PaymentsService);
+  private finances = inject(FinancesService);
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);
   private http = inject(HttpClient);
@@ -221,6 +225,16 @@ export class DashAgendaComponent implements OnInit {
 
   // Datos del gráfico
   chartData: { labels: string[]; datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; tension: number; }[] } | null = null;
+
+  // Modal: detalle de ingresos del mes
+  earningsModalOpen = false;
+  earningsModalLoading = false;
+  earningsModalError: string | null = null;
+  earningsSummary: any | null = null;
+  earningsTransactions: FinanceTransactionDto[] = [];
+  earningsTransactionsTotal = 0;
+  earningsTransactionsLimit = 50;
+  earningsTransactionsOffset = 0;
 
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
@@ -1014,7 +1028,8 @@ export class DashAgendaComponent implements OnInit {
       {
         label: 'Ingresos (Mes)',
         value: '$0',
-        meta: 'Pendiente: $0 · Liberado: $0'
+        meta: 'Pendiente: $0 · Liberado: $0',
+        onClick: () => this.openEarningsModal()
       },
       this.recentClientsMetric,
       {
@@ -1052,6 +1067,7 @@ export class DashAgendaComponent implements OnInit {
       (this.payments as any).getProviderEarningsSummary({ month }).subscribe({
         next: (resp: any) => {
           if (resp?.success && resp.summary) {
+            this.earningsSummary = resp.summary;
             const { releasable, pending, released } = resp.summary;
             // Actualiza la tarjeta "Ingresos (Mes)" con el monto liberable
             const idx = this.dashboardMetrics.findIndex(m => m.label === 'Ingresos (Mes)');
@@ -1059,7 +1075,8 @@ export class DashAgendaComponent implements OnInit {
               this.dashboardMetrics[idx] = {
                 ...this.dashboardMetrics[idx],
                 value: `$${Number(releasable || 0).toLocaleString('es-CL')}`,
-                meta: `Pendiente: $${Number(pending || 0).toLocaleString('es-CL')} · Liberado: $${Number(released || 0).toLocaleString('es-CL')}`
+                meta: `Pendiente: $${Number(pending || 0).toLocaleString('es-CL')} · Liberado: $${Number(released || 0).toLocaleString('es-CL')}`,
+                onClick: () => this.openEarningsModal()
               } as any;
             }
             // Actualiza "Citas pagadas en efectivo" si backend expone métrica (fallback: 0)
@@ -1089,6 +1106,83 @@ export class DashAgendaComponent implements OnInit {
     } catch (err) {
       console.warn('[AGENDA] earnings summary exception', err);
     }
+  }
+
+  openEarningsModal(): void {
+    this.earningsModalOpen = true;
+    this.earningsModalError = null;
+    this.earningsTransactions = [];
+    this.earningsTransactionsTotal = 0;
+    this.earningsTransactionsOffset = 0;
+
+    // Si no tenemos summary aún, lo cargamos primero
+    if (!this.earningsSummary?.range?.start || !this.earningsSummary?.range?.end) {
+      this.earningsModalLoading = true;
+      (this.payments as any).getProviderEarningsSummary({}).subscribe({
+        next: (resp: any) => {
+          this.earningsModalLoading = false;
+          if (resp?.success && resp.summary) {
+            this.earningsSummary = resp.summary;
+            this.loadEarningsTransactions(true);
+            return;
+          }
+          this.earningsModalError = resp?.error || 'No se pudo cargar el resumen del mes.';
+        },
+        error: (err: any) => {
+          this.earningsModalLoading = false;
+          this.earningsModalError = err?.error?.error || 'No se pudo cargar el resumen del mes.';
+        }
+      });
+      return;
+    }
+
+    this.loadEarningsTransactions(true);
+  }
+
+  closeEarningsModal(): void {
+    if (this.earningsModalLoading) {
+      // Permitir cerrar igual para no quedar bloqueado
+      this.earningsModalLoading = false;
+    }
+    this.earningsModalOpen = false;
+  }
+
+  loadMoreEarningsTransactions(): void {
+    if (this.earningsModalLoading) return;
+    if (this.earningsTransactions.length >= this.earningsTransactionsTotal) return;
+    this.loadEarningsTransactions(false);
+  }
+
+  private loadEarningsTransactions(reset: boolean): void {
+    const from = String(this.earningsSummary?.range?.start || '').slice(0, 10);
+    const to = String(this.earningsSummary?.range?.end || '').slice(0, 10);
+    if (!from || !to) {
+      this.earningsModalError = 'Rango inválido para cargar transacciones.';
+      return;
+    }
+    if (reset) {
+      this.earningsTransactionsOffset = 0;
+      this.earningsTransactions = [];
+    }
+    this.earningsModalLoading = true;
+    this.earningsModalError = null;
+    this.finances.getTransactions(from, to, this.earningsTransactionsLimit, this.earningsTransactionsOffset).subscribe({
+      next: (resp: any) => {
+        this.earningsModalLoading = false;
+        if (!resp?.success) {
+          this.earningsModalError = resp?.error || 'No se pudieron cargar las transacciones.';
+          return;
+        }
+        const rows = Array.isArray(resp?.transactions) ? resp.transactions : [];
+        this.earningsTransactionsTotal = Number(resp?.total || 0);
+        this.earningsTransactions = [...this.earningsTransactions, ...rows] as FinanceTransactionDto[];
+        this.earningsTransactionsOffset = this.earningsTransactions.length;
+      },
+      error: (err) => {
+        this.earningsModalLoading = false;
+        this.earningsModalError = err?.error?.error || 'No se pudieron cargar las transacciones.';
+      }
+    });
   }
 
   private focusDateFromQuery(dateParam: string, timeParam: string | null, quoteIdParam: string | null) {

@@ -22,6 +22,21 @@ export interface ProviderEarningsSummary {
   series?: ProviderEarningsSummaryPoint[];
 }
 
+export interface ProviderFinanceTransaction {
+  id: number;
+  paid_at: string;
+  amount: number;
+  commission_amount: number;
+  provider_amount: number;
+  currency: string;
+  appointment_id: number;
+  date: string;
+  start_time: string;
+  service_id: number;
+  service_name?: string | null;
+  client_name?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentsService {
   private http = inject(HttpClient);
@@ -186,6 +201,20 @@ export class PaymentsService {
     console.log('[PAYMENTS_SERVICE] getProviderEarningsSummary ->', params);
     return this.http.get<{ success: boolean; summary: ProviderEarningsSummary }>(
       `${this.base}/provider/earnings/summary`,
+      { headers: this.headers(), params }
+    );
+  }
+
+  // Provider finance transactions (payments) for a date range
+  getProviderFinanceTransactions(filters: { from: string; to: string; limit?: number; offset?: number }): Observable<{ success: boolean; transactions: ProviderFinanceTransaction[]; total: number; error?: string }>{
+    const params: Record<string, string> = {
+      from: filters.from,
+      to: filters.to
+    };
+    if (typeof filters.limit === 'number') params['limit'] = String(filters.limit);
+    if (typeof filters.offset === 'number') params['offset'] = String(filters.offset);
+    return this.http.get<{ success: boolean; transactions: ProviderFinanceTransaction[]; total: number; error?: string }>(
+      `${this.base}/provider/finances/transactions`,
       { headers: this.headers(), params }
     );
   }

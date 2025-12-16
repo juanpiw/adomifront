@@ -161,6 +161,23 @@
   </div>
 </div>
 
+<!-- Modal: bloquear confirmación/pago antes de la fecha/hora -->
+<div class="pc-too-early-backdrop" *ngIf="tooEarlyModalOpen">
+  <div class="pc-too-early-backdrop__overlay" (click)="closeTooEarlyModal()"></div>
+  <div class="pc-too-early-modal" role="dialog" aria-modal="true" aria-labelledby="pcTooEarlyTitle">
+    <header class="pc-too-early-modal__header">
+      <h4 id="pcTooEarlyTitle">{{ tooEarlyModalTitle }}</h4>
+      <button type="button" class="pc-too-early-modal__close" (click)="closeTooEarlyModal()" aria-label="Cerrar">✕</button>
+    </header>
+    <section class="pc-too-early-modal__body">
+      <p class="pc-too-early-modal__text">{{ tooEarlyModalMessage }}</p>
+    </section>
+    <footer class="pc-too-early-modal__footer">
+      <button type="button" class="pc-btn primary" (click)="closeTooEarlyModal()">Entendido</button>
+    </footer>
+  </div>
+</div>
+
 
 
 

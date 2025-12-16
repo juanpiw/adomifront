@@ -1,0 +1,79 @@
+<div *ngIf="isOpen" class="earnings-modal__backdrop" (click)="onBackdropClick($event)">
+  <div class="earnings-modal" role="dialog" aria-modal="true" aria-labelledby="earningsMonthModalTitle">
+    <header class="earnings-modal__header">
+      <div>
+        <h3 id="earningsMonthModalTitle">Pagos del mes</h3>
+        <p class="earnings-modal__subtitle" *ngIf="monthLabel">{{ monthLabel }}</p>
+      </div>
+      <button type="button" class="earnings-modal__close" (click)="close.emit()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="earnings-modal__body">
+      <div class="earnings-modal__kpis" *ngIf="transactions?.length">
+        <div class="earnings-modal__kpi">
+          <span>Bruto</span>
+          <strong>{{ formatMoney(totalGross(), 'CLP') }}</strong>
+        </div>
+        <div class="earnings-modal__kpi">
+          <span>Comisión</span>
+          <strong>{{ formatMoney(totalCommission(), 'CLP') }}</strong>
+        </div>
+        <div class="earnings-modal__kpi">
+          <span>Tu ingreso</span>
+          <strong>{{ formatMoney(totalNet(), 'CLP') }}</strong>
+        </div>
+        <div class="earnings-modal__kpi">
+          <span>Pagos</span>
+          <strong>{{ total || (transactions.length || 0) }}</strong>
+        </div>
+      </div>
+
+      <div class="earnings-modal__error" *ngIf="error">{{ error }}</div>
+
+      <div class="earnings-modal__table-wrap" *ngIf="!error">
+        <table class="earnings-modal__table">
+          <thead>
+            <tr>
+              <th>Cuándo</th>
+              <th>Cliente</th>
+              <th>Servicio</th>
+              <th class="right">Bruto</th>
+              <th class="right">Comisión</th>
+              <th class="right">Tu ingreso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="loading && (transactions?.length || 0) === 0">
+              <td colspan="6" class="earnings-modal__loading">Cargando pagos…</td>
+            </tr>
+            <tr *ngIf="!loading && (transactions?.length || 0) === 0">
+              <td colspan="6" class="earnings-modal__empty">No hay pagos en este mes.</td>
+            </tr>
+            <tr *ngFor="let t of transactions">
+              <td>{{ formatWhen(t) }}</td>
+              <td>{{ t.client_name || '—' }}</td>
+              <td>{{ t.service_name || ('Servicio #' + t.service_id) }}</td>
+              <td class="right">{{ formatMoney(t.amount, t.currency) }}</td>
+              <td class="right">{{ formatMoney(t.commission_amount, t.currency) }}</td>
+              <td class="right"><strong>{{ formatMoney(t.provider_amount, t.currency) }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="earnings-modal__footer">
+      <button type="button" class="earnings-modal__btn earnings-modal__btn--ghost" (click)="close.emit()">Cerrar</button>
+      <button
+        type="button"
+        class="earnings-modal__btn earnings-modal__btn--primary"
+        (click)="loadMore.emit()"
+        [disabled]="loading || !hasMore()"
+        *ngIf="hasMore()">
+        {{ loading ? 'Cargando…' : 'Cargar más' }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+

@@ -8,6 +8,9 @@ export interface ProximaCitaData {
   subtitulo: string;
   fecha: string;
   hora: string;
+  // Valores ISO crudos para validaciones (no dependen del formato humanizado)
+  appointmentDate?: string | null; // YYYY-MM-DD
+  appointmentTime?: string | null; // HH:mm or HH:mm:ss
   diasRestantes: number;
   mostrarPagar?: boolean;
   clientConfirmed?: boolean;
@@ -54,6 +57,11 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   refundReason = '';
   selectedMethod: 'card' | 'cash' = 'card';
   primaryCtaLabel = 'Confirmar servicio';
+
+  // Modal: bloquear acciones antes de la fecha/hora agendada
+  tooEarlyModalOpen = false;
+  tooEarlyModalTitle = 'Aún no puedes confirmar el servicio';
+  tooEarlyModalMessage = '';
 
   ngOnInit(): void {
     this.selectedMethod = (this.data?.paymentPreference || 'card') as 'card' | 'cash';
@@ -129,6 +137,10 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   }
 
   onPrimaryAction(): void {
+    if (this.isBeforeAppointmentTime()) {
+      this.openTooEarlyModal();
+      return;
+    }
     if (!this.data?.clientConfirmed) {
       this.onFinalizarClick();
       return;
@@ -181,6 +193,10 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
 
   onFinalizarClick(): void {
     if (!this.data?.appointmentId) return;
+    if (this.isBeforeAppointmentTime()) {
+      this.openTooEarlyModal();
+      return;
+    }
     this.finalizarServicio.emit(this.data.appointmentId);
   }
 
@@ -211,6 +227,35 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
     } else {
       this.primaryCtaLabel = 'Confirmar pago en efectivo';
     }
+  }
+
+  private isBeforeAppointmentTime(): boolean {
+    const dateRaw = String(this.data?.appointmentDate || '').trim();
+    const timeRaw = String(this.data?.appointmentTime || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) return false;
+    const hhmm = (timeRaw || '').slice(0, 5);
+    if (!/^\d{2}:\d{2}$/.test(hhmm)) return false;
+
+    const [y, m, d] = dateRaw.split('-').map(Number);
+    const [hh, mm] = hhmm.split(':').map(Number);
+    const appt = new Date(y, (m - 1), d, hh, mm, 0, 0);
+    const now = new Date();
+    return now.getTime() < appt.getTime();
+  }
+
+  private openTooEarlyModal(): void {
+    const when = `${this.data?.fecha || ''}${this.data?.hora ? ' · ' + this.data.hora : ''}`.trim();
+    this.tooEarlyModalTitle = this.data?.clientConfirmed
+      ? 'Aún no puedes pagar esta cita'
+      : 'Aún no puedes confirmar el servicio';
+    this.tooEarlyModalMessage = this.data?.clientConfirmed
+      ? `El pago solo se habilita cuando llegue la fecha y hora agendada (${when}).`
+      : `Aún no puedes confirmar el servicio hasta que llegue la fecha y la hora agendada (${when}).`;
+    this.tooEarlyModalOpen = true;
+  }
+
+  closeTooEarlyModal(): void {
+    this.tooEarlyModalOpen = false;
   }
 }
 

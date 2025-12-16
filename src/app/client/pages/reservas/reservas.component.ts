@@ -935,6 +935,8 @@ export class ClientReservasComponent implements OnInit {
               subtitulo: subtitle,
               fecha: this.formatDate(a.date),
               hora: this.formatTime(a.start_time),
+              appointmentDate: String(a.date || '').slice(0, 10),
+              appointmentTime: String(a.start_time || '').trim(),
               diasRestantes: this.daysFromToday(a.date, a.start_time),
               mostrarPagar: readyToPay,
               clientConfirmed,
@@ -1361,7 +1363,12 @@ export class ClientReservasComponent implements OnInit {
       },
       error: (err) => {
         this.finalizeModal.submitting = false;
-        this.finalizeModal.error = err?.error?.error || 'No pudimos confirmar el servicio. Intenta nuevamente.';
+        const code = err?.error?.error;
+        if (err?.status === 409 && code === 'TOO_EARLY') {
+          this.finalizeModal.error = 'Aún no puedes confirmar el servicio hasta que llegue la fecha y la hora agendada.';
+        } else {
+          this.finalizeModal.error = err?.error?.message || code || 'No pudimos confirmar el servicio. Intenta nuevamente.';
+        }
       }
     });
   }

@@ -378,6 +378,17 @@
   </div>
 </div>
 
+<ui-provider-earnings-month-modal
+  [isOpen]="earningsModalOpen"
+  [monthLabel]="earningsSummary?.month ? ('Mes: ' + earningsSummary.month) : null"
+  [loading]="earningsModalLoading"
+  [error]="earningsModalError"
+  [transactions]="earningsTransactions"
+  [total]="earningsTransactionsTotal"
+  (close)="closeEarningsModal()"
+  (loadMore)="loadMoreEarningsTransactions()">
+</ui-provider-earnings-month-modal>
+
 <!-- Modal de pago en efectivo -->
 <div class="cash-payment-backdrop" *ngIf="cashPaymentModalOpen">
   <div class="cash-payment-backdrop__overlay" (click)="closeCashPaymentModal()"></div>
