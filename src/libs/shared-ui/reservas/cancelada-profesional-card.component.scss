@@ -11,6 +11,32 @@
 .cp-btn.primary{width:100%;padding:.75rem;border-radius:.75rem;font-weight:700;border:none;background:#4f46e5;color:#fff;cursor:pointer}
 .cp-btn.primary:hover{background:#4338ca}
 
+/* =========================
+   Mobile/Tablet (<=1024px)
+   Scoped a Mis Reservas
+   ========================= */
+@media (max-width: 1024px) {
+  :host-context(.reservas-page) .cp-card {
+    border-radius: 16px;
+    padding: 14px;
+    border-left-width: 4px;
+    border-left-color: #ef4444;
+    box-shadow: 0 1px 2px rgba(15,23,42,.06);
+  }
+  :host-context(.reservas-page) .cp-avatar { width: 48px; height: 48px; }
+  :host-context(.reservas-page) .cp-title { font-size: 14px; font-weight: 900; }
+  :host-context(.reservas-page) .cp-date { font-size: 12px; color:#6b7280; }
+  :host-context(.reservas-page) .cp-cause { font-size: 12px; font-weight: 900; }
+  :host-context(.reservas-page) .cp-actions { margin-top: 12px; padding-top: 12px; }
+  :host-context(.reservas-page) .cp-btn.primary {
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    background: #2563eb;
+  }
+  :host-context(.reservas-page) .cp-btn.primary:hover { background:#1d4ed8; }
+}
+
 
 
 

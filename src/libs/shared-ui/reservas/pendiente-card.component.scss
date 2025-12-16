@@ -17,6 +17,88 @@
 .pd-btn.muted.danger{background:transparent;color:#fca5a5}
 @media(min-width:768px){.pd-row{flex-direction:row;align-items:center}}
 
+/* =========================
+   Mobile/Tablet (<=1024px)
+   Scoped a Mis Reservas
+   ========================= */
+@media (max-width: 1024px) {
+  :host-context(.reservas-page) .pd-card {
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #f59e0b;
+    box-shadow: 0 1px 2px rgba(15,23,42,.06);
+  }
+
+  :host-context(.reservas-page) .pd-card--collapsed {
+    padding: 14px;
+  }
+
+  :host-context(.reservas-page) .pd-status-text {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #d97706;
+  }
+
+  /* Spinner más lento como mock */
+  :host-context(.reservas-page) .pd-spinner {
+    animation: spin 3s linear infinite;
+  }
+
+  /* Toggle tipo “Ver detalles” */
+  :host-context(.reservas-page) .pd-toggle {
+    background: transparent;
+    border: none;
+    color: #2563eb;
+    padding: 0;
+    font-size: 0; /* ocultamos texto actual y ponemos copy del mock */
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  :host-context(.reservas-page) .pd-toggle::after {
+    content: 'Ver detalles';
+    font-size: 12px;
+  }
+  :host-context(.reservas-page) .pd-toggle[aria-expanded="true"]::after {
+    content: 'Ocultar';
+  }
+  :host-context(.reservas-page) .pd-toggle:hover { background: transparent; color: #1d4ed8; }
+
+  :host-context(.reservas-page) .pd-row {
+    margin-top: 8px;
+    gap: 8px;
+  }
+  :host-context(.reservas-page) .pd-title {
+    font-size: 14px;
+    font-weight: 900;
+  }
+  :host-context(.reservas-page) .pd-meta {
+    margin-top: 6px;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  :host-context(.reservas-page) .pd-icon { width: 16px; height: 16px; color:#9ca3af; }
+
+  /* Acciones (si expande) como grid 3 */
+  :host-context(.reservas-page) .pd-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  :host-context(.reservas-page) .pd-btn {
+    padding: 10px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}
+
 
 
 

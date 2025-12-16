@@ -77,6 +77,185 @@
 
 @media (min-width: 768px) { .pc-row { flex-direction: row; align-items: center; } .pc-count { margin-left: 1.5rem; } }
 
+/* =========================
+   Mobile/Tablet (<=1024px)
+   Scoped a Mis Reservas
+   ========================= */
+@media (max-width: 1024px) {
+  :host-context(.reservas-page) {
+    /* Card spacing is handled by page .content gap */
+  }
+
+  :host-context(.reservas-page) .pc-card {
+    border-radius: 16px;
+    padding: 0; /* usamos secciones internas */
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15,23,42,.08);
+  }
+
+  :host-context(.reservas-page) .pc-kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    background: #f9fafb;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  :host-context(.reservas-page) .pc-kicker--paid {
+    background: #ecfdf5;
+    border-bottom-color: #d1fae5;
+    color: #047857;
+  }
+
+  :host-context(.reservas-page) .pc-row {
+    padding: 14px 14px 0;
+    margin-top: 0;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  :host-context(.reservas-page) .pc-title {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  :host-context(.reservas-page) .pc-meta {
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #4b5563;
+  }
+
+  :host-context(.reservas-page) .pc-icon { width: 16px; height: 16px; color: #9ca3af; }
+
+  :host-context(.reservas-page) .pc-count {
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: 8px 6px;
+    min-width: 70px;
+  }
+
+  :host-context(.reservas-page) .pc-days {
+    font-size: 22px;
+    color: #2563eb;
+  }
+
+  :host-context(.reservas-page) .pc-days-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: #60a5fa;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    line-height: 1.15;
+    margin-top: 4px;
+  }
+
+  :host-context(.reservas-page) .pc-status-pill {
+    margin: 10px 14px 0;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  :host-context(.reservas-page) .pc-hint,
+  :host-context(.reservas-page) .pc-hint--info {
+    margin: 10px 14px 0;
+    font-size: 12px;
+  }
+
+  :host-context(.reservas-page) .pc-pay-box {
+    margin: 12px 14px 0;
+    padding: 12px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+
+  :host-context(.reservas-page) .pc-pay-box__alert {
+    border-radius: 12px;
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+
+  :host-context(.reservas-page) .pc-pay-box__title { color: #92400e; }
+  :host-context(.reservas-page) .pc-pay-box__text { color: #92400e; }
+
+  :host-context(.reservas-page) .pc-pay-options {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  :host-context(.reservas-page) .pc-pay-card {
+    padding: 12px;
+    border-radius: 12px;
+    border-width: 2px;
+  }
+
+  :host-context(.reservas-page) .pc-pay-card__icon { width: 38px; height: 38px; }
+
+  /* Acciones: CTA full width + 3 acciones en grid */
+  :host-context(.reservas-page) .pc-actions--split {
+    border-top: 0;
+    margin-top: 14px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  :host-context(.reservas-page) .pc-btn {
+    padding: 10px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  :host-context(.reservas-page) .pc-btn.pay-cta {
+    grid-column: 1 / -1;
+    flex: initial;
+    padding: 12px 12px;
+    font-size: 14px;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+    background: #2563eb;
+    order: -2; /* mock: CTA primero */
+  }
+
+  :host-context(.reservas-page) .pc-btn.primary.ghost,
+  :host-context(.reservas-page) .pc-btn.secondary.ghost,
+  :host-context(.reservas-page) .pc-btn.danger.ghost {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+  }
+
+  :host-context(.reservas-page) .pc-btn.danger.ghost { color: #dc2626; }
+
+  :host-context(.reservas-page) .pc-confirm-hint {
+    grid-column: 1 / -1;
+    margin: 6px 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: center;
+    order: -1; /* aparece justo debajo de la CTA */
+  }
+  :host-context(.reservas-page) .pc-confirm-hint__title { font-size: 11px; color: #6b7280; font-weight: 800; }
+  :host-context(.reservas-page) .pc-confirm-hint__text { display:none; }
+
+  /* Modal too-early: ajustar z-index sobre backdrop page */
+  :host-context(.reservas-page) .pc-too-early-backdrop { z-index: 1300; }
+}
 /* Modal "aún no puedes confirmar/pagar" */
 .pc-too-early-backdrop {
   position: fixed;

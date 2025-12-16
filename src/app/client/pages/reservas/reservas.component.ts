@@ -483,6 +483,41 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     .chip--danger{background:#fee2e2;color:#b91c1c}
     .claim-success{margin:12px 0 24px;padding:24px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:12px;text-align:center}
     .claim-success__icon{width:48px;height:48px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px}
+    /* =========================
+       Mobile/Tablet (<=1024px)
+       Solo visual: mantener desktop intacto
+       ========================= */
+    @media (max-width: 1024px){
+      .reservas-page{
+        background:#f3f4f6;
+        padding:16px;
+        max-width:520px;
+        margin:0 auto;
+        min-height:100vh;
+      }
+      .title{
+        font-size:24px;
+        margin:0 0 12px;
+        color:#111827;
+      }
+      /* Space between cards like mock */
+      .content{
+        margin-top:16px;
+        display:flex;
+        flex-direction:column;
+        gap:16px;
+      }
+      /* Banners más compactos */
+      .reschedule-banner{
+        margin:12px 0;
+        padding:12px;
+        border-radius:16px;
+        gap:10px;
+      }
+      .reschedule-banner__title{font-size:13px}
+      .reschedule-banner__text{font-size:13px}
+      .reschedule-btn{padding:8px 12px}
+    }
   `]
 })
 export class ClientReservasComponent implements OnInit {
