@@ -100,7 +100,7 @@
       <button class="pc-btn primary ghost" (click)="onContactarClick()">
         Contactar
       </button>
-      <button *ngIf="!isPaid" class="pc-btn secondary ghost" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
+    <button *ngIf="!isPaid" class="pc-btn secondary ghost" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Solo puedes reprogramar antes de confirmar el servicio') : ''">
         Reprogramar
       </button>
       <button *ngIf="!isPaid" class="pc-btn danger ghost" (click)="onCancelarClick()">Cancelar Cita</button>

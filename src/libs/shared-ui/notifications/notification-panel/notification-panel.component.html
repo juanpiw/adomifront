@@ -45,7 +45,7 @@
                 {{ formatTimeAgo(notification.createdAt) }}
               </span>
             </div>
-            <p class="notification-panel__notification-message" [innerHTML]="notification.message"></p>
+            <p class="notification-panel__notification-message" [innerHTML]="getDisplayMessage(notification)"></p>
             <div 
               class="notification-panel__notification-meta" 
               *ngIf="getAppointmentDate(notification) as appointmentDate">
@@ -92,7 +92,7 @@
                 {{ formatTimeAgo(notification.createdAt) }}
               </span>
             </div>
-            <p class="notification-panel__notification-message" [innerHTML]="notification.message"></p>
+            <p class="notification-panel__notification-message" [innerHTML]="getDisplayMessage(notification)"></p>
             <div 
               class="notification-panel__notification-meta" 
               *ngIf="getAppointmentDate(notification) as appointmentDate">

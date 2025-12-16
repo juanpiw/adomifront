@@ -27,6 +27,145 @@
   gap: 12px;
 }
 
+.support-admin {
+  margin: 16px 0 24px 0;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  display: grid;
+  gap: 12px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0 0;
+    color: #475569;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 12px;
+  }
+
+  &__stat {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 12px;
+    min-width: 120px;
+
+    span {
+      display: block;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-top: 2px;
+      color: #0f172a;
+    }
+  }
+
+  &__loading {
+    color: #475569;
+  }
+
+  &__error {
+    color: #b91c1c;
+    font-weight: 600;
+  }
+
+  &__empty {
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  &__item {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+    }
+
+    &--selected {
+      border-color: #4338ca;
+      box-shadow: 0 6px 14px rgba(67, 56, 202, 0.15);
+    }
+  }
+
+  &__item-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  &__item-title {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 1rem;
+  }
+
+  &__item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  &__badge {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.75rem;
+
+    &--open {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    &--closed {
+      background: #ecfdf3;
+      color: #15803d;
+    }
+  }
+
+  &__chip {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-weight: 700;
+  }
+
+  &__date {
+    color: #475569;
+  }
+
+  &__desc {
+    margin-top: 6px;
+    color: #475569;
+    white-space: pre-line;
+  }
+}
+
 .admin-cash__header {
   display: flex;
   align-items: flex-start;

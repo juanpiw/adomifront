@@ -167,6 +167,52 @@
     <button class="btn-primary" (click)="setSecretAndLoad()">Acceder</button>
   </div>
 
+  <section *ngIf="adminSecret" class="support-admin">
+    <div class="support-admin__header">
+      <div>
+        <h3>Tickets de soporte (Clientes)</h3>
+        <p class="support-admin__subtitle">Todo lo que llega por soporte debe revisarse aquí.</p>
+      </div>
+      <div class="support-admin__stats">
+        <div class="support-admin__stat">
+          <span>Abiertos</span>
+          <strong>{{ supportStats.open }}</strong>
+        </div>
+        <div class="support-admin__stat">
+          <span>Cerrados</span>
+          <strong>{{ supportStats.closed }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="supportLoading" class="support-admin__loading">Cargando tickets...</div>
+    <div *ngIf="supportError" class="support-admin__error">{{ supportError }}</div>
+
+    <div *ngIf="!supportLoading && !supportError">
+      <div *ngIf="supportTickets.length === 0" class="support-admin__empty">
+        No hay tickets de clientes.
+      </div>
+      <div *ngFor="let t of supportTickets" class="support-admin__item" [class.support-admin__item--selected]="supportSelectedId === t.id" (click)="onSelectSupport(t)">
+        <div class="support-admin__item-main">
+          <div class="support-admin__item-title">{{ t.subject }}</div>
+          <div class="support-admin__item-meta">
+            <span class="support-admin__badge" [ngClass]="{
+              'support-admin__badge--open': t.status !== 'cerrado',
+              'support-admin__badge--closed': t.status === 'cerrado'
+            }">
+              {{ t.status === 'cerrado' ? 'Cerrado' : (t.status === 'en_proceso' ? 'En proceso' : 'Abierto') }}
+            </span>
+            <span class="support-admin__chip">{{ t.category }}</span>
+            <span class="support-admin__date">{{ t.date }}</span>
+          </div>
+        </div>
+        <div class="support-admin__desc">
+          {{ t.description || 'Sin descripción' }}
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section *ngIf="adminSecret" class="founder-card">
     <div class="founder-card__header">
       <div>

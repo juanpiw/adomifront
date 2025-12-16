@@ -237,6 +237,20 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     };
   }
 
+  getDisplayMessage(notification: Notification): string {
+    const raw = notification.message || '';
+    const apptInfo = this.getAppointmentInfo(notification);
+    if (!apptInfo || !apptInfo.dateLabel) {
+      return raw;
+    }
+    const containsInvalid = /invalid date/i.test(raw);
+    if (!containsInvalid) {
+      return raw;
+    }
+    const timePart = apptInfo.timeLabel ? ` a las ${apptInfo.timeLabel}` : '';
+    return raw.replace(/Invalid Date/gi, `${apptInfo.dateLabel}${timePart}`);
+  }
+
   private normalizeToDate(value: any): Date | null {
     if (!value) return null;
 

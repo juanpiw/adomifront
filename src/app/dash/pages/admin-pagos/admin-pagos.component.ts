@@ -12,6 +12,8 @@ import { AdminCashPaymentsService } from './services/admin-cash-payments.service
 import { QrDisplayComponent } from '../../../marketing/qr-display/qr-display.component';
 import { AdminPaymentDisputesComponent } from './components/admin-payment-disputes/admin-payment-disputes.component';
 import { AdminTransactionsMonitorComponent } from './components/admin-transactions-monitor/admin-transactions-monitor.component';
+import { SupportStoreService } from '../../../../libs/shared-ui/support/services/support-store.service';
+import { SupportTicket } from '../../../../libs/shared-ui/support/models/support-ticket.model';
 
 @Component({
   selector: 'app-admin-pagos',
@@ -25,6 +27,7 @@ export class AdminPagosComponent implements OnInit {
   private session = inject(SessionService);
   private adminApi = inject(AdminPaymentsService);
   private cashPayments = inject(AdminCashPaymentsService);
+  private supportStore = inject(SupportStoreService);
   baseUrl = environment.apiBaseUrl;
   loading = false;
   error: string | null = null;
@@ -81,6 +84,12 @@ export class AdminPagosComponent implements OnInit {
   founderCodesLoading = false;
   founderCodesError: string | null = null;
   founderExporting = false;
+  // Soporte clientes (tickets)
+  supportLoading = false;
+  supportError: string | null = null;
+  supportTickets: SupportTicket[] = [];
+  supportSelectedId: string | null = null;
+  supportStats = { open: 0, closed: 0 };
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -94,6 +103,7 @@ export class AdminPagosComponent implements OnInit {
       this.cashPayments.setSecret(this.adminSecret);
       this.load();
       this.loadFounderCodes();
+      this.loadSupportTickets();
     }
   }
 
@@ -103,6 +113,7 @@ export class AdminPagosComponent implements OnInit {
       this.cashPayments.setSecret(this.adminSecret);
     }
     this.load();
+    this.loadSupportTickets();
   }
 
   load() {
@@ -430,6 +441,33 @@ export class AdminPagosComponent implements OnInit {
   refreshAdminCash() {
     this.loadAdminCashSummary();
     this.loadAdminCashCommissions(this.cashFilter);
+  }
+
+  loadSupportTickets(): void {
+    const email = this.session.getUser()?.email?.toLowerCase();
+    if (email !== 'juanpablojpw@gmail.com') {
+      return;
+    }
+    this.supportLoading = true;
+    this.supportError = null;
+    this.supportStore.load('client').subscribe({
+      next: (tickets) => {
+        this.supportTickets = tickets;
+        this.supportStats = {
+          open: tickets.filter(t => t.status !== 'cerrado').length,
+          closed: tickets.filter(t => t.status === 'cerrado').length
+        };
+        this.supportLoading = false;
+      },
+      error: (err) => {
+        this.supportLoading = false;
+        this.supportError = err?.error?.error || 'No pudimos cargar los tickets de soporte.';
+      }
+    });
+  }
+
+  onSelectSupport(ticket: SupportTicket): void {
+    this.supportSelectedId = ticket.id;
   }
 
   onSelectCashDebt(debt: any, forceLookup = true) {

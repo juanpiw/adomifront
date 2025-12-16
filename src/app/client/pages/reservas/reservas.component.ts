@@ -186,12 +186,6 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
                       <small class="muted">Mínimo 10 caracteres.</small>
                     </label>
 
-                    <label class="claim-panel__label">
-                      Evidencia (opcional)
-                      <textarea [(ngModel)]="claim.evidenceText" name="evidence-{{apptId}}" rows="2" placeholder="Pega links (uno por línea) o URLs de fotos/comprobantes"></textarea>
-                      <small class="muted">Por ahora aceptamos URLs.</small>
-                    </label>
-
                     <label class="claim-panel__check">
                       <input type="checkbox" [(ngModel)]="claim.confirmTruth" name="truth-{{apptId}}" />
                       Declaro que la información entregada es verdadera.
@@ -898,22 +892,12 @@ export class ClientReservasComponent implements OnInit {
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment) || !!(a as any).verification_code;
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}, rawPrice=${JSON.stringify(a.price)}`);
             const limitReached = Number(a.client_reschedule_count || 0) >= 1;
-            let allowReprogram = true;
-            // Si no está pagada y está confirmada, bloquear
-            if (a.status === 'confirmed' && !isPaid) {
-              allowReprogram = false;
-            }
-            if (limitReached) {
-              allowReprogram = false;
-            }
-            let reprogramDisabledReason: string | undefined;
-            if (!allowReprogram) {
-              if (!isPaid && a.status === 'confirmed') {
-                reprogramDisabledReason = 'Reprograma una vez que completes el pago de la cita.';
-              } else if (limitReached) {
-                reprogramDisabledReason = 'Ya utilizaste la reprogramación disponible para esta cita.';
-              }
-            }
+            const allowReprogram = !limitReached && !clientConfirmed;
+            const reprogramDisabledReason = !allowReprogram
+              ? (limitReached
+                ? 'Ya utilizaste la reprogramación disponible para esta cita.'
+                : 'Solo puedes reprogramar antes de confirmar el servicio.')
+              : undefined;
 
             const paymentPreference = ((a as any).payment_method || null) as 'card'|'cash'|null;
             const serviceCompletionState = String((a as any).service_completion_state || 'none') as ProximaCitaData['serviceCompletionState'];
@@ -1143,8 +1127,7 @@ export class ClientReservasComponent implements OnInit {
     const target = new Date(y, m-1, d);
     if (isNaN(target.getTime())) return 0;
     const diff = Math.ceil((target.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime())/ (1000*60*60*24));
-    // No permitir 0: mínimo 1 día para hoy o futuras
-    return diff <= 0 ? 1 : diff;
+    return Math.max(0, diff);
   }
 
   private setCashCapFromResponse(value: any): void {

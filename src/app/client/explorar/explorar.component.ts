@@ -153,9 +153,9 @@ interface ProviderCoordinates {
                 <span class="text-gray-800 font-bold ml-1.5">{{ provider.rating }}</span>
                 <span class="text-gray-400 text-sm ml-2">({{ provider.review_count }})</span>
               </div>
-                <div class="flex items-center gap-3">
-                  <span *ngIf="provider.min_price !== undefined" class="text-sm text-slate-700 font-semibold whitespace-nowrap">Desde &#36;{{ provider.min_price | number:'1.0-0' }}</span>
-                <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id, $event)">
+              <div class="flex items-center gap-3">
+                <span *ngIf="provider.min_price !== undefined" class="text-sm text-slate-700 font-semibold whitespace-nowrap">Desde &#36;{{ provider.min_price | number:'1.0-0' }}</span>
+                <a class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id, $event)">
                   Ver Perfil
                 </a>
               </div>
