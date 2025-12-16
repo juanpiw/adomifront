@@ -7,6 +7,9 @@ export interface DayAppointment {
   id: string;
   title: string;
   time: string;
+  date?: string;
+  start_time?: string;
+  end_time?: string;
   duration: number;
   clientId: string;
   clientName: string;

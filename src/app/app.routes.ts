@@ -13,6 +13,7 @@ import { DashMensajesComponent } from './dash/pages/mensajes/mensajes.component'
 import { DashServiciosComponent } from './dash/pages/servicios/servicios.component';
 import { DashPerfilComponent } from './dash/pages/perfil/perfil.component';
 import { LibraryComponent } from './pages/library/library.component';
+import { NotificationsPageComponent } from './pages/notifications/notifications.component';
 import { ClientLayoutComponent } from './client/layout/client-layout.component';
 import { ClientReservasComponent } from './client/pages/reservas/reservas.component';
 import { FavoritosComponent } from './client/pages/favoritos/favoritos.component';
@@ -64,6 +65,7 @@ export const routes: Routes = [
       { path: 'conversaciones', component: ConversacionesComponent },
       { path: 'perfil', component: ClientPerfilComponent },
       { path: 'pagos', component: ClientPagosComponent },
+      { path: 'notificaciones', component: NotificationsPageComponent },
       { path: 'wallet', component: ClientWalletComponent },
       { path: 'pago/exito', component: ClientReservasComponent },
       { path: 'pago/cancelado', component: ClientReservasComponent },
@@ -98,6 +100,7 @@ export const routes: Routes = [
       ,{ path: 'mensajes', component: DashMensajesComponent }
       ,{ path: 'servicios', component: DashServiciosComponent }
       ,{ path: 'perfil', component: DashPerfilComponent }
+      ,{ path: 'notificaciones', component: NotificationsPageComponent }
       ,{ path: 'terminos', component: DashTerminosComponent }
       ,{ path: 'clientes/:clientId', component: PerfilSolicitanteComponent }
       ,{ path: 'admin-pagos', component: AdminPagosComponent }

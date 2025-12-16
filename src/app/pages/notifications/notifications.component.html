@@ -1,0 +1,106 @@
+<section class="notifications-page">
+  <header class="notifications-page__header">
+    <div class="notifications-page__header-left">
+      <button class="notifications-page__back" type="button" (click)="goBack()">← Volver</button>
+      <div>
+        <h1>Notificaciones</h1>
+        <p class="notifications-page__subtitle">Todas tus actualizaciones recientes</p>
+      </div>
+    </div>
+    <button
+      class="notifications-page__mark-all"
+      type="button"
+      *ngIf="unread.length > 0"
+      (click)="markAll()">
+      Marcar todas como leídas
+    </button>
+  </header>
+
+  <div class="notifications-page__body" *ngIf="!loading; else loadingTpl">
+    <div *ngIf="isEmpty()" class="notifications-page__empty">
+      <p class="notifications-page__empty-title">No hay notificaciones</p>
+      <p class="notifications-page__empty-sub">Te avisaremos cuando haya novedades.</p>
+    </div>
+
+    <ng-container *ngIf="!isEmpty()">
+      <section *ngIf="displayedUnread.length > 0" class="notifications-page__section">
+        <div class="notifications-page__section-header">
+          <h3>Nuevas ({{ unread.length }})</h3>
+        </div>
+        <div class="notifications-page__list">
+          <article
+            class="notification-card notification-card--unread"
+            *ngFor="let n of displayedUnread"
+            (click)="onCardClick(n)">
+            <div class="notification-card__row">
+              <div class="notification-card__title">
+                <span class="notification-card__priority-dot"></span>
+                <h4>{{ n.title }}</h4>
+              </div>
+              <span class="notification-card__time">{{ n.createdAt | date:'shortTime':'':'es-CL' }}</span>
+            </div>
+            <p class="notification-card__message">{{ n.message }}</p>
+            <div class="notification-card__meta">
+              <span>{{ formatCreatedAt(n) }}</span>
+              <span *ngIf="getAppointmentDate(n)">
+                · {{ getAppointmentDate(n) }}
+              </span>
+              <span *ngIf="getAppointmentTime(n)">
+                · {{ getAppointmentTime(n) }}
+              </span>
+            </div>
+          </article>
+        </div>
+        <button
+          class="notifications-page__load-more"
+          type="button"
+          *ngIf="displayedUnread.length < unread.length"
+          (click)="loadMoreUnread()">
+          Ver más
+        </button>
+      </section>
+
+      <section *ngIf="displayedRead.length > 0" class="notifications-page__section">
+        <div class="notifications-page__section-header">
+          <h3>Anteriores</h3>
+        </div>
+        <div class="notifications-page__list">
+          <article
+            class="notification-card"
+            *ngFor="let n of displayedRead"
+            (click)="onCardClick(n)">
+            <div class="notification-card__row">
+              <div class="notification-card__title">
+                <span class="notification-card__priority-dot notification-card__priority-dot--muted"></span>
+                <h4>{{ n.title }}</h4>
+              </div>
+              <span class="notification-card__time">{{ n.createdAt | date:'shortTime':'':'es-CL' }}</span>
+            </div>
+            <p class="notification-card__message">{{ n.message }}</p>
+            <div class="notification-card__meta">
+              <span>{{ formatCreatedAt(n) }}</span>
+              <span *ngIf="getAppointmentDate(n)">
+                · {{ getAppointmentDate(n) }}
+              </span>
+              <span *ngIf="getAppointmentTime(n)">
+                · {{ getAppointmentTime(n) }}
+              </span>
+            </div>
+          </article>
+        </div>
+        <button
+          class="notifications-page__load-more"
+          type="button"
+          *ngIf="displayedRead.length < read.length"
+          (click)="loadMoreRead()">
+          Ver más
+        </button>
+      </section>
+    </ng-container>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="notifications-page__loading">Cargando notificaciones…</div>
+  </ng-template>
+</section>
+

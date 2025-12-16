@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { IconComponent } from '../../icon/icon.component';
 import { NotificationService } from '../services/notification.service';
 import { Notification, NotificationFilters } from '../models/notification.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'ui-notification-panel',
@@ -39,7 +40,7 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
   readNotifications: Notification[] = [];
   private subscriptions: Subscription[] = [];
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(private notificationService: NotificationService, private router: Router) {}
 
   ngOnInit(): void {
     console.log('🔔 [NOTIFICATION_PANEL] Componente inicializado');
@@ -98,8 +99,10 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
   }
 
   onViewAllNotifications(): void {
-    // TODO: Navegar a página completa de notificaciones
-    console.log('Ver todas las notificaciones');
+    const profile = this.notificationService.getCurrentProfile();
+    const target = profile === 'provider' ? '/dash/notificaciones' : '/client/notificaciones';
+    this.router.navigateByUrl(target).catch(() => {});
+    this.close.emit();
   }
 
   formatTimeAgo(date: Date): string {
