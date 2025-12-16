@@ -399,12 +399,18 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   private buildDailyEarnings(summary: ProviderEarningsSummary): IngresosDiaData {
     const chart = this.mapSummaryToChart(summary);
+    const seriesTotal = (summary.series || []).reduce((acc, p: any) => acc + Number(p.total || 0), 0);
+    const chosenAmount = (summary.releasable || 0) > 0 ? summary.releasable : seriesTotal;
+    const dateLabel = summary.day
+      ? this.formatDateLong(summary.day)
+      : this.formatDateLong(new Date().toISOString().slice(0, 10));
     return {
-      amount: this.formatCurrencyCLP(summary.releasable || 0),
+      amount: this.formatCurrencyCLP(chosenAmount),
       completedAppointments: summary.paidCount || 0,
       averageRating: this.providerRatingAverage ?? this.ingresosDiaData.averageRating,
       chartData: chart.values,
-      chartLabels: chart.labels
+      chartLabels: chart.labels,
+      dateLabel
     };
   }
 
@@ -435,6 +441,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   private formatCurrencyCLP(value: number): string {
     return this.clpFormatter.format(Math.max(0, Math.round(Number(value) || 0)));
+  }
+
+  private formatDateLong(isoDate: string): string {
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return isoDate;
+    return date.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
   private buildFallbackEarnings<T extends IngresosData | IngresosDiaData>(current: T): T {

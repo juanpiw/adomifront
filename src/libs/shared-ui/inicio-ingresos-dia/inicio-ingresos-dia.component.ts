@@ -18,6 +18,7 @@ export interface IngresosDiaData {
   averageRating: number;
   chartData?: number[];
   chartLabels?: string[];
+  dateLabel?: string;
 }
 
 @Component({

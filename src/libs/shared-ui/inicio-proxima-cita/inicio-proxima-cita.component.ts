@@ -52,6 +52,18 @@ export class InicioProximaCitaComponent {
   showDetailsModal = false;
   loading = false;
 
+  get isPast(): boolean {
+    const dateStr = this.data.date || '';
+    const timeStr = this.data.time || '';
+    if (!dateStr) return false;
+
+    // Construir Date a partir de fecha (ISO) y hora + meridiem
+    const time24 = this.to24h(timeStr, this.data.meridiem);
+    const dt = new Date(time24 ? `${dateStr}T${time24}` : dateStr);
+    if (Number.isNaN(dt.getTime())) return false;
+    return dt.getTime() < Date.now();
+  }
+
   onViewDetailsClick() {
     this.showDetailsModal = true;
     this.viewDetailsClick.emit(this.data);
@@ -93,5 +105,17 @@ export class InicioProximaCitaComponent {
       },
       notes: this.data.notes
     };
+  }
+
+  private to24h(time: string, meridiem: string): string | null {
+    if (!time) return null;
+    const m = time.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    let hour = Number(m[1]);
+    const minute = m[2];
+    const mer = (meridiem || '').toUpperCase();
+    if (mer === 'PM' && hour < 12) hour += 12;
+    if (mer === 'AM' && hour === 12) hour = 0;
+    return `${String(hour).padStart(2, '0')}:${minute}`;
   }
 }

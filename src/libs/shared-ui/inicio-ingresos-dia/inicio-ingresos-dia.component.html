@@ -1,6 +1,7 @@
 <div class="inicio-ingresos">
   <h3 class="inicio-ingresos__title">Ingresos del Día</h3>
   <p class="inicio-ingresos__amount">{{ data.amount }}</p>
+  <p class="inicio-ingresos__date" *ngIf="data.dateLabel">{{ data.dateLabel }}</p>
   <div class="inicio-ingresos__chart">
     <canvas #chartCanvas [attr.id]="chartId"></canvas>
   </div>

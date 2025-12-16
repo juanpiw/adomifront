@@ -81,17 +81,51 @@ export class InicioSolicitudesComponent implements AfterViewInit {
     if (dateStr) {
       // Si viene fecha ISO, concatenar hora si existe
       dt = new Date(timeStr ? `${dateStr}T${timeStr}` : dateStr);
-    } else if (d.when) {
-      const parsed = Date.parse(`${d.when} ${timeStr}`);
-      if (!Number.isNaN(parsed)) {
-        dt = new Date(parsed);
-      }
+    }
+
+    if ((!dt || Number.isNaN(dt.getTime())) && d.when) {
+      dt = this.parseHumanDate(d.when, timeStr);
     }
 
     if (!dt || Number.isNaN(dt.getTime())) return false;
 
     const now = new Date();
     return dt.getTime() < now.getTime();
+  }
+
+  /**
+   * Parsea fechas en español del tipo "lunes, 15 de diciembre" o "jueves, 1 de enero"
+   * con hora opcional. Si no hay año, se asume el año actual.
+   */
+  private parseHumanDate(when: string, time: string): Date | null {
+    if (!when) return null;
+    const months: Record<string, number> = {
+      enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+      julio: 6, agosto: 7, septiembre: 8, setiembre: 8, octubre: 9,
+      noviembre: 10, diciembre: 11
+    };
+    const regex = /(\d{1,2})\s+de\s+([a-záéíóúñ]+)(?:\s+de\s+(\d{4}))?/i;
+    const match = when.match(regex);
+    if (!match) return null;
+    const day = Number(match[1]);
+    const monthName = match[2].toLowerCase();
+    const year = match[3] ? Number(match[3]) : new Date().getFullYear();
+    const monthIdx = months[monthName];
+    if (!Number.isFinite(day) || monthIdx === undefined || !Number.isFinite(year)) return null;
+
+    const parsedTime = this.parseTime(time);
+    const dt = new Date(year, monthIdx, day, parsedTime?.hour ?? 0, parsedTime?.minute ?? 0, 0, 0);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private parseTime(time: string): { hour: number; minute: number } | null {
+    if (!time) return null;
+    const m = time.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    const hour = Number(m[1]);
+    const minute = Number(m[2]);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+    return { hour, minute };
   }
 
   onAvatarError(event: Event) {

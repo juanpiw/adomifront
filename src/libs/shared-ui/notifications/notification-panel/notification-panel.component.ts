@@ -209,9 +209,22 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
       metadata['start_time'] ??
       metadata['startTime']
     );
-    // Si el backend entrega hora explícita, úsala. Solo si no viene, intenta derivar de la fecha.
-    const dateForTime = this.resolveDateForTime(metadata) || this.normalizeToDate(notification.createdAt);
-    const timeLabel = timeFromMeta || (dateForTime ? this.formatTimeLabel(dateForTime) : null);
+    // Si el backend entrega hora explícita, úsala. Si no hay hora explícita, solo mostramos hora si el datetime tenía componente horario.
+    const dateForTime = this.resolveDateForTime(metadata);
+    const hasTimeInDateTime =
+      this.containsTimeString(
+        metadata['appointmentDateTime'] ??
+        metadata['appointment_datetime'] ??
+        metadata['appointmentDateTimeIso'] ??
+        metadata['appointment_datetime_iso'] ??
+        metadata['datetime'] ??
+        metadata['dateTime'] ??
+        metadata['scheduledAt'] ??
+        metadata['scheduled_at']
+      );
+    const timeLabel = timeFromMeta
+      ? timeFromMeta
+      : (hasTimeInDateTime && dateForTime ? this.formatTimeLabel(dateForTime) : null);
 
     const service =
       metadata['serviceName'] ??
@@ -368,6 +381,11 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     }
 
     return date;
+  }
+
+  private containsTimeString(value: any): boolean {
+    if (typeof value !== 'string') return false;
+    return /\d{1,2}:\d{2}/.test(value) || value.includes('T');
   }
 }
 
