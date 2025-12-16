@@ -132,7 +132,13 @@ export class DashEstadisticasComponent implements OnInit, OnDestroy {
           this.handleReviewsResponse(result.reviews);
         },
         error: (err) => {
-          this.error = err?.error?.error || err?.message || 'No se pudieron cargar las estadísticas.';
+          if (err?.status === 403) {
+            this.error = 'No autorizado para ver estas estadísticas.';
+          } else if (err?.status === 400) {
+            this.error = err?.error?.error || err?.error?.message || 'Error obteniendo resumen';
+          } else {
+            this.error = err?.error?.error || err?.error?.message || err?.message || 'No se pudieron cargar las estadísticas.';
+          }
           this.resetAnalyticsState();
         }
       });
