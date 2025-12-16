@@ -69,6 +69,31 @@ export class InicioSolicitudesComponent implements AfterViewInit {
     this.startAutoplay();
   }
 
+  get filteredData(): SolicitudData[] {
+    return (this.data || []).filter(d => !this.isPast(d));
+  }
+
+  private isPast(d: SolicitudData): boolean {
+    const dateStr = d.date || '';
+    const timeStr = d.time || '';
+    let dt: Date | null = null;
+
+    if (dateStr) {
+      // Si viene fecha ISO, concatenar hora si existe
+      dt = new Date(timeStr ? `${dateStr}T${timeStr}` : dateStr);
+    } else if (d.when) {
+      const parsed = Date.parse(`${d.when} ${timeStr}`);
+      if (!Number.isNaN(parsed)) {
+        dt = new Date(parsed);
+      }
+    }
+
+    if (!dt || Number.isNaN(dt.getTime())) return false;
+
+    const now = new Date();
+    return dt.getTime() < now.getTime();
+  }
+
   onAvatarError(event: Event) {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;

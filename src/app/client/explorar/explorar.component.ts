@@ -155,7 +155,7 @@ interface ProviderCoordinates {
               </div>
               <div class="flex items-center gap-3">
                 <span *ngIf="provider.min_price !== undefined" class="text-sm text-slate-700 font-semibold whitespace-nowrap">Desde &#36;{{ provider.min_price | number:'1.0-0' }}</span>
-                <a class="text-sm font-bold text-indigo-600 hover:text-indigo-800" (click)="viewProviderProfile(provider.id, $event)">
+                <a class="ver-perfil-link" (click)="viewProviderProfile(provider.id, $event)">
                   Ver Perfil
                 </a>
               </div>

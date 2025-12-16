@@ -72,6 +72,23 @@
       </div>
     </div>
 
+    <!-- Próximas citas de esta conversación -->
+    <div class="chat-upcoming" *ngIf="currentConversation && upcomingAppointments.length">
+      <div class="chat-upcoming__title">Próximas citas</div>
+      <div class="chat-upcoming__list">
+        <div class="chat-upcoming__item" *ngFor="let appt of upcomingAppointments">
+          <div class="chat-upcoming__info">
+            <div class="chat-upcoming__service">{{ appt.service }}</div>
+            <div class="chat-upcoming__meta">
+              <ui-icon name="calendar" [size]="16"></ui-icon>
+              <span>{{ appt.date }} • {{ appt.time || 'Hora por confirmar' }}</span>
+              <span *ngIf="appt.location">· {{ appt.location }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="messages-container">
       <div class="messages-list">
         <div 

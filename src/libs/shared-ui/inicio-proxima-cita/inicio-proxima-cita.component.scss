@@ -37,6 +37,14 @@
 
   &__detail {
     margin-left: 1.5rem;
+    display: grid;
+    gap: 4px;
+  }
+
+  &__date {
+    margin: 0;
+    color: #475569;
+    font-size: 0.95rem;
   }
 
   &__service {

@@ -56,6 +56,8 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   primaryCtaLabel = 'Confirmar servicio';
 
   ngOnInit(): void {
+    this.selectedMethod = (this.data?.paymentPreference || 'card') as 'card' | 'cash';
+    this.updatePrimaryLabel();
     try {
       console.log('[PROXIMA_CITA_CARD] Init', {
         appointmentId: this.data?.appointmentId,
@@ -79,9 +81,16 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
         mostrarPagar: this.data?.mostrarPagar,
         successHighlight: this.data?.successHighlight
       });
-      const pref = (this.data?.paymentPreference || 'card') as 'card'|'cash';
-      this.selectedMethod = pref;
-      this.updatePrimaryLabel();
+      const dataChange = changes['data'];
+      const prevId = dataChange?.previousValue?.appointmentId;
+      const currId = dataChange?.currentValue?.appointmentId;
+      const appointmentChanged = prevId !== currId;
+      const prefInput = this.data?.paymentPreference as ('card' | 'cash' | null | undefined);
+
+      if (appointmentChanged || prefInput) {
+        this.selectedMethod = (prefInput || 'card') as 'card' | 'cash';
+        this.updatePrimaryLabel();
+      }
     } catch {}
   }
 
@@ -112,6 +121,10 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
 
   onSelectMethod(method: 'card' | 'cash'): void {
     this.selectedMethod = method;
+    // Mantener preferencia en data localmente para que no se pierda en el template
+    if (this.data) {
+      this.data.paymentPreference = method;
+    }
     this.updatePrimaryLabel();
   }
 

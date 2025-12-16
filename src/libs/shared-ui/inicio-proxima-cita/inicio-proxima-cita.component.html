@@ -8,6 +8,7 @@
     <div class="inicio-proxima__detail">
       <p class="inicio-proxima__service">{{ data.service }}</p>
       <p class="inicio-proxima__with">con <span class="font-semibold text-slate-700">{{ data.clientName }}</span></p>
+      <p class="inicio-proxima__date" *ngIf="data.date">{{ data.date | date:'EEEE, d MMMM' }}</p>
     </div>
     <button 
       class="inicio-proxima__cta" 

@@ -20,6 +20,7 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
   currentUserId = '0';
   currentUserName = 'Proveedor';
   loading = true;
+  upcomingAppointments: Array<{ id: number; date: string; time: string; service: string; location?: string }> = [];
   
   // Estado para móvil
   showConversationsList = true;
@@ -98,6 +99,7 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
       this.currentConversation = conversation;
       this.chat.joinConversation(Number(conversationId));
       this.loadMessages(conversationId);
+      this.loadUpcomingAppointments(conversationId);
       
       // En móvil, cambiar a vista de chat
       if (this.isMobile()) {
@@ -127,6 +129,45 @@ export class DashMensajesComponent implements OnInit, OnDestroy {
       next: (resp) => {
         // Mantener orden cronológico ascendente (viejo → nuevo)
         this.messages = (resp.messages || []).map(m => this.mapMessage(m)).reverse();
+      }
+    });
+  }
+
+  private loadUpcomingAppointments(conversationId: string) {
+    this.upcomingAppointments = [];
+    this.chat.listUpcomingAppointments(Number(conversationId)).subscribe({
+      next: (resp) => {
+        const appts = Array.isArray(resp?.appointments) ? resp.appointments : [];
+        const today = new Date();
+        this.upcomingAppointments = appts
+          .map((a: any) => {
+            const dateStr = a.date || a.appointment_date || a.start_date || '';
+            const timeStr = a.time || a.start_time || '';
+            return {
+              id: Number(a.id || a.appointment_id || 0),
+              date: dateStr,
+              time: timeStr,
+              service: a.service_name || a.title || 'Cita agendada',
+              location: a.location || a.address || a.appointment_location || undefined,
+              rawDate: dateStr,
+              rawTime: timeStr
+            };
+          })
+          .filter((a: any) => {
+            const parsed = a.rawDate ? new Date(a.rawDate) : null;
+            if (!parsed || isNaN(parsed.getTime())) return true; // mostrar si no se puede parsear
+            const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const target = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+            return target.getTime() >= todayMid.getTime();
+          })
+          .sort((a: any, b: any) => {
+            const aDate = new Date(a.rawDate || a.date || 0).getTime();
+            const bDate = new Date(b.rawDate || b.date || 0).getTime();
+            return aDate - bDate;
+          });
+      },
+      error: () => {
+        this.upcomingAppointments = [];
       }
     });
   }

@@ -897,11 +897,11 @@ export class ClientReservasComponent implements OnInit {
             const clientConfirmedLocal = this.clientConfirmedSet.has(a.id);
             const clientConfirmed = clientConfirmedLocal || serviceCompletionState === 'client_confirmed' || serviceCompletionState === 'auto_completed';
             const limitReached = Number(a.client_reschedule_count || 0) >= 1;
-            const allowReprogram = !limitReached && !clientConfirmed;
+            const allowReprogram = !limitReached && !isPaid; // permitir reprogramar/cancelar mientras no esté pagada
             const reprogramDisabledReason = !allowReprogram
               ? (limitReached
                 ? 'Ya utilizaste la reprogramación disponible para esta cita.'
-                : 'Solo puedes reprogramar antes de confirmar el servicio.')
+                : 'No puedes reprogramar una cita pagada.')
               : undefined;
             if (isPaid) {
               this.clearClientConfirmed(a.id);
@@ -1120,12 +1120,18 @@ export class ClientReservasComponent implements OnInit {
   }
   private daysFromToday(dateIso: string): number {
     if (!dateIso || typeof dateIso !== 'string') return 0;
-    const [y,m,d] = dateIso.split('-').map(Number);
-    if (!y || !m || !d) return 0;
+    // Soportar ISO con hora (T) o formatos que incluyen zona
+    let parsed = new Date(dateIso);
+    if (isNaN(parsed.getTime())) {
+      const onlyDate = dateIso.split('T')[0];
+      parsed = new Date(onlyDate);
+    }
+    if (isNaN(parsed.getTime())) return 0;
+
+    const target = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
     const today = new Date();
-    const target = new Date(y, m-1, d);
-    if (isNaN(target.getTime())) return 0;
-    const diff = Math.ceil((target.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime())/ (1000*60*60*24));
+    const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diff = Math.ceil((target.getTime() - todayMid.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(0, diff);
   }
 

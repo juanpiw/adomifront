@@ -264,6 +264,49 @@
   background: var(--surface);
 }
 
+.chat-upcoming {
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: #f8fafc;
+
+  &__title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1f2937;
+    margin-bottom: 6px;
+  }
+
+  &__list {
+    display: grid;
+    gap: 8px;
+  }
+
+  &__item {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  &__service {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+    font-size: 0.9rem;
+
+    ui-icon {
+      color: #475569;
+    }
+  }
+}
+
 .chat-user-info {
   display: flex;
   align-items: center;

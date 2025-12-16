@@ -7,6 +7,20 @@
   overflow-x: hidden;
 }
 
+/* Enlaces para Ver Perfil */
+.ver-perfil-link {
+  color: #4338ca;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    color: #312e81;
+    text-decoration: underline;
+  }
+}
+
 .explorar-container {
   max-width: 1200px;
   margin: 0 auto;

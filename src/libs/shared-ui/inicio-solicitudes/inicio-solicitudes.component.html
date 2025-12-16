@@ -1,15 +1,15 @@
 <section class="inicio-solicitudes">
   <h3 class="inicio-solicitudes__title">Solicitudes de Reserva Pendientes</h3>
   
-  <div *ngIf="data.length === 0" class="inicio-solicitudes__empty">
+  <div *ngIf="filteredData.length === 0" class="inicio-solicitudes__empty">
     No tienes solicitudes de reserva pendientes.
   </div>
   
-  <div class="inicio-solicitudes__scaffold" *ngIf="data.length > 0" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
+  <div class="inicio-solicitudes__scaffold" *ngIf="filteredData.length > 0" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
     <button type="button" class="inicio-solicitudes__nav inicio-solicitudes__nav--left" (click)="scrollLeft()" aria-label="Anterior">‹</button>
 
     <div #scroller class="inicio-solicitudes__scroller" tabindex="0">
-      <div *ngFor="let solicitud of data" class="inicio-solicitudes__card inicio-solicitudes__snap">
+      <div *ngFor="let solicitud of filteredData" class="inicio-solicitudes__card inicio-solicitudes__snap">
         <div class="inicio-solicitudes__row">
           <div class="inicio-solicitudes__avatar" [class.inicio-solicitudes__avatar--fallback]="!solicitud.clientAvatar">
             <img

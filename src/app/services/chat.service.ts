@@ -68,6 +68,14 @@ export class ChatService {
     );
   }
 
+  // REST: próximas citas asociadas a la conversación (cliente/proveedor)
+  listUpcomingAppointments(conversationId: number): Observable<{ success: boolean; appointments: any[] }> {
+    return this.http.get<{ success: boolean; appointments: any[] }>(
+      `${this.apiBase}/conversations/${conversationId}/appointments/upcoming`,
+      { headers: this.authHeaders() }
+    );
+  }
+
   // REST: delete conversation
   deleteConversation(conversationId: number): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(

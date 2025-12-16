@@ -137,7 +137,7 @@ export class NotificationService {
   }
 
   private setProfileNotifications(profile: UserProfile, notifications: Notification[]): void {
-    const sorted = [...notifications].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const sorted = this.dedupeNotifications(notifications).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     this.notificationsByProfile[profile] = sorted;
     if (profile === this.currentProfile) {
       this.notificationsSubject.next(this.getProfileNotifications());
@@ -477,7 +477,28 @@ export class NotificationService {
 
   private getProfileNotifications(): Notification[] {
     const list = this.notificationsByProfile[this.currentProfile] || [];
-    return list.filter(n => n.status !== 'deleted').map(n => ({ ...n }));
+    return this.dedupeNotifications(list).filter(n => n.status !== 'deleted').map(n => ({ ...n }));
+  }
+
+  private dedupeNotifications(list: Notification[]): Notification[] {
+    const seenBackend = new Set<string>();
+    const seenIds = new Set<string>();
+    const result: Notification[] = [];
+
+    for (const n of list) {
+      const backendId = this.getBackendNotificationIdFromNotification(n);
+      if (backendId !== null) {
+        const key = String(backendId);
+        if (seenBackend.has(key)) continue;
+        seenBackend.add(key);
+      } else {
+        if (seenIds.has(n.id)) continue;
+        seenIds.add(n.id);
+      }
+      result.push(n);
+    }
+
+    return result;
   }
 
   private isBackendNotification(notification: Notification): boolean {

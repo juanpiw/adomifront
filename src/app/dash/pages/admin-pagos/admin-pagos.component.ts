@@ -456,6 +456,10 @@ export class AdminPagosComponent implements OnInit {
   loadSupportTickets(): void {
     const email = this.session.getUser()?.email?.toLowerCase();
     if (email !== 'juanpablojpw@gmail.com') return;
+    if (!this.adminSecret) {
+      this.supportError = 'Ingresa el ADMIN_PANEL_SECRET para ver tickets.';
+      return;
+    }
     const token = this.session.getAccessToken();
     this.supportLoading = true;
     this.supportError = null;
@@ -488,7 +492,7 @@ export class AdminPagosComponent implements OnInit {
       },
       error: (err) => {
         this.supportLoading = false;
-        this.supportError = err?.error?.error || 'No pudimos cargar los tickets de soporte.';
+        this.supportError = err?.error?.error || err?.message || 'No pudimos cargar los tickets de soporte.';
       }
     });
   }

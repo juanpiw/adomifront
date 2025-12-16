@@ -202,14 +202,16 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     const metadata = notification.metadata || {};
 
     const dateLabel = this.getAppointmentDate(notification);
-    const dateForTime = this.resolveDateForTime(metadata) || this.normalizeToDate(notification.createdAt);
-    const timeLabel = dateForTime ? this.formatTimeLabel(dateForTime) : this.normalizeTimePart(
+    const timeFromMeta = this.normalizeTimePart(
       metadata['appointmentTime'] ??
       metadata['appointment_time'] ??
       metadata['time'] ??
       metadata['start_time'] ??
       metadata['startTime']
     );
+    // Si el backend entrega hora explícita, úsala. Solo si no viene, intenta derivar de la fecha.
+    const dateForTime = this.resolveDateForTime(metadata) || this.normalizeToDate(notification.createdAt);
+    const timeLabel = timeFromMeta || (dateForTime ? this.formatTimeLabel(dateForTime) : null);
 
     const service =
       metadata['serviceName'] ??
