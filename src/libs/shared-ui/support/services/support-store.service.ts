@@ -31,9 +31,9 @@ export class SupportStoreService {
 
   load(profile: SupportProfile, opts?: { status?: SupportTicketStatus; offset?: number; limit?: number }): Observable<SupportTicket[]> {
     const params: Record<string, string> = { };
-    if (opts?.status) params.status = opts.status;
-    if (typeof opts?.offset === 'number') params.offset = String(opts.offset);
-    if (typeof opts?.limit === 'number') params.limit = String(opts.limit);
+    if (opts?.status) params['status'] = opts.status;
+    if (typeof opts?.offset === 'number') params['offset'] = String(opts.offset);
+    if (typeof opts?.limit === 'number') params['limit'] = String(opts.limit);
 
     return this.http
       .get<{ success: boolean; tickets: BackendTicket[]; total: number; offset?: number; limit?: number }>(
