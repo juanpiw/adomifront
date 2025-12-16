@@ -52,6 +52,21 @@
               <ui-icon name="calendar" class="notification-panel__notification-meta-icon"></ui-icon>
               <span class="notification-panel__notification-date">{{ appointmentDate }}</span>
             </div>
+            <div 
+              class="notification-panel__appointment-chip" 
+              *ngIf="getAppointmentInfo(notification) as apptInfo">
+              <div class="notification-panel__appointment-title">
+                {{ apptInfo.service || 'Cita agendada' }}
+              </div>
+              <div class="notification-panel__appointment-meta">
+                <ui-icon name="calendar" class="notification-panel__appointment-meta-icon"></ui-icon>
+                <span>{{ apptInfo.dateLabel }}</span>
+                <span *ngIf="apptInfo.timeLabel">· {{ apptInfo.timeLabel }}</span>
+              </div>
+              <div *ngIf="apptInfo.location" class="notification-panel__appointment-location">
+                📍 {{ apptInfo.location }}
+              </div>
+            </div>
           </div>
           
           <!-- Indicador de no leída -->
@@ -83,6 +98,21 @@
               *ngIf="getAppointmentDate(notification) as appointmentDate">
               <ui-icon name="calendar" class="notification-panel__notification-meta-icon"></ui-icon>
               <span class="notification-panel__notification-date">{{ appointmentDate }}</span>
+            </div>
+            <div 
+              class="notification-panel__appointment-chip" 
+              *ngIf="getAppointmentInfo(notification) as apptInfo">
+              <div class="notification-panel__appointment-title">
+                {{ apptInfo.service || 'Cita agendada' }}
+              </div>
+              <div class="notification-panel__appointment-meta">
+                <ui-icon name="calendar" class="notification-panel__appointment-meta-icon"></ui-icon>
+                <span>{{ apptInfo.dateLabel }}</span>
+                <span *ngIf="apptInfo.timeLabel">· {{ apptInfo.timeLabel }}</span>
+              </div>
+              <div *ngIf="apptInfo.location" class="notification-panel__appointment-location">
+                📍 {{ apptInfo.location }}
+              </div>
             </div>
           </div>
         </div>

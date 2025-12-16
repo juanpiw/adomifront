@@ -198,6 +198,45 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
     return this.formatDateLabel(date);
   }
 
+  getAppointmentInfo(notification: Notification): { service?: string | null; dateLabel: string; timeLabel?: string | null; location?: string | null } | null {
+    const metadata = notification.metadata || {};
+
+    const dateLabel = this.getAppointmentDate(notification);
+    const dateForTime = this.resolveDateForTime(metadata) || this.normalizeToDate(notification.createdAt);
+    const timeLabel = dateForTime ? this.formatTimeLabel(dateForTime) : this.normalizeTimePart(
+      metadata['appointmentTime'] ??
+      metadata['appointment_time'] ??
+      metadata['time'] ??
+      metadata['start_time'] ??
+      metadata['startTime']
+    );
+
+    const service =
+      metadata['serviceName'] ??
+      metadata['service_name'] ??
+      metadata['service'] ??
+      metadata['title'] ??
+      null;
+
+    const location =
+      metadata['location'] ??
+      metadata['address'] ??
+      metadata['appointmentLocation'] ??
+      metadata['appointment_location'] ??
+      null;
+
+    if (!dateLabel && !service && !timeLabel && !location) {
+      return null;
+    }
+
+    return {
+      service: service ? String(service) : null,
+      dateLabel: dateLabel || 'Fecha por confirmar',
+      timeLabel: timeLabel ? String(timeLabel) : null,
+      location: location ? String(location) : null
+    };
+  }
+
   private normalizeToDate(value: any): Date | null {
     if (!value) return null;
 
@@ -266,6 +305,53 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
       month: 'long',
       year: 'numeric'
     });
+  }
+
+  private formatTimeLabel(date: Date): string {
+    return date.toLocaleTimeString('es-CL', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
+  private resolveDateForTime(metadata: Record<string, any>): Date | null {
+    const dateTimeCandidate =
+      metadata['appointmentDateTime'] ??
+      metadata['appointment_datetime'] ??
+      metadata['appointmentDateTimeIso'] ??
+      metadata['appointment_datetime_iso'] ??
+      metadata['datetime'] ??
+      metadata['dateTime'] ??
+      metadata['scheduledAt'] ??
+      metadata['scheduled_at'];
+
+    let date = this.normalizeToDate(dateTimeCandidate);
+
+    if (!date) {
+      const datePart =
+        metadata['appointmentDate'] ??
+        metadata['appointment_date'] ??
+        metadata['date'] ??
+        metadata['startDate'] ??
+        metadata['scheduledFor'] ??
+        metadata['scheduled_for'];
+
+      const timePart =
+        metadata['appointmentTime'] ??
+        metadata['appointment_time'] ??
+        metadata['time'] ??
+        metadata['start_time'] ??
+        metadata['startTime'];
+
+      if (datePart) {
+        const normalizedTime = this.normalizeTimePart(timePart);
+        const combined = normalizedTime ? `${datePart}T${normalizedTime}` : datePart;
+        date = this.normalizeToDate(combined);
+      }
+    }
+
+    return date;
   }
 }
 
