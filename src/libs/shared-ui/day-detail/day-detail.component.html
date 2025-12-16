@@ -150,16 +150,18 @@
             <app-provider-location-checkin-button
               [appointmentId]="+appointment.id"
               [destinationLabel]="appointment.locationLabel"
-              [appointmentDate]="appointment.date"
-              [appointmentTime]="appointment.time"
+              [appointmentDate]="appointment.date || (selectedDate | date:'yyyy-MM-dd')"
+              [appointmentTime]="appointment.start_time || appointment.time"
+              [appointmentLocation]="appointment.locationLabel"
               eventType="arrive"
               label="Llegué">
             </app-provider-location-checkin-button>
             <app-provider-location-checkin-button
               [appointmentId]="+appointment.id"
               [destinationLabel]="appointment.locationLabel"
-              [appointmentDate]="appointment.date"
-              [appointmentTime]="appointment.time"
+              [appointmentDate]="appointment.date || (selectedDate | date:'yyyy-MM-dd')"
+              [appointmentTime]="appointment.start_time || appointment.time"
+              [appointmentLocation]="appointment.locationLabel"
               eventType="finish"
               label="Terminé">
             </app-provider-location-checkin-button>

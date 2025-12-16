@@ -797,7 +797,16 @@ export class ClientReservasComponent implements OnInit {
         priority: 'high',
         profile: 'client',
         actions: ['view'],
-        metadata: { appointmentId: String((appt as any).id) }
+        metadata: {
+          appointmentId: String((appt as any).id),
+          appointmentDate: String((appt as any).date || '').includes('T')
+            ? String((appt as any).date).split('T')[0]
+            : String((appt as any).date || ''),
+          appointmentTime: String((appt as any).start_time || (appt as any).appointment_time || '').slice(0, 5),
+          serviceName: (appt as any).service_name || (appt as any).serviceName || null,
+          providerName: (appt as any).provider_name || (appt as any).providerName || null,
+          location: (appt as any).client_location || (appt as any).client_location_label || (appt as any).location || null
+        }
       });
     });
     this.appointments.onAppointmentDeleted().subscribe(() => this.loadAppointments());
@@ -926,7 +935,7 @@ export class ClientReservasComponent implements OnInit {
               subtitulo: subtitle,
               fecha: this.formatDate(a.date),
               hora: this.formatTime(a.start_time),
-              diasRestantes: this.daysFromToday(a.date),
+              diasRestantes: this.daysFromToday(a.date, a.start_time),
               mostrarPagar: readyToPay,
               clientConfirmed,
               appointmentId: a.id,
@@ -1118,21 +1127,28 @@ export class ClientReservasComponent implements OnInit {
     if (!raw) return null;
     return raw.slice(0, 5);
   }
-  private daysFromToday(dateIso: string): number {
+  private daysFromToday(dateIso: string, startTime?: string | null): number {
     if (!dateIso || typeof dateIso !== 'string') return 0;
-    // Soportar ISO con hora (T) o formatos que incluyen zona
-    let parsed = new Date(dateIso);
-    if (isNaN(parsed.getTime())) {
-      const onlyDate = dateIso.split('T')[0];
-      parsed = new Date(onlyDate);
-    }
-    if (isNaN(parsed.getTime())) return 0;
 
-    const target = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-    const today = new Date();
-    const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const diff = Math.ceil((target.getTime() - todayMid.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, diff);
+    // Normalizar fecha (ignorando timezone de cadenas ISO)
+    const baseDate = (dateIso.includes('T') ? dateIso.split('T')[0] : dateIso).slice(0, 10);
+    const [y, m, d] = baseDate.split('-').map(Number);
+    if (!y || !m || !d) return 0;
+
+    const { hour, minute } = this.parseTimeParts(startTime);
+    const target = new Date(y, m - 1, d, hour, minute, 0, 0);
+    const now = new Date();
+    const diffMs = target.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  }
+
+  private parseTimeParts(timeStr?: string | null): { hour: number; minute: number } {
+    if (!timeStr) return { hour: 0, minute: 0 };
+    const parts = timeStr.split(':').map(p => parseInt(p, 10));
+    const hour = Number.isFinite(parts[0]) ? parts[0] : 0;
+    const minute = Number.isFinite(parts[1]) ? parts[1] : 0;
+    return { hour, minute };
   }
 
   private setCashCapFromResponse(value: any): void {
