@@ -31,6 +31,16 @@
         <div class="geo-modal__value">📍 {{ destinationLabel }}</div>
       </div>
 
+      <!-- Detalles de la cita cuando es demasiado temprano -->
+      <div class="geo-modal__section" *ngIf="modalState === 'too_early'">
+        <div class="geo-modal__label">Debes llegar en la fecha y hora acordada</div>
+        <div class="geo-modal__value" *ngIf="formattedDate">📅 {{ formattedDate }}</div>
+        <div class="geo-modal__value" *ngIf="formattedTime">⏰ {{ formattedTime }}</div>
+        <div class="geo-modal__value" *ngIf="appointmentLocation || destinationLabel">
+          📍 {{ appointmentLocation || destinationLabel }}
+        </div>
+      </div>
+
       <div class="geo-modal__message" [class.geo-modal__message--good]="modalState === 'match'" [class.geo-modal__message--bad]="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'no_dest_coords' || modalState === 'too_early'">
         {{ modalMessage || 'Verificando…' }}
       </div>

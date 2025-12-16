@@ -126,6 +126,18 @@ export class NotificationService {
     const readAt = normalizeDate(notification.readAt);
     const metadata = this.normalizeMetadata(notification.metadata);
 
+    console.log('🔔 [NOTIFICATION_SERVICE] enrichNotification', {
+      id: notification.id,
+      type: notification.type,
+      createdAt: createdAt?.toISOString?.() ?? createdAt,
+      rawCreatedAt: notification.createdAt,
+      metaDate: notification.metadata?.['appointmentDate'] ?? notification.metadata?.['date'],
+      metaTime: notification.metadata?.['appointmentTime'] ?? notification.metadata?.['time'],
+      normalizedDate: metadata?.['appointmentDate'],
+      normalizedTime: metadata?.['appointmentTime'],
+      message: notification.message
+    });
+
     return {
       ...defaults,
       ...notification,

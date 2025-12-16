@@ -30,6 +30,7 @@ export class ProviderLocationCheckinButtonComponent {
   @Input() destinationLabel: string | null | undefined = null;
   @Input() appointmentDate?: string | null;
   @Input() appointmentTime?: string | null;
+  @Input() appointmentLocation?: string | null;
 
   loading = false;
   lastResult: { is_match?: boolean; distance_m?: number; radius_m?: number } | null = null;
@@ -57,7 +58,7 @@ export class ProviderLocationCheckinButtonComponent {
       this.modalState = 'too_early';
       const startLabel = this.formatAppointmentDateTime();
       const nowLabel = this.formatNow();
-      this.modalMessage = `Aún no es el horario de la cita. Cita: ${startLabel}. Hora actual: ${nowLabel}.`;
+      this.modalMessage = `Debes llegar en la fecha y hora acordada. Cita: ${startLabel}. Hora actual: ${nowLabel}.`;
       return;
     }
 
@@ -217,6 +218,18 @@ export class ProviderLocationCheckinButtonComponent {
   private formatNow(): string {
     const now = new Date();
     return now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  get formattedDate(): string | null {
+    const dt = this.buildAppointmentDate();
+    if (!dt) return null;
+    return dt.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  get formattedTime(): string | null {
+    const dt = this.buildAppointmentDate();
+    if (!dt) return null;
+    return dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   }
 }
 

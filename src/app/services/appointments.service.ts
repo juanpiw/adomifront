@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/services/auth.service';
 
@@ -109,10 +109,23 @@ export class AppointmentsService {
     service_lng?: number;
     service_location_accuracy_m?: number;
   }): Observable<{ success: boolean; appointment: AppointmentDto }>{
+    console.log('📅 [APPOINTMENTS] create() payload ->', payload);
     return this.http.post<{ success: boolean; appointment: AppointmentDto }>(
       `${this.api}/appointments`,
       payload,
       { headers: this.headers() }
+    ).pipe(
+      tap({
+        next: (resp) => console.log('📅 [APPOINTMENTS] create() response <-', {
+          id: resp?.appointment?.id,
+          date: resp?.appointment?.date,
+          start_time: resp?.appointment?.start_time,
+          end_time: resp?.appointment?.end_time,
+          status: resp?.appointment?.status,
+          payment_status: resp?.appointment?.payment_status
+        }),
+        error: (err) => console.warn('📅 [APPOINTMENTS] create() error <-', err)
+      })
     );
   }
 

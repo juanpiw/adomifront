@@ -48,7 +48,12 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
 
   togglePanel(): void {
     console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel antes:', this.isOpen);
-    this.isOpen = !this.isOpen;
+    const willOpen = !this.isOpen;
+    if (willOpen) {
+      // Al abrir el panel marcamos todo como leído para que el badge se reinicie
+      this.notificationService.markAllAsRead();
+    }
+    this.isOpen = willOpen;
     console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel después:', this.isOpen);
   }
 

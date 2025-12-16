@@ -1647,19 +1647,7 @@ export class ClientReservasComponent implements OnInit {
       });
       return;
     }
-    const allowReprogram = !(String(appt.status) === 'confirmed' && !['paid','succeeded','completed'].includes(String(appt.payment_status || '')));
-    if (!allowReprogram) {
-      this.notifications.createNotification({
-        type: 'appointment',
-        title: 'Reprogramación bloqueada',
-        message: 'Completa el pago para solicitar un cambio de horario.',
-        priority: 'medium',
-        profile: 'client',
-        actions: ['view'],
-        metadata: { appointmentId: String(appointmentId) }
-      });
-      return;
-    }
+    // Permitir reprogramar aunque el pago esté pendiente
     const defaultDate = this.normalizeDateValue(appt.reschedule_target_date || appt.date);
     const defaultTime = this.normalizeTimeValue(appt.reschedule_target_start_time || appt.start_time);
 

@@ -1,4 +1,6 @@
 .pc-card { position: relative; background: #ffffff; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 20px rgba(2,8,23,.06); border: 1px solid #e2e8f0; }
+/* Separación entre tarjetas en listados (próximas) */
+.pc-card + .pc-card { margin-top: 12px; }
 /* Estado pagado: borde estable + pulso suave SIN mover la tarjeta */
 .pc-card.pc-card--success {
   border-color: #22c55e;
