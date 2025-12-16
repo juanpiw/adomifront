@@ -11,7 +11,8 @@ type GeoModalState =
   | 'position_unavailable'
   | 'timeout'
   | 'no_dest_coords'
-  | 'server_error';
+  | 'server_error'
+  | 'too_early';
 
 @Component({
   selector: 'app-provider-location-checkin-button',
@@ -27,6 +28,8 @@ export class ProviderLocationCheckinButtonComponent {
   @Input({ required: true }) eventType!: GeoEventType;
   @Input() label = 'Registrar';
   @Input() destinationLabel: string | null | undefined = null;
+  @Input() appointmentDate?: string | null;
+  @Input() appointmentTime?: string | null;
 
   loading = false;
   lastResult: { is_match?: boolean; distance_m?: number; radius_m?: number } | null = null;
@@ -45,6 +48,16 @@ export class ProviderLocationCheckinButtonComponent {
     }
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       this.error = 'Tu navegador no soporta geolocalización.';
+      return;
+    }
+
+    // Bloqueo por horario: no permitir antes de la hora de la cita
+    if (this.isBeforeAppointmentTime()) {
+      this.modalOpen = true;
+      this.modalState = 'too_early';
+      const startLabel = this.formatAppointmentDateTime();
+      const nowLabel = this.formatNow();
+      this.modalMessage = `Aún no es el horario de la cita. Cita: ${startLabel}. Hora actual: ${nowLabel}.`;
       return;
     }
 
@@ -178,6 +191,32 @@ export class ProviderLocationCheckinButtonComponent {
     if (this.lastResult.is_match === true) return 'Match';
     if (this.lastResult.is_match === false) return 'No match';
     return 'Registrado';
+  }
+
+  private isBeforeAppointmentTime(): boolean {
+    const dt = this.buildAppointmentDate();
+    if (!dt) return false;
+    return Date.now() < dt.getTime();
+  }
+
+  private buildAppointmentDate(): Date | null {
+    const datePart = (this.appointmentDate || '').trim();
+    const timePart = (this.appointmentTime || '').trim();
+    if (!datePart || !timePart) return null;
+    const combined = `${datePart}T${timePart}`;
+    const dt = new Date(combined);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private formatAppointmentDateTime(): string {
+    const dt = this.buildAppointmentDate();
+    if (!dt) return 'fecha no disponible';
+    return `${dt.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })} ${dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  private formatNow(): string {
+    const now = new Date();
+    return now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   }
 }
 

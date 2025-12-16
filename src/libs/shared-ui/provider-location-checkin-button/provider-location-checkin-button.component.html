@@ -31,7 +31,7 @@
         <div class="geo-modal__value">📍 {{ destinationLabel }}</div>
       </div>
 
-      <div class="geo-modal__message" [class.geo-modal__message--good]="modalState === 'match'" [class.geo-modal__message--bad]="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'no_dest_coords'">
+      <div class="geo-modal__message" [class.geo-modal__message--good]="modalState === 'match'" [class.geo-modal__message--bad]="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'no_dest_coords' || modalState === 'too_early'">
         {{ modalMessage || 'Verificando…' }}
       </div>
 
@@ -40,10 +40,11 @@
         <span>Radio permitido: <strong>{{ lastResult?.radius_m }}m</strong></span>
       </div>
 
-      <ul class="geo-modal__tips" *ngIf="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'timeout' || modalState === 'position_unavailable'">
+      <ul class="geo-modal__tips" *ngIf="modalState === 'no_match' || modalState === 'permission_denied' || modalState === 'timeout' || modalState === 'position_unavailable' || modalState === 'too_early'">
         <li>Activa <strong>Ubicación/GPS</strong> en tu teléfono.</li>
         <li>En Android/iPhone: habilita <strong>alta precisión</strong>.</li>
         <li>Si lo negaste, habilita permisos de ubicación para el navegador.</li>
+        <li *ngIf="modalState === 'too_early'">Intenta a la hora de inicio de la cita.</li>
       </ul>
     </div>
 
