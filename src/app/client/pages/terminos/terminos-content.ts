@@ -27,7 +27,7 @@ export const TERMINOS_COMPLETO = {
     {
       numero: '2',
       titulo: 'Naturaleza y alcance de Adomiapp (intermediación)',
-      contenido: 'Adomiapp es una plataforma tecnológica de intermediación que conecta a Clientes con Profesionales independientes. Adomiapp no presta los Servicios, no forma parte del contrato entre Cliente y Profesional, no supervisa ni controla cómo se ejecutan los Servicios, no garantiza su calidad, seguridad o legalidad y no asume responsabilidad por ellos.',
+      contenido: 'Adomiapp es una plataforma tecnológica que intermedia la contratación entre Clientes y Profesionales independientes, facilitando publicación, agenda, mensajería, pagos y gestión de incidencias. El Servicio es ejecutado por el Profesional, quien es responsable por su calidad, idoneidad, permisos, seguridad y cumplimiento normativo aplicable. Sin perjuicio de lo anterior, Adomiapp asume obligaciones propias como operador de plataforma, incluyendo: (i) entregar información esencial del Servicio y del Profesional disponible en la Plataforma, (ii) habilitar canal de soporte/reclamos, y (iii) aplicar los flujos de pagos, retenciones, disputas y reembolsos descritos en estos Términos y Políticas.',
       adicional: 'Adomiapp puede incluir enlaces o integraciones de terceros; su uso se rige por términos propios de dichos terceros.'
     },
     {

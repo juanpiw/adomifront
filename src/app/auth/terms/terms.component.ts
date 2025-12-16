@@ -21,8 +21,15 @@ import { Router } from '@angular/router';
           </div>
 
           <div class="section">
-            <h2>2. Descripción del Servicio</h2>
-            <p>Adomi es una plataforma que conecta clientes con profesionales de servicios. Facilitamos la reserva de servicios, el procesamiento de pagos y la comunicación entre usuarios.</p>
+            <h2>2. Naturaleza y alcance (Marketplace / Intermediación)</h2>
+            <p>
+              Adomi es una plataforma tecnológica que intermedia la contratación entre Clientes y Profesionales independientes,
+              facilitando publicación, agenda, mensajería, pagos y gestión de incidencias.
+            </p>
+            <p>
+              El Servicio es ejecutado por el Profesional, quien es responsable por su calidad, idoneidad, permisos, seguridad y cumplimiento normativo.
+              Sin perjuicio de lo anterior, Adomi asume obligaciones propias como operador de plataforma, incluyendo canal de soporte/reclamos y aplicación de flujos de pagos, retenciones, disputas y reembolsos descritos en nuestras políticas.
+            </p>
           </div>
 
           <div class="section">
@@ -44,7 +51,24 @@ import { Router } from '@angular/router';
 
           <div class="section">
             <h2>5. Pagos y Facturación</h2>
-            <p>Los pagos se procesan de forma segura a través de Stripe. Los precios incluyen todas las tarifas aplicables. Las cancelaciones están sujetas a nuestras políticas de reembolso.</p>
+            <p>
+              Los pagos se procesan mediante un PSP autorizado. Al registrar un medio de pago (por ejemplo, Oneclick/tokenización),
+              el Cliente autoriza la tokenización por el PSP (Adomi no almacena datos completos de tarjeta).
+            </p>
+            <p>
+              Por motivos de seguridad y disputas, el pago puede permanecer retenido (“hold”) hasta la finalización del servicio mediante código/botón,
+              o auto-liberación si no existe reclamo dentro del plazo definido en nuestras políticas.
+            </p>
+            <p>
+              Reembolsos, cancelaciones/no-show, contracargos y evidencias se rigen por las políticas visibles en la Plataforma.
+            </p>
+            <p>
+              Puedes leer el texto completo aquí:
+              <a href="/client/terminos" target="_blank" rel="noreferrer noopener">Términos y Condiciones</a>,
+              <a href="/client/terminos#politica-pagos" target="_blank" rel="noreferrer noopener">Pagos y reembolsos</a>,
+              <a href="/client/terminos#politica-cancelacion" target="_blank" rel="noreferrer noopener">Cancelación / No-show</a>,
+              <a href="/client/terminos#politica-disputas" target="_blank" rel="noreferrer noopener">Disputas y evidencia</a>.
+            </p>
           </div>
 
           <div class="section">
@@ -54,7 +78,11 @@ import { Router } from '@angular/router';
 
           <div class="section">
             <h2>7. Limitación de Responsabilidad</h2>
-            <p>Adomi actúa como intermediario entre clientes y profesionales. No somos responsables por la calidad de los servicios prestados por profesionales independientes.</p>
+            <p>
+              Adomi actúa como intermediario tecnológico. El Servicio es prestado por Profesionales independientes.
+              Adomi no garantiza la calidad o resultados del Servicio; sin perjuicio de lo anterior, mantiene obligaciones propias como operador de plataforma
+              (información esencial, soporte/reclamos y flujos de pago/disputa).
+            </p>
           </div>
 
           <div class="section">

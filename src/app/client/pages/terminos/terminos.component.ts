@@ -76,12 +76,11 @@ export class ClientTerminosComponent {
       },
       {
         title: '2. Naturaleza y Alcance de la Plataforma',
-        content: 'Adomiapp es plataforma tecnológica de mercado en línea de intermediación. Función exclusiva: conectar Clientes con Profesionales independientes.',
+        content: 'Adomiapp es una plataforma tecnológica que intermedia la contratación entre Clientes y Profesionales independientes, facilitando publicación, agenda, mensajería, pagos y gestión de incidencias.',
         list: [
-          'NO es parte del contrato de servicio entre Cliente y Profesional',
-          'NO supervisa, dirige, controla ni monitorea trabajo de Profesionales',
-          'NO garantiza calidad, seguridad, idoneidad o legalidad de Servicios',
-          'Plataforma puede contener enlaces a terceros sin responsabilidad sobre disponibilidad, exactitud o contenido'
+          'El Servicio es ejecutado por el Profesional, responsable por calidad, permisos, seguridad y cumplimiento normativo',
+          'Adomiapp asume obligaciones propias como operador: información esencial, canal de soporte/reclamos y aplicación de flujos de pagos/retenciones/disputas/reembolsos',
+          'La Plataforma puede contener enlaces o integraciones de terceros, sujetos a sus propios términos'
         ]
       },
       {
@@ -100,11 +99,25 @@ export class ClientTerminosComponent {
         ]
       },
       {
-        title: '5. Pagos y Facturación',
-        content: 'Los pagos se procesan de forma segura a través de la plataforma. Los precios mostrados incluyen todos los impuestos aplicables. Las cancelaciones están sujetas a la política de cada profesional.'
+        title: '5. Pagos, Autorizaciones y Retención ("hold")',
+        content: 'Los pagos se procesan mediante un PSP autorizado. Al registrar un medio de pago/Oneclick, el Cliente autoriza la tokenización por el PSP (Adomiapp no almacena datos completos de tarjeta).',
+        list: [
+          'Al confirmar una reserva, el Cliente autoriza el cargo del monto informado del Servicio',
+          'Cargos de cancelación/no-show solo si fueron informados antes de pagar y se cumplen condiciones objetivas',
+          'El pago puede permanecer retenido hasta finalización del Servicio (código/botón) o auto-liberación si no hay reclamo dentro del plazo'
+        ]
       },
       {
-        title: '6. Limitación General de Responsabilidad',
+        title: '6. Reembolsos, Contracargos y Disputas',
+        content: 'Por regla general, los reembolsos se efectúan mediante Créditos Adomi utilizables en la Plataforma. Adomiapp puede devolver por el mismo medio de pago en casos excepcionales (cobro duplicado, monto incorrecto por falla técnica, instrucción del PSP/banco, fraude comprobado o cuando sea legalmente exigible).',
+        list: [
+          'Si el Cliente desconoce un cargo o reporta un problema de cobro, debe ingresarlo primero por el canal de reclamos de la Plataforma (sin limitar derechos del consumidor)',
+          'Al abrirse un reclamo/contracargo, el pago puede quedar retenido/bloqueado y se solicitará evidencia a ambas partes',
+          'Evidencia válida: chat, timestamps, geolocalización (si aplica), fotos, comprobantes y confirmación por código/botón'
+        ]
+      },
+      {
+        title: '7. Limitación General de Responsabilidad',
         content: 'En máxima medida por ley, Adomiapp NO responsable por daño directo, indirecto, incidental, especial, consecuente o punitivo, incluyendo pérdida ganancias, datos, uso, fondo comercio u otras pérdidas intangibles, de:',
         list: [
           'Acceso/uso o imposibilidad de usar Plataforma',
@@ -114,7 +127,7 @@ export class ClientTerminosComponent {
         ]
       },
       {
-        title: '7. Indemnización',
+        title: '8. Indemnización',
         content: 'Usted acepta defender, indemnizar y mantener indemne a Adomiapp, directores, empleados y agentes, contra reclamo, demanda, daño, pérdida, costo, deuda y gastos (honorarios abogados) de:',
         list: [
           'Uso y acceso a Plataforma',
@@ -124,19 +137,19 @@ export class ClientTerminosComponent {
         ]
       },
       {
-        title: '8. Privacidad y Datos',
-        content: 'Nos comprometemos a proteger su privacidad. Consulte nuestra Política de Privacidad para más información sobre manejo de datos personales.'
+        title: '9. Privacidad y Datos',
+        content: 'Consulte nuestra Política de Privacidad para información sobre finalidades, bases de tratamiento, retención, terceros y derechos. Adomiapp puede ajustar sus prácticas para alinearse con estándares regulatorios vigentes y futuros (por ejemplo, Ley 21.719).'
       },
       {
-        title: '9. Modificaciones',
+        title: '10. Modificaciones',
         content: 'Adomiapp se reserva el derecho de modificar estos términos en cualquier momento. Los cambios entran en vigor inmediatamente tras su publicación.'
       },
       {
-        title: '10. Ley Aplicable y Jurisdicción',
+        title: '11. Ley Aplicable y Jurisdicción',
         content: 'Estos Términos se regirán por leyes de República de Chile. Disputa, controversia o reclamo se someterá a jurisdicción exclusiva de tribunales ordinarios de Santiago, Chile, renunciando a cualquier otro fuero.'
       },
       {
-        title: '11. Contacto',
+        title: '12. Contacto',
         content: 'Para preguntas sobre estos Términos: soporte@adomiapp.com | +56 9 XXXX XXXX'
       }
     ];

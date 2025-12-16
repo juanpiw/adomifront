@@ -76,8 +76,13 @@ export class DashTerminosComponent {
       },
       {
         title: '2. Naturaleza y Alcance de la Plataforma',
-        content: 'Adomiapp es plataforma de intermediación. Función limitada a conectar Clientes con Profesionales.',
-        list: ['NO es parte del contrato', 'NO supervisa ni controla trabajo', 'NO garantiza calidad o legalidad', 'Enlaces a terceros sin responsabilidad']
+        content: 'Adomiapp es una plataforma tecnológica que intermedia la contratación entre Clientes y Profesionales independientes, facilitando publicación, agenda, mensajería, pagos y gestión de incidencias.',
+        list: [
+          'El Servicio es ejecutado por el Profesional, responsable por calidad, idoneidad, permisos, seguridad y cumplimiento normativo',
+          'Sin perjuicio de lo anterior, Adomiapp asume obligaciones propias como operador: información esencial, canal de soporte/reclamos y aplicación de flujos de pagos/retenciones/disputas/reembolsos',
+          'Adomiapp no emplea ni supervisa el trabajo del Profesional; no es parte del contrato por el Servicio salvo obligaciones propias como plataforma',
+          'La Plataforma puede contener enlaces o integraciones de terceros, sujetos a sus propios términos'
+        ]
       },
       {
         title: '3. Relación Jurídica: Contratistas Independientes',
@@ -105,11 +110,25 @@ export class DashTerminosComponent {
         content: 'El Profesional es el único y exclusivo responsable de obtener y mantener seguro de responsabilidad civil adecuado para cubrir daño, perjuicio o siniestro durante prestación de Servicios. Adomiapp no proporciona ni se hace responsable de seguros.'
       },
       {
-        title: '6. Comisiones y Tributación',
-        content: 'Comisión 15%. Pagos en 3-5 días. Usted declara ingresos y paga impuestos según ley chilena.'
+        title: '6. Pagos, retención ("hold") y obligaciones tributarias',
+        content: 'Cuando un Cliente paga con tarjeta, el monto puede permanecer retenido (escrow/hold) hasta verificación de finalización del Servicio. Los depósitos ocurren según plazos del PSP (usualmente 3–5 días hábiles) desde la captura/liberación.',
+        list: [
+          'Verificación: liberación estándar cuando el Cliente marca “Finalizar Servicio”',
+          'Auto-liberación: si no hay reclamo/disputa/no-show dentro de 48 horas desde la hora de término agendada, Adomiapp puede liberar automáticamente',
+          'Tributación: usted emite boleta/factura al Cliente cuando corresponda; Adomiapp emite documento por su comisión',
+          'Usted declara y paga impuestos ante SII (IVA/renta cuando proceda)'
+        ]
       },
       {
-        title: '7. Limitación General de Responsabilidad',
+        title: '7. Disputas de pago, contracargos y cooperación',
+        content: 'Al abrirse un reclamo/contracargo, el pago puede quedar retenido/bloqueado y se solicitará evidencia a ambas partes. Esto no limita los derechos del consumidor.',
+        list: [
+          'Evidencia válida: chat, timestamps, geolocalización (si aplica), fotos, comprobantes y confirmación por código/botón',
+          'Costos: usted autoriza a descontar montos revertidos, fees/costos de contracargo del PSP y ajustes desde su wallet o pagos futuros, cuando corresponda'
+        ]
+      },
+      {
+        title: '8. Limitación General de Responsabilidad',
         content: 'En la máxima medida permitida por ley, Adomiapp NO responsable por daño directo, indirecto, incidental, especial, consecuente o punitivo, incluyendo pérdida de ganancias, datos, uso, fondo de comercio, que resulte de:',
         list: [
           'Acceso o uso, o imposibilidad de usar la Plataforma',
@@ -119,7 +138,7 @@ export class DashTerminosComponent {
         ]
       },
       {
-        title: '8. Indemnización',
+        title: '9. Indemnización',
         content: 'Usted acepta defender, indemnizar y mantener indemne a Adomiapp, directores, empleados y agentes, contra reclamo, demanda, daño, pérdida, costo, deuda y gastos (incluidos honorarios de abogados) que surjan de:',
         list: [
           'Su uso y acceso a la Plataforma',
@@ -129,19 +148,19 @@ export class DashTerminosComponent {
         ]
       },
       {
-        title: '9. Cancelaciones',
+        title: '10. Cancelaciones / No-show',
         content: 'Cancelaciones +24h sin penalización. Tardías afectan calificación.'
       },
       {
-        title: '10. Planes',
+        title: '11. Planes',
         content: 'Planes con beneficios variables. Gratuito con limitaciones. Pago renovación automática.'
       },
       {
-        title: '11. Ley y Jurisdicción',
+        title: '12. Ley y Jurisdicción',
         content: 'Regido por leyes de Chile. Disputas en tribunales Santiago, Chile.'
       },
       {
-        title: '12. Contacto',
+        title: '13. Contacto',
         content: 'Consultas: profesionales@adomiapp.com | +56 9 XXXX XXXX | Lun-Vie 9-18h'
       }
     ];
