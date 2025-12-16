@@ -185,29 +185,97 @@
       </div>
     </div>
 
+    <div class="support-admin__filters">
+      <label>
+        Estado:
+        <select [(ngModel)]="supportStatusFilter" (change)="loadSupportTickets()">
+          <option value="all">Todos</option>
+          <option value="abierto">Abierto</option>
+          <option value="en_proceso">En proceso</option>
+          <option value="cerrado">Cerrado</option>
+        </select>
+      </label>
+      <label>
+        Categoría:
+        <input type="text" [(ngModel)]="supportCategoryFilter" placeholder="Ej: Pagos" (keyup.enter)="loadSupportTickets()" />
+      </label>
+      <label class="support-admin__search">
+        Buscar:
+        <input type="text" [(ngModel)]="supportSearch" placeholder="Asunto, email..." (keyup.enter)="loadSupportTickets()" />
+      </label>
+      <button type="button" (click)="loadSupportTickets()" [disabled]="supportLoading">Refrescar</button>
+    </div>
+
     <div *ngIf="supportLoading" class="support-admin__loading">Cargando tickets...</div>
     <div *ngIf="supportError" class="support-admin__error">{{ supportError }}</div>
 
-    <div *ngIf="!supportLoading && !supportError">
-      <div *ngIf="supportTickets.length === 0" class="support-admin__empty">
-        No hay tickets de clientes.
-      </div>
-      <div *ngFor="let t of supportTickets" class="support-admin__item" [class.support-admin__item--selected]="supportSelectedId === t.id" (click)="onSelectSupport(t)">
-        <div class="support-admin__item-main">
-          <div class="support-admin__item-title">{{ t.subject }}</div>
-          <div class="support-admin__item-meta">
-            <span class="support-admin__badge" [ngClass]="{
-              'support-admin__badge--open': t.status !== 'cerrado',
-              'support-admin__badge--closed': t.status === 'cerrado'
-            }">
-              {{ t.status === 'cerrado' ? 'Cerrado' : (t.status === 'en_proceso' ? 'En proceso' : 'Abierto') }}
-            </span>
-            <span class="support-admin__chip">{{ t.category }}</span>
-            <span class="support-admin__date">{{ t.date }}</span>
+    <div *ngIf="!supportLoading && !supportError" class="support-admin__grid">
+      <div class="support-admin__list">
+        <div *ngIf="supportTickets.length === 0" class="support-admin__empty">
+          No hay tickets de clientes.
+        </div>
+        <div *ngFor="let t of supportTickets" class="support-admin__item" [class.support-admin__item--selected]="supportSelectedId === t.id" (click)="onSelectSupport(t)">
+          <div class="support-admin__item-main">
+            <div class="support-admin__item-title">{{ t.subject }}</div>
+            <div class="support-admin__item-meta">
+              <span class="support-admin__badge" [ngClass]="{
+                'support-admin__badge--open': t.status === 'abierto',
+                'support-admin__badge--progress': t.status === 'en_proceso',
+                'support-admin__badge--closed': t.status === 'cerrado'
+              }">
+                {{ t.status === 'cerrado' ? 'Cerrado' : (t.status === 'en_proceso' ? 'En proceso' : 'Abierto') }}
+              </span>
+              <span class="support-admin__chip">{{ t.category }}</span>
+              <span class="support-admin__date">{{ t.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+          <div class="support-admin__desc">
+            {{ t.description || 'Sin descripción' }}
+          </div>
+          <div class="support-admin__meta-line">
+            <span>{{ t.user_email || '—' }}</span>
+            <span class="muted">#{{ t.id }}</span>
           </div>
         </div>
-        <div class="support-admin__desc">
-          {{ t.description || 'Sin descripción' }}
+      </div>
+
+      <div class="support-admin__detail" *ngIf="supportSelected">
+        <div class="support-admin__detail-header">
+          <div>
+            <p class="support-admin__detail-id">Ticket #{{ supportSelected.id }}</p>
+            <h4>{{ supportSelected.subject }}</h4>
+            <p class="muted">{{ supportSelected.user_name || supportSelected.user_email || 'Usuario' }} · {{ supportSelected.user_email }}</p>
+            <p class="muted">Creado: {{ supportSelected.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div class="support-admin__detail-actions">
+            <button type="button" (click)="updateSupportStatus('abierto')" [disabled]="supportUpdatingStatus">Marcar abierto</button>
+            <button type="button" (click)="updateSupportStatus('en_proceso')" [disabled]="supportUpdatingStatus">En proceso</button>
+            <button type="button" (click)="updateSupportStatus('cerrado')" [disabled]="supportUpdatingStatus">Cerrar</button>
+          </div>
+        </div>
+
+        <div class="support-admin__detail-body">
+          <p class="support-admin__detail-desc">{{ supportSelected.description || 'Sin descripción' }}</p>
+
+          <div class="support-admin__messages">
+            <h5>Mensajes</h5>
+            <div *ngIf="supportMessages.length === 0" class="support-admin__empty">Sin mensajes</div>
+            <div *ngFor="let m of supportMessages" class="support-admin__message">
+              <div class="support-admin__message-meta">
+                <span class="support-admin__chip">{{ m.author_type }}</span>
+                <span class="muted">{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <p>{{ m.message }}</p>
+            </div>
+          </div>
+
+          <div class="support-admin__reply">
+            <textarea [(ngModel)]="supportReply" rows="3" placeholder="Escribe una respuesta al cliente..."></textarea>
+            <div class="support-admin__reply-actions">
+              <button type="button" class="btn-primary" (click)="sendSupportReply()" [disabled]="supportReplying || !supportReply.trim()">Enviar respuesta</button>
+              <button type="button" (click)="supportReply=''" [disabled]="supportReplying">Limpiar</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

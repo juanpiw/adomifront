@@ -12,8 +12,7 @@ import { AdminCashPaymentsService } from './services/admin-cash-payments.service
 import { QrDisplayComponent } from '../../../marketing/qr-display/qr-display.component';
 import { AdminPaymentDisputesComponent } from './components/admin-payment-disputes/admin-payment-disputes.component';
 import { AdminTransactionsMonitorComponent } from './components/admin-transactions-monitor/admin-transactions-monitor.component';
-import { SupportStoreService } from '../../../../libs/shared-ui/support/services/support-store.service';
-import { SupportTicket } from '../../../../libs/shared-ui/support/models/support-ticket.model';
+import { AdminSupportService, AdminSupportTicket, AdminSupportMessage, AdminSupportStatus } from './services/admin-support.service';
 
 @Component({
   selector: 'app-admin-pagos',
@@ -27,7 +26,7 @@ export class AdminPagosComponent implements OnInit {
   private session = inject(SessionService);
   private adminApi = inject(AdminPaymentsService);
   private cashPayments = inject(AdminCashPaymentsService);
-  private supportStore = inject(SupportStoreService);
+  private adminSupport = inject(AdminSupportService);
   baseUrl = environment.apiBaseUrl;
   loading = false;
   error: string | null = null;
@@ -87,9 +86,20 @@ export class AdminPagosComponent implements OnInit {
   // Soporte clientes (tickets)
   supportLoading = false;
   supportError: string | null = null;
-  supportTickets: SupportTicket[] = [];
-  supportSelectedId: string | null = null;
+  supportTickets: AdminSupportTicket[] = [];
+  supportSelectedId: number | null = null;
+  supportSelected?: AdminSupportTicket | null;
   supportStats = { open: 0, closed: 0 };
+  supportStatusFilter: 'all' | AdminSupportStatus = 'all';
+  supportCategoryFilter = '';
+  supportSearch = '';
+  supportLimit = 30;
+  supportOffset = 0;
+  supportTotal = 0;
+  supportMessages: AdminSupportMessage[] = [];
+  supportReply = '';
+  supportUpdatingStatus = false;
+  supportReplying = false;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -445,19 +455,36 @@ export class AdminPagosComponent implements OnInit {
 
   loadSupportTickets(): void {
     const email = this.session.getUser()?.email?.toLowerCase();
-    if (email !== 'juanpablojpw@gmail.com') {
-      return;
-    }
+    if (email !== 'juanpablojpw@gmail.com') return;
+    const token = this.session.getAccessToken();
     this.supportLoading = true;
     this.supportError = null;
-    this.supportStore.load('client').subscribe({
-      next: (tickets) => {
-        this.supportTickets = tickets;
-        this.supportStats = {
-          open: tickets.filter(t => t.status !== 'cerrado').length,
-          closed: tickets.filter(t => t.status === 'cerrado').length
-        };
+    this.adminSupport.list(this.adminSecret, token, {
+      status: this.supportStatusFilter,
+      category: this.supportCategoryFilter || undefined,
+      search: this.supportSearch || undefined,
+      limit: this.supportLimit,
+      offset: this.supportOffset
+    }).subscribe({
+      next: (res) => {
         this.supportLoading = false;
+        this.supportTickets = res?.tickets || [];
+        this.supportTotal = res?.total || 0;
+        this.supportStats = {
+          open: this.supportTickets.filter(t => t.status !== 'cerrado').length,
+          closed: this.supportTickets.filter(t => t.status === 'cerrado').length
+        };
+        // mantener selección
+        if (this.supportSelectedId) {
+          const found = this.supportTickets.find(t => t.id === this.supportSelectedId);
+          if (found) {
+            this.supportSelected = found;
+          } else {
+            this.supportSelectedId = null;
+            this.supportSelected = null;
+            this.supportMessages = [];
+          }
+        }
       },
       error: (err) => {
         this.supportLoading = false;
@@ -466,8 +493,66 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
-  onSelectSupport(ticket: SupportTicket): void {
+  onSelectSupport(ticket: AdminSupportTicket): void {
     this.supportSelectedId = ticket.id;
+    this.supportSelected = ticket;
+    this.loadSupportMessages(ticket.id);
+  }
+
+  loadSupportMessages(id: number) {
+    const token = this.session.getAccessToken();
+    this.adminSupport.listMessages(this.adminSecret, token, id).subscribe({
+      next: (res) => {
+        this.supportMessages = res?.messages || [];
+      },
+      error: () => {
+        this.supportMessages = [];
+      }
+    });
+  }
+
+  updateSupportStatus(status: AdminSupportStatus) {
+    if (!this.supportSelectedId) return;
+    const token = this.session.getAccessToken();
+    this.supportUpdatingStatus = true;
+    this.adminSupport.updateStatus(this.adminSecret, token, this.supportSelectedId, status).subscribe({
+      next: (res) => {
+        this.supportUpdatingStatus = false;
+        const updated = res?.ticket;
+        if (updated) {
+          this.supportSelected = updated;
+          this.supportTickets = this.supportTickets.map(t => t.id === updated.id ? updated : t);
+          this.supportStats = {
+            open: this.supportTickets.filter(t => t.status !== 'cerrado').length,
+            closed: this.supportTickets.filter(t => t.status === 'cerrado').length
+          };
+        }
+      },
+      error: (err) => {
+        this.supportUpdatingStatus = false;
+        this.supportError = err?.error?.error || 'No pudimos actualizar el estado.';
+      }
+    });
+  }
+
+  sendSupportReply() {
+    if (!this.supportSelectedId || !this.supportReply.trim()) return;
+    const token = this.session.getAccessToken();
+    const message = this.supportReply.trim();
+    this.supportReplying = true;
+    this.adminSupport.reply(this.adminSecret, token, this.supportSelectedId, message).subscribe({
+      next: (res) => {
+        this.supportReplying = false;
+        this.supportReply = '';
+        if (res?.message) {
+          this.supportMessages = [...this.supportMessages, res.message];
+        }
+      },
+      error: (err) => {
+        this.supportReplying = false;
+        this.supportError = err?.error?.error || 'No pudimos enviar la respuesta.';
+      }
+    });
   }
 
   onSelectCashDebt(debt: any, forceLookup = true) {

@@ -891,6 +891,11 @@ export class ClientReservasComponent implements OnInit {
             const rawPayment = String((a as any).payment_status || '').toLowerCase();
             const isPaid = ['paid', 'succeeded', 'completed'].includes(rawPayment) || !!(a as any).verification_code;
             console.log(`[RESERVAS] Mapping confirmed appt #${a.id}: payment_status="${rawPayment}", isPaid=${isPaid}, date="${a.date}", price=${a.price}, rawPrice=${JSON.stringify(a.price)}`);
+            const paymentPreference = ((a as any).payment_method || null) as 'card'|'cash'|null;
+            const serviceCompletionState = String((a as any).service_completion_state || 'none') as ProximaCitaData['serviceCompletionState'];
+            const disputePending = String(a.status) === 'dispute_pending' || serviceCompletionState === 'dispute_pending';
+            const clientConfirmedLocal = this.clientConfirmedSet.has(a.id);
+            const clientConfirmed = clientConfirmedLocal || serviceCompletionState === 'client_confirmed' || serviceCompletionState === 'auto_completed';
             const limitReached = Number(a.client_reschedule_count || 0) >= 1;
             const allowReprogram = !limitReached && !clientConfirmed;
             const reprogramDisabledReason = !allowReprogram
@@ -898,12 +903,6 @@ export class ClientReservasComponent implements OnInit {
                 ? 'Ya utilizaste la reprogramación disponible para esta cita.'
                 : 'Solo puedes reprogramar antes de confirmar el servicio.')
               : undefined;
-
-            const paymentPreference = ((a as any).payment_method || null) as 'card'|'cash'|null;
-            const serviceCompletionState = String((a as any).service_completion_state || 'none') as ProximaCitaData['serviceCompletionState'];
-            const disputePending = String(a.status) === 'dispute_pending' || serviceCompletionState === 'dispute_pending';
-            const clientConfirmedLocal = this.clientConfirmedSet.has(a.id);
-            const clientConfirmed = clientConfirmedLocal || serviceCompletionState === 'client_confirmed' || serviceCompletionState === 'auto_completed';
             if (isPaid) {
               this.clearClientConfirmed(a.id);
             }
