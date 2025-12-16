@@ -82,6 +82,9 @@ export class DashAgendaComponent implements OnInit {
   // Datos del día seleccionado
   selectedDate: Date | null = null;
   dayAppointments: DayAppointment[] = [];
+  // Enfoque desde notificaciones
+  focusAppointmentId: string | null = null;
+  focusTime: string | null = null;
   private pendingQuoteContext: PendingQuoteContext | null = null;
   quoteFocusHint: QuoteFocusHint | null = null;
   quoteAppointmentDraft: QuoteDraftContext | null = null;
@@ -239,8 +242,18 @@ export class DashAgendaComponent implements OnInit {
       const dateParam = quoteContext?.date ?? params.get('date');
       const timeParam = quoteContext?.time ?? params.get('time');
       const quoteIdParam = quoteContext?.quoteId ?? params.get('quoteId');
+      const focusApptIdRaw = params.get('appointmentId') ?? params.get('appointment_id');
+      this.focusAppointmentId = focusApptIdRaw ? String(focusApptIdRaw) : null;
+      this.focusTime = timeParam ? String(timeParam) : null;
       if (dateParam) {
         this.focusDateFromQuery(dateParam, timeParam, quoteIdParam);
+      } else if (this.focusAppointmentId) {
+        // Si viene solo appointmentId (sin date), al menos llevar a vista calendario.
+        if (this.currentView !== 'calendar') {
+          this.updatingFromQuery = true;
+          this.setView('calendar');
+          this.updatingFromQuery = false;
+        }
       }
     });
 
@@ -823,8 +836,18 @@ export class DashAgendaComponent implements OnInit {
     }
     this.rescheduleDecisionLoadingId = appointmentId;
     this.appointments.respondReschedule(appointmentId, decision, { reason }).subscribe({
-      next: () => {
+      next: (resp: any) => {
         this.rescheduleDecisionLoadingId = null;
+        if (!resp?.success) {
+          console.warn('[AGENDA] respondRescheduleRequest sin success', resp);
+          const errCode = resp?.error;
+          if (errCode === 'SLOT_TAKEN') {
+            alert('Ese horario ya no está disponible (alguien ya lo tomó). Elige otro horario y vuelve a intentar.');
+          } else {
+            alert(errCode || 'No se pudo procesar la solicitud de reprogramación.');
+          }
+          return;
+        }
         this.loadRescheduleRequests();
         if (this.selectedDate) {
           const iso = `${this.selectedDate.getFullYear()}-${String(this.selectedDate.getMonth() + 1).padStart(2, '0')}-${String(this.selectedDate.getDate()).padStart(2, '0')}`;
@@ -834,7 +857,12 @@ export class DashAgendaComponent implements OnInit {
       error: (err) => {
         this.rescheduleDecisionLoadingId = null;
         console.error('[AGENDA] Error al responder solicitud de reprogramación', err);
-        alert(err?.error?.error || 'No se pudo procesar la respuesta de reprogramación.');
+        const errCode = err?.error?.error;
+        if (err?.status === 409 && errCode === 'SLOT_TAKEN') {
+          alert('Ese horario ya no está disponible (alguien ya lo tomó). Elige otro horario y vuelve a intentar.');
+          return;
+        }
+        alert(errCode || 'No se pudo procesar la respuesta de reprogramación.');
       }
     });
   }

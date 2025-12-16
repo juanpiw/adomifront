@@ -63,6 +63,50 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
     if (n.status === 'unread') {
       this.notifications.markAsRead(n.id);
     }
+    const profile = this.notifications.getCurrentProfile();
+    const md = n.metadata || {};
+    const appointmentId = md['appointmentId'] ?? md['appointment_id'];
+    const dateRaw = md['appointmentDate'] ?? md['appointment_date'] ?? md['date'];
+    const timeRaw = md['appointmentTime'] ?? md['appointment_time'] ?? md['time'] ?? md['start_time'];
+
+    const normalizeDate = (raw: any): string | null => {
+      if (!raw) return null;
+      const str = String(raw).trim();
+      if (!str) return null;
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+        return str.includes('T') ? str.split('T')[0] : str.slice(0, 10);
+      }
+      const parsed = new Date(str);
+      if (isNaN(parsed.getTime())) return null;
+      const yyyy = parsed.getFullYear();
+      const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+      const dd = String(parsed.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const normalizeTime = (raw: any): string | null => {
+      if (!raw) return null;
+      const str = String(raw).trim();
+      if (!str) return null;
+      if (/^\d{2}:\d{2}(:\d{2})?$/.test(str)) return str.slice(0, 5);
+      return null;
+    };
+
+    if (profile === 'provider' && appointmentId) {
+      const date = normalizeDate(dateRaw);
+      const time = normalizeTime(timeRaw);
+      this.router.navigate(['/dash/agenda'], {
+        queryParams: {
+          view: 'calendar',
+          ...(date ? { date } : {}),
+          appointmentId: String(appointmentId),
+          ...(time ? { time } : {})
+        },
+        queryParamsHandling: 'merge'
+      }).catch(() => {});
+      return;
+    }
+
     // Navegación opcional si hay ruta en metadata
     const targetUrl = n.metadata?.['targetUrl'] || n.metadata?.['url'];
     if (targetUrl) {

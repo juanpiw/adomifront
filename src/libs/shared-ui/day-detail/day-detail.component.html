@@ -42,6 +42,7 @@
       <div 
         *ngFor="let appointment of sortedAppointments; trackBy: trackByAppointmentId"
         class="day-detail__appointment"
+        [attr.id]="'day-appt-' + appointment.id"
         [class.day-detail__appointment--cancelled]="appointment.status === 'cancelled'"
         [class.day-detail__appointment--highlight]="isHighlighted(appointment)"
         (click)="onAppointmentClick(appointment)">

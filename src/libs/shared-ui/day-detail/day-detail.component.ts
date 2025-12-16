@@ -67,6 +67,12 @@ export class DayDetailComponent implements OnChanges {
   @Input() loading: boolean = false;
   @Input() quoteFocusHint: QuoteFocusHintInput | null = null;
   @Input() quoteDraft: QuoteDraftInput | null = null;
+  /**
+   * Enfoque desde notificación / deep-link (sin banner).
+   * Permite resaltar y scrollear a la cita en la lista del día.
+   */
+  @Input() focusAppointmentId: string | number | null = null;
+  @Input() focusTime: string | null = null;
   @Input() services: ProviderServiceOption[] = [];
   readonly fallbackAvatar = 'assets/default-avatar.png';
 
@@ -98,6 +104,13 @@ export class DayDetailComponent implements OnChanges {
     }
     if (changes['quoteDraft'] && changes['quoteDraft'].currentValue) {
       this.openQuoteDraft(changes['quoteDraft'].currentValue as QuoteDraftInput);
+    }
+    if (changes['focusAppointmentId'] || changes['focusTime']) {
+      this.applyFocusHint(this.focusAppointmentId, this.focusTime);
+    }
+    if (changes['appointments']) {
+      // Si ya tenemos un foco activo, intentar scrollear cuando llega la lista.
+      this.scrollToHighlighted();
     }
   }
 
@@ -222,6 +235,41 @@ export class DayDetailComponent implements OnChanges {
       : null;
     this.highlightedTime = hint.time || null;
     this.quoteFocusHandled.emit();
+  }
+
+  private applyFocusHint(appointmentId: string | number | null, time: string | null): void {
+    // No mostrar banner; solo resaltar.
+    if (appointmentId !== undefined && appointmentId !== null && String(appointmentId).trim().length) {
+      this.highlightedAppointmentId = String(appointmentId);
+      this.highlightedTime = null;
+      this.scrollToHighlighted();
+      return;
+    }
+    if (time && time.trim().length) {
+      this.highlightedTime = time.trim();
+      this.highlightedAppointmentId = null;
+      this.scrollToHighlighted();
+      return;
+    }
+  }
+
+  private scrollToHighlighted(): void {
+    // Esperar al render del *ngFor.
+    setTimeout(() => {
+      if (this.highlightedAppointmentId) {
+        const el = document.getElementById(`day-appt-${this.highlightedAppointmentId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+      if (this.highlightedTime) {
+        const target = document.querySelector('.day-detail__appointment--highlight') as HTMLElement | null;
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, 50);
   }
 
   dismissQuoteFocus(): void {

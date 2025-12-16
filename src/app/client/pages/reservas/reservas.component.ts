@@ -1589,8 +1589,22 @@ export class ClientReservasComponent implements OnInit {
     }
     this.rescheduleActionLoadingId = appointmentId;
     this.appointments.respondReschedule(appointmentId, decision, { reason }).subscribe({
-      next: () => {
+      next: (resp: any) => {
         this.rescheduleActionLoadingId = null;
+        if (!resp?.success) {
+          const msg = resp?.error || 'No se pudo procesar tu respuesta.';
+          console.warn('[RESERVAS] respondReschedule sin success', resp);
+          this.notifications.createNotification({
+            type: 'appointment',
+            title: 'No pudimos procesar tu respuesta',
+            message: msg,
+            priority: 'high',
+            profile: 'client',
+            actions: ['view'],
+            metadata: { appointmentId: String(appointmentId) }
+          });
+          return;
+        }
         this.loadAppointments();
         const requestedBy = String(appt.reschedule_requested_by || '');
         const acceptance = decision === 'accept';
@@ -1732,8 +1746,17 @@ export class ClientReservasComponent implements OnInit {
     this.rescheduleActionLoadingId = this.rescheduleForm.appointmentId;
 
     this.appointments.requestReschedule(this.rescheduleForm.appointmentId, payload).subscribe({
-      next: () => {
+      next: (resp: any) => {
         this.rescheduleForm.loading = false;
+        if (!resp?.success) {
+          console.warn('[RESERVAS] requestReschedule sin success', resp);
+          const errCode = resp?.error;
+          this.rescheduleForm.error = errCode === 'SLOT_TAKEN'
+            ? 'Ese horario ya no está disponible (alguien ya lo tomó). Elige otro horario y vuelve a intentar.'
+            : (errCode || 'No se pudo procesar la reprogramación.');
+          this.rescheduleActionLoadingId = null;
+          return;
+        }
         const appointmentId = this.rescheduleForm.appointmentId!;
         const isLate = this.rescheduleForm.isLate;
         const message = isLate
@@ -1758,7 +1781,10 @@ export class ClientReservasComponent implements OnInit {
         this.rescheduleForm.loading = false;
         this.rescheduleActionLoadingId = null;
         console.error('[RESERVAS] Error al solicitar reprogramación', err);
-        this.rescheduleForm.error = err?.error?.error || 'No se pudo procesar la reprogramación.';
+        const errCode = err?.error?.error;
+        this.rescheduleForm.error = err?.status === 409 && errCode === 'SLOT_TAKEN'
+          ? 'Ese horario ya no está disponible (alguien ya lo tomó). Elige otro horario y vuelve a intentar.'
+          : (errCode || 'No se pudo procesar la reprogramación.');
       }
     });
   }

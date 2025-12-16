@@ -68,9 +68,55 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
     console.log('🔔 [NOTIFICATION_CONTAINER] onNotificationClick', notification?.id, notification?.title);
     this.closePanel();
     
-    // Navegar si hay un enlace
+    // Navegación: si es notificación de cita y soy proveedor, ir directo a Agenda y enfocar la cita.
+    const profile = this.notificationService.getCurrentProfile();
+    const md = notification?.metadata || {};
+    const appointmentId = md['appointmentId'] ?? md['appointment_id'];
+    const dateRaw = md['appointmentDate'] ?? md['appointment_date'] ?? md['date'];
+    const timeRaw = md['appointmentTime'] ?? md['appointment_time'] ?? md['time'] ?? md['start_time'];
+
+    const normalizeDate = (raw: any): string | null => {
+      if (!raw) return null;
+      const str = String(raw).trim();
+      if (!str) return null;
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+        return str.includes('T') ? str.split('T')[0] : str.slice(0, 10);
+      }
+      const parsed = new Date(str);
+      if (isNaN(parsed.getTime())) return null;
+      const yyyy = parsed.getFullYear();
+      const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+      const dd = String(parsed.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const normalizeTime = (raw: any): string | null => {
+      if (!raw) return null;
+      const str = String(raw).trim();
+      if (!str) return null;
+      if (/^\d{2}:\d{2}(:\d{2})?$/.test(str)) return str.slice(0, 5);
+      return null;
+    };
+
+    if (profile === 'provider' && appointmentId) {
+      const date = normalizeDate(dateRaw);
+      const time = normalizeTime(timeRaw);
+      this.router.navigate(['/dash/agenda'], {
+        queryParams: {
+          view: 'calendar',
+          ...(date ? { date } : {}),
+          appointmentId: String(appointmentId),
+          ...(time ? { time } : {})
+        },
+        queryParamsHandling: 'merge'
+      }).catch(() => {});
+      this.notificationClick.emit(notification);
+      return;
+    }
+
+    // Navegar si hay un enlace legacy
     if (notification.link) {
-      this.router.navigate([notification.link]);
+      this.router.navigate([notification.link]).catch(() => {});
     }
     
     // Emitir evento para el componente padre

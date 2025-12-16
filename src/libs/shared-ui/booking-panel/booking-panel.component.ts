@@ -96,7 +96,8 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   private readonly fallbackEndMinutes = 21 * 60;  // 21:00
   private readonly slotIntervalMinutes = 30;
 
-  readonly today = new Date().toISOString().slice(0, 10);
+  // Usar fecha local (no UTC) para evitar desfaces al comparar "hoy"
+  readonly today = this.toLocalIsoDate(new Date());
 
   ngOnInit(): void {
     // Precargar preferencia para mostrarla sin esperar a abrir el modal
@@ -115,7 +116,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   get displayedTimeSlots(): TimeSlot[] {
     const slots = Array.isArray(this.data?.timeSlots) ? this.data.timeSlots : [];
     if (slots.length) {
-      return slots;
+      return this.applyPastTimeRules(slots);
     }
     return this.generateFallbackSlots();
   }
@@ -137,6 +138,53 @@ export class BookingPanelComponent implements OnChanges, OnInit {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
+
+  private toLocalIsoDate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private parseTimeToMinutes(time: string): number | null {
+    if (!time) return null;
+    const [hh, mm] = String(time).split(':');
+    const h = Number(hh);
+    const m = Number(mm);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    return (h * 60) + m;
+  }
+
+  private isSelectedDateToday(): boolean {
+    const selected = (this.data?.selectedDate || this.data?.summary?.date || '').trim();
+    return !!selected && selected === this.today;
+  }
+
+  private currentRoundedBlockStartMinutes(): number {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    // Redondear hacia arriba al siguiente bloque de 30 min
+    const rounded = Math.ceil(nowMinutes / this.slotIntervalMinutes) * this.slotIntervalMinutes;
+    // Clamp por seguridad
+    return Math.min(Math.max(0, rounded), 24 * 60);
+  }
+
+  private applyPastTimeRules(slots: TimeSlot[]): TimeSlot[] {
+    // Solo aplica cuando la fecha seleccionada es hoy.
+    if (!this.isSelectedDateToday()) return slots;
+
+    const cutoffMinutes = this.currentRoundedBlockStartMinutes();
+    return slots.map((slot) => {
+      const slotMinutes = this.parseTimeToMinutes(slot.time);
+      if (slotMinutes === null) return slot;
+      // Si el slot es anterior al cutoff, debe quedar no disponible (rojo) aunque backend lo marque disponible.
+      if (slotMinutes < cutoffMinutes) {
+        return {
+          ...slot,
+          isAvailable: false,
+          reason: slot.reason === 'blocked' || slot.reason === 'booked' ? slot.reason : 'unavailable'
+        };
+      }
+      return slot;
+    });
   }
 
   onServiceClick(serviceId: string) {
@@ -263,6 +311,14 @@ export class BookingPanelComponent implements OnChanges, OnInit {
    * Obtener tooltip para el slot según su estado
    */
   getSlotTooltip(slot: TimeSlot): string {
+    // Si es hoy y el horario ya pasó (redondeado a 30 min), mostrar razón clara
+    if (this.isSelectedDateToday()) {
+      const cutoffMinutes = this.currentRoundedBlockStartMinutes();
+      const slotMinutes = this.parseTimeToMinutes(slot.time);
+      if (slotMinutes !== null && slotMinutes < cutoffMinutes) {
+        return '⏱️ Ya pasó la hora para agendar hoy';
+      }
+    }
     if (slot.reason === 'blocked') {
       return '🔒 Bloqueado por el profesional';
     } else if (slot.reason === 'booked') {
