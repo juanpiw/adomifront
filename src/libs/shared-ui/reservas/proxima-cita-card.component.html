@@ -100,10 +100,14 @@
       <button class="pc-btn primary ghost" (click)="onContactarClick()">
         Contactar
       </button>
-      <button class="pc-btn secondary ghost" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
+      <button *ngIf="!isPaid" class="pc-btn secondary ghost" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
         Reprogramar
       </button>
-      <button class="pc-btn danger ghost" (click)="onCancelarClick()">Cancelar Cita</button>
+      <button *ngIf="!isPaid" class="pc-btn danger ghost" (click)="onCancelarClick()">Cancelar Cita</button>
+      <div class="pc-confirm-hint">
+        <div class="pc-confirm-hint__title">Confirma solo cuando el servicio ya se realizó</div>
+        <div class="pc-confirm-hint__text">Al confirmar indicas que recibiste el servicio y estás conforme.</div>
+      </div>
       <button class="pc-btn primary pay-cta" (click)="onPrimaryAction()">
         {{ primaryCtaLabel }}
       </button>
@@ -113,10 +117,10 @@
   <!-- Acciones cuando no hay pago pendiente -->
   <div class="pc-actions" *ngIf="!data.mostrarPagar">
     <button class="pc-btn primary" (click)="onContactarClick()">Contactar</button>
-    <button class="pc-btn secondary" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
+    <button *ngIf="!isPaid" class="pc-btn secondary" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
       Reprogramar
     </button>
-    <button class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
+    <button *ngIf="!isPaid" class="pc-btn danger" (click)="onCancelarClick()">Cancelar Cita</button>
     <button *ngIf="data.canConfirmService" class="pc-btn primary" (click)="onFinalizarClick()">
       Confirmar servicio
     </button>

@@ -22,3 +22,4 @@ export interface SupportStats {
   closed: number;
 }
 
+

@@ -449,6 +449,22 @@
   margin: 4px 0;
 }
 
+.booking-confirm__payment-hint {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #475569;
+
+  a {
+    color: #4338ca;
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 .payment-method-pill {
   display: inline-flex;
   align-items: center;

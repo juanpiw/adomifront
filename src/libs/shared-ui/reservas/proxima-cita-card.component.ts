@@ -176,6 +176,14 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
     this.reportarProblema.emit(this.data.appointmentId);
   }
 
+  get isPaid(): boolean {
+    return !!(
+      this.data?.successHighlight ||
+      this.data?.verification_code ||
+      this.data?.paymentStatus === 'paid'
+    );
+  }
+
   private updatePrimaryLabel(): void {
     if (!this.data) {
       this.primaryCtaLabel = 'Procesando...';

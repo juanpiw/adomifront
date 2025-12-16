@@ -69,6 +69,10 @@
 .pc-pay-card__text { color:#64748b; font-size:.85rem; }
 .pc-actions--split { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; }
 
+.pc-confirm-hint { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; margin-bottom:10px; }
+.pc-confirm-hint__title { font-weight:700; font-size:13px; color:#0f172a; }
+.pc-confirm-hint__text { font-size:12px; color:#475569; margin-top:2px; }
+
 @media (min-width: 768px) { .pc-row { flex-direction: row; align-items: center; } .pc-count { margin-left: 1.5rem; } }
 
 

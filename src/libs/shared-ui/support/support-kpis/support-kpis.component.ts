@@ -13,3 +13,4 @@ export class SupportKpisComponent {
   @Input() closed = 0;
 }
 
+

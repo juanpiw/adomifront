@@ -5,6 +5,9 @@ export interface CanceladaClienteData {
   avatarUrl: string;
   titulo: string;
   fecha: string;
+  providerId?: number | null;
+  serviceId?: number | null;
+  appointmentId?: number | null;
   estadoPill?: string; // Gestionando Reembolso
 }
 

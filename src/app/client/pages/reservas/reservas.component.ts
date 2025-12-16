@@ -251,12 +251,14 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     <div class="content" *ngIf="activeTab === 2">
       <ui-cancelada-cliente-card 
         *ngFor="let cc of canceladasClienteList" 
-        [data]="cc" 
+        [data]="cc"
+        (rebook)="onRebookCancelled(cc)" 
         style="margin-bottom:12px;">
       </ui-cancelada-cliente-card>
       <ui-cancelada-profesional-card 
         *ngFor="let cp of canceladasProfesionalList" 
-        [data]="cp" 
+        [data]="cp"
+        (findSimilar)="onFindSimilar(cp)" 
         style="margin-bottom:12px;">
       </ui-cancelada-profesional-card>
       <p *ngIf="(canceladasClienteList?.length || 0) === 0 && (canceladasProfesionalList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas canceladas.</p>
@@ -1006,6 +1008,9 @@ export class ClientReservasComponent implements OnInit {
             avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
             titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
             fecha: this.formatDate(c.date),
+            providerId: Number((c as any).provider_id || 0) || null,
+            serviceId: Number((c as any).service_id || 0) || null,
+            appointmentId: Number((c as any).id || 0) || null,
             estadoPill: (c as any).cancellation_reason ? `Motivo: ${(c as any).cancellation_reason}` : undefined
           }));
 
@@ -1912,6 +1917,28 @@ export class ClientReservasComponent implements OnInit {
     } else {
       console.warn('[RESERVAS] No se encontró providerId para appointment', appointmentId, this._providerByApptId);
     }
+  }
+
+  onRebookCancelled(card: CanceladaClienteData): void {
+    if (!card) return;
+    const providerId = card.providerId || null;
+    const serviceId = card.serviceId || null;
+    const extras = serviceId ? { queryParams: { serviceId } } : undefined;
+    if (providerId) {
+      this.router.navigate(['/client/explorar', providerId], extras);
+      return;
+    }
+    this.router.navigate(['/client/explorar'], extras);
+  }
+
+  onFindSimilar(card: CanceladaProfesionalData): void {
+    if (!card) {
+      this.router.navigate(['/client/explorar']);
+      return;
+    }
+    const serviceName = card.titulo ? String(card.titulo).split(' con ')[0] : '';
+    const extras = serviceName ? { queryParams: { q: serviceName } } : undefined;
+    this.router.navigate(['/client/explorar'], extras);
   }
 
   onRefund(ev: { appointmentId: number; reason: string }) {
