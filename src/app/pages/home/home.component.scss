@@ -258,6 +258,9 @@ nav {
   .md\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
 }
 .flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
@@ -475,6 +478,10 @@ nav {
 @media (min-width: 640px) {
   .sm\:inline { display: inline; }
   .sm\:hidden { display: none; }
+  .sm\:flex { display: flex; }
+  .sm\:inline-flex { display: inline-flex; }
+  .sm\:flex-row { flex-direction: row; }
+  .sm\:flex-col { flex-direction: column; }
 }
 
 @media (min-width: 768px) {
