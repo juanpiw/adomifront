@@ -552,7 +552,8 @@ nav {
   --founder-text: #f8fafc;
   --founder-accent: #fcd34d;
 
-  max-width: 1100px;
+  /* Desktop should fit 4 cards in a single row */
+  max-width: 1400px;
   margin: 0 auto;
   color: var(--text-main);
 
@@ -658,7 +659,7 @@ nav {
 
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 2rem;
   align-items: start;
 }
@@ -985,37 +986,25 @@ nav {
   border: 1px dashed #475569;
 }
 
-.founder-input-area input {
-  width: 100%;
-  padding: 0.75rem;
-  background: #1e293b;
-  border: 1px solid #475569;
-  color: white;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-  font-family: 'Inter', sans-serif;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+/* Founder request form (email) */
+.founder-request-form {
+  max-width: 560px;
 }
 
-.founder-input-area input::placeholder {
-  color: #64748b;
-  text-transform: none;
-  letter-spacing: normal;
+.founder-request-input {
+  background: #0b1220;
+  border-color: #334155;
+  color: #ffffff;
 }
 
-.founder-input-area input:focus {
+.founder-request-input::placeholder {
+  color: #94a3b8;
+}
+
+.founder-request-input:focus {
   outline: none;
   border-color: var(--founder-accent);
-}
-
-.founder-input-area input.is-success {
-  border-color: var(--success);
-}
-
-.founder-input-area input.is-error {
-  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgba(252, 211, 77, 0.16);
 }
 
 .btn-founder {
@@ -1041,33 +1030,32 @@ nav {
   transform: translateY(-2px);
 }
 
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
-}
-
-.shake {
-  animation: shake 0.5s;
-}
-
 /* Responsive */
-@media (max-width: 1100px) {
+@media (min-width: 768px) {
   .plans-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  /* Keep founder highlighted on tablet (2-col) */
   .plan-card--founder {
     order: 0;
     grid-column: span 2;
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1200px) {
   .plans-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  /* Desktop: all 4 in a single row */
+  .plan-card--founder {
+    grid-column: auto;
+    order: 0;
+  }
+}
+
+@media (max-width: 768px) {
   .pricing-v2__title {
     font-size: 1.75rem;
   }

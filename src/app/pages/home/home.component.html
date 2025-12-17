@@ -335,26 +335,25 @@
           </ul>
 
           <div class="founder-input-area">
-            <input
-              type="text"
-              [(ngModel)]="founderCode"
-              (ngModelChange)="onFounderCodeChange()"
-              name="founderCode"
-              placeholder="Ingresa Código"
-              [class.is-success]="founderStatus === 'success'"
-              [class.is-error]="founderStatus === 'error'"
-              [class.shake]="founderShake"
-              autocomplete="off"
-              autocapitalize="characters"
-              spellcheck="false">
+            <form (ngSubmit)="onFounderRequestSubmit()" class="founder-request-form flex flex-col sm:flex-row gap-4 justify-center mx-auto" novalidate>
+              <input
+                type="email"
+                [(ngModel)]="founderEmail"
+                name="founderEmail"
+                placeholder="Tu correo electrónico"
+                required
+                class="founder-request-input flex-1 px-6 py-4 rounded-full border-2"
+                autocomplete="email">
 
-            <button
-              type="button"
-              class="btn-founder"
-              [disabled]="founderCode.trim().length <= 3"
-              (click)="validateFounderCodeAndContinue()">
-              {{ founderButtonText }}
-            </button>
+              <button
+                type="submit"
+                class="founder-request-button btn-founder px-8 py-4 rounded-full cta-button flex items-center justify-center gap-2 whitespace-nowrap">
+                Quiero ser de los primeros
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </button>
+            </form>
           </div>
         </div>
 

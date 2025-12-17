@@ -5,8 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { PromoModalComponent, PromoFormData } from './promocion/promo-modal.component';
 import { PromoService } from '../../services/promo.service';
 
-type FounderStatus = 'idle' | 'success' | 'error';
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -26,12 +24,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     scale: { month: '89.000', year: '890.000' }
   } as const;
 
-  // Founder code state
-  founderCode = '';
-  founderStatus: FounderStatus = 'idle';
-  founderShake = false;
-
-  private readonly FOUNDER_CODE = 'ADOMI2025';
+  // Founder request state
+  founderEmail = '';
 
   constructor(
     private promoService: PromoService,
@@ -128,36 +122,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  onFounderCodeChange() {
-    if (this.founderStatus !== 'idle') {
-      this.founderStatus = 'idle';
-    }
-    if (this.founderShake) {
-      this.founderShake = false;
-    }
-  }
-
-  get founderButtonText() {
-    if (this.founderStatus === 'success') return '¡Código Correcto!';
-    if (this.founderStatus === 'error') return 'Código Inválido';
-    return 'Validar y Activar';
-  }
-
-  validateFounderCodeAndContinue() {
-    const code = this.founderCode.trim().toUpperCase();
-    if (!code) return;
-
-    if (code === this.FOUNDER_CODE) {
-      this.founderStatus = 'success';
-      this.goToRegister('Fundador');
-      return;
-    }
-
-    this.founderStatus = 'error';
-    this.founderShake = true;
-    setTimeout(() => {
-      this.founderShake = false;
-    }, 550);
+  onFounderRequestSubmit() {
+    // Navega a crear cuenta; opcionalmente el register puede leer email desde query param para prellenar.
+    void this.router.navigate(['/auth/register'], {
+      queryParams: {
+        plan: 'Fundador',
+        billing: this.isAnnual ? 'anual' : 'mensual',
+        email: this.founderEmail?.trim() || undefined
+      }
+    });
   }
 
   // Animation initialization
