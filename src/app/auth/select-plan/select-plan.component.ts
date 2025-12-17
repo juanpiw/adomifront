@@ -554,14 +554,6 @@ export class SelectPlanComponent implements OnInit {
       enabled: true
     });
 
-    const commissionRate = Number(plan.commission_rate ?? 0);
-    if (Number.isFinite(commissionRate) && commissionRate >= 0) {
-      rows.push({
-        label: `Comisión plataforma ${commissionRate}%`,
-        enabled: true
-      });
-    }
-
     return rows;
   }
 
