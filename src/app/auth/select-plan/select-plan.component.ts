@@ -105,50 +105,6 @@ export class SelectPlanComponent implements OnInit {
   promoActivating = false;
   accountSwitchInProgress = false;
   requiresPlan = false;
-  readonly founderFeatureRows: PlanFeatureRow[] = [
-    { label: '3 meses sin comisión de plataforma', enabled: true },
-    { label: 'Prioridad en búsquedas locales', enabled: true },
-    { label: 'Soporte directo del equipo Adomi', enabled: true },
-    { label: 'Acceso a nuevas funciones beta', enabled: true },
-    { label: 'Pagos en efectivo habilitados', enabled: true },
-    { label: 'Sistema de cotizaciones incluido', enabled: true }
-  ];
-  private readonly planSubtitles: Record<string, string> = {
-    fundador: 'Acceso exclusivo “Pioneros”',
-    basico: 'Para empezar',
-    pro: 'Para crecer',
-    premium: 'Para escalar'
-  };
-  private readonly planFeatureMatrix: Record<string, PlanFeatureRow[]> = {
-    basico: [
-      { label: 'Pagos en efectivo', enabled: false },
-      { label: 'Sistema de cotizaciones', enabled: false },
-      { label: 'Promociones activas', enabled: false },
-      { label: 'Portafolio (5 ítems)', enabled: true },
-      { label: 'Ver rating del cliente', enabled: false },
-      { label: 'Soporte estándar', enabled: true },
-      { label: 'Dashboard básico', enabled: true }
-    ],
-    pro: [
-      { label: 'Pagos en efectivo', enabled: true },
-      { label: 'Sistema de cotizaciones', enabled: false },
-      { label: 'Promociones activas (1)', enabled: true },
-      { label: 'Portafolio (25 ítems)', enabled: true },
-      { label: 'Ver rating del cliente', enabled: true },
-      { label: 'Soporte prioritario', enabled: true },
-      { label: 'Dashboard avanzado', enabled: true }
-    ],
-    premium: [
-      { label: 'Pagos en efectivo', enabled: true },
-      { label: 'Sistema de cotizaciones', enabled: true },
-      { label: 'Promociones ilimitadas', enabled: true },
-      { label: 'Portafolio ilimitado', enabled: true },
-      { label: 'Ver rating del cliente', enabled: true },
-      { label: 'FAQ público en el perfil', enabled: true },
-      { label: 'Exportar reportes (CSV)', enabled: true },
-      { label: 'Soporte dedicado 24/7', enabled: true }
-    ]
-  };
   private readonly founderDefaults = {
     services: 10,
     bookings: 50
@@ -422,8 +378,8 @@ export class SelectPlanComponent implements OnInit {
 
   getPlanSavingsLabel(plan: Plan | null): string | null {
     if (!plan || plan.interval !== 'year') return null;
-    const key = this.getPlanKey(plan);
-    const monthlyPeer = this.monthlyPlans.find(p => this.getPlanKey(p) === key);
+    const key = this.getPlanGroupKey(plan);
+    const monthlyPeer = this.monthlyPlans.find(p => this.getPlanGroupKey(p) === key);
     if (!monthlyPeer) return null;
     const yearlyEquivalent = (monthlyPeer.price || 0) * 12;
     const savings = Math.round(yearlyEquivalent - (plan.price || 0));
@@ -432,7 +388,12 @@ export class SelectPlanComponent implements OnInit {
   }
 
   isPlanRecommended(plan: Plan): boolean {
-    return this.getPlanKey(plan) === 'pro';
+    // Preferimos señal por metadata; fallback por comisión más baja.
+    const meta = this.normalizePlanMetadata(plan);
+    if (meta.search_priority && String(meta.search_priority).toLowerCase() === 'high') return true;
+    if (meta.support_level && String(meta.support_level).toLowerCase() === 'priority') return true;
+    const rate = Number(plan.commission_rate ?? 0);
+    return rate > 0 && rate <= 7;
   }
 
   // Promo helpers
@@ -457,13 +418,99 @@ export class SelectPlanComponent implements OnInit {
   }
 
   getPlanSubtitle(plan: Plan | null): string {
-    return this.planSubtitles[this.getPlanKey(plan)] || '';
+    if (!plan) return '';
+    const meta = this.normalizePlanMetadata(plan);
+    const subtitle = meta.subtitle || meta.tagline;
+    if (typeof subtitle === 'string' && subtitle.trim()) return subtitle.trim();
+    // Fallback: usar plan_type (sin depender de nombres)
+    if (plan.plan_type === 'free') return 'Para empezar';
+    if (plan.plan_type === 'paid') return 'Para profesionales';
+    return '';
   }
 
   getPlanFeatureRows(plan: Plan | null): PlanFeatureRow[] {
-    const key = this.getPlanKey(plan);
-    if (key === 'fundador') return this.founderFeatureRows;
-    return this.planFeatureMatrix[key] || [];
+    if (!plan) return [];
+
+    // Fundador (promo): derivar de metadata + duración (6m)
+    if (plan.plan_type === 'founder' || plan.isPromo) {
+      return this.founderFeatureRows;
+    }
+
+    const meta = this.normalizePlanMetadata(plan);
+    const rows: PlanFeatureRow[] = [];
+
+    rows.push({ label: 'Pagos en efectivo', enabled: !!meta.cash_enabled || !!meta.cashEnabled });
+    rows.push({ label: 'Sistema de cotizaciones', enabled: !!meta.quotes_enabled || !!meta.quotesEnabled });
+
+    const promotionsEnabled = !!meta.promotions_enabled || !!meta.promotionsEnabled;
+    const promotionsLimit = Number(meta.promotions_limit ?? meta.promotionsLimit ?? 0);
+    rows.push({
+      label: promotionsEnabled ? (promotionsLimit > 0 ? `Promociones activas (${promotionsLimit})` : 'Promociones activas (ilimitadas)') : 'Promociones activas',
+      enabled: promotionsEnabled
+    });
+
+    const portfolioLimit = Number(meta.portfolio_limit ?? meta.portfolioLimit ?? 0);
+    rows.push({
+      label: portfolioLimit > 0 ? `Portafolio (${portfolioLimit} ítems)` : 'Portafolio (ilimitado)',
+      enabled: true
+    });
+
+    const faqEnabled = !!meta.faq_enabled || !!meta.faqEnabled;
+    const faqLimit = Number(meta.faq_limit ?? meta.faqLimit ?? 0);
+    rows.push({
+      label: faqEnabled ? (faqLimit > 0 ? `FAQ público (${faqLimit})` : 'FAQ público') : 'FAQ público',
+      enabled: faqEnabled
+    });
+
+    rows.push({ label: 'Ver rating del cliente', enabled: !!meta.client_rating_visible || !!meta.clientRatingVisible });
+    rows.push({ label: 'Exportar reportes (CSV)', enabled: !!meta.csv_export_enabled || !!meta.csvExportEnabled });
+
+    const analyticsTier = String(meta.analytics_tier ?? meta.analyticsTier ?? '').toLowerCase();
+    rows.push({ label: analyticsTier === 'advanced' ? 'Dashboard avanzado' : 'Dashboard básico', enabled: true });
+
+    const supportLevel = String(meta.support_level ?? meta.supportLevel ?? '').toLowerCase();
+    rows.push({
+      label: supportLevel ? `Soporte ${supportLevel}` : 'Soporte',
+      enabled: true
+    });
+
+    const commissionRate = Number(plan.commission_rate ?? 0);
+    if (Number.isFinite(commissionRate) && commissionRate >= 0) {
+      rows.push({
+        label: `Comisión plataforma ${commissionRate}%`,
+        enabled: true
+      });
+    }
+
+    return rows;
+  }
+
+  private normalizePlanMetadata(plan: Plan | null | undefined): Record<string, any> {
+    if (!plan?.metadata) return {};
+    const raw = plan.metadata;
+    if (raw && typeof raw === 'object') return raw;
+    try {
+      return JSON.parse(String(raw));
+    } catch {
+      return {};
+    }
+  }
+
+  get founderDurationMonths(): number {
+    const months = Number(this.promoMeta?.max_duration_months || this.promoPlan?.duration_months || 6);
+    return Number.isFinite(months) && months > 0 ? months : 6;
+  }
+
+  get founderFeatureRows(): PlanFeatureRow[] {
+    const months = this.founderDurationMonths;
+    return [
+      { label: `${months} meses sin comisión de plataforma`, enabled: true },
+      { label: 'Prioridad en búsquedas locales', enabled: true },
+      { label: 'Soporte directo del equipo Adomi', enabled: true },
+      { label: 'Acceso a nuevas funciones beta', enabled: true },
+      { label: 'Pagos en efectivo habilitados', enabled: true },
+      { label: 'Sistema de cotizaciones incluido', enabled: true }
+    ];
   }
 
   private async registerAndRedirectForPromo(): Promise<void> {
@@ -573,12 +620,13 @@ export class SelectPlanComponent implements OnInit {
     }
   }
 
-  getPlanKey(plan: Plan | null | undefined): 'fundador' | 'basico' | 'pro' | 'premium' {
-    const name = (plan?.name || '').toLowerCase();
-    if (name.includes('fundador')) return 'fundador';
-    if (name.includes('premium')) return 'premium';
-    if (name.includes('pro')) return 'pro';
-    return 'basico';
+  getPlanGroupKey(plan: Plan | null | undefined): string {
+    if (!plan) return 'unknown';
+    const meta = this.normalizePlanMetadata(plan);
+    const key = meta.plan_key || meta.planKey || meta.tier || meta.group || meta.group_key || meta.groupKey;
+    if (typeof key === 'string' && key.trim()) return key.trim().toLowerCase();
+    // Fallback: estable por id (evita hardcode por nombre)
+    return `plan-${plan.id}`;
   }
 
   private cleanupSessionStorage() {

@@ -335,19 +335,19 @@
           </ul>
 
           <div class="founder-input-area">
-            <form (ngSubmit)="onFounderRequestSubmit()" class="founder-request-form flex flex-col sm:flex-row gap-4 justify-center mx-auto" novalidate>
+            <form (ngSubmit)="onFounderRequestSubmit()" class="founder-request-form" novalidate>
               <input
                 type="email"
                 [(ngModel)]="founderEmail"
                 name="founderEmail"
                 placeholder="Tu correo electrónico"
                 required
-                class="founder-request-input flex-1 px-6 py-4 rounded-full border-2"
+                class="founder-request-input"
                 autocomplete="email">
 
               <button
                 type="submit"
-                class="founder-request-button btn-founder px-8 py-4 rounded-full cta-button flex items-center justify-center gap-2 whitespace-nowrap">
+                class="founder-request-button btn-founder">
                 Quiero ser de los primeros
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>

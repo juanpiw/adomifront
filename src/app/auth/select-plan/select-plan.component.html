@@ -53,7 +53,7 @@
       </div>
       <div class="plan-card__price">
         <span class="plan-card__price-value">{{ formatDisplayPrice(0) }}</span>
-        <span class="plan-card__price-interval">/ 3 meses</span>
+        <span class="plan-card__price-interval">/ {{ founderDurationMonths }} meses</span>
       </div>
       <p class="plan-card__description">
         Lanzamiento preferente con la comunidad Adomi. Beneficios especiales por ser de los primeros.
@@ -140,7 +140,7 @@
     <div
       *ngFor="let plan of getCurrentPlans()"
       class="plan-card"
-      [attr.data-plan]="getPlanKey(plan)"
+      [attr.data-plan]="getPlanGroupKey(plan)"
       [class.plan-card--selected]="selectedPlan?.id === plan.id"
       [class.plan-card--recommended]="isPlanRecommended(plan)"
       [class.plan-card--disabled]="isPromoActive()"

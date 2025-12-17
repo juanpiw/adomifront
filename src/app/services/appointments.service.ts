@@ -56,6 +56,7 @@ export class AppointmentsService {
   private appointmentUpdated$ = new Subject<AppointmentDto>();
   private appointmentDeleted$ = new Subject<{ id: number }>();
   private paymentCompleted$ = new Subject<{ appointment_id: number; amount?: number }>();
+  private debtUpdated$ = new Subject<{ provider_id: number; current_debt: number; debt_limit: number; is_blocked_for_debt: boolean }>();
 
   private headers(): HttpHeaders {
     const token = this.auth.getAccessToken();
@@ -260,6 +261,16 @@ export class AppointmentsService {
       this.socket.on('appointment:updated', (a: AppointmentDto) => this.appointmentUpdated$.next(a));
       this.socket.on('appointment:deleted', (p: { id: number }) => this.appointmentDeleted$.next(p));
       this.socket.on('payment:completed', (p: { appointment_id: number; amount?: number }) => this.paymentCompleted$.next(p));
+      this.socket.on('debt:updated', (p: any) => {
+        try {
+          this.debtUpdated$.next({
+            provider_id: Number(p?.provider_id || p?.providerId || userId),
+            current_debt: Number(p?.current_debt || 0),
+            debt_limit: Number(p?.debt_limit || 20000),
+            is_blocked_for_debt: !!p?.is_blocked_for_debt
+          });
+        } catch {}
+      });
     } catch {}
   }
 
@@ -267,6 +278,9 @@ export class AppointmentsService {
   onAppointmentUpdated(): Observable<AppointmentDto> { return this.appointmentUpdated$.asObservable(); }
   onAppointmentDeleted(): Observable<{ id: number }> { return this.appointmentDeleted$.asObservable(); }
   onPaymentCompleted(): Observable<{ appointment_id: number; amount?: number }> { return this.paymentCompleted$.asObservable(); }
+  onDebtUpdated(): Observable<{ provider_id: number; current_debt: number; debt_limit: number; is_blocked_for_debt: boolean }>{
+    return this.debtUpdated$.asObservable();
+  }
 
   // ========================================
   // CÓDIGOS DE VERIFICACIÓN
