@@ -1022,6 +1022,43 @@ nav {
   box-shadow: 0 0 0 4px rgba(252, 211, 77, 0.16);
 }
 
+/* Founder code input (replaces email request) */
+.founder-code-input {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+}
+
+.founder-code-input::placeholder {
+  color: #94a3b8;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.founder-code-input:focus {
+  outline: none;
+  border-color: var(--founder-accent);
+  box-shadow: 0 0 0 4px rgba(252, 211, 77, 0.16);
+}
+
+.founder-code-error {
+  display: block;
+  margin-top: 0.5rem;
+  color: #fecaca;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 .pricing-v2 .btn-founder {
   width: 100%;
   background: var(--founder-accent);

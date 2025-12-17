@@ -273,7 +273,9 @@
             type="button"
             class="toggle-switch"
             [class.checked]="isAnnual"
-            (click)="toggleBilling()"
+            role="switch"
+            [attr.aria-checked]="isAnnual"
+            (click)="toggleBilling(); $event.stopPropagation()"
             aria-label="Cambiar entre mensual y anual">
             <span class="toggle-slider"></span>
           </button>
@@ -335,25 +337,25 @@
           </ul>
 
           <div class="founder-input-area">
-            <form (ngSubmit)="onFounderRequestSubmit()" class="founder-request-form" novalidate>
-              <input
-                type="email"
-                [(ngModel)]="founderEmail"
-                name="founderEmail"
-                placeholder="Tu correo electrónico"
-                required
-                class="founder-request-input"
-                autocomplete="email">
+            <input
+              type="text"
+              [(ngModel)]="founderCode"
+              name="founderCode"
+              placeholder="Ingresa tu código Fundador"
+              class="founder-code-input"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false">
 
-              <button
-                type="submit"
-                class="founder-request-button btn-founder">
-                Quiero ser de los primeros
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                </svg>
-              </button>
-            </form>
+            <button
+              type="button"
+              class="btn-founder"
+              [disabled]="founderCodeLoading || founderCode.trim().length < 3"
+              (click)="validateFounderCode()">
+              {{ founderCodeLoading ? 'Validando…' : 'Validar y continuar' }}
+            </button>
+
+            <small class="founder-code-error" *ngIf="founderCodeError">{{ founderCodeError }}</small>
           </div>
         </div>
 

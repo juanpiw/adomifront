@@ -10,6 +10,18 @@ export interface PlanInfo {
   expires_at: string | null;
   is_expired: boolean;
   days_remaining: number | null;
+  // Extended fields (optional for backwards compatibility)
+  price?: number | null;
+  currency?: string | null;
+  billing_period?: 'month' | 'year' | string | null;
+  commission_rate?: number | null;
+  effective_commission_rate?: number | null;
+  plan_key?: string | null;
+  plan_type?: string | null;
+  promo_expires_at?: string | null;
+  founder_expires_at?: string | null;
+  founder_discount_until?: string | null;
+  founder_discount_active?: boolean;
 }
 
 export interface PlanExpirationResponse {

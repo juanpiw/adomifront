@@ -404,7 +404,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
             const planName = String(response.currentPlan.name || '').toLowerCase();
             const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
-            const derivedFounder = this.sessionService.isFounder();
+            const derivedFounder = !!(response.currentPlan as any)?.founder_expires_at || !!(response.currentPlan as any)?.founder_discount_active;
             const isFounder = planName.includes('fundador') || planName.includes('founder') || planType.includes('fundador') || planType.includes('founder') || derivedFounder;
             this.isFounderAccount = isFounder;
             this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
@@ -807,49 +807,76 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   private refreshPlanTierDescriptor(): void {
-    const planName = this.planInfo?.name || null;
-    this.planTierInfo = this.resolvePlanTierDescriptor(planName, this.isFounderAccount);
+    this.planTierInfo = this.resolvePlanTierDescriptor(this.planInfo, this.isFounderAccount);
   }
 
-  private resolvePlanTierDescriptor(planName: string | null, isFounder: boolean): PlanTierDescriptor | null {
+  private resolvePlanTierDescriptor(plan: any | null, isFounder: boolean): PlanTierDescriptor | null {
+    if (!plan) return null;
+
+    const planKey = String(plan?.plan_key || '').toLowerCase();
+    const planName = String(plan?.name || '').trim();
+    const billing = String(plan?.billing_period || '').toLowerCase();
+    const priceNum = plan?.price !== null && plan?.price !== undefined ? Number(plan.price) : null;
+    const effectiveRate = plan?.effective_commission_rate !== null && plan?.effective_commission_rate !== undefined
+      ? Number(plan.effective_commission_rate)
+      : null;
+    const founderDiscountActive = !!plan?.founder_discount_active;
+
+    const formatClp = (n: number) =>
+      new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(Math.max(0, Math.round(n)));
+    const priceLabel = (() => {
+      if (!(priceNum !== null && Number.isFinite(priceNum)) || priceNum <= 0) return 'Gratis';
+      const suffix = billing === 'year' ? '/año' : '/mes';
+      return `$${formatClp(priceNum)}${suffix}`;
+    })();
+    const commissionLabel = effectiveRate !== null && Number.isFinite(effectiveRate)
+      ? `${Math.round(effectiveRate * 10) / 10}% comisión`
+      : 'Comisión';
+
     if (isFounder) {
+      if (founderDiscountActive) {
+        return {
+          chip: '💎 Fundador',
+          detail: `Descuento Fundador · -15% fee por 6 meses · ${commissionLabel}`,
+          variant: 'founder'
+        };
+      }
       return {
         chip: '💎 Fundador',
-        detail: 'Plan promocional · 0% comisión por 3 meses',
+        detail: `Plan promocional · 0% comisión por 3 meses`,
         variant: 'founder'
       };
     }
 
-    if (!planName) {
-      return null;
-    }
-    const normalized = planName.toLowerCase();
-
-    if (normalized.includes('premium')) {
+    // Map por plan_key cuando existe
+    if (planKey === 'scale' || planName.toLowerCase().includes('scale')) {
       return {
-        chip: '🚀 Plan Premium',
-        detail: 'Para escalar · $19.990/mes · 10% comisión',
+        chip: '🚀 Plan Scale',
+        detail: `Para escalar · ${priceLabel} · ${commissionLabel}`,
         variant: 'premium'
       };
     }
-
-    if (normalized.includes('pro')) {
+    if (planKey === 'pro' || planName.toLowerCase().includes('pro')) {
       return {
         chip: '⭐ Plan Pro',
-        detail: 'Para crecer · $9.990/mes · 14% comisión',
+        detail: `Para crecer · ${priceLabel} · ${commissionLabel}`,
         variant: 'pro'
       };
     }
-
-    if (normalized.includes('básico') || normalized.includes('basico') || normalized.includes('basic')) {
+    if (planKey === 'starter' || planName.toLowerCase().includes('starter') || planName.toLowerCase().includes('básico') || planName.toLowerCase().includes('basico') || planName.toLowerCase().includes('basic')) {
       return {
-        chip: 'Plan Básico',
-        detail: 'Para empezar · $4.990/mes · 18% comisión',
+        chip: 'Plan Starter',
+        detail: `Para empezar · ${priceLabel} · ${commissionLabel}`,
         variant: 'basic'
       };
     }
 
-    return null;
+    // Fallback genérico
+    return {
+      chip: planName || 'Plan',
+      detail: `${priceLabel} · ${commissionLabel}`,
+      variant: 'basic'
+    };
   }
 
   private async initializeNotifications(): Promise<void> {

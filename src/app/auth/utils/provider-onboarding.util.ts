@@ -15,11 +15,18 @@ const TEMP_USER_KEY = 'tempUserData';
  */
 export function needsProviderPlan(user?: Partial<AuthUser> | null): boolean {
   if (!user) return false;
+  const hasActivePlan = !!user.active_plan_id;
+  const finalRoleProvider = user.role === 'provider';
+
+  // ✅ Estado corrupto/legacy: ya es provider pero no tiene plan asignado
+  // (tras el fix backend no debería ocurrir, pero evita acceso a /dash/* sin plan)
+  if (finalRoleProvider && !hasActivePlan) {
+    return true;
+  }
+
   const pendingProvider = user.pending_role === 'provider';
   if (!pendingProvider) return false;
   const switchInProgress = !!user.account_switch_in_progress;
-  const hasActivePlan = !!user.active_plan_id;
-  const finalRoleProvider = user.role === 'provider';
   // Si ya es provider y tiene plan activo, no necesita plan.
   if (finalRoleProvider && hasActivePlan) {
     return false;

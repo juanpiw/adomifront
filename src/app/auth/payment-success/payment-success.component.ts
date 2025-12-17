@@ -161,20 +161,18 @@ export class PaymentSuccessComponent implements OnInit {
                 this.router.navigateByUrl('/dash/home');
               } else if (attempts >= maxAttempts) {
                 clearInterval(poll);
-                // Fallback: si la intención era proveedor, dirigir al dashboard de proveedor
+                // Timeout: si no se activó el plan esperado, volver a selección de plan (evita acceso premium sin plan)
+                if (expectedPlanId) {
+                  console.warn('[PAYMENT_SUCCESS] Timeout polling. Plan no confirmado. Redirigiendo a /auth/select-plan');
+                  this.router.navigate(['/auth/select-plan'], {
+                    queryParams: { status: 'pending_activation' }
+                  });
+                  return;
+                }
+
+                // Sin expectedPlanId: fallback conservador
                 if (intendedProvider) {
-                  // Enviar al wizard si faltan payouts
-                  try {
-                    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
-                    const u = raw ? JSON.parse(raw) : {};
-                    const payoutsEnabled = (u as any)?.stripe_payouts_enabled === 1 || (u as any)?.stripe_payouts_enabled === true;
-                    if (!payoutsEnabled) {
-                      console.warn('[PAYMENT_SUCCESS] Timeout polling. Fallback /dash/ingresos');
-                      this.router.navigateByUrl('/dash/ingresos');
-                      return;
-                    }
-                  } catch {}
-                  console.warn('[PAYMENT_SUCCESS] Timeout polling. Fallback /dash/home');
+                  console.warn('[PAYMENT_SUCCESS] Timeout polling (sin expectedPlanId). Fallback /dash/home');
                   this.router.navigateByUrl('/dash/home');
                 } else {
                   console.warn('[PAYMENT_SUCCESS] Timeout polling. Rol cliente. Fallback /client/reservas');
@@ -186,11 +184,14 @@ export class PaymentSuccessComponent implements OnInit {
               console.warn('[PAYMENT_SUCCESS] Error en /auth/me');
               if (attempts >= maxAttempts) {
                 clearInterval(poll);
-                if (intendedProvider) {
-                  this.router.navigateByUrl('/dash/home');
-                } else {
-                  this.router.navigateByUrl('/client/reservas');
+                if (expectedPlanId) {
+                  this.router.navigate(['/auth/select-plan'], {
+                    queryParams: { status: 'pending_activation' }
+                  });
+                  return;
                 }
+                if (intendedProvider) this.router.navigateByUrl('/dash/home');
+                else this.router.navigateByUrl('/client/reservas');
               }
             }
           });

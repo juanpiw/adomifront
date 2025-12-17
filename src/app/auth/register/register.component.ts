@@ -49,10 +49,34 @@ export class RegisterComponent implements OnInit {
     // Verificar si los términos ya fueron aceptados
     this.checkTermsAccepted();
     
-    // ✅ Verificar query parameters para errores de Google OAuth
+    // ✅ Verificar query parameters para errores de Google OAuth / preselecciones (Fundador, role, promo)
     this.route.queryParams.subscribe(params => {
       if (params['error']) {
         this.handleGoogleOAuthError(params);
+      }
+
+      // Prefill role/email/promo desde Home (Fundador)
+      const roleParam = String(params['role'] || '').toLowerCase();
+      const planParam = String(params['plan'] || '').toLowerCase();
+      const promoParam = String(params['promo'] || '').trim();
+      const emailParam = String(params['email'] || '').trim();
+
+      if (emailParam && !this.email) {
+        this.email = emailParam;
+      }
+
+      const forceProvider = roleParam === 'provider' || planParam === 'fundador';
+      if (forceProvider && this.selectedRole !== 'provider') {
+        // Mueve al flujo de proveedor (paso 2) automáticamente
+        this.setRole('provider');
+      }
+
+      if (promoParam) {
+        try {
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('promoCode', promoParam.toUpperCase());
+          }
+        } catch {}
       }
     });
   }

@@ -4,6 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PromoModalComponent, PromoFormData } from './promocion/promo-modal.component';
 import { PromoService } from '../../services/promo.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
+interface PromoValidationResponse {
+  ok: boolean;
+  promo?: { code: string };
+  error?: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -24,11 +32,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     scale: { month: '89.000', year: '890.000' }
   } as const;
 
-  // Founder request state
-  founderEmail = '';
+  // Founder code state
+  founderCode = '';
+  founderCodeLoading = false;
+  founderCodeError: string | null = null;
 
   constructor(
     private promoService: PromoService,
+    private http: HttpClient,
     private router: Router
   ) {}
 
@@ -122,15 +133,47 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  onFounderRequestSubmit() {
-    // Navega a crear cuenta; opcionalmente el register puede leer email desde query param para prellenar.
-    void this.router.navigate(['/auth/register'], {
-      queryParams: {
-        plan: 'Fundador',
-        billing: this.isAnnual ? 'anual' : 'mensual',
-        email: this.founderEmail?.trim() || undefined
-      }
-    });
+  validateFounderCode() {
+    const code = this.founderCode.trim().toUpperCase();
+    if (!code || code.length < 3 || this.founderCodeLoading) return;
+
+    this.founderCodeLoading = true;
+    this.founderCodeError = null;
+
+    const billing = this.isAnnual ? 'year' : 'month';
+    this.http
+      .post<PromoValidationResponse>(`${environment.apiBaseUrl}/plans/validate-code`, { code, billing })
+      .subscribe({
+        next: (resp) => {
+          this.founderCodeLoading = false;
+          if (!resp?.ok) {
+            this.founderCodeError = resp?.error || 'Código inválido. Verifica e intenta nuevamente.';
+            return;
+          }
+
+          try {
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('promoCode', code);
+              sessionStorage.setItem('promoBilling', billing);
+            }
+          } catch {}
+
+          void this.router.navigate(['/auth/register'], {
+            queryParams: {
+              role: 'provider',
+              plan: 'Fundador',
+              promo: code
+            }
+          });
+        },
+        error: (err) => {
+          this.founderCodeLoading = false;
+          this.founderCodeError =
+            err?.error?.error ||
+            err?.error?.message ||
+            'No pudimos validar el código. Intenta nuevamente.';
+        }
+      });
   }
 
   // Animation initialization

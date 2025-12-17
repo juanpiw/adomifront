@@ -108,6 +108,9 @@
         <a routerLink="/dash/home" routerLinkActive="active" (click)="onNav()"><ui-icon name="home"></ui-icon><span>Inicio</span></a>
         <a routerLink="/dash/agenda" routerLinkActive="active" (click)="onNav()"><ui-icon name="calendar"></ui-icon><span>Agenda</span></a>
         <a routerLink="/dash/ingresos" routerLinkActive="active" (click)="onNav()"><ui-icon name="money"></ui-icon><span>Ingresos</span></a>
+        <a routerLink="/auth/select-plan" routerLinkActive="active" (click)="onNav()">
+          <ui-icon name="credit-card"></ui-icon><span>Cambiar plan</span>
+        </a>
       <a *ngIf="hasQuotesFeature" routerLink="/dash/cotizaciones" routerLinkActive="active" (click)="onNav()">
         <ui-icon name="file-text"></ui-icon>
         <span>Cotizaciones</span>

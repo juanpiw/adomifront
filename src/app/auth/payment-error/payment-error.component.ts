@@ -23,17 +23,27 @@ export class PaymentErrorComponent implements OnInit {
     }
   }
 
+  private cleanupOnboardingStorage() {
+    try {
+      if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('tempUserData');
+        sessionStorage.removeItem('selectedPlan');
+        sessionStorage.removeItem('promoCode');
+        sessionStorage.removeItem('paymentGateway');
+        sessionStorage.removeItem('tbkPlanPending');
+        sessionStorage.removeItem('providerOnboarding');
+      }
+    } catch {}
+  }
+
   goToRegister() {
-    // Limpiar datos temporales
-    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('tempUserData');
-      sessionStorage.removeItem('selectedPlan');
-    }
+    this.cleanupOnboardingStorage();
     
     this.router.navigateByUrl('/auth/register');
   }
 
   goToSelectPlan() {
+    this.cleanupOnboardingStorage();
     this.router.navigateByUrl('/auth/select-plan');
   }
 

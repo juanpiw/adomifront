@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService, AuthUser } from '../services/auth.service';
@@ -95,6 +95,8 @@ export class SelectPlanComponent implements OnInit {
   monthlyPlans: Plan[] = [];
   annualPlans: Plan[] = [];
 
+  pendingActivation = false;
+
   // Promo / Fundador state
   promoCode: string = '';
   promoLoading = false;
@@ -105,6 +107,7 @@ export class SelectPlanComponent implements OnInit {
   promoActivating = false;
   accountSwitchInProgress = false;
   requiresPlan = false;
+  private autoPromoApplied = false;
   private readonly founderDefaults = {
     services: 10,
     bookings: 50
@@ -159,10 +162,14 @@ export class SelectPlanComponent implements OnInit {
 
   private http = inject(HttpClient);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
 
   ngOnInit() {
     console.log('[SELECT_PLAN] Init');
+    this.route.queryParams.subscribe(params => {
+      this.pendingActivation = String(params['status'] || '') === 'pending_activation';
+    });
     // Verificar que hay datos temporales del usuario
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;
@@ -254,6 +261,7 @@ export class SelectPlanComponent implements OnInit {
           });
           this.plans = filtered;
           this.separatePlansByInterval();
+          this.tryAutoApplyPromoFromSession();
           this.loading = false;
         },
         error: (error) => {
@@ -262,6 +270,20 @@ export class SelectPlanComponent implements OnInit {
           this.loading = false;
         }
       });
+  }
+
+  private tryAutoApplyPromoFromSession(): void {
+    if (this.autoPromoApplied || this.promoLoading || this.isPromoActive()) return;
+    try {
+      if (typeof sessionStorage === 'undefined') return;
+      const stored = String(sessionStorage.getItem('promoCode') || '').trim();
+      if (!stored) return;
+      this.promoCode = stored;
+      this.autoPromoApplied = true;
+      this.applyPromoCode();
+    } catch {
+      // ignore
+    }
   }
 
   // ===== Pricing-v2 helpers (para mantener el mismo HTML que la landing) =====

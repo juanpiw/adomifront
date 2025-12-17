@@ -16,6 +16,11 @@
       <h1 class="pricing-v2__title">Elige cómo quieres crecer</h1>
       <p class="pricing-v2__subtitle">Reduce tus comisiones pagando una suscripción mensual o empieza gratis.</p>
 
+      <div class="status-banner status-banner--info" *ngIf="pendingActivation">
+        <strong>Tu pago aún se está confirmando.</strong>
+        <span>Si ya pagaste, espera unos segundos y vuelve a intentarlo. Si cancelaste, puedes seleccionar otro plan.</span>
+      </div>
+
       <div class="pricing-v2__billing-toggle billing-toggle-wrapper" role="group" aria-label="Seleccionar periodicidad">
         <button
           type="button"
