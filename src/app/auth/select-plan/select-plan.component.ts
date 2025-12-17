@@ -110,6 +110,9 @@ export class SelectPlanComponent implements OnInit {
     bookings: 50
   };
 
+  // Pricing-v2 Founder request (mismo HTML que landing)
+  founderEmail: string = '';
+
   private http = inject(HttpClient);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -194,11 +197,18 @@ export class SelectPlanComponent implements OnInit {
 
   loadPlans() {
     console.log('[SELECT_PLAN] Cargando planes...');
-    this.http.get<{ ok: boolean; plans: Plan[] }>(`${environment.apiBaseUrl}/plans`)
+    this.http.get<{ ok: boolean; plans: Plan[] }>(`${environment.apiBaseUrl}/plans?scope=select_plan`)
       .subscribe({
         next: (response) => {
           console.log('[SELECT_PLAN] Planes recibidos:', response);
-          this.plans = response.plans;
+          // Fallback defensivo: aunque backend filtre, evitamos que planes legacy aparezcan
+          const allowed = new Set(['starter', 'pro', 'scale']);
+          const filtered = (response.plans || []).filter(p => {
+            const meta: any = this.normalizePlanMetadata(p);
+            const key = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
+            return allowed.has(key);
+          });
+          this.plans = filtered;
           this.separatePlansByInterval();
           this.loading = false;
         },
@@ -208,6 +218,65 @@ export class SelectPlanComponent implements OnInit {
           this.loading = false;
         }
       });
+  }
+
+  // ===== Pricing-v2 helpers (para mantener el mismo HTML que la landing) =====
+  getPlanForKey(key: 'starter' | 'pro' | 'scale'): Plan | null {
+    const plans = this.getCurrentPlans();
+    for (const p of plans) {
+      const meta: any = this.normalizePlanMetadata(p);
+      const k = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
+      if (k === key) return p;
+    }
+    return null;
+  }
+
+  getTierKey(plan: Plan | null): 'starter' | 'pro' | 'scale' | 'unknown' {
+    if (!plan) return 'unknown';
+    const meta: any = this.normalizePlanMetadata(plan);
+    const k = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
+    if (k === 'starter' || k === 'pro' || k === 'scale') return k;
+    return 'unknown';
+  }
+
+  getPortfolioLimitLabel(plan: Plan | null, fallback: string): string {
+    if (!plan) return fallback;
+    const meta: any = this.normalizePlanMetadata(plan);
+    const raw = Number(meta?.['portfolio_limit'] ?? meta?.['portfolioLimit']);
+    if (Number.isFinite(raw) && raw > 0) return `${Math.floor(raw)} items`;
+    if (raw === 0) return '0 items';
+    return fallback;
+  }
+
+  getAnalyticsLabel(plan: Plan | null, fallback: string): string {
+    if (!plan) return fallback;
+    const meta: any = this.normalizePlanMetadata(plan);
+    const tier = String(meta?.['analytics_tier'] ?? meta?.['analyticsTier'] ?? '').toLowerCase();
+    if (tier === 'advanced' || tier === 'avanzado') return 'Avanzado';
+    if (tier === 'basic' || tier === 'basico' || tier === 'básico') return 'Básico';
+    return fallback;
+  }
+
+  getVisibilityLabel(plan: Plan | null, fallback: string): string {
+    if (!plan) return fallback;
+    const meta: any = this.normalizePlanMetadata(plan);
+    const prio = String(meta?.['search_priority'] ?? meta?.['searchPriority'] ?? '').toLowerCase();
+    if (prio === 'top') return 'Top';
+    if (prio === 'high' || prio === 'alta') return 'Alta';
+    if (prio === 'standard' || prio === 'estandar' || prio === 'estándar') return 'Estándar';
+    return fallback;
+  }
+
+  onFounderRequestSubmit() {
+    // Igual que landing: envía al registro con email prellenado (no activa plan aquí).
+    const email = (this.founderEmail || '').trim();
+    void this.router.navigate(['/auth/register'], {
+      queryParams: {
+        plan: 'Fundador',
+        billing: this.isAnnualBilling ? 'anual' : 'mensual',
+        email: email || undefined
+      }
+    });
   }
 
   separatePlansByInterval() {

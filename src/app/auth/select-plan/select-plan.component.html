@@ -12,11 +12,11 @@
   </div>
 
   <div class="pricing-v2">
-    <div class="pricing-v2__header">
+    <div class="pricing-v2__header" id="mainHeader">
       <h1 class="pricing-v2__title">Elige cómo quieres crecer</h1>
       <p class="pricing-v2__subtitle">Reduce tus comisiones pagando una suscripción mensual o empieza gratis.</p>
 
-      <div class="billing-toggle-wrapper" role="group" aria-label="Seleccionar periodicidad">
+      <div class="pricing-v2__billing-toggle billing-toggle-wrapper" role="group" aria-label="Seleccionar periodicidad">
         <button
           type="button"
           class="billing-label"
@@ -49,7 +49,7 @@
           Anual
         </button>
 
-        <span class="savings-badge" *ngIf="getSavingsPercentage() > 0">AHORRA {{ getSavingsPercentage() }}%</span>
+        <span class="savings-badge">2 meses GRATIS</span>
       </div>
     </div>
 
@@ -63,161 +63,243 @@
       <button class="btn-primary" (click)="loadPlans()">Reintentar</button>
     </div>
 
-    <div *ngIf="!loading && !error" class="plans-grid pricing-v2__grid">
-      <!-- NO TOCAR: Card Fundador (funcionalidad de validación ya implementada) -->
-      <div class="plan-card plan-card--founder" data-plan="fundador" [class.plan-card--selected]="isPromoActive()">
-        <div class="plan-card__badge">¡LIMITADO!</div>
-        <div class="plan-card__header">
-          <div>
-            <h3>Fundador</h3>
-            <p>Acceso exclusivo “Pioneros”</p>
-          </div>
-          <span class="plan-card__tag">Acceso exclusivo</span>
-        </div>
-        <div class="plan-card__price">
-          <span class="plan-card__price-value">{{ formatDisplayPrice(0) }}</span>
-          <span class="plan-card__price-interval">/ {{ founderDurationMonths }} meses</span>
-        </div>
-        <p class="plan-card__description">
-          Lanzamiento preferente con la comunidad Adomi. Beneficios especiales por ser de los primeros.
-        </p>
-
-        <div class="plan-card__limits">
-          <div class="limit">
-            <span class="label">Servicios</span>
-            <span class="value">{{ founderServicesLimitLabel }}</span>
-          </div>
-          <div class="limit">
-            <span class="label">Reservas</span>
-            <span class="value">{{ founderBookingsLimitLabel }}</span>
-          </div>
-        </div>
-
-        <ul class="plan-card__features">
-          <li
-            *ngFor="let feature of founderFeatureRows"
-            [class.plan-card__feature--disabled]="!feature.enabled"
-          >
-            <span
-              class="plan-card__feature-icon"
-              [class.plan-card__feature-icon--check]="feature.enabled"
-              [class.plan-card__feature-icon--x]="!feature.enabled"
-            ></span>
-            <div>
-              <span>{{ feature.label }}</span>
-              <small *ngIf="feature.note">{{ feature.note }}</small>
-            </div>
-          </li>
-        </ul>
-
-        <div class="promo-input-group" [class.active]="isPromoActive()">
-          <input
-            type="text"
-            placeholder="Ingresa tu código Fundador"
-            [(ngModel)]="promoCode"
-            [disabled]="promoDisabled || isPromoActive()"
-          />
-          <button
-            class="btn-apply"
-            type="button"
-            (click)="applyPromoCode()"
-            [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
-          >
-            {{ promoLoading ? 'Validando…' : 'Validar y seleccionar' }}
-          </button>
-          <button
-            class="btn-clear"
-            type="button"
-            *ngIf="isPromoActive()"
-            (click)="clearPromo()"
-          >
-            Quitar código
-          </button>
-        </div>
-
-        <div class="promo-status" *ngIf="promoSuccess">
-          <span class="success">{{ promoSuccess }}</span>
-        </div>
-        <div class="promo-status" *ngIf="promoError">
-          <span class="error">{{ promoError }}</span>
-        </div>
-        <div class="promo-meta" *ngIf="isPromoActive() && promoMeta">
-          <span *ngIf="promoMeta.max_duration_months">
-            Incluye {{ promoMeta.max_duration_months }} meses gratuitos.
-          </span>
-          <span *ngIf="promoMeta.remaining_spots !== null">
-            Cupos disponibles: {{ promoMeta.remaining_spots }}.
-          </span>
-          <span *ngIf="promoMeta.metadata?.['founder_commune'] as founderCommune">
-            Bienvenido/a Fundador en {{ founderCommune }}.
-          </span>
-          <span
-            *ngIf="promoMeta.metadata?.['founder_region'] && promoMeta.metadata?.['founder_commune']"
-            class="promo-meta__badge"
-          >
-            Campaña RM
-          </span>
-        </div>
-      </div>
-
-      <!-- Planes normales (nuevo look del Home) -->
-      <div
-        *ngFor="let plan of getCurrentPlans()"
-        class="plan-card"
-        [attr.data-plan]="getPlanGroupKey(plan)"
-        [class.is-selected]="selectedPlan?.id === plan.id"
-        [class.recommended]="isPlanRecommended(plan)"
-        [class.is-disabled]="isPromoActive()"
-        (click)="selectPlan(plan)"
-      >
-        <div class="badge-recommended" *ngIf="isPlanRecommended(plan)">Recomendado</div>
-
+    <div *ngIf="!loading && !error" class="plans-grid pricing-v2__grid" id="plansGrid">
+      <!-- Fundador (mismo HTML que landing) -->
+      <div class="plan-card plan-card--founder">
+        <div class="founder-badge">¡Limitado!</div>
         <div class="card-header">
-          <h3 class="plan-name">{{ getDisplayPlanName(plan) }}</h3>
-          <p class="plan-desc">{{ plan.description || getPlanSubtitle(plan) }}</p>
+          <h3 class="plan-name">Fundador</h3>
+          <p class="plan-desc">Acceso exclusivo "Pioneros". Beneficios especiales para primeros usuarios.</p>
         </div>
 
         <div class="card-pricing">
           <div class="price-value">
-            <span class="amount" *ngIf="plan.price === 0">Gratis</span>
-            <ng-container *ngIf="plan.price !== 0">
-              <span class="currency">$</span>
-              <span class="amount">{{ formatAmount(plan.price) }}</span>
-              <span class="period">{{ getPlanIntervalLabel(plan) }}</span>
-            </ng-container>
+            <span class="amount">$0</span>
+            <span class="period">/6 meses</span>
           </div>
-
-          <div class="commission-box" [ngClass]="getCommissionBoxClass(plan)">
+          <div class="commission-box">
             <span class="comm-label">Tu Comisión</span>
-            <span class="comm-value">{{ getCommissionLabel(plan) }}</span>
-            <small class="comm-note" *ngFor="let n of getCommissionNotes(plan)">{{ n }}</small>
+            <span class="comm-value">0%</span>
           </div>
         </div>
 
         <ul class="features-list">
-          <li
-            *ngFor="let feature of getPlanFeatureRows(plan)"
-            [class.enabled]="feature.enabled"
-            [class.disabled]="!feature.enabled"
-          >
-            <span class="material-icon icon">{{ feature.enabled ? 'check_circle' : 'cancel' }}</span>
-            <span>
-              {{ feature.label }}
-              <span class="tooltip-hint" *ngIf="feature.note">{{ feature.note }}</span>
-            </span>
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span><strong>Servicios Ilimitados</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span>Prioridad Búsquedas Locales</span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span>Soporte Directo del Equipo</span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">auto_awesome</span>
+            <span>Acceso funciones Beta</span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">payments</span>
+            <span>Pagos en Efectivo Habilitados</span>
           </li>
         </ul>
 
-        <button
-          type="button"
-          class="btn-select"
-          [class.btn-primary]="isPlanRecommended(plan)"
-          [class.btn-outline]="!isPlanRecommended(plan)"
-          (click)="selectPlan(plan); $event.stopPropagation()"
-        >
-          Seleccionar {{ getDisplayPlanName(plan) }}
-        </button>
+        <div class="founder-input-area">
+          <form (ngSubmit)="onFounderRequestSubmit()" class="founder-request-form" novalidate>
+            <input
+              type="email"
+              [(ngModel)]="founderEmail"
+              name="founderEmail"
+              placeholder="Tu correo electrónico"
+              required
+              autocomplete="email"
+              class="founder-request-input"
+            />
+
+            <button type="submit" class="founder-request-button btn-founder">
+              Quiero ser de los primeros
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
+
+      <!-- Starter -->
+      <ng-container *ngIf="getPlanForKey('starter') as starterPlan">
+        <div class="plan-card">
+          <div class="card-header">
+            <h3 class="plan-name">Starter</h3>
+            <p class="plan-desc">Ideal para empezar sin costos fijos. Pagas solo cuando ganas.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="amount">Gratis</span>
+            </div>
+            <div class="commission-box high-comm">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">{{ getCommissionLabel(starterPlan) }}</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="disabled">
+              <span class="material-icon icon">cancel</span>
+              <span>Pagos en Efectivo <span class="tooltip-hint">(Solo tarjeta)</span></span>
+            </li>
+            <li class="disabled">
+              <span class="material-icon icon">cancel</span>
+              <span>Sistema de Cotizaciones</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">photo_library</span>
+              <span>Portafolio: <strong>{{ getPortfolioLimitLabel(starterPlan, '5 items') }}</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">analytics</span>
+              <span>Analytics: <strong>{{ getAnalyticsLabel(starterPlan, 'Básico') }}</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">rocket_launch</span>
+              <span>Visibilidad: <strong>{{ getVisibilityLabel(starterPlan, 'Estándar') }}</strong></span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-select btn-outline" (click)="selectPlan(starterPlan)">Empezar Gratis</button>
+        </div>
+      </ng-container>
+
+      <!-- Pro -->
+      <ng-container *ngIf="getPlanForKey('pro') as proPlan">
+        <div class="plan-card recommended">
+          <div class="badge-recommended">Más Popular</div>
+          <div class="card-header">
+            <h3 class="plan-name">Pro</h3>
+            <p class="plan-desc">Para profesionales activos. Aumenta tu margen de ganancia.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="currency">$</span>
+              <span class="amount">{{ formatAmount(proPlan.price) }}</span>
+              <span class="period">{{ getPlanIntervalLabel(proPlan) }}</span>
+            </div>
+            <div class="commission-box low-comm">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">{{ getCommissionLabel(proPlan) }}</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span><strong>Pagos en Efectivo</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Sistema de Cotizaciones</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">photo_library</span>
+              <span>Portafolio: <strong>{{ getPortfolioLimitLabel(proPlan, '25 items') }}</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">analytics</span>
+              <span>Analytics: <strong>{{ getAnalyticsLabel(proPlan, 'Avanzado') }}</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">rocket_launch</span>
+              <span>Visibilidad: <strong>{{ getVisibilityLabel(proPlan, 'Alta') }}</strong></span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-select btn-primary" (click)="selectPlan(proPlan)">Elegir Pro</button>
+        </div>
+      </ng-container>
+
+      <!-- Scale -->
+      <ng-container *ngIf="getPlanForKey('scale') as scalePlan">
+        <div class="plan-card">
+          <div class="card-header">
+            <h3 class="plan-name">Scale</h3>
+            <p class="plan-desc">Para agencias y alto volumen. Máxima rentabilidad.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="currency">$</span>
+              <span class="amount">{{ formatAmount(scalePlan.price) }}</span>
+              <span class="period">{{ getPlanIntervalLabel(scalePlan) }}</span>
+            </div>
+            <div class="commission-box low-comm">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">{{ getCommissionLabel(scalePlan) }}</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Pagos en Efectivo</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Cotizaciones <strong>Marca Blanca</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">photo_library</span>
+              <span>Portafolio: <strong>{{ getPortfolioLimitLabel(scalePlan, 'Ilimitado') }}</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">analytics</span>
+              <span>Analytics + <strong>Exportar CSV</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">rocket_launch</span>
+              <span>Visibilidad: <strong>{{ getVisibilityLabel(scalePlan, 'Top') }}</strong></span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-select btn-outline" (click)="selectPlan(scalePlan)">Elegir Scale</button>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Código Fundador (mantiene funcionalidad sin tocar el card) -->
+    <div *ngIf="!loading && !error" class="promo-input-group" [class.active]="isPromoActive()">
+      <input
+        type="text"
+        placeholder="¿Tienes un código Fundador? Ingresa aquí"
+        [(ngModel)]="promoCode"
+        [disabled]="promoDisabled || isPromoActive()"
+      />
+      <button
+        class="btn-apply"
+        type="button"
+        (click)="applyPromoCode()"
+        [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
+      >
+        {{ promoLoading ? 'Validando…' : 'Validar' }}
+      </button>
+      <button
+        class="btn-clear"
+        type="button"
+        *ngIf="isPromoActive()"
+        (click)="clearPromo()"
+      >
+        Quitar
+      </button>
+    </div>
+
+    <div class="promo-status" *ngIf="promoSuccess">
+      <span class="success">{{ promoSuccess }}</span>
+    </div>
+    <div class="promo-status" *ngIf="promoError">
+      <span class="error">{{ promoError }}</span>
     </div>
   </div>
 
