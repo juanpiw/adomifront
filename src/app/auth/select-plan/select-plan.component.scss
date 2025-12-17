@@ -1,5 +1,5 @@
 .plan-selection-container {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: clamp(2rem, 4vw, 4rem);
   min-height: 100vh;
@@ -732,4 +732,367 @@
   .btn-primary, .btn-secondary {
     width: 100%;
   }
+}
+
+/* ==========================================================
+   Pricing v2 (estilo como Home) - SOLO para planes normales
+   No afecta el card Fundador (lo dejamos con su diseño actual)
+   ========================================================== */
+
+.pricing-v2 {
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --secondary: #64748b;
+  --success: #10b981;
+  --bg-card: #ffffff;
+  --border-light: #e2e8f0;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+}
+
+.pricing-v2__header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pricing-v2__title {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.pricing-v2__subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.billing-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 99px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.billing-toggle-wrapper .billing-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.3s;
+  font-size: 0.95rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.billing-toggle-wrapper .billing-label.active {
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.billing-toggle-wrapper .toggle-switch {
+  width: 48px;
+  height: 26px;
+  background: var(--secondary);
+  border-radius: 50px;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+  padding: 0;
+}
+
+.billing-toggle-wrapper .toggle-switch.checked,
+.billing-toggle-wrapper .toggle-switch[aria-checked='true'] {
+  background: var(--primary);
+}
+
+.billing-toggle-wrapper .toggle-slider {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.billing-toggle-wrapper .toggle-switch.checked .toggle-slider,
+.billing-toggle-wrapper .toggle-switch[aria-checked='true'] .toggle-slider {
+  transform: translateX(22px);
+}
+
+.savings-badge {
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Grid: 4 cols desktop, 2 cols tablet, 1 col mobile */
+.plans-grid.pricing-v2__grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .plans-grid.pricing-v2__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .plans-grid.pricing-v2__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Home-like card styling for the non-founder plans only */
+.plan-card.plan-card--modern {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: none;
+}
+
+.plan-card.plan-card--modern:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: var(--primary);
+}
+
+.plan-card.plan-card--modern.recommended {
+  border: 2px solid var(--primary);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
+  z-index: 10;
+}
+
+.badge-recommended {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 0.35rem 1.25rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+}
+
+.plan-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.plan-desc {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}
+
+.card-pricing {
+  margin: 0 0 2rem 0;
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.price-value {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.currency {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.amount {
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.period {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.commission-box {
+  background: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.commission-box.low-comm {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.commission-box.high-comm {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.comm-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.comm-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.low-comm .comm-value {
+  color: #059669;
+}
+
+.high-comm .comm-value {
+  color: #dc2626;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  flex-grow: 1;
+}
+
+.features-list li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.features-list li.disabled {
+  color: #94a3b8;
+  opacity: 0.9;
+}
+
+.material-icon.icon {
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+  line-height: 1;
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.features-list li.enabled .icon {
+  color: var(--success);
+}
+
+.features-list li.disabled .icon {
+  color: #cbd5e1;
+}
+
+.tooltip-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: 6px;
+  font-style: italic;
+  display: inline-block;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Buttons for new cards - scoped to pricing v2 to not affect footer actions */
+.pricing-v2 .btn-select {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.pricing-v2 .btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.pricing-v2 .btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.pricing-v2 .btn-outline {
+  background: transparent;
+  border: 2px solid var(--border-light);
+  color: var(--text-main);
+}
+
+.pricing-v2 .btn-outline:hover {
+  border-color: var(--text-main);
+  background: #f8fafc;
 }

@@ -371,6 +371,31 @@ export class SelectPlanComponent implements OnInit {
     return `$${formatter.format(normalized)}`;
   }
 
+  formatAmount(price: number): string {
+    const formatter = new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+    const normalized = Number.isFinite(price) ? Math.max(0, price) : 0;
+    return formatter.format(normalized);
+  }
+
+  getCommissionLabel(plan: Plan | null): string {
+    if (!plan) return '—';
+    const rate = Number(plan.commission_rate);
+    if (!Number.isFinite(rate)) return '—';
+    return `${Math.max(0, rate)}%`;
+  }
+
+  getCommissionBoxClass(plan: Plan | null): string {
+    if (!plan) return '';
+    const rate = Number(plan.commission_rate);
+    if (!Number.isFinite(rate)) return '';
+    if (rate <= 7) return 'low-comm';
+    if (rate >= 12) return 'high-comm';
+    return '';
+  }
+
   getPlanIntervalLabel(plan: Plan | null): string {
     if (!plan) return '';
     return plan.interval === 'month' ? '/mes' : '/año';
@@ -389,9 +414,9 @@ export class SelectPlanComponent implements OnInit {
 
   isPlanRecommended(plan: Plan): boolean {
     // Preferimos señal por metadata; fallback por comisión más baja.
-    const meta = this.normalizePlanMetadata(plan);
-    if (meta.search_priority && String(meta.search_priority).toLowerCase() === 'high') return true;
-    if (meta.support_level && String(meta.support_level).toLowerCase() === 'priority') return true;
+    const meta: any = this.normalizePlanMetadata(plan);
+    if (meta?.['search_priority'] && String(meta['search_priority']).toLowerCase() === 'high') return true;
+    if (meta?.['support_level'] && String(meta['support_level']).toLowerCase() === 'priority') return true;
     const rate = Number(plan.commission_rate ?? 0);
     return rate > 0 && rate <= 7;
   }
@@ -419,8 +444,8 @@ export class SelectPlanComponent implements OnInit {
 
   getPlanSubtitle(plan: Plan | null): string {
     if (!plan) return '';
-    const meta = this.normalizePlanMetadata(plan);
-    const subtitle = meta.subtitle || meta.tagline;
+    const meta: any = this.normalizePlanMetadata(plan);
+    const subtitle = meta?.['subtitle'] || meta?.['tagline'];
     if (typeof subtitle === 'string' && subtitle.trim()) return subtitle.trim();
     // Fallback: usar plan_type (sin depender de nombres)
     if (plan.plan_type === 'free') return 'Para empezar';
@@ -436,39 +461,39 @@ export class SelectPlanComponent implements OnInit {
       return this.founderFeatureRows;
     }
 
-    const meta = this.normalizePlanMetadata(plan);
+    const meta: any = this.normalizePlanMetadata(plan);
     const rows: PlanFeatureRow[] = [];
 
-    rows.push({ label: 'Pagos en efectivo', enabled: !!meta.cash_enabled || !!meta.cashEnabled });
-    rows.push({ label: 'Sistema de cotizaciones', enabled: !!meta.quotes_enabled || !!meta.quotesEnabled });
+    rows.push({ label: 'Pagos en efectivo', enabled: !!meta?.['cash_enabled'] || !!meta?.['cashEnabled'] });
+    rows.push({ label: 'Sistema de cotizaciones', enabled: !!meta?.['quotes_enabled'] || !!meta?.['quotesEnabled'] });
 
-    const promotionsEnabled = !!meta.promotions_enabled || !!meta.promotionsEnabled;
-    const promotionsLimit = Number(meta.promotions_limit ?? meta.promotionsLimit ?? 0);
+    const promotionsEnabled = !!meta?.['promotions_enabled'] || !!meta?.['promotionsEnabled'];
+    const promotionsLimit = Number(meta?.['promotions_limit'] ?? meta?.['promotionsLimit'] ?? 0);
     rows.push({
       label: promotionsEnabled ? (promotionsLimit > 0 ? `Promociones activas (${promotionsLimit})` : 'Promociones activas (ilimitadas)') : 'Promociones activas',
       enabled: promotionsEnabled
     });
 
-    const portfolioLimit = Number(meta.portfolio_limit ?? meta.portfolioLimit ?? 0);
+    const portfolioLimit = Number(meta?.['portfolio_limit'] ?? meta?.['portfolioLimit'] ?? 0);
     rows.push({
       label: portfolioLimit > 0 ? `Portafolio (${portfolioLimit} ítems)` : 'Portafolio (ilimitado)',
       enabled: true
     });
 
-    const faqEnabled = !!meta.faq_enabled || !!meta.faqEnabled;
-    const faqLimit = Number(meta.faq_limit ?? meta.faqLimit ?? 0);
+    const faqEnabled = !!meta?.['faq_enabled'] || !!meta?.['faqEnabled'];
+    const faqLimit = Number(meta?.['faq_limit'] ?? meta?.['faqLimit'] ?? 0);
     rows.push({
       label: faqEnabled ? (faqLimit > 0 ? `FAQ público (${faqLimit})` : 'FAQ público') : 'FAQ público',
       enabled: faqEnabled
     });
 
-    rows.push({ label: 'Ver rating del cliente', enabled: !!meta.client_rating_visible || !!meta.clientRatingVisible });
-    rows.push({ label: 'Exportar reportes (CSV)', enabled: !!meta.csv_export_enabled || !!meta.csvExportEnabled });
+    rows.push({ label: 'Ver rating del cliente', enabled: !!meta?.['client_rating_visible'] || !!meta?.['clientRatingVisible'] });
+    rows.push({ label: 'Exportar reportes (CSV)', enabled: !!meta?.['csv_export_enabled'] || !!meta?.['csvExportEnabled'] });
 
-    const analyticsTier = String(meta.analytics_tier ?? meta.analyticsTier ?? '').toLowerCase();
+    const analyticsTier = String(meta?.['analytics_tier'] ?? meta?.['analyticsTier'] ?? '').toLowerCase();
     rows.push({ label: analyticsTier === 'advanced' ? 'Dashboard avanzado' : 'Dashboard básico', enabled: true });
 
-    const supportLevel = String(meta.support_level ?? meta.supportLevel ?? '').toLowerCase();
+    const supportLevel = String(meta?.['support_level'] ?? meta?.['supportLevel'] ?? '').toLowerCase();
     rows.push({
       label: supportLevel ? `Soporte ${supportLevel}` : 'Soporte',
       enabled: true
@@ -485,7 +510,7 @@ export class SelectPlanComponent implements OnInit {
     return rows;
   }
 
-  private normalizePlanMetadata(plan: Plan | null | undefined): Record<string, any> {
+  private normalizePlanMetadata(plan: Plan | null | undefined): any {
     if (!plan?.metadata) return {};
     const raw = plan.metadata;
     if (raw && typeof raw === 'object') return raw;
@@ -622,8 +647,8 @@ export class SelectPlanComponent implements OnInit {
 
   getPlanGroupKey(plan: Plan | null | undefined): string {
     if (!plan) return 'unknown';
-    const meta = this.normalizePlanMetadata(plan);
-    const key = meta.plan_key || meta.planKey || meta.tier || meta.group || meta.group_key || meta.groupKey;
+    const meta: any = this.normalizePlanMetadata(plan);
+    const key = meta?.['plan_key'] || meta?.['planKey'] || meta?.['tier'] || meta?.['group'] || meta?.['group_key'] || meta?.['groupKey'];
     if (typeof key === 'string' && key.trim()) return key.trim().toLowerCase();
     // Fallback: estable por id (evita hardcode por nombre)
     return `plan-${plan.id}`;

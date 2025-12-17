@@ -11,196 +11,210 @@
     </div>
   </div>
 
-  <div class="header">
-    <h1>Elige tu plan</h1>
-    <p>Selecciona el plan que mejor se adapte a tus necesidades</p>
+  <div class="pricing-v2">
+    <div class="pricing-v2__header">
+      <h1 class="pricing-v2__title">Elige cómo quieres crecer</h1>
+      <p class="pricing-v2__subtitle">Reduce tus comisiones pagando una suscripción mensual o empieza gratis.</p>
 
-    <div class="billing-toggle-container">
-      <span class="billing-label" [class.active]="!isAnnualBilling" (click)="isAnnualBilling && !isPromoActive() ? toggleBilling() : null">Mensual</span>
-      <button
-        type="button"
-        class="toggle-switch"
-        role="switch"
-        [attr.aria-checked]="isAnnualBilling"
-        (click)="toggleBilling()"
-      >
-        <span class="toggle-slider"></span>
-      </button>
-      <span class="billing-label" [class.active]="isAnnualBilling" (click)="!isAnnualBilling && !isPromoActive() ? toggleBilling() : null">Anual</span>
-      <span class="savings-pill">AHORRA {{ getSavingsPercentage() || 17 }}%</span>
-    </div>
-  </div>
-
-  <div *ngIf="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Cargando planes...</p>
-  </div>
-
-  <div *ngIf="error" class="error">
-    <p>{{ error }}</p>
-    <button class="btn-primary" (click)="loadPlans()">Reintentar</button>
-  </div>
-
-  <div *ngIf="!loading && !error" class="plans-grid">
-    <div class="plan-card plan-card--founder" data-plan="fundador" [class.plan-card--selected]="isPromoActive()">
-      <div class="plan-card__badge">¡LIMITADO!</div>
-      <div class="plan-card__header">
-        <div>
-          <h3>Fundador</h3>
-          <p>Acceso exclusivo “Pioneros”</p>
-        </div>
-        <span class="plan-card__tag">Acceso exclusivo</span>
-      </div>
-      <div class="plan-card__price">
-        <span class="plan-card__price-value">{{ formatDisplayPrice(0) }}</span>
-        <span class="plan-card__price-interval">/ {{ founderDurationMonths }} meses</span>
-      </div>
-      <p class="plan-card__description">
-        Lanzamiento preferente con la comunidad Adomi. Beneficios especiales por ser de los primeros.
-      </p>
-
-      <div class="plan-card__limits">
-        <div class="limit">
-          <span class="label">Servicios</span>
-          <span class="value">{{ founderServicesLimitLabel }}</span>
-        </div>
-        <div class="limit">
-          <span class="label">Reservas</span>
-          <span class="value">{{ founderBookingsLimitLabel }}</span>
-        </div>
-      </div>
-
-      <ul class="plan-card__features">
-        <li
-          *ngFor="let feature of founderFeatureRows"
-          [class.plan-card__feature--disabled]="!feature.enabled"
+      <div class="billing-toggle-wrapper" role="group" aria-label="Seleccionar periodicidad">
+        <button
+          type="button"
+          class="billing-label"
+          [class.active]="!isAnnualBilling"
+          (click)="isAnnualBilling && !isPromoActive() ? toggleBilling() : null"
         >
-          <span
-            class="plan-card__feature-icon"
-            [class.plan-card__feature-icon--check]="feature.enabled"
-            [class.plan-card__feature-icon--x]="!feature.enabled"
-          ></span>
+          Mensual
+        </button>
+
+        <button
+          type="button"
+          class="toggle-switch"
+          role="switch"
+          [attr.aria-checked]="isAnnualBilling"
+          [class.checked]="isAnnualBilling"
+          (click)="toggleBilling()"
+          aria-label="Cambiar entre mensual y anual"
+        >
+          <span class="toggle-slider"></span>
+        </button>
+
+        <button
+          type="button"
+          class="billing-label"
+          [class.active]="isAnnualBilling"
+          (click)="!isAnnualBilling && !isPromoActive() ? toggleBilling() : null"
+        >
+          Anual
+        </button>
+
+        <span class="savings-badge">AHORRA {{ getSavingsPercentage() || 17 }}%</span>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando planes...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <p>{{ error }}</p>
+      <button class="btn-primary" (click)="loadPlans()">Reintentar</button>
+    </div>
+
+    <div *ngIf="!loading && !error" class="plans-grid pricing-v2__grid">
+      <!-- NO TOCAR: Card Fundador (funcionalidad de validación ya implementada) -->
+      <div class="plan-card plan-card--founder" data-plan="fundador" [class.plan-card--selected]="isPromoActive()">
+        <div class="plan-card__badge">¡LIMITADO!</div>
+        <div class="plan-card__header">
           <div>
-            <span>{{ feature.label }}</span>
-            <small *ngIf="feature.note">{{ feature.note }}</small>
+            <h3>Fundador</h3>
+            <p>Acceso exclusivo “Pioneros”</p>
           </div>
-        </li>
-      </ul>
-
-      <div class="promo-input-group" [class.active]="isPromoActive()">
-        <input
-          type="text"
-          placeholder="Ingresa tu código Fundador"
-          [(ngModel)]="promoCode"
-          [disabled]="promoDisabled || isPromoActive()"
-        />
-        <button
-          class="btn-apply"
-          type="button"
-          (click)="applyPromoCode()"
-          [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
-        >
-          {{ promoLoading ? 'Validando…' : 'Validar y seleccionar' }}
-        </button>
-        <button
-          class="btn-clear"
-          type="button"
-          *ngIf="isPromoActive()"
-          (click)="clearPromo()"
-        >
-          Quitar código
-        </button>
-      </div>
-
-      <div class="promo-status" *ngIf="promoSuccess">
-        <span class="success">{{ promoSuccess }}</span>
-      </div>
-      <div class="promo-status" *ngIf="promoError">
-        <span class="error">{{ promoError }}</span>
-      </div>
-      <div class="promo-meta" *ngIf="isPromoActive() && promoMeta">
-        <span *ngIf="promoMeta.max_duration_months">
-          Incluye {{ promoMeta.max_duration_months }} meses gratuitos.
-        </span>
-        <span *ngIf="promoMeta.remaining_spots !== null">
-          Cupos disponibles: {{ promoMeta.remaining_spots }}.
-        </span>
-        <span *ngIf="promoMeta.metadata?.['founder_commune'] as founderCommune">
-          Bienvenido/a Fundador en {{ founderCommune }}.
-        </span>
-        <span
-          *ngIf="promoMeta.metadata?.['founder_region'] && promoMeta.metadata?.['founder_commune']"
-          class="promo-meta__badge"
-        >
-          Campaña RM
-        </span>
-      </div>
-    </div>
-
-    <div
-      *ngFor="let plan of getCurrentPlans()"
-      class="plan-card"
-      [attr.data-plan]="getPlanGroupKey(plan)"
-      [class.plan-card--selected]="selectedPlan?.id === plan.id"
-      [class.plan-card--recommended]="isPlanRecommended(plan)"
-      [class.plan-card--disabled]="isPromoActive()"
-      (click)="selectPlan(plan)"
-    >
-      <div class="plan-card__badge plan-card__badge--recommended" *ngIf="isPlanRecommended(plan)">
-        Recomendado
-      </div>
-      <div class="plan-card__header">
-        <div>
-          <h3>{{ plan.name }}</h3>
-          <p>{{ getPlanSubtitle(plan) }}</p>
+          <span class="plan-card__tag">Acceso exclusivo</span>
         </div>
-      </div>
-      <div class="plan-card__price">
-        <span class="plan-card__savings" *ngIf="plan.interval === 'year' && getPlanSavingsLabel(plan)">
-          {{ getPlanSavingsLabel(plan) }}
-        </span>
-        <span class="plan-card__price-value">{{ formatDisplayPrice(plan.price) }}</span>
-        <span class="plan-card__price-interval">{{ getPlanIntervalLabel(plan) }}</span>
-      </div>
-      <p class="plan-card__description">{{ plan.description }}</p>
-
-      <div class="plan-card__limits">
-        <div class="limit">
-          <span class="label">Servicios</span>
-          <span class="value">{{ plan.max_services >= 999 ? 'Ilimitados' : plan.max_services }}</span>
+        <div class="plan-card__price">
+          <span class="plan-card__price-value">{{ formatDisplayPrice(0) }}</span>
+          <span class="plan-card__price-interval">/ {{ founderDurationMonths }} meses</span>
         </div>
-        <div class="limit">
-          <span class="label">Reservas</span>
-          <span class="value">
-            {{ plan.max_bookings >= 9999 ? 'Ilimitadas' : plan.max_bookings + '/mes' }}
+        <p class="plan-card__description">
+          Lanzamiento preferente con la comunidad Adomi. Beneficios especiales por ser de los primeros.
+        </p>
+
+        <div class="plan-card__limits">
+          <div class="limit">
+            <span class="label">Servicios</span>
+            <span class="value">{{ founderServicesLimitLabel }}</span>
+          </div>
+          <div class="limit">
+            <span class="label">Reservas</span>
+            <span class="value">{{ founderBookingsLimitLabel }}</span>
+          </div>
+        </div>
+
+        <ul class="plan-card__features">
+          <li
+            *ngFor="let feature of founderFeatureRows"
+            [class.plan-card__feature--disabled]="!feature.enabled"
+          >
+            <span
+              class="plan-card__feature-icon"
+              [class.plan-card__feature-icon--check]="feature.enabled"
+              [class.plan-card__feature-icon--x]="!feature.enabled"
+            ></span>
+            <div>
+              <span>{{ feature.label }}</span>
+              <small *ngIf="feature.note">{{ feature.note }}</small>
+            </div>
+          </li>
+        </ul>
+
+        <div class="promo-input-group" [class.active]="isPromoActive()">
+          <input
+            type="text"
+            placeholder="Ingresa tu código Fundador"
+            [(ngModel)]="promoCode"
+            [disabled]="promoDisabled || isPromoActive()"
+          />
+          <button
+            class="btn-apply"
+            type="button"
+            (click)="applyPromoCode()"
+            [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
+          >
+            {{ promoLoading ? 'Validando…' : 'Validar y seleccionar' }}
+          </button>
+          <button
+            class="btn-clear"
+            type="button"
+            *ngIf="isPromoActive()"
+            (click)="clearPromo()"
+          >
+            Quitar código
+          </button>
+        </div>
+
+        <div class="promo-status" *ngIf="promoSuccess">
+          <span class="success">{{ promoSuccess }}</span>
+        </div>
+        <div class="promo-status" *ngIf="promoError">
+          <span class="error">{{ promoError }}</span>
+        </div>
+        <div class="promo-meta" *ngIf="isPromoActive() && promoMeta">
+          <span *ngIf="promoMeta.max_duration_months">
+            Incluye {{ promoMeta.max_duration_months }} meses gratuitos.
+          </span>
+          <span *ngIf="promoMeta.remaining_spots !== null">
+            Cupos disponibles: {{ promoMeta.remaining_spots }}.
+          </span>
+          <span *ngIf="promoMeta.metadata?.['founder_commune'] as founderCommune">
+            Bienvenido/a Fundador en {{ founderCommune }}.
+          </span>
+          <span
+            *ngIf="promoMeta.metadata?.['founder_region'] && promoMeta.metadata?.['founder_commune']"
+            class="promo-meta__badge"
+          >
+            Campaña RM
           </span>
         </div>
       </div>
 
-      <ul class="plan-card__features">
-        <li
-          *ngFor="let feature of getPlanFeatureRows(plan)"
-          [class.plan-card__feature--disabled]="!feature.enabled"
-        >
-          <span
-            class="plan-card__feature-icon"
-            [class.plan-card__feature-icon--check]="feature.enabled"
-            [class.plan-card__feature-icon--x]="!feature.enabled"
-          ></span>
-          <div>
-            <span>{{ feature.label }}</span>
-            <small *ngIf="feature.note">{{ feature.note }}</small>
-          </div>
-        </li>
-      </ul>
-
-      <button
-        type="button"
-        class="plan-card__select"
-        (click)="selectPlan(plan); $event.stopPropagation()"
+      <!-- Planes normales (nuevo look del Home) -->
+      <div
+        *ngFor="let plan of getCurrentPlans()"
+        class="plan-card plan-card--modern"
+        [attr.data-plan]="getPlanGroupKey(plan)"
+        [class.plan-card--selected]="selectedPlan?.id === plan.id"
+        [class.recommended]="isPlanRecommended(plan)"
+        [class.plan-card--disabled]="isPromoActive()"
+        (click)="selectPlan(plan)"
       >
-        Seleccionar {{ plan.name }}
-      </button>
+        <div class="badge-recommended" *ngIf="isPlanRecommended(plan)">Recomendado</div>
+
+        <div class="card-header">
+          <h3 class="plan-name">{{ plan.name }}</h3>
+          <p class="plan-desc">{{ plan.description || getPlanSubtitle(plan) }}</p>
+        </div>
+
+        <div class="card-pricing">
+          <div class="price-value">
+            <span class="amount" *ngIf="plan.price === 0">Gratis</span>
+            <ng-container *ngIf="plan.price !== 0">
+              <span class="currency">$</span>
+              <span class="amount">{{ formatAmount(plan.price) }}</span>
+              <span class="period">{{ getPlanIntervalLabel(plan) }}</span>
+            </ng-container>
+          </div>
+
+          <div class="commission-box" [ngClass]="getCommissionBoxClass(plan)">
+            <span class="comm-label">Tu Comisión</span>
+            <span class="comm-value">{{ getCommissionLabel(plan) }}</span>
+          </div>
+        </div>
+
+        <ul class="features-list">
+          <li
+            *ngFor="let feature of getPlanFeatureRows(plan)"
+            [class.enabled]="feature.enabled"
+            [class.disabled]="!feature.enabled"
+          >
+            <span class="material-icon icon">{{ feature.enabled ? 'check_circle' : 'cancel' }}</span>
+            <span>
+              {{ feature.label }}
+              <span class="tooltip-hint" *ngIf="feature.note">{{ feature.note }}</span>
+            </span>
+          </li>
+        </ul>
+
+        <button
+          type="button"
+          class="btn-select"
+          [class.btn-primary]="isPlanRecommended(plan)"
+          [class.btn-outline]="!isPlanRecommended(plan)"
+          (click)="selectPlan(plan); $event.stopPropagation()"
+        >
+          Seleccionar {{ plan.name }}
+        </button>
+      </div>
     </div>
   </div>
 
