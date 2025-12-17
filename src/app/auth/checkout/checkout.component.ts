@@ -136,6 +136,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         return;
       }
 
+      // Plan Free / $0: activar sin pago
+      const planPrice = Number((this.selectedPlan as any)?.price || 0);
+      if (!(planPrice > 0)) {
+        await this.activateFreePlan();
+        return;
+      }
+
       if (this.paymentGateway === 'tbk') {
         await this.startTbkFlow();
         return;
@@ -178,6 +185,49 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error en proceedToPayment:', error);
       this.error = 'Error inesperado. Inténtalo nuevamente.';
+      this.loading = false;
+    }
+  }
+
+  private async activateFreePlan(): Promise<void> {
+    if (!this.selectedPlan) {
+      this.loading = false;
+      this.error = 'Plan no seleccionado.';
+      return;
+    }
+
+    try {
+      const token = this.authService.getAccessToken();
+      if (!token) {
+        this.error = 'Debes iniciar sesión nuevamente para activar tu plan.';
+        this.loading = false;
+        return;
+      }
+
+      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+      const resp: any = await firstValueFrom(
+        this.http.post(`${environment.apiBaseUrl}/plans/free/activate`, { planId: this.selectedPlan.id }, { headers })
+      );
+
+      if (!resp?.ok) {
+        this.error = resp?.error || 'No pudimos activar el plan Free. Intenta nuevamente.';
+        this.loading = false;
+        return;
+      }
+
+      try {
+        await firstValueFrom(this.authService.getCurrentUserInfo());
+      } catch (err) {
+        console.warn('[CHECKOUT] No se pudo refrescar /auth/me después de activar plan free', err);
+      }
+
+      this.cleanupSessionStorage();
+      this.loading = false;
+      this.router.navigateByUrl('/dash/home');
+    } catch (error: any) {
+      console.error('[CHECKOUT] Error activando plan free:', error);
+      const message = error?.error?.error || error?.message || 'No pudimos activar el plan Free. Intenta nuevamente.';
+      this.error = message;
       this.loading = false;
     }
   }
