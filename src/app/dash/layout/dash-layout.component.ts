@@ -255,6 +255,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           console.error('🔴 [DASH_LAYOUT] Error procesando nueva cita:', err);
         }
       });
+      // Realtime: cuando se actualiza la deuda (pago o revisión), refrescar resumen cash para banners/CTA
+      this.appointments.onDebtUpdated().subscribe(() => {
+        try {
+          this.payments.refreshCashSummary().subscribe({ error: () => {} });
+        } catch {}
+      });
     }
     this.chat.onMessageNew().subscribe((msg: MessageDto) => {
       try {

@@ -871,7 +871,7 @@ nav {
   border-radius: 4px;
 }
 
-.btn-select {
+.pricing-v2 .btn-select {
   width: 100%;
   padding: 1rem;
   border-radius: 12px;
@@ -882,26 +882,26 @@ nav {
   letter-spacing: 0.01em;
 }
 
-.btn-primary {
+.pricing-v2 .btn-primary {
   background: var(--primary);
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.btn-primary:hover {
+.pricing-v2 .btn-primary:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
 }
 
-.btn-outline {
+.pricing-v2 .btn-outline {
   background: transparent;
   border: 2px solid var(--border-light);
   color: var(--text-main);
 }
 
-.btn-outline:hover {
+.pricing-v2 .btn-outline:hover {
   border-color: var(--text-main);
   background: #f8fafc;
 }
@@ -1015,7 +1015,7 @@ nav {
   box-shadow: 0 0 0 4px rgba(252, 211, 77, 0.16);
 }
 
-.btn-founder {
+.pricing-v2 .btn-founder {
   width: 100%;
   background: var(--founder-accent);
   color: var(--founder-bg);
@@ -1032,13 +1032,13 @@ nav {
   white-space: nowrap;
 }
 
-.btn-founder:disabled {
+.pricing-v2 .btn-founder:disabled {
   background: #475569;
   color: #94a3b8;
   cursor: not-allowed;
 }
 
-.btn-founder:not(:disabled):hover {
+.pricing-v2 .btn-founder:not(:disabled):hover {
   background: #f59e0b;
   transform: translateY(-2px);
 }

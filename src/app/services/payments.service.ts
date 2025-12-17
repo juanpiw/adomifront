@@ -106,6 +106,15 @@ export class PaymentsService {
     );
   }
 
+  // Provider: pagar deuda (comisiones cash) con tarjeta vía Stripe Checkout (abonos parciales permitidos)
+  createDebtSettlementCheckout(amount: number): Observable<{ success: boolean; url?: string; session_id?: string; due?: number; error?: string }>{
+    return this.http.post<{ success: boolean; url?: string; session_id?: string; due?: number; error?: string }>(
+      `${this.base}/payments/settle-debt`,
+      { amount },
+      { headers: this.headers() }
+    );
+  }
+
   createCheckoutSession(appointmentId: number): Observable<{ success: boolean; url: string }>{
     console.log('[PAYMENTS_SERVICE] createCheckoutSession ->', { appointmentId });
     return this.http.post<{ success: boolean; url: string }>(

@@ -410,6 +410,27 @@
       </section>
 
       <section class="cash-payment-section">
+        <h4>0. Paga con tarjeta (Stripe)</h4>
+        <p class="cash-payment-section__note">
+          Puedes hacer un abono parcial o pagar el total. Se descuenta automáticamente de tus comisiones pendientes.
+        </p>
+        <div class="cash-payment-field-group">
+          <label class="cash-payment-field">
+            <span>Monto a pagar con tarjeta</span>
+            <input type="number" min="1" [max]="cashTotal" [(ngModel)]="debtStripeAmount" placeholder="Ej: 5000" />
+          </label>
+        </div>
+        <div class="cash-payment-actions">
+          <button type="button"
+                  class="btn primary"
+                  (click)="payDebtWithStripe()"
+                  [disabled]="debtStripePaying || cashPaymentSubmitting || cashTotal <= 0">
+            {{ debtStripePaying ? 'Redirigiendo…' : 'Pagar con tarjeta' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="cash-payment-section">
         <h4>1. Transfiere a la siguiente cuenta</h4>
         <div class="cash-payment-bank">
           <div class="cash-payment-bank__row">

@@ -183,6 +183,8 @@ export class DashAgendaComponent implements OnInit {
   cashPaymentMaxFileMb: number = Number(((environment as any)?.cashPaymentMaxMb ?? 5));
   cashPaymentForm: { reference: string; notes: string } = { reference: '', notes: '' };
   cashPaymentLocalState: 'idle' | 'under_review' | 'approved' | 'rejected' = 'idle';
+  debtStripeAmount: number | null = null;
+  debtStripePaying = false;
   cashBankAccount = {
     bank: this.getEnv('cashBankName', 'Banco de Chile'),
     holder: this.getEnv('cashBankHolder', 'Adomi SpA'),
@@ -332,6 +334,34 @@ export class DashAgendaComponent implements OnInit {
     this.loadCashSummary();
     this.loadCashCommissions(this.cashTableFilter);
     this.loadWeeklyAvailability();
+  }
+
+  payDebtWithStripe(): void {
+    if (this.debtStripePaying) return;
+    const amount = Number(this.debtStripeAmount ?? this.cashTotal ?? 0);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      this.cashPaymentFeedback = { type: 'error', message: 'Ingresa un monto válido para pagar.' };
+      return;
+    }
+    if (amount > (this.cashTotal || 0)) {
+      this.cashPaymentFeedback = { type: 'error', message: 'El monto no puede superar el total adeudado.' };
+      return;
+    }
+    this.debtStripePaying = true;
+    this.payments.createDebtSettlementCheckout(Math.round(amount)).subscribe({
+      next: (resp: any) => {
+        if (resp?.success && resp?.url) {
+          try { window.location.href = String(resp.url); } catch {}
+          return;
+        }
+        this.cashPaymentFeedback = { type: 'error', message: resp?.error || 'No se pudo iniciar el pago con tarjeta.' };
+        this.debtStripePaying = false;
+      },
+      error: (err) => {
+        this.cashPaymentFeedback = { type: 'error', message: err?.error?.error || 'No se pudo iniciar el pago con tarjeta.' };
+        this.debtStripePaying = false;
+      }
+    });
   }
 
   // Cargar citas del mes
@@ -585,6 +615,7 @@ export class DashAgendaComponent implements OnInit {
     this.cashPaymentFeedback = null;
     this.cashPaymentFileError = '';
     this.cashPaymentForm = { reference: '', notes: '' };
+    this.debtStripeAmount = Math.round(Number(this.cashTotal || 0));
     this.clearCashReceiptFile();
   }
 
