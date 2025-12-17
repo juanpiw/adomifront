@@ -237,6 +237,7 @@ export class DashAgendaComponent implements OnInit {
   earningsTransactionsTotal = 0;
   earningsTransactionsLimit = 50;
   earningsTransactionsOffset = 0;
+  providerCommissionRate: number | null = null;
 
   constructor(private availabilityService: ProviderAvailabilityService) {}
 
@@ -292,6 +293,14 @@ export class DashAgendaComponent implements OnInit {
     this.currentProviderId = this.auth.getCurrentUser()?.id || null;
     if (this.currentProviderId) {
       this.appointments.connectSocket(this.currentProviderId);
+      this.payments.getProviderBillingPlanLimits(this.currentProviderId).subscribe({
+        next: (resp) => {
+          this.providerCommissionRate = (resp as any)?.plan?.commissionRate ?? null;
+        },
+        error: () => {
+          this.providerCommissionRate = null;
+        }
+      });
     }
     // Escuchar pagos completados para refrescar vista y panel de pagadas
     this.appointments.onPaymentCompleted().subscribe((p: { appointment_id: number; amount?: number }) => {

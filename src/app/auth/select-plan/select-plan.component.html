@@ -161,11 +161,11 @@
       <!-- Planes normales (nuevo look del Home) -->
       <div
         *ngFor="let plan of getCurrentPlans()"
-        class="plan-card plan-card--modern"
+        class="plan-card"
         [attr.data-plan]="getPlanGroupKey(plan)"
-        [class.plan-card--selected]="selectedPlan?.id === plan.id"
+        [class.is-selected]="selectedPlan?.id === plan.id"
         [class.recommended]="isPlanRecommended(plan)"
-        [class.plan-card--disabled]="isPromoActive()"
+        [class.is-disabled]="isPromoActive()"
         (click)="selectPlan(plan)"
       >
         <div class="badge-recommended" *ngIf="isPlanRecommended(plan)">Recomendado</div>

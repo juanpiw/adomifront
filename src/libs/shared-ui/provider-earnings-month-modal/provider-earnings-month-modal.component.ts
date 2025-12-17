@@ -12,6 +12,7 @@ import { FinanceTransactionDto } from '../../../app/services/finances.service';
 export class ProviderEarningsMonthModalComponent {
   @Input() isOpen = false;
   @Input() monthLabel: string | null = null;
+  @Input() commissionRate: number | null = null;
 
   @Input() loading = false;
   @Input() error: string | null = null;

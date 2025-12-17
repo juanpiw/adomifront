@@ -868,25 +868,44 @@
   }
 }
 
-/* Home-like card styling for the non-founder plans only */
-.plan-card.plan-card--modern {
+/* Home-like card styling for the non-founder plans only.
+   Importante: NO tocar Fundador => aplicamos a `.plan-card:not(.plan-card--founder)` dentro de pricing-v2
+*/
+.pricing-v2 .plan-card:not(.plan-card--founder) {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: 24px;
   padding: 2rem;
   box-shadow: none;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: auto;
 }
 
-.plan-card.plan-card--modern:hover {
+.pricing-v2 .plan-card:not(.plan-card--founder):hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border-color: var(--primary);
 }
 
-.plan-card.plan-card--modern.recommended {
+.pricing-v2 .plan-card.recommended:not(.plan-card--founder) {
   border: 2px solid var(--primary);
   box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
   z-index: 10;
+}
+
+.pricing-v2 .plan-card.is-selected:not(.plan-card--founder) {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16), 0 18px 40px rgba(37, 99, 235, 0.12);
+}
+
+.pricing-v2 .plan-card.is-disabled:not(.plan-card--founder) {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .badge-recommended {

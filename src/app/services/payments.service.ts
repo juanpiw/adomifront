@@ -214,6 +214,28 @@ export class PaymentsService {
     );
   }
 
+  // Provider: plan actual (incluye commission_rate y flags)
+  getProviderBillingPlanLimits(providerId: number): Observable<{
+    success: boolean;
+    plan?: {
+      providerId: number;
+      planId: number | null;
+      planType: string | null;
+      status: string | null;
+      commissionRate: number | null;
+      maxServices: number | null;
+      maxBookings: number | null;
+      promoExpiresAt: string | null;
+      cashEnabled: boolean;
+    };
+    error?: string;
+  }>{
+    return this.http.get<any>(
+      `${this.base}/providers/${providerId}/billing/plan-limits`,
+      { headers: this.headers() }
+    );
+  }
+
   // Provider finance transactions (payments) for a date range
   getProviderFinanceTransactions(filters: { from: string; to: string; limit?: number; offset?: number }): Observable<{ success: boolean; transactions: ProviderFinanceTransaction[]; total: number; error?: string }>{
     const params: Record<string, string> = {

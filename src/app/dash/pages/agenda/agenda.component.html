@@ -381,6 +381,7 @@
 <ui-provider-earnings-month-modal
   [isOpen]="earningsModalOpen"
   [monthLabel]="earningsSummary?.month ? ('Mes: ' + earningsSummary.month) : null"
+  [commissionRate]="providerCommissionRate"
   [loading]="earningsModalLoading"
   [error]="earningsModalError"
   [transactions]="earningsTransactions"

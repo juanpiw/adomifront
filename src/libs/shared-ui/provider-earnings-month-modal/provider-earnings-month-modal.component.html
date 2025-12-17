@@ -4,6 +4,7 @@
       <div>
         <h3 id="earningsMonthModalTitle">Pagos del mes</h3>
         <p class="earnings-modal__subtitle" *ngIf="monthLabel">{{ monthLabel }}</p>
+        <p class="earnings-modal__subtitle" *ngIf="commissionRate !== null">Tu comisión actual: {{ commissionRate }}%</p>
       </div>
       <button type="button" class="earnings-modal__close" (click)="close.emit()" aria-label="Cerrar">×</button>
     </header>

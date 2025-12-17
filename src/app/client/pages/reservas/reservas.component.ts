@@ -620,7 +620,19 @@ export class ClientReservasComponent implements OnInit {
               console.error('[RESERVAS][ONECLICK] Authorization tbkData detail:', JSON.stringify(tbkData));
             }
             this.ocReturnProcessing = false;
-            this.ocReturnError = err?.error?.error || 'No se pudo autorizar el pago.';
+            const code = err?.error?.error;
+            const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
+            this.ocReturnError = msg;
+            if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {
+              this.notifications.createNotification({
+                type: 'system',
+                profile: 'client',
+                title: 'Pago con tarjeta no disponible',
+                message: msg,
+                priority: 'high',
+                actions: []
+              });
+            }
             this.loadAppointments();
             this.clearOcPendingAppt();
             this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
@@ -1971,6 +1983,16 @@ export class ClientReservasComponent implements OnInit {
       error: (err) => {
         this.payModalLoading = false;
         console.error('[RESERVAS] Error autorizando Oneclick', err);
+        const code = err?.error?.error;
+        const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
+        this.notifications.createNotification({
+          type: 'system',
+          profile: 'client',
+          title: (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') ? 'Pago con tarjeta no disponible' : 'Error',
+          message: msg,
+          priority: 'high',
+          actions: []
+        });
       }
     });
   }
