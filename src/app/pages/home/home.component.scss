@@ -495,3 +495,41 @@ nav {
   .lg\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
   .lg\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* --- Home navbar responsive fixes (keep desktop intact) --- */
+.home-nav__actions {
+  gap: 1rem;
+}
+
+@media (max-width: 420px) {
+  .home-nav__row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .home-nav__brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+    min-width: 0;
+  }
+
+  .typewriter-text {
+    animation: none;
+    width: auto;
+  }
+
+  .home-nav__actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  /* Reduce paddings so buttons fit at 320px */
+  .home-nav__actions .modern-button,
+  .home-nav__actions .btn-primary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+}

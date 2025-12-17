@@ -5,6 +5,7 @@ export interface PendienteData {
   titulo: string;
   fecha: string;
   hora: string;
+  appointmentId?: number | null;
 }
 
 @Component({

@@ -6,6 +6,7 @@ export interface CanceladaProfesionalData {
   titulo: string;
   fecha: string;
   pillText?: string; // Reembolso completado
+  appointmentId?: number | null;
 }
 
 @Component({

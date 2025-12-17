@@ -111,24 +111,31 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     <ui-reservas-tabs 
       [tabs]="['Próximas','Pasadas','Canceladas','Pagadas/Realizadas','Mis Cotizaciones']"
       (tabChange)="activeTab = $event" 
+      [activeIndex]="activeTab"
       [badges]="tabBadges"></ui-reservas-tabs>
 
     <div class="content" *ngIf="activeTab === 0">
       <ng-container *ngIf="(proximasConfirmadas?.length || 0) > 0; else noConfirmadas">
         <ng-container *ngFor="let p of proximasConfirmadas">
-          <ui-proxima-cita-card 
-            [data]="p" 
-            (pagar)="onPagar($event)"
-            (pagarTarjeta)="onPagar($event)"
-            (pagarEfectivo)="onPagarEfectivo($event)"
-            (pedirDevolucion)="onRefund($event)"
-            (reprogramar)="onRequestReschedule($event)"
-            (contactar)="onContactar(p.appointmentId)"
-            (cancelar)="openCancelModal($event)"
-            (finalizarServicio)="openFinalizeModal($event)"
-            (reportarProblema)="openClaimFlow($event)"
-            style="margin-bottom:12px;">
-          </ui-proxima-cita-card>
+          <div
+            class="appt-anchor"
+            [attr.id]="'appt-' + p.appointmentId"
+            [class.appt-anchor--highlight]="highlightAppointmentId === p.appointmentId"
+            style="margin-bottom:12px;"
+          >
+            <ui-proxima-cita-card 
+              [data]="p" 
+              (pagar)="onPagar($event)"
+              (pagarTarjeta)="onPagar($event)"
+              (pagarEfectivo)="onPagarEfectivo($event)"
+              (pedirDevolucion)="onRefund($event)"
+              (reprogramar)="onRequestReschedule($event)"
+              (contactar)="onContactar(p.appointmentId)"
+              (cancelar)="openCancelModal($event)"
+              (finalizarServicio)="openFinalizeModal($event)"
+              (reportarProblema)="openClaimFlow($event)">
+            </ui-proxima-cita-card>
+          </div>
 
           <!-- Flujo de reclamo embebido por cita (mismo ngFor: evita duplicados) -->
           <ng-container [ngSwitch]="getClaimState(p.appointmentId)">
@@ -225,11 +232,15 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
       <ng-template #noConfirmadas></ng-template>
 
       <ng-container *ngIf="(pendientesList?.length || 0) > 0; else noPendientes">
-        <ui-pendiente-card 
-          *ngFor="let pen of pendientesList" 
-          [data]="pen" 
-          style="margin-bottom:12px;">
-        </ui-pendiente-card>
+        <div
+          *ngFor="let pen of pendientesList"
+          class="appt-anchor"
+          [attr.id]="pen.appointmentId ? ('appt-' + pen.appointmentId) : null"
+          [class.appt-anchor--highlight]="highlightAppointmentId === pen.appointmentId"
+          style="margin-bottom:12px;"
+        >
+          <ui-pendiente-card [data]="pen"></ui-pendiente-card>
+        </div>
       </ng-container>
       <ng-template #noPendientes></ng-template>
 
@@ -243,29 +254,47 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
 
     <div class="content" *ngIf="activeTab === 2">
-      <ui-cancelada-cliente-card 
-        *ngFor="let cc of canceladasClienteList" 
-        [data]="cc"
-        (rebook)="onRebookCancelled(cc)" 
-        style="margin-bottom:12px;">
-      </ui-cancelada-cliente-card>
-      <ui-cancelada-profesional-card 
-        *ngFor="let cp of canceladasProfesionalList" 
-        [data]="cp"
-        (findSimilar)="onFindSimilar(cp)" 
-        style="margin-bottom:12px;">
-      </ui-cancelada-profesional-card>
+      <div
+        *ngFor="let cc of canceladasClienteList"
+        class="appt-anchor"
+        [attr.id]="cc.appointmentId ? ('appt-' + cc.appointmentId) : null"
+        [class.appt-anchor--highlight]="highlightAppointmentId === cc.appointmentId"
+        style="margin-bottom:12px;"
+      >
+        <ui-cancelada-cliente-card 
+          [data]="cc"
+          (rebook)="onRebookCancelled(cc)">
+        </ui-cancelada-cliente-card>
+      </div>
+      <div
+        *ngFor="let cp of canceladasProfesionalList"
+        class="appt-anchor"
+        [attr.id]="cp.appointmentId ? ('appt-' + cp.appointmentId) : null"
+        [class.appt-anchor--highlight]="highlightAppointmentId === cp.appointmentId"
+        style="margin-bottom:12px;"
+      >
+        <ui-cancelada-profesional-card 
+          [data]="cp"
+          (findSimilar)="onFindSimilar(cp)">
+        </ui-cancelada-profesional-card>
+      </div>
       <p *ngIf="(canceladasClienteList?.length || 0) === 0 && (canceladasProfesionalList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas canceladas.</p>
     </div>
 
     <div class="content" *ngIf="activeTab === 3">
-      <ui-reserva-pasada-card 
-        *ngFor="let ra of realizadasList" 
-        [data]="ra" 
-        (onReview)="openReviewModal((ra.titulo.split(' con ')[1] || 'Profesional'), (ra.titulo.split(' con ')[0] || 'Servicio'), ('' + (ra.appointmentId || '')))"
-        (onToggleFavorite)="onToggleFavorite(ra)"
-        style="margin-bottom:12px;">
-      </ui-reserva-pasada-card>
+      <div
+        *ngFor="let ra of realizadasList"
+        class="appt-anchor"
+        [attr.id]="ra.appointmentId ? ('appt-' + ra.appointmentId) : null"
+        [class.appt-anchor--highlight]="highlightAppointmentId === ra.appointmentId"
+        style="margin-bottom:12px;"
+      >
+        <ui-reserva-pasada-card 
+          [data]="ra" 
+          (onReview)="openReviewModal((ra.titulo.split(' con ')[1] || 'Profesional'), (ra.titulo.split(' con ')[0] || 'Servicio'), ('' + (ra.appointmentId || '')))"
+          (onToggleFavorite)="onToggleFavorite(ra)">
+        </ui-reserva-pasada-card>
+      </div>
       <p *ngIf="(realizadasList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes citas pagadas/verificadas.</p>
     </div>
 
@@ -483,6 +512,14 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     .chip--danger{background:#fee2e2;color:#b91c1c}
     .claim-success{margin:12px 0 24px;padding:24px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:12px;text-align:center}
     .claim-success__icon{width:48px;height:48px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px}
+
+    /* Anchor/highlight al llegar desde notificaciones */
+    .appt-anchor{scroll-margin-top:96px}
+    .appt-anchor--highlight{
+      outline: 2px solid #22c55e;
+      box-shadow: 0 0 0 6px rgba(34,197,94,0.14);
+      border-radius: 16px;
+    }
     /* =========================
        Mobile/Tablet (<=1024px)
        Solo visual: mantener desktop intacto
@@ -535,6 +572,8 @@ export class ClientReservasComponent implements OnInit {
 
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null, null, null];
+  highlightAppointmentId: number | null = null;
+  private focusAppointmentId: number | null = null;
 
   private resolveAvatar(raw?: string | null): string {
     if (!raw || raw.trim() === '') return '/assets/default-avatar.png';
@@ -784,6 +823,16 @@ export class ClientReservasComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Deep-link desde notificaciones: /client/reservas?focusAppointmentId=123
+    this.route.queryParamMap.subscribe((params) => {
+      const raw = params.get('focusAppointmentId');
+      const id = raw ? Number(raw) : NaN;
+      if (Number.isFinite(id) && id > 0) {
+        this.focusAppointmentId = id;
+        this.tryFocusAppointment();
+      }
+    });
+
     this.loadClientConfirmedFromStorage();
     this.validateProfile();
     // Preferencia de pago del cliente
@@ -1013,7 +1062,8 @@ export class ClientReservasComponent implements OnInit {
           .map(a => ({
             titulo: `${a.service_name || 'Servicio'} con ${a.provider_name || 'Profesional'}`,
             fecha: this.formatDate(a.date),
-            hora: this.formatTime(a.start_time)
+            hora: this.formatTime(a.start_time),
+            appointmentId: Number((a as any).id || a.id || 0) || null
           }));
         // Pasadas: mostrar dos primeras (por confirmar o confirmadas pero vencidas)
         this.pasada1 = past[0] ? {
@@ -1054,7 +1104,8 @@ export class ClientReservasComponent implements OnInit {
               avatarUrl: this.resolveAvatar((c as any).provider_avatar_url || (c as any).avatar_url || ''),
               titulo: `${c.service_name || 'Servicio'} con ${c.provider_name || 'Profesional'}`,
               fecha: this.formatDate(c.date),
-              pillText
+              pillText,
+              appointmentId: Number((c as any).id || c.id || 0) || null
             };
           });
 
@@ -1103,11 +1154,62 @@ export class ClientReservasComponent implements OnInit {
         const cancelledCount = cancelled.length;
         const realizadasCount = realizadasAll.length;
         this.tabBadges = [upcomingCount || null, pastCount || null, cancelledCount || null, realizadasCount || null, this.quotesCount || null];
+
+        // Si venimos desde una notificación, intentar enfocar la cita ahora que ya está todo mapeado
+        this.tryFocusAppointment();
       },
       error: (err) => {
         console.error('Error cargando citas del cliente', err);
       }
     });
+  }
+
+  private findTabForAppointment(appointmentId: number): number | null {
+    if (!Number.isFinite(appointmentId) || appointmentId <= 0) return null;
+    if ((this.proximasConfirmadas || []).some(x => x.appointmentId === appointmentId)) return 0;
+    if ((this.pendientesList || []).some(x => Number((x as any).appointmentId) === appointmentId)) return 0;
+    if ((this.canceladasClienteList || []).some(x => Number((x as any).appointmentId) === appointmentId)) return 2;
+    if ((this.canceladasProfesionalList || []).some(x => Number((x as any).appointmentId) === appointmentId)) return 2;
+    if ((this.realizadasList || []).some(x => Number((x as any).appointmentId) === appointmentId)) return 3;
+    return null;
+  }
+
+  private tryFocusAppointment(): void {
+    const id = this.focusAppointmentId;
+    if (!id) return;
+
+    const targetTab = this.findTabForAppointment(id);
+    if (typeof targetTab === 'number') {
+      this.activeTab = targetTab;
+    }
+
+    // Esperar render del DOM del tab, y luego scrollear por anchor id
+    this.scrollToAppointment(id, 0);
+  }
+
+  private scrollToAppointment(appointmentId: number, attempt: number): void {
+    if (!appointmentId) return;
+    if (attempt > 12) return;
+    try {
+      const el = typeof document !== 'undefined' ? document.getElementById(`appt-${appointmentId}`) : null;
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.highlightAppointmentId = appointmentId;
+        setTimeout(() => {
+          if (this.highlightAppointmentId === appointmentId) this.highlightAppointmentId = null;
+        }, 3500);
+        // limpiar param para que no vuelva a “re-enfocar” en cada refresh
+        this.router.navigate([], {
+          queryParams: { focusAppointmentId: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        }).catch(() => {});
+        this.focusAppointmentId = null;
+        return;
+      }
+    } catch {}
+
+    setTimeout(() => this.scrollToAppointment(appointmentId, attempt + 1), 150);
   }
 
   private loadFavorites(): void {

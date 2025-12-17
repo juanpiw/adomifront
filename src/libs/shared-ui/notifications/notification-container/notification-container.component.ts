@@ -72,6 +72,7 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
     const profile = this.notificationService.getCurrentProfile();
     const md = notification?.metadata || {};
     const appointmentId = md['appointmentId'] ?? md['appointment_id'];
+    const quoteId = md['quoteId'] ?? md['quote_id'];
     const dateRaw = md['appointmentDate'] ?? md['appointment_date'] ?? md['date'];
     const timeRaw = md['appointmentTime'] ?? md['appointment_time'] ?? md['time'] ?? md['start_time'];
 
@@ -108,6 +109,29 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
           appointmentId: String(appointmentId),
           ...(time ? { time } : {})
         },
+        queryParamsHandling: 'merge'
+      }).catch(() => {});
+      this.notificationClick.emit(notification);
+      return;
+    }
+
+    // Cliente: si hay appointmentId, llevar a Mis Reservas y enfocar la tarjeta
+    if (profile === 'client' && appointmentId) {
+      this.router.navigate(['/client/reservas'], {
+        queryParams: {
+          focusAppointmentId: String(appointmentId)
+        },
+        queryParamsHandling: 'merge'
+      }).catch(() => {});
+      this.notificationClick.emit(notification);
+      return;
+    }
+
+    // Cotizaciones: navegar a la sección correspondiente
+    if (quoteId) {
+      const target = profile === 'provider' ? '/dash/cotizaciones' : '/client/cotizaciones';
+      this.router.navigate([target], {
+        queryParams: { focusQuoteId: String(quoteId) },
         queryParamsHandling: 'merge'
       }).catch(() => {});
       this.notificationClick.emit(notification);
