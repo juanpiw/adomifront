@@ -1,9 +1,11 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PromoModalComponent, PromoFormData } from './promocion/promo-modal.component';
 import { PromoService } from '../../services/promo.service';
+
+type FounderStatus = 'idle' | 'success' | 'error';
 
 @Component({
   selector: 'app-home',
@@ -14,12 +16,27 @@ import { PromoService } from '../../services/promo.service';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   email = '';
-  modalEmail = '';
-  showModal = false;
   showPromoModal = false;
   faqOpen: boolean[] = [false, false, false, false];
 
-  constructor(private promoService: PromoService) {}
+  // Pricing v2 state
+  isAnnual = false;
+  readonly prices = {
+    pro: { month: '29.000', year: '290.000' },
+    scale: { month: '89.000', year: '890.000' }
+  } as const;
+
+  // Founder code state
+  founderCode = '';
+  founderStatus: FounderStatus = 'idle';
+  founderShake = false;
+
+  private readonly FOUNDER_CODE = 'ADOMI2025';
+
+  constructor(
+    private promoService: PromoService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.initAnimations();
@@ -37,30 +54,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Here you would typically send the email to your backend
     alert('¡Gracias por tu interés! Te contactaremos pronto.');
     this.email = '';
-  }
-
-  onModalSubmit(event: Event) {
-    event.preventDefault();
-    console.log('Modal form submitted with email:', this.modalEmail);
-    // Here you would typically send the email to your backend
-    alert('¡Bienvenido a los Fundadores! Te contactaremos pronto.');
-    this.modalEmail = '';
-    this.closeModal();
-  }
-
-  // Modal handlers
-  openModal() {
-    this.showModal = true;
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'hidden';
-    }
-  }
-
-  closeModal() {
-    this.showModal = false;
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'auto';
-    }
   }
 
   // Promo modal handlers
@@ -103,6 +96,68 @@ export class HomeComponent implements OnInit, OnDestroy {
   // FAQ handlers
   toggleFaq(index: number) {
     this.faqOpen[index] = !this.faqOpen[index];
+  }
+
+  // Pricing v2 helpers
+  setBilling(isAnnual: boolean) {
+    this.isAnnual = isAnnual;
+  }
+
+  toggleBilling() {
+    this.isAnnual = !this.isAnnual;
+  }
+
+  get billingPeriodLabel() {
+    return this.isAnnual ? '/año' : '/mes';
+  }
+
+  get proPrice() {
+    return this.isAnnual ? this.prices.pro.year : this.prices.pro.month;
+  }
+
+  get scalePrice() {
+    return this.isAnnual ? this.prices.scale.year : this.prices.scale.month;
+  }
+
+  goToRegister(plan: string) {
+    void this.router.navigate(['/auth/register'], {
+      queryParams: {
+        plan,
+        billing: this.isAnnual ? 'anual' : 'mensual'
+      }
+    });
+  }
+
+  onFounderCodeChange() {
+    if (this.founderStatus !== 'idle') {
+      this.founderStatus = 'idle';
+    }
+    if (this.founderShake) {
+      this.founderShake = false;
+    }
+  }
+
+  get founderButtonText() {
+    if (this.founderStatus === 'success') return '¡Código Correcto!';
+    if (this.founderStatus === 'error') return 'Código Inválido';
+    return 'Validar y Activar';
+  }
+
+  validateFounderCodeAndContinue() {
+    const code = this.founderCode.trim().toUpperCase();
+    if (!code) return;
+
+    if (code === this.FOUNDER_CODE) {
+      this.founderStatus = 'success';
+      this.goToRegister('Fundador');
+      return;
+    }
+
+    this.founderStatus = 'error';
+    this.founderShake = true;
+    setTimeout(() => {
+      this.founderShake = false;
+    }, 550);
   }
 
   // Animation initialization

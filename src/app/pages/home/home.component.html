@@ -255,127 +255,242 @@
 <!-- Pricing Section -->
 <section id="pricing" class="py-24 bg-gray-50 relative">
   <div class="container mx-auto px-6 relative z-10">
-    <div class="text-center mb-20">
-      <div class="fade-in-up">
-        <h2 class="font-serif-elegant text-3xl md:text-4xl text-brand-dark mb-4">
-          Comienza gratis, crece sin límites.
-        </h2>
-      </div>
-      <div class="fade-in-up">
-        <h3 class="text-5xl md:text-8xl font-bold tracking-tighter text-brand-dark mb-8 leading-tight">
-          Precios que se adaptan a tu<br>
-          <span class="gradient-text">crecimiento</span>
-        </h3>
-      </div>
-      <div class="fade-in-up">
-        <p class="text-lg md:text-xl text-brand-muted max-w-2xl mx-auto leading-relaxed">
-          Sin compromisos, sin sorpresas. Solo herramientas poderosas para hacer crecer tu negocio.
-        </p>
-      </div>
-    </div>
-    
-    <!-- Pricing Cards -->
-    <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-      <!-- Plan Fundador -->
-      <div class="elegant-card rounded-2xl p-8 text-center relative overflow-hidden">
-        <div class="absolute top-0 right-0 bg-gradient-to-l from-yellow-400 to-orange-500 text-white px-4 py-1 rounded-bl-lg text-sm font-bold">
-          ¡LIMITADO!
+    <div class="pricing-v2">
+      <div class="pricing-v2__header" id="mainHeader">
+        <h1 class="pricing-v2__title">Elige cómo quieres crecer</h1>
+        <p class="pricing-v2__subtitle">Reduce tus comisiones pagando una suscripción mensual o empieza gratis.</p>
+
+        <div class="pricing-v2__billing-toggle billing-toggle-wrapper" role="group" aria-label="Seleccionar periodicidad">
+          <button
+            type="button"
+            class="billing-label"
+            [class.active]="!isAnnual"
+            (click)="setBilling(false)">
+            Mensual
+          </button>
+
+          <button
+            type="button"
+            class="toggle-switch"
+            [class.checked]="isAnnual"
+            (click)="toggleBilling()"
+            aria-label="Cambiar entre mensual y anual">
+            <span class="toggle-slider"></span>
+          </button>
+
+          <button
+            type="button"
+            class="billing-label"
+            [class.active]="isAnnual"
+            (click)="setBilling(true)">
+            Anual
+          </button>
+
+          <span class="savings-badge">2 meses GRATIS</span>
         </div>
-        <h4 class="text-2xl font-bold text-gray-900 mb-4">Fundador</h4>
-        <div class="mb-6">
-          <span class="text-4xl font-bold text-gray-900">$0</span>
-          <span class="text-gray-600">/mes</span>
-        </div>
-        <ul class="space-y-3 mb-8 text-left">
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            3 meses sin comisiones
-          </li>
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            Acceso prioritario
-          </li>
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            Soporte directo
-          </li>
-        </ul>
-        <button (click)="openModal()" class="w-full bg-gray-900 text-white py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors">
-          Únete como Fundador
-        </button>
       </div>
-      
-      <!-- Plan Básico -->
-      <div class="elegant-card rounded-2xl p-8 text-center border-2 border-indigo-500 relative">
-        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-bold">
-          Popular
+
+      <!-- Grid de Planes -->
+      <div class="plans-grid" id="plansGrid">
+        <!-- PLAN FUNDADOR -->
+        <div class="plan-card plan-card--founder">
+          <div class="founder-badge">¡Limitado!</div>
+          <div class="card-header">
+            <h3 class="plan-name">Fundador</h3>
+            <p class="plan-desc">Acceso exclusivo "Pioneros". Beneficios especiales para primeros usuarios.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="amount">$0</span>
+              <span class="period">/6 meses</span>
+            </div>
+            <div class="commission-box">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">0%</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span><strong>Servicios Ilimitados</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Prioridad Búsquedas Locales</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Soporte Directo del Equipo</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">auto_awesome</span>
+              <span>Acceso funciones Beta</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">payments</span>
+              <span>Pagos en Efectivo Habilitados</span>
+            </li>
+          </ul>
+
+          <div class="founder-input-area">
+            <input
+              type="text"
+              [(ngModel)]="founderCode"
+              (ngModelChange)="onFounderCodeChange()"
+              name="founderCode"
+              placeholder="Ingresa Código"
+              [class.is-success]="founderStatus === 'success'"
+              [class.is-error]="founderStatus === 'error'"
+              [class.shake]="founderShake"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false">
+
+            <button
+              type="button"
+              class="btn-founder"
+              [disabled]="founderCode.trim().length <= 3"
+              (click)="validateFounderCodeAndContinue()">
+              {{ founderButtonText }}
+            </button>
+          </div>
         </div>
-        <h4 class="text-2xl font-bold text-gray-900 mb-4">Básico</h4>
-        <div class="mb-6">
-          <span class="text-4xl font-bold text-gray-900">$29</span>
-          <span class="text-gray-600">/mes</span>
+
+        <!-- PLAN STARTER -->
+        <div class="plan-card">
+          <div class="card-header">
+            <h3 class="plan-name">Starter</h3>
+            <p class="plan-desc">Ideal para empezar sin costos fijos. Pagas solo cuando ganas.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="amount">Gratis</span>
+            </div>
+            <div class="commission-box high-comm">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">15%</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="disabled">
+              <span class="material-icon icon">cancel</span>
+              <span>Pagos en Efectivo <span class="tooltip-hint">(Solo tarjeta)</span></span>
+            </li>
+            <li class="disabled">
+              <span class="material-icon icon">cancel</span>
+              <span>Sistema de Cotizaciones</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">photo_library</span>
+              <span>Portafolio: <strong>5 items</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">analytics</span>
+              <span>Analytics: <strong>Básico</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">rocket_launch</span>
+              <span>Visibilidad: <strong>Estándar</strong></span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-select btn-outline" (click)="goToRegister('Starter')">Empezar Gratis</button>
         </div>
-        <ul class="space-y-3 mb-8 text-left">
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            5% de comisión
-          </li>
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            Hasta 50 servicios/mes
-          </li>
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            Calendario integrado
-          </li>
-        </ul>
-        <button routerLink="/auth/register" class="w-full bg-indigo-600 text-white py-3 rounded-full font-semibold hover:bg-indigo-700 transition-colors">
-          Comenzar Prueba Gratis
-        </button>
-      </div>
-      
-      <!-- Plan Pro -->
-      <div class="elegant-card rounded-2xl p-8 text-center">
-        <h4 class="text-2xl font-bold text-gray-900 mb-4">Pro</h4>
-        <div class="mb-6">
-          <span class="text-4xl font-bold text-gray-900">$59</span>
-          <span class="text-gray-600">/mes</span>
+
+        <!-- PLAN PRO -->
+        <div class="plan-card recommended">
+          <div class="badge-recommended">Más Popular</div>
+          <div class="card-header">
+            <h3 class="plan-name">Pro</h3>
+            <p class="plan-desc">Para profesionales activos. Aumenta tu margen de ganancia.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="currency">$</span>
+              <span class="amount">{{ proPrice }}</span>
+              <span class="period">{{ billingPeriodLabel }}</span>
+            </div>
+            <div class="commission-box low-comm">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">7%</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span><strong>Pagos en Efectivo</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Sistema de Cotizaciones</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">photo_library</span>
+              <span>Portafolio: <strong>25 items</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">analytics</span>
+              <span>Analytics: <strong>Avanzado</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">rocket_launch</span>
+              <span>Visibilidad: <strong>Alta</strong></span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-select btn-primary" (click)="goToRegister('Pro')">Elegir Pro</button>
         </div>
-        <ul class="space-y-3 mb-8 text-left">
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            3% de comisión
-          </li>
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            Servicios ilimitados
-          </li>
-          <li class="flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            Analytics avanzados
-          </li>
-        </ul>
-        <button routerLink="/auth/register" class="w-full bg-gray-900 text-white py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors">
-          Comenzar Prueba Gratis
-        </button>
+
+        <!-- PLAN SCALE -->
+        <div class="plan-card">
+          <div class="card-header">
+            <h3 class="plan-name">Scale</h3>
+            <p class="plan-desc">Para agencias y alto volumen. Máxima rentabilidad.</p>
+          </div>
+
+          <div class="card-pricing">
+            <div class="price-value">
+              <span class="currency">$</span>
+              <span class="amount">{{ scalePrice }}</span>
+              <span class="period">{{ billingPeriodLabel }}</span>
+            </div>
+            <div class="commission-box low-comm">
+              <span class="comm-label">Tu Comisión</span>
+              <span class="comm-value">5%</span>
+            </div>
+          </div>
+
+          <ul class="features-list">
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Pagos en Efectivo</span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">check_circle</span>
+              <span>Cotizaciones <strong>Marca Blanca</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">photo_library</span>
+              <span>Portafolio: <strong>Ilimitado</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">analytics</span>
+              <span>Analytics + <strong>Exportar CSV</strong></span>
+            </li>
+            <li class="enabled">
+              <span class="material-icon icon">rocket_launch</span>
+              <span>Visibilidad: <strong>Top</strong></span>
+            </li>
+          </ul>
+
+          <button type="button" class="btn-select btn-outline" (click)="goToRegister('Scale')">Elegir Scale</button>
+        </div>
       </div>
     </div>
   </div>
@@ -493,35 +608,6 @@
     </div>
   </div>
 </footer>
-
-<!-- Modal -->
-<div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" (click)="closeModal()">
-  <div class="bg-white rounded-2xl p-8 max-w-md w-full" (click)="$event.stopPropagation()">
-    <div class="text-center">
-      <h3 class="text-2xl font-bold text-gray-900 mb-4">¡Únete a los Fundadores!</h3>
-      <p class="text-gray-600 mb-6">Obtén 3 meses completamente gratis y acceso prioritario a la plataforma.</p>
-      <form (ngSubmit)="onModalSubmit($event)" class="space-y-4">
-        <input 
-          type="email" 
-          [(ngModel)]="modalEmail"
-          name="modalEmail"
-          placeholder="Tu correo electrónico" 
-          required 
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-        <button 
-          type="submit" 
-          class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
-        >
-          Unirme como Fundador
-        </button>
-      </form>
-      <button (click)="closeModal()" class="mt-4 text-gray-500 hover:text-gray-700">
-        Cancelar
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- Promo Modal -->
 <app-promo-modal 
