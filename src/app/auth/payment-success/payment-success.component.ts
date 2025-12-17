@@ -57,10 +57,26 @@ export class PaymentSuccessComponent implements OnInit {
       // Si ya hay sesión (Google), no exigir datos temporales ni registrar de nuevo
       const hasToken = !!this.auth.getAccessToken();
       if (hasToken) {
-        if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
-          sessionStorage.removeItem('tempUserData');
-          sessionStorage.removeItem('selectedPlan');
-        }
+        // Leer plan esperado (si existe) antes de limpiar storage; esto permite esperar al webhook
+        let expectedPlanId: number | null = null;
+        try {
+          if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+            const rawPlan = sessionStorage.getItem('selectedPlan');
+            if (rawPlan && rawPlan !== 'null' && rawPlan !== 'undefined') {
+              const parsed = JSON.parse(rawPlan);
+              const pid = Number(parsed?.id);
+              expectedPlanId = Number.isFinite(pid) && pid > 0 ? pid : null;
+            }
+          }
+        } catch {}
+
+        // Limpieza parcial: no borramos selectedPlan todavía para poder comparar en polling
+        try {
+          if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+            sessionStorage.removeItem('tempUserData');
+          }
+        } catch {}
+
         // Esperar promoción por webhook: hacer polling de /auth/me hasta role=provider
         let attempts = 0;
         const maxAttempts = 60; // ~120s para dar margen a Stripe webhooks
@@ -73,6 +89,7 @@ export class PaymentSuccessComponent implements OnInit {
           return false;
         })();
         console.log('[PAYMENT_SUCCESS] intendedProvider:', intendedProvider);
+        console.log('[PAYMENT_SUCCESS] expectedPlanId:', expectedPlanId);
         const poll = setInterval(() => {
           attempts++;
           console.log('[PAYMENT_SUCCESS] Poll attempt', attempts);
@@ -80,10 +97,23 @@ export class PaymentSuccessComponent implements OnInit {
             next: async (resp) => {
               const user = (resp as any).data?.user || (resp as any).user || resp;
               console.log('[PAYMENT_SUCCESS] /auth/me user:', user);
-              if (user?.role === 'provider') {
+              const roleOk = user?.role === 'provider';
+              const activePlanId = Number((user as any)?.active_plan_id || 0);
+              const hasPlan = Number.isFinite(activePlanId) && activePlanId > 0;
+              const planOk = expectedPlanId ? activePlanId === expectedPlanId : hasPlan;
+
+              if (roleOk && planOk) {
                 clearInterval(poll);
+                // Ahora sí limpiar plan seleccionado y flags de onboarding
+                try {
+                  if (typeof sessionStorage !== 'undefined') {
+                    sessionStorage.removeItem('selectedPlan');
+                    sessionStorage.removeItem('providerOnboarding');
+                    sessionStorage.removeItem('paymentGateway');
+                    sessionStorage.removeItem('promoCode');
+                  }
+                } catch {}
                 // Limpiar flag de onboarding si estaba activo
-                try { if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('providerOnboarding'); } catch {}
                 // Refrescar token para que el JWT tenga role=provider antes de llamar a rutas protegidas
                 try {
                   await this.auth.refreshAccessToken().toPromise();
@@ -94,7 +124,7 @@ export class PaymentSuccessComponent implements OnInit {
                 // Si no tiene payouts habilitados, iniciar onboarding Connect
                 const payoutsEnabled = (user as any)?.stripe_payouts_enabled === 1 || (user as any)?.stripe_payouts_enabled === true;
                 const accountId = (user as any)?.stripe_account_id || null;
-                console.log('[PAYMENT_SUCCESS] Role provider. payoutsEnabled:', payoutsEnabled, 'accountId:', accountId);
+                console.log('[PAYMENT_SUCCESS] Role provider + plan activo. payoutsEnabled:', payoutsEnabled, 'accountId:', accountId, 'active_plan_id:', activePlanId);
                 if (!payoutsEnabled) {
                   // Si Connect está deshabilitado globalmente, no intentar onboarding
                   if (!environment.connectEnabled) {
