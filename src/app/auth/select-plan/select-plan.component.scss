@@ -177,6 +177,11 @@
   align-items: stretch;
 }
 
+.plan-card.is-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* === Pricing-v2 Founder card (mismo look que landing) === */
 .plan-card--founder {
   background: var(--founder-bg, #0b1220);

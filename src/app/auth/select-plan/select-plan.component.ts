@@ -113,6 +113,50 @@ export class SelectPlanComponent implements OnInit {
   // Pricing-v2 Founder request (mismo HTML que landing)
   founderEmail: string = '';
 
+  // Alias para reutilizar exactamente el HTML del pricing de Home
+  get isAnnual(): boolean {
+    return this.isAnnualBilling;
+  }
+
+  setBilling(isAnnual: boolean) {
+    if (this.isPromoActive()) return;
+    if (isAnnual && this.annualPlans.length === 0) {
+      console.warn('[SELECT_PLAN] No hay planes anuales disponibles');
+      return;
+    }
+    if (!isAnnual && this.monthlyPlans.length === 0) {
+      console.warn('[SELECT_PLAN] No hay planes mensuales disponibles');
+      return;
+    }
+    this.isAnnualBilling = isAnnual;
+    this.selectedPlan = null;
+  }
+
+  get billingPeriodLabel(): string {
+    return this.isAnnualBilling ? '/año' : '/mes';
+  }
+
+  get proPrice(): string {
+    const p = this.getPlanForKey('pro');
+    if (p) return this.formatAmount(p.price);
+    return this.isAnnualBilling ? '290.000' : '29.000';
+  }
+
+  get scalePrice(): string {
+    const p = this.getPlanForKey('scale');
+    if (p) return this.formatAmount(p.price);
+    return this.isAnnualBilling ? '890.000' : '89.000';
+  }
+
+  selectTier(key: 'starter' | 'pro' | 'scale') {
+    const plan = this.getPlanForKey(key);
+    if (!plan) {
+      this.error = 'Plan no disponible por ahora. Intenta más tarde.';
+      return;
+    }
+    this.selectPlan(plan);
+  }
+
   private http = inject(HttpClient);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -297,24 +341,7 @@ export class SelectPlanComponent implements OnInit {
   }
 
   toggleBilling() {
-    if (this.isPromoActive()) {
-      console.log('[SELECT_PLAN] Toggle billing bloqueado porque hay promo activa');
-      return;
-    }
-    // No “inventamos” planes: si no existen planes reales para el intervalo destino, no togglear.
-    const nextIsAnnual = !this.isAnnualBilling;
-    if (nextIsAnnual && this.annualPlans.length === 0) {
-      console.warn('[SELECT_PLAN] No hay planes anuales disponibles');
-      return;
-    }
-    if (!nextIsAnnual && this.monthlyPlans.length === 0) {
-      console.warn('[SELECT_PLAN] No hay planes mensuales disponibles');
-      return;
-    }
-    console.log('[SELECT_PLAN] Toggle billing. Estado previo isAnnualBilling:', this.isAnnualBilling);
-    this.isAnnualBilling = !this.isAnnualBilling;
-    this.selectedPlan = null; // Limpiar selección al cambiar
-    console.log('[SELECT_PLAN] Estado nuevo isAnnualBilling:', this.isAnnualBilling);
+    this.setBilling(!this.isAnnualBilling);
   }
 
   getCurrentPlans(): Plan[] {

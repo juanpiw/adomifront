@@ -20,9 +20,8 @@
         <button
           type="button"
           class="billing-label"
-          [class.active]="!isAnnualBilling"
-          [disabled]="monthlyPlans.length === 0 || isPromoActive()"
-          (click)="isAnnualBilling && !isPromoActive() ? toggleBilling() : null"
+          [class.active]="!isAnnual"
+          (click)="setBilling(false)"
         >
           Mensual
         </button>
@@ -30,9 +29,7 @@
         <button
           type="button"
           class="toggle-switch"
-          role="switch"
-          [attr.aria-checked]="isAnnualBilling"
-          [class.checked]="isAnnualBilling"
+          [class.checked]="isAnnual"
           (click)="toggleBilling()"
           aria-label="Cambiar entre mensual y anual"
         >
@@ -42,9 +39,8 @@
         <button
           type="button"
           class="billing-label"
-          [class.active]="isAnnualBilling"
-          [disabled]="annualPlans.length === 0 || isPromoActive()"
-          (click)="!isAnnualBilling && !isPromoActive() ? toggleBilling() : null"
+          [class.active]="isAnnual"
+          (click)="setBilling(true)"
         >
           Anual
         </button>
@@ -128,178 +124,139 @@
         </div>
       </div>
 
-      <!-- Starter -->
-      <ng-container *ngIf="getPlanForKey('starter') as starterPlan">
-        <div class="plan-card">
-          <div class="card-header">
-            <h3 class="plan-name">Starter</h3>
-            <p class="plan-desc">Ideal para empezar sin costos fijos. Pagas solo cuando ganas.</p>
-          </div>
-
-          <div class="card-pricing">
-            <div class="price-value">
-              <span class="amount">Gratis</span>
-            </div>
-            <div class="commission-box high-comm">
-              <span class="comm-label">Tu Comisión</span>
-              <span class="comm-value">{{ getCommissionLabel(starterPlan) }}</span>
-            </div>
-          </div>
-
-          <ul class="features-list">
-            <li class="disabled">
-              <span class="material-icon icon">cancel</span>
-              <span>Pagos en Efectivo <span class="tooltip-hint">(Solo tarjeta)</span></span>
-            </li>
-            <li class="disabled">
-              <span class="material-icon icon">cancel</span>
-              <span>Sistema de Cotizaciones</span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">photo_library</span>
-              <span>Portafolio: <strong>{{ getPortfolioLimitLabel(starterPlan, '5 items') }}</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">analytics</span>
-              <span>Analytics: <strong>{{ getAnalyticsLabel(starterPlan, 'Básico') }}</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">rocket_launch</span>
-              <span>Visibilidad: <strong>{{ getVisibilityLabel(starterPlan, 'Estándar') }}</strong></span>
-            </li>
-          </ul>
-
-          <button type="button" class="btn-select btn-outline" (click)="selectPlan(starterPlan)">Empezar Gratis</button>
+      <!-- PLAN STARTER (mismo HTML que Home) -->
+      <div class="plan-card">
+        <div class="card-header">
+          <h3 class="plan-name">Starter</h3>
+          <p class="plan-desc">Ideal para empezar sin costos fijos. Pagas solo cuando ganas.</p>
         </div>
-      </ng-container>
 
-      <!-- Pro -->
-      <ng-container *ngIf="getPlanForKey('pro') as proPlan">
-        <div class="plan-card recommended">
-          <div class="badge-recommended">Más Popular</div>
-          <div class="card-header">
-            <h3 class="plan-name">Pro</h3>
-            <p class="plan-desc">Para profesionales activos. Aumenta tu margen de ganancia.</p>
+        <div class="card-pricing">
+          <div class="price-value">
+            <span class="amount">Gratis</span>
           </div>
-
-          <div class="card-pricing">
-            <div class="price-value">
-              <span class="currency">$</span>
-              <span class="amount">{{ formatAmount(proPlan.price) }}</span>
-              <span class="period">{{ getPlanIntervalLabel(proPlan) }}</span>
-            </div>
-            <div class="commission-box low-comm">
-              <span class="comm-label">Tu Comisión</span>
-              <span class="comm-value">{{ getCommissionLabel(proPlan) }}</span>
-            </div>
+          <div class="commission-box high-comm">
+            <span class="comm-label">Tu Comisión</span>
+            <span class="comm-value">15%</span>
           </div>
-
-          <ul class="features-list">
-            <li class="enabled">
-              <span class="material-icon icon">check_circle</span>
-              <span><strong>Pagos en Efectivo</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">check_circle</span>
-              <span>Sistema de Cotizaciones</span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">photo_library</span>
-              <span>Portafolio: <strong>{{ getPortfolioLimitLabel(proPlan, '25 items') }}</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">analytics</span>
-              <span>Analytics: <strong>{{ getAnalyticsLabel(proPlan, 'Avanzado') }}</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">rocket_launch</span>
-              <span>Visibilidad: <strong>{{ getVisibilityLabel(proPlan, 'Alta') }}</strong></span>
-            </li>
-          </ul>
-
-          <button type="button" class="btn-select btn-primary" (click)="selectPlan(proPlan)">Elegir Pro</button>
         </div>
-      </ng-container>
 
-      <!-- Scale -->
-      <ng-container *ngIf="getPlanForKey('scale') as scalePlan">
-        <div class="plan-card">
-          <div class="card-header">
-            <h3 class="plan-name">Scale</h3>
-            <p class="plan-desc">Para agencias y alto volumen. Máxima rentabilidad.</p>
-          </div>
+        <ul class="features-list">
+          <li class="disabled">
+            <span class="material-icon icon">cancel</span>
+            <span>Pagos en Efectivo <span class="tooltip-hint">(Solo tarjeta)</span></span>
+          </li>
+          <li class="disabled">
+            <span class="material-icon icon">cancel</span>
+            <span>Sistema de Cotizaciones</span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">photo_library</span>
+            <span>Portafolio: <strong>5 items</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">analytics</span>
+            <span>Analytics: <strong>Básico</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">rocket_launch</span>
+            <span>Visibilidad: <strong>Estándar</strong></span>
+          </li>
+        </ul>
 
-          <div class="card-pricing">
-            <div class="price-value">
-              <span class="currency">$</span>
-              <span class="amount">{{ formatAmount(scalePlan.price) }}</span>
-              <span class="period">{{ getPlanIntervalLabel(scalePlan) }}</span>
-            </div>
-            <div class="commission-box low-comm">
-              <span class="comm-label">Tu Comisión</span>
-              <span class="comm-value">{{ getCommissionLabel(scalePlan) }}</span>
-            </div>
-          </div>
+        <button type="button" class="btn-select btn-outline" (click)="selectTier('starter')">Empezar Gratis</button>
+      </div>
 
-          <ul class="features-list">
-            <li class="enabled">
-              <span class="material-icon icon">check_circle</span>
-              <span>Pagos en Efectivo</span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">check_circle</span>
-              <span>Cotizaciones <strong>Marca Blanca</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">photo_library</span>
-              <span>Portafolio: <strong>{{ getPortfolioLimitLabel(scalePlan, 'Ilimitado') }}</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">analytics</span>
-              <span>Analytics + <strong>Exportar CSV</strong></span>
-            </li>
-            <li class="enabled">
-              <span class="material-icon icon">rocket_launch</span>
-              <span>Visibilidad: <strong>{{ getVisibilityLabel(scalePlan, 'Top') }}</strong></span>
-            </li>
-          </ul>
-
-          <button type="button" class="btn-select btn-outline" (click)="selectPlan(scalePlan)">Elegir Scale</button>
+      <!-- PLAN PRO (mismo HTML que Home) -->
+      <div class="plan-card recommended">
+        <div class="badge-recommended">Más Popular</div>
+        <div class="card-header">
+          <h3 class="plan-name">Pro</h3>
+          <p class="plan-desc">Para profesionales activos. Aumenta tu margen de ganancia.</p>
         </div>
-      </ng-container>
-    </div>
 
-    <!-- Código Fundador (mantiene funcionalidad sin tocar el card) -->
-    <div *ngIf="!loading && !error" class="promo-input-group" [class.active]="isPromoActive()">
-      <input
-        type="text"
-        placeholder="¿Tienes un código Fundador? Ingresa aquí"
-        [(ngModel)]="promoCode"
-        [disabled]="promoDisabled || isPromoActive()"
-      />
-      <button
-        class="btn-apply"
-        type="button"
-        (click)="applyPromoCode()"
-        [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
-      >
-        {{ promoLoading ? 'Validando…' : 'Validar' }}
-      </button>
-      <button
-        class="btn-clear"
-        type="button"
-        *ngIf="isPromoActive()"
-        (click)="clearPromo()"
-      >
-        Quitar
-      </button>
-    </div>
+        <div class="card-pricing">
+          <div class="price-value">
+            <span class="currency">$</span>
+            <span class="amount">{{ proPrice }}</span>
+            <span class="period">{{ billingPeriodLabel }}</span>
+          </div>
+          <div class="commission-box low-comm">
+            <span class="comm-label">Tu Comisión</span>
+            <span class="comm-value">7%</span>
+          </div>
+        </div>
 
-    <div class="promo-status" *ngIf="promoSuccess">
-      <span class="success">{{ promoSuccess }}</span>
-    </div>
-    <div class="promo-status" *ngIf="promoError">
-      <span class="error">{{ promoError }}</span>
+        <ul class="features-list">
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span><strong>Pagos en Efectivo</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span>Sistema de Cotizaciones</span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">photo_library</span>
+            <span>Portafolio: <strong>25 items</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">analytics</span>
+            <span>Analytics: <strong>Avanzado</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">rocket_launch</span>
+            <span>Visibilidad: <strong>Alta</strong></span>
+          </li>
+        </ul>
+
+        <button type="button" class="btn-select btn-primary" (click)="selectTier('pro')">Elegir Pro</button>
+      </div>
+
+      <!-- PLAN SCALE (mismo HTML que Home) -->
+      <div class="plan-card">
+        <div class="card-header">
+          <h3 class="plan-name">Scale</h3>
+          <p class="plan-desc">Para agencias y alto volumen. Máxima rentabilidad.</p>
+        </div>
+
+        <div class="card-pricing">
+          <div class="price-value">
+            <span class="currency">$</span>
+            <span class="amount">{{ scalePrice }}</span>
+            <span class="period">{{ billingPeriodLabel }}</span>
+          </div>
+          <div class="commission-box low-comm">
+            <span class="comm-label">Tu Comisión</span>
+            <span class="comm-value">5%</span>
+          </div>
+        </div>
+
+        <ul class="features-list">
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span>Pagos en Efectivo</span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">check_circle</span>
+            <span>Cotizaciones <strong>Marca Blanca</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">photo_library</span>
+            <span>Portafolio: <strong>Ilimitado</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">analytics</span>
+            <span>Analytics + <strong>Exportar CSV</strong></span>
+          </li>
+          <li class="enabled">
+            <span class="material-icon icon">rocket_launch</span>
+            <span>Visibilidad: <strong>Top</strong></span>
+          </li>
+        </ul>
+
+        <button type="button" class="btn-select btn-outline" (click)="selectTier('scale')">Elegir Scale</button>
+      </div>
     </div>
   </div>
 
