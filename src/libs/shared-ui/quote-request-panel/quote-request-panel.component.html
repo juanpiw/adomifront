@@ -40,17 +40,53 @@
 
       <div class="quote-request__inline">
         <div class="quote-request__field">
-          <label for="preferredDate">Fecha estimada</label>
+          <div class="quote-request__label-row">
+            <label for="preferredDate">Fecha estimada</label>
+            <button
+              type="button"
+              class="quote-request__help-btn"
+              aria-label="¿Qué significa Fecha estimada?"
+              [attr.aria-expanded]="helpOpen === 'date'"
+              (click)="toggleHelp('date', $event)"
+            >
+              ?
+            </button>
+            <div
+              class="quote-request__help-popover"
+              role="tooltip"
+              *ngIf="helpOpen === 'date'"
+              (click)="$event.stopPropagation()"
+            >
+              Fecha aproximada en la que te gustaría realizar el servicio. Si aún no lo sabes, puedes dejarlo vacío.
+            </div>
+          </div>
           <input id="preferredDate" type="date" formControlName="preferredDate">
         </div>
         <div class="quote-request__field">
-          <label for="preferredTimeRange">Horario preferido</label>
-          <input
-            id="preferredTimeRange"
-            type="text"
-            placeholder="Ej: 10:00 - 13:00"
-            formControlName="preferredTimeRange"
-          >
+          <div class="quote-request__label-row">
+            <label for="preferredTimeRange">Horario preferido</label>
+            <button
+              type="button"
+              class="quote-request__help-btn"
+              aria-label="¿Qué significa Horario preferido?"
+              [attr.aria-expanded]="helpOpen === 'time'"
+              (click)="toggleHelp('time', $event)"
+            >
+              ?
+            </button>
+            <div
+              class="quote-request__help-popover"
+              role="tooltip"
+              *ngIf="helpOpen === 'time'"
+              (click)="$event.stopPropagation()"
+            >
+              Elige un rango horario tentativo para que el profesional te proponga una hora exacta.
+            </div>
+          </div>
+          <select id="preferredTimeRange" formControlName="preferredTimeRange">
+            <option value="">Selecciona un horario</option>
+            <option *ngFor="let range of preferredTimeRanges" [value]="range">{{ range }}</option>
+          </select>
         </div>
       </div>
 

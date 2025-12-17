@@ -21,6 +21,7 @@
           type="button"
           class="billing-label"
           [class.active]="!isAnnualBilling"
+          [disabled]="monthlyPlans.length === 0 || isPromoActive()"
           (click)="isAnnualBilling && !isPromoActive() ? toggleBilling() : null"
         >
           Mensual
@@ -42,12 +43,13 @@
           type="button"
           class="billing-label"
           [class.active]="isAnnualBilling"
+          [disabled]="annualPlans.length === 0 || isPromoActive()"
           (click)="!isAnnualBilling && !isPromoActive() ? toggleBilling() : null"
         >
           Anual
         </button>
 
-        <span class="savings-badge">AHORRA {{ getSavingsPercentage() || 17 }}%</span>
+        <span class="savings-badge" *ngIf="getSavingsPercentage() > 0">AHORRA {{ getSavingsPercentage() }}%</span>
       </div>
     </div>
 
@@ -171,7 +173,7 @@
         <div class="badge-recommended" *ngIf="isPlanRecommended(plan)">Recomendado</div>
 
         <div class="card-header">
-          <h3 class="plan-name">{{ plan.name }}</h3>
+          <h3 class="plan-name">{{ getDisplayPlanName(plan) }}</h3>
           <p class="plan-desc">{{ plan.description || getPlanSubtitle(plan) }}</p>
         </div>
 
@@ -188,6 +190,7 @@
           <div class="commission-box" [ngClass]="getCommissionBoxClass(plan)">
             <span class="comm-label">Tu Comisión</span>
             <span class="comm-value">{{ getCommissionLabel(plan) }}</span>
+            <small class="comm-note" *ngFor="let n of getCommissionNotes(plan)">{{ n }}</small>
           </div>
         </div>
 
@@ -212,7 +215,7 @@
           [class.btn-outline]="!isPlanRecommended(plan)"
           (click)="selectPlan(plan); $event.stopPropagation()"
         >
-          Seleccionar {{ plan.name }}
+          Seleccionar {{ getDisplayPlanName(plan) }}
         </button>
       </div>
     </div>

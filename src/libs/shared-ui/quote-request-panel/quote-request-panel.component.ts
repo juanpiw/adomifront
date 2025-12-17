@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { QuotesClientService } from '../../../app/services/quotes-client.service';
@@ -36,9 +36,20 @@ export class QuoteRequestPanelComponent implements OnChanges {
   errorMessage = '';
   attachments: File[] = [];
   maxAttachments = 5;
+  readonly preferredTimeRanges: string[] = [
+    '08:00 - 10:00',
+    '10:00 - 12:00',
+    '12:00 - 14:00',
+    '14:00 - 16:00',
+    '16:00 - 18:00',
+    '18:00 - 20:00'
+  ];
+
+  helpOpen: 'date' | 'time' | null = null;
 
   private readonly fb = inject(FormBuilder);
   private readonly quotes = inject(QuotesClientService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
     this.form = this.fb.group({
@@ -61,6 +72,28 @@ export class QuoteRequestPanelComponent implements OnChanges {
 
   get messageControl() {
     return this.form.get('message');
+  }
+
+  toggleHelp(which: 'date' | 'time', event: MouseEvent): void {
+    event.stopPropagation();
+    this.helpOpen = this.helpOpen === which ? null : which;
+    this.cdr.markForCheck();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.helpOpen !== null) {
+      this.helpOpen = null;
+      this.cdr.markForCheck();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.helpOpen !== null) {
+      this.helpOpen = null;
+      this.cdr.markForCheck();
+    }
   }
 
   onSubmit(): void {

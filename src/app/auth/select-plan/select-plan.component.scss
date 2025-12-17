@@ -988,6 +988,14 @@
   justify-content: center;
 }
 
+.commission-box .comm-note {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 .commission-box.low-comm {
   background: #ecfdf5;
   border-color: #a7f3d0;

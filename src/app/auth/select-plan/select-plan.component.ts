@@ -214,28 +214,6 @@ export class SelectPlanComponent implements OnInit {
     console.log('[SELECT_PLAN] Separando planes por intervalo');
     this.annualPlans = this.plans.filter(plan => plan.interval === 'year');
     this.monthlyPlans = this.plans.filter(plan => plan.interval === 'month');
-    
-    // Si no hay planes mensuales, crear versiones mensuales de los anuales
-    if (this.monthlyPlans.length === 0 && this.annualPlans.length > 0) {
-      this.monthlyPlans = this.annualPlans.map(plan => ({
-        ...plan,
-        id: plan.id, // mantener mismo id para que el backend encuentre el plan
-        sourceId: plan.id,
-        price: Math.round(plan.price / 12), // Precio mensual aproximado
-        interval: 'month' as const
-      }));
-    }
-
-    // Si no hay planes anuales, derivarlos multiplicando por 12 los mensuales
-    if (this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
-      this.annualPlans = this.monthlyPlans.map(plan => ({
-        ...plan,
-        id: plan.id, // mantener mismo id para que el backend encuentre el plan
-        sourceId: plan.id,
-        price: Math.round(plan.price * 12),
-        interval: 'year' as const
-      }));
-    }
     console.log('[SELECT_PLAN] monthlyPlans:', this.monthlyPlans.length, 'annualPlans:', this.annualPlans.length);
   }
 
@@ -254,6 +232,16 @@ export class SelectPlanComponent implements OnInit {
       console.log('[SELECT_PLAN] Toggle billing bloqueado porque hay promo activa');
       return;
     }
+    // No “inventamos” planes: si no existen planes reales para el intervalo destino, no togglear.
+    const nextIsAnnual = !this.isAnnualBilling;
+    if (nextIsAnnual && this.annualPlans.length === 0) {
+      console.warn('[SELECT_PLAN] No hay planes anuales disponibles');
+      return;
+    }
+    if (!nextIsAnnual && this.monthlyPlans.length === 0) {
+      console.warn('[SELECT_PLAN] No hay planes mensuales disponibles');
+      return;
+    }
     console.log('[SELECT_PLAN] Toggle billing. Estado previo isAnnualBilling:', this.isAnnualBilling);
     this.isAnnualBilling = !this.isAnnualBilling;
     this.selectedPlan = null; // Limpiar selección al cambiar
@@ -261,7 +249,8 @@ export class SelectPlanComponent implements OnInit {
   }
 
   getCurrentPlans(): Plan[] {
-    return this.isAnnualBilling ? this.annualPlans : this.monthlyPlans;
+    const pool = this.isAnnualBilling ? this.annualPlans : this.monthlyPlans;
+    return this.pickOnePlanPerGroup(pool);
   }
 
   getBillingLabel(): string {
@@ -270,19 +259,85 @@ export class SelectPlanComponent implements OnInit {
 
   getSavingsPercentage(): number {
     if (this.annualPlans.length === 0 || this.monthlyPlans.length === 0) return 0;
-    
-    // Calcular ahorro promedio
+
+    const annualByKey = this.groupPlansByKey(this.annualPlans);
+    const monthlyByKey = this.groupPlansByKey(this.monthlyPlans);
+    const keys = Array.from(annualByKey.keys()).filter(k => monthlyByKey.has(k));
+    if (keys.length === 0) return 0;
+
     let totalSavings = 0;
-    for (let i = 0; i < this.annualPlans.length; i++) {
-      const annual = this.annualPlans[i];
-      const monthly = this.monthlyPlans[i];
-      if (monthly) {
-        const monthlyAnnual = monthly.price * 12;
-        const savings = ((monthlyAnnual - annual.price) / monthlyAnnual) * 100;
-        totalSavings += savings;
-      }
+    let counted = 0;
+    for (const key of keys) {
+      const annual = this.pickBestPlan(annualByKey.get(key) || []);
+      const monthly = this.pickBestPlan(monthlyByKey.get(key) || []);
+      if (!annual || !monthly) continue;
+      const monthlyAnnual = Number(monthly.price || 0) * 12;
+      const annualPrice = Number(annual.price || 0);
+      if (!(monthlyAnnual > 0) || !(annualPrice > 0) || annualPrice >= monthlyAnnual) continue;
+      const savings = ((monthlyAnnual - annualPrice) / monthlyAnnual) * 100;
+      totalSavings += savings;
+      counted += 1;
     }
-    return Math.round(totalSavings / this.annualPlans.length);
+    return counted ? Math.round(totalSavings / counted) : 0;
+  }
+
+  private groupPlansByKey(plans: Plan[]): Map<string, Plan[]> {
+    const map = new Map<string, Plan[]>();
+    for (const p of plans || []) {
+      const key = this.getPlanGroupKey(p);
+      const arr = map.get(key) || [];
+      arr.push(p);
+      map.set(key, arr);
+    }
+    return map;
+  }
+
+  private pickBestPlan(plans: Plan[]): Plan | null {
+    if (!plans?.length) return null;
+    const sorted = [...plans].sort((a, b) => {
+      const aRec = this.isPlanRecommended(a) ? 1 : 0;
+      const bRec = this.isPlanRecommended(b) ? 1 : 0;
+      if (aRec !== bRec) return bRec - aRec;
+      const ap = Number(a.price || 0);
+      const bp = Number(b.price || 0);
+      if (ap !== bp) return ap - bp;
+      return Number(a.id || 0) - Number(b.id || 0);
+    });
+    return sorted[0] || null;
+  }
+
+  private pickOnePlanPerGroup(plans: Plan[]): Plan[] {
+    const groups = this.groupPlansByKey(plans);
+    const picked: Plan[] = [];
+    for (const [_, arr] of groups.entries()) {
+      const best = this.pickBestPlan(arr);
+      if (best) picked.push(best);
+    }
+    // Orden estable: por precio asc y luego id
+    return picked.sort((a, b) => {
+      const ap = Number(a.price || 0);
+      const bp = Number(b.price || 0);
+      if (ap !== bp) return ap - bp;
+      return Number(a.id || 0) - Number(b.id || 0);
+    });
+  }
+
+  getDisplayPlanName(plan: Plan | null): string {
+    if (!plan?.name) return '';
+    // Evitar confusión si el nombre en DB viene con “Mensual/Anual”
+    return String(plan.name).replace(/\s+(Mensual|Anual)\s*$/i, '').trim();
+  }
+
+  getCommissionNotes(plan: Plan | null): string[] {
+    if (!plan) return [];
+    const meta: any = this.normalizePlanMetadata(plan);
+    const notes: string[] = [];
+    notes.push('Se descuenta del monto bruto de cada cita pagada.');
+    const cashEnabled = !!meta?.['cash_enabled'] || !!meta?.['cashEnabled'];
+    if (cashEnabled) {
+      notes.push('En efectivo: la comisión se registra como deuda y se cobra por Adomi.');
+    }
+    return notes;
   }
 
   continueToPayment() {
