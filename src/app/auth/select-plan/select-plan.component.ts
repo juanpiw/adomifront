@@ -1137,6 +1137,12 @@ export class SelectPlanComponent implements OnInit {
               name: this.tempUserData.name || this.tempUserData.email.split('@')[0]
             })
           );
+          // Asegurar token activo tras registro
+          await firstValueFrom(this.authService.login({
+            email: this.tempUserData.email,
+            password: this.tempUserData.password
+          }));
+          await firstValueFrom(this.authService.getCurrentUserInfo());
         } catch (err: any) {
           console.warn('[SELECT_PLAN] Registro previo falló o ya existe, intentando login', err);
           try {
@@ -1157,7 +1163,7 @@ export class SelectPlanComponent implements OnInit {
       const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
 
       // Solo enviamos planId si es válido (>0); el backend ya hace fallback cuando falta.
-      const body: any = {};
+      const body: any = { planKey: 'starter' };
       if (Number.isFinite(planId) && planId > 0) {
         body.planId = planId;
       }
