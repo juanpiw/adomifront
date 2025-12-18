@@ -122,12 +122,20 @@ export class SelectPlanComponent implements OnInit {
 
   setBilling(isAnnual: boolean) {
     if (this.isPromoActive()) return;
+    // Si el backend no trae uno de los intervalos, derivarlo en el front para que el toggle funcione.
+    if (isAnnual && this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
+      this.annualPlans = this.deriveAnnualPlansFromMonthly(this.monthlyPlans);
+    }
+    if (!isAnnual && this.monthlyPlans.length === 0 && this.annualPlans.length > 0) {
+      this.monthlyPlans = this.deriveMonthlyPlansFromAnnual(this.annualPlans);
+    }
+
     if (isAnnual && this.annualPlans.length === 0) {
-      console.warn('[SELECT_PLAN] No hay planes anuales disponibles');
+      console.warn('[SELECT_PLAN] No hay planes anuales disponibles (ni derivables)');
       return;
     }
     if (!isAnnual && this.monthlyPlans.length === 0) {
-      console.warn('[SELECT_PLAN] No hay planes mensuales disponibles');
+      console.warn('[SELECT_PLAN] No hay planes mensuales disponibles (ni derivables)');
       return;
     }
     this.isAnnualBilling = isAnnual;
@@ -171,6 +179,11 @@ export class SelectPlanComponent implements OnInit {
     }
 
     this.selectPlan(plan);
+
+    // Flujo Starter: ir directo a activar plan gratuito (checkout lo maneja sin pago)
+    if (key === 'starter') {
+      this.continueToPayment();
+    }
   }
 
   private http = inject(HttpClient);
@@ -267,10 +280,16 @@ export class SelectPlanComponent implements OnInit {
           console.log('[SELECT_PLAN] Planes recibidos:', response);
           // Fallback defensivo: aunque backend filtre, evitamos que planes legacy aparezcan
           const allowed = new Set(['starter', 'pro', 'scale']);
-          const filtered = (response.plans || []).filter(p => {
-            const key = this.getPlanKey(p);
-            return !!key && allowed.has(key);
-          });
+          const filtered = (response.plans || []).map(p => {
+            const key =
+              this.getPlanKey(p) ||
+              ((String(p.plan_type || '').toLowerCase() === 'free' || Number(p.price || 0) <= 0) ? 'starter' : null);
+            if (!key || !allowed.has(key)) return null;
+            // Asegurar que el plan lleve plan_key para usos posteriores
+            const meta = this.normalizePlanMetadata(p);
+            const metadata = { ...meta, plan_key: key };
+            return { ...p, metadata } as Plan;
+          }).filter(Boolean) as Plan[];
           this.plans = filtered;
           this.separatePlansByInterval();
           this.tryAutoApplyPromoFromSession();
@@ -307,7 +326,7 @@ export class SelectPlanComponent implements OnInit {
 
     // Fallback por nombre (cuando backend no trae metadata.plan_key)
     const name = String(plan.name || '').trim().toLowerCase();
-    if (name.includes('starter')) return 'starter';
+    if (name.includes('starter') || name.includes('básico') || name.includes('basico') || name.includes('basic')) return 'starter';
     if (name.includes('scale')) return 'scale';
     // "pro mensual", "pro anual", etc.
     if (name.includes(' pro') || name.startsWith('pro') || name.includes('profesional')) return 'pro';
@@ -364,6 +383,15 @@ export class SelectPlanComponent implements OnInit {
     console.log('[SELECT_PLAN] Separando planes por intervalo');
     this.annualPlans = this.plans.filter(plan => plan.interval === 'year');
     this.monthlyPlans = this.plans.filter(plan => plan.interval === 'month');
+
+    // Derivar intervalos faltantes (backend puede devolver solo month o solo year)
+    if (this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
+      this.annualPlans = this.deriveAnnualPlansFromMonthly(this.monthlyPlans);
+    }
+    if (this.monthlyPlans.length === 0 && this.annualPlans.length > 0) {
+      this.monthlyPlans = this.deriveMonthlyPlansFromAnnual(this.annualPlans);
+    }
+
     // Si el billing actual no tiene planes, hacer fallback automático al que sí exista
     if (this.isAnnualBilling && this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
       this.isAnnualBilling = false;
@@ -371,6 +399,27 @@ export class SelectPlanComponent implements OnInit {
       this.isAnnualBilling = true;
     }
     console.log('[SELECT_PLAN] monthlyPlans:', this.monthlyPlans.length, 'annualPlans:', this.annualPlans.length);
+  }
+
+  private deriveAnnualPlansFromMonthly(monthly: Plan[]): Plan[] {
+    return (monthly || []).map(p => ({
+      ...p,
+      // Mantener mismo id: el backend ya entiende el plan por id (y el billing se decide por precio/intervalo).
+      id: p.id,
+      sourceId: p.id,
+      interval: 'year',
+      price: Math.round(Number(p.price || 0) * 12)
+    }));
+  }
+
+  private deriveMonthlyPlansFromAnnual(annual: Plan[]): Plan[] {
+    return (annual || []).map(p => ({
+      ...p,
+      id: p.id,
+      sourceId: p.id,
+      interval: 'month',
+      price: Math.round(Number(p.price || 0) / 12)
+    }));
   }
 
   selectPlan(plan: Plan) {
