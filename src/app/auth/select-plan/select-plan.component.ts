@@ -108,6 +108,7 @@ export class SelectPlanComponent implements OnInit {
   accountSwitchInProgress = false;
   requiresPlan = false;
   private autoPromoApplied = false;
+  private fastActivating = false;
   private readonly founderDefaults = {
     services: 10,
     bookings: 50
@@ -196,9 +197,9 @@ export class SelectPlanComponent implements OnInit {
 
     this.selectPlan(plan);
 
-    // Flujo Starter: ir directo a activar plan gratuito (checkout lo maneja sin pago)
+    // Flujo Starter: activar directo sin pasar por checkout
     if (key === 'starter') {
-      this.continueToPayment();
+      void this.fastActivateStarter();
     }
   }
 
@@ -1093,6 +1094,110 @@ export class SelectPlanComponent implements OnInit {
       return JSON.parse(raw);
     } catch {
       return null;
+    }
+  }
+
+  private async fastActivateStarter(): Promise<void> {
+    if (this.fastActivating) return;
+    this.fastActivating = true;
+    this.loading = true;
+    this.error = null;
+
+    try {
+      // Resolver planId starter (fallback al endpoint default)
+      let planId = Number(this.selectedPlan?.id || 0);
+      if (!Number.isFinite(planId) || planId <= 0) {
+        try {
+          const resp: any = await firstValueFrom(
+            this.http.get<{ ok: boolean; planId: number }>(`${environment.apiBaseUrl}/plans/free/default`)
+          );
+          if (resp?.ok && resp.planId) {
+            planId = Number(resp.planId);
+          }
+        } catch (e) {
+          console.warn('[SELECT_PLAN] No se pudo obtener planId starter por fallback', e);
+        }
+      }
+
+      // Si no hay token, registrar/login con tempUserData
+      const hasToken = !!this.authService.getAccessToken();
+      if (!hasToken) {
+        if (!this.tempUserData?.email || !this.tempUserData?.password) {
+          this.error = 'No pudimos completar tu registro. Vuelve al paso anterior.';
+          this.loading = false;
+          this.fastActivating = false;
+          return;
+        }
+        try {
+          await firstValueFrom(
+            this.authService.register({
+              email: this.tempUserData.email,
+              password: this.tempUserData.password,
+              role: 'provider',
+              name: this.tempUserData.name || this.tempUserData.email.split('@')[0]
+            })
+          );
+        } catch (err: any) {
+          console.warn('[SELECT_PLAN] Registro previo falló o ya existe, intentando login', err);
+          try {
+            await firstValueFrom(this.authService.login({
+              email: this.tempUserData.email,
+              password: this.tempUserData.password
+            }));
+          } catch (loginErr) {
+            this.error = 'No pudimos iniciar sesión automáticamente. Intenta de nuevo.';
+            this.loading = false;
+            this.fastActivating = false;
+            return;
+          }
+        }
+      }
+
+      const token = this.authService.getAccessToken();
+      const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+
+      const body: any = { planId };
+      if (!token && this.tempUserData?.email && this.tempUserData?.password) {
+        body.email = this.tempUserData.email;
+        body.password = this.tempUserData.password;
+        body.name = this.tempUserData.name || this.tempUserData.email.split('@')[0];
+      }
+
+      const resp: any = await firstValueFrom(
+        this.http.post(`${environment.apiBaseUrl}/plans/free/activate`, body, headers ? { headers } : {})
+      );
+
+      if (!resp?.ok) {
+        this.error = resp?.error || 'No pudimos activar el plan gratuito. Intenta nuevamente.';
+        this.loading = false;
+        this.fastActivating = false;
+        return;
+      }
+
+      try {
+        await firstValueFrom(this.authService.getCurrentUserInfo());
+      } catch (e) {
+        console.warn('[SELECT_PLAN] No se pudo refrescar /auth/me tras activar free', e);
+      }
+
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem('tempUserData');
+          sessionStorage.removeItem('selectedPlan');
+          sessionStorage.removeItem('promoCode');
+          sessionStorage.removeItem('paymentGateway');
+          sessionStorage.removeItem('providerOnboarding');
+        }
+      } catch {}
+
+      this.loading = false;
+      this.fastActivating = false;
+      this.router.navigateByUrl('/dash/home');
+    } catch (err: any) {
+      console.error('[SELECT_PLAN] Error fastActivateStarter', err);
+      this.error = err?.error?.error || err?.message || 'No pudimos activar el plan gratuito. Intenta nuevamente.';
+      this.loading = false;
+      this.fastActivating = false;
     }
   }
 }
