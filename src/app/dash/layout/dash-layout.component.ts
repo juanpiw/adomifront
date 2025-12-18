@@ -404,13 +404,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
           const planName = String(response.currentPlan.name || '').toLowerCase();
           const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
-            const planKey = String((response.currentPlan as any)?.plan_key || '').toLowerCase();
-            const planIsFounder =
-              planKey === 'founder' ||
-              planType.includes('founder') || planType.includes('fundador') ||
-              planName.includes('founder') || planName.includes('fundador');
-            const userFlagFounder = !!(response.currentPlan as any)?.is_founder;
-            const isFounder = planIsFounder || (userFlagFounder && !['starter', 'scale', 'pro', 'free', 'basico', 'básico'].includes(planKey || planType));
+          const planKey = String((response.currentPlan as any)?.plan_key || '').toLowerCase();
+          const planIsFounder =
+            planKey === 'founder' ||
+            planType.includes('founder') || planType.includes('fundador') ||
+            planName.includes('founder') || planName.includes('fundador');
+          const isFounder = planIsFounder;
           this.isFounderAccount = isFounder;
           this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
             this.refreshPlanTierDescriptor();
