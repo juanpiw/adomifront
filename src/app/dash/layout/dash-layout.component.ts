@@ -442,8 +442,10 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   goToSelectPlan(event: Event) {
-    event.preventDefault();
-    this.router.navigateByUrl('/auth/select-plan');
+    try { event?.preventDefault(); } catch {}
+    this.router.navigateByUrl('/auth/select-plan').catch(() => {
+      try { window.location.assign('/auth/select-plan'); } catch {}
+    });
     this.onNav();
   }
 
