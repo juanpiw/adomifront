@@ -402,12 +402,15 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             this.planInfo = response.currentPlan;
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
 
-            const planName = String(response.currentPlan.name || '').toLowerCase();
-            const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
-            const derivedFounder = !!(response.currentPlan as any)?.founder_expires_at || !!(response.currentPlan as any)?.founder_discount_active;
-            const isFounder = planName.includes('fundador') || planName.includes('founder') || planType.includes('fundador') || planType.includes('founder') || derivedFounder;
-            this.isFounderAccount = isFounder;
-            this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
+          const planName = String(response.currentPlan.name || '').toLowerCase();
+          const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
+          const isFounder =
+            !!(response.currentPlan as any)?.is_founder ||
+            !!(response.currentPlan as any)?.founder_expires_at ||
+            planName.includes('fundador') || planName.includes('founder') ||
+            planType.includes('fundador') || planType.includes('founder');
+          this.isFounderAccount = isFounder;
+          this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
             this.refreshPlanTierDescriptor();
             this.refreshTopbarBadges();
           } else {
@@ -436,6 +439,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   onPlanAlertDismiss() {
     this.showPlanAlert = false;
+  }
+
+  goToSelectPlan(event: Event) {
+    event.preventDefault();
+    this.router.navigateByUrl('/auth/select-plan');
+    this.onNav();
   }
 
   logout(): void {
@@ -815,12 +824,21 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
     const planKey = String(plan?.plan_key || '').toLowerCase();
     const planName = String(plan?.name || '').trim();
+    const planType = String(plan?.plan_type || '').toLowerCase();
     const billing = String(plan?.billing_period || '').toLowerCase();
     const priceNum = plan?.price !== null && plan?.price !== undefined ? Number(plan.price) : null;
     const effectiveRate = plan?.effective_commission_rate !== null && plan?.effective_commission_rate !== undefined
       ? Number(plan.effective_commission_rate)
       : null;
     const founderDiscountActive = !!plan?.founder_discount_active;
+    const isFounderPlanType =
+      isFounder ||
+      planType.includes('founder') ||
+      planType.includes('fundador') ||
+      planName.toLowerCase().includes('founder') ||
+      planName.toLowerCase().includes('fundador') ||
+      !!plan?.founder_expires_at ||
+      !!plan?.is_founder;
 
     const formatClp = (n: number) =>
       new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(Math.max(0, Math.round(n)));
@@ -833,7 +851,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       ? `${Math.round(effectiveRate * 10) / 10}% comisión`
       : 'Comisión';
 
-    if (isFounder) {
+    if (isFounderPlanType) {
       if (founderDiscountActive) {
         return {
           chip: '💎 Fundador',
@@ -864,6 +882,13 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       };
     }
     if (planKey === 'starter' || planName.toLowerCase().includes('starter') || planName.toLowerCase().includes('básico') || planName.toLowerCase().includes('basico') || planName.toLowerCase().includes('basic')) {
+      if (founderDiscountActive) {
+        return {
+          chip: 'Plan Starter',
+          detail: `Gratis · Descuento Fundador (-15% fee por 6 meses) · ${commissionLabel}`,
+          variant: 'basic'
+        };
+      }
       return {
         chip: 'Plan Starter',
         detail: `Para empezar · ${priceLabel} · ${commissionLabel}`,
