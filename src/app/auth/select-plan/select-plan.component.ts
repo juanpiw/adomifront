@@ -1104,7 +1104,7 @@ export class SelectPlanComponent implements OnInit {
     this.error = null;
 
     try {
-      // Resolver planId starter (fallback al endpoint default)
+      // Resolver planId starter (fallback al endpoint default). Si no hay ID válido, dejaremos que el backend resuelva.
       let planId = Number(this.selectedPlan?.id || 0);
       if (!Number.isFinite(planId) || planId <= 0) {
         try {
@@ -1156,7 +1156,11 @@ export class SelectPlanComponent implements OnInit {
       const token = this.authService.getAccessToken();
       const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
 
-      const body: any = { planId };
+      // Solo enviamos planId si es válido (>0); el backend ya hace fallback cuando falta.
+      const body: any = {};
+      if (Number.isFinite(planId) && planId > 0) {
+        body.planId = planId;
+      }
       if (!token && this.tempUserData?.email && this.tempUserData?.password) {
         body.email = this.tempUserData.email;
         body.password = this.tempUserData.password;
