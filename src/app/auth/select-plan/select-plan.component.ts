@@ -174,8 +174,24 @@ export class SelectPlanComponent implements OnInit {
     }
 
     if (!plan) {
-      this.error = 'Plan no disponible por ahora. Intenta más tarde.';
-      return;
+      // Último recurso: si es starter, derivar plan gratuito por precio=0
+      if (key === 'starter') {
+        plan = {
+          id: 1, // se corregirá en checkout/free-activate si es otro id
+          name: 'Plan Starter',
+          price: 0,
+          currency: 'CLP',
+          interval: this.isAnnualBilling ? 'year' as const : 'month' as const,
+          description: '',
+          features: [],
+          max_services: 0,
+          max_bookings: 0,
+          metadata: { plan_key: 'starter' }
+        } as Plan;
+      } else {
+        this.error = 'Plan no disponible por ahora. Intenta más tarde.';
+        return;
+      }
     }
 
     this.selectPlan(plan);
