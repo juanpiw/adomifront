@@ -16,6 +16,7 @@ import { NotificationsService } from '../../services/notifications.service';
 import { GlobalSearchService } from '../../../libs/shared-ui/global-search/services/global-search.service';
 import { ensureTempUserData, needsProviderPlan } from '../../auth/utils/provider-onboarding.util';
 import { Notification } from '../../../libs/shared-ui/notifications/models/notification.model';
+import { PlanService, PlanInfo } from '../../services/plan.service';
 
 @Component({
   selector: 'app-client-layout',
@@ -56,6 +57,13 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   switchModalVisible = false;
   switchLoading = false;
   switchError: string | null = null;
+  planSummary = 'Plan actual: sin plan (cuenta cliente)';
+  availablePlans: Array<{ name: string; price: string; commission: string; perks: string[] }> = [
+    { name: 'Starter', price: 'Gratis', commission: '15%', perks: ['Sin costo fijo', 'Portafolio básico', 'Analytics básico'] },
+    { name: 'Pro', price: '$29.000/mes aprox.', commission: '7%', perks: ['Pagos en efectivo', 'Cotizaciones', 'Portafolio 25 ítems', 'Analytics avanzado'] },
+    { name: 'Scale', price: '$89.000/mes aprox.', commission: '5%', perks: ['Portafolio ilimitado', 'Cotizaciones marca blanca', 'Analytics + Exportar CSV', 'Visibilidad top'] }
+  ];
+  private planService = inject(PlanService);
 
   ngOnInit() {
     // Initialize collapsed state based on screen size
@@ -118,6 +126,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
         userRole: 'client',
         currentPage: this.router.url
       });
+      this.loadPlanSummary();
     }
 
     // Escuchar cambios de foto de perfil (subida/eliminación) y refrescar avatar
@@ -250,6 +259,28 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
         this.switchError = message;
       }
     });
+  }
+
+  private loadPlanSummary() {
+    try {
+      const user = this.auth.getCurrentUser() || this.safeParseLocalUser();
+      const userId = user?.id;
+      if (!userId) return;
+      this.planService.getCurrentPlan(userId).subscribe({
+        next: (res) => {
+          if (res?.ok && res.currentPlan) {
+            const p: PlanInfo = res.currentPlan;
+            const name = p.name || 'Plan Starter';
+            const price = p.price !== null && p.price !== undefined ? `$${Number(p.price).toLocaleString('es-CL')}` : 'Gratis';
+            const commission = p.effective_commission_rate !== null && p.effective_commission_rate !== undefined
+              ? `${Math.round(Number(p.effective_commission_rate) * 100) / 100}%`
+              : (p.commission_rate !== null && p.commission_rate !== undefined ? `${p.commission_rate}%` : '');
+            this.planSummary = `Plan actual: ${name} · ${price}${commission ? ` · Comisión ${commission}` : ''}`;
+          }
+        },
+        error: () => {}
+      });
+    } catch {}
   }
 
   private safeParseLocalUser(): Partial<AuthUser> | null {
