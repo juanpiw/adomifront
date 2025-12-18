@@ -213,43 +213,61 @@ export class SelectPlanComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.pendingActivation = String(params['status'] || '') === 'pending_activation';
     });
-    // Verificar que hay datos temporales del usuario
+    // Verificar datos temporales; permitir continuar si ya es provider logueado aunque falte tempUserData
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;
-    if (!tempData) {
-      console.warn('[SELECT_PLAN] tempUserData no encontrado. Intentando reconstruir desde localStorage.adomi_user');
-      try {
-        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
-        if (raw) {
-          const u = JSON.parse(raw);
-          const intendedProvider = u?.intendedRole === 'provider' || u?.pending_role === 'provider';
-          if (intendedProvider) {
-            this.tempUserData = {
-              name: u?.name || (u?.email ? String(u.email).split('@')[0] : ''),
-              email: u?.email || '',
-              password: '',
-              role: 'provider'
-            } as any;
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.setItem('tempUserData', JSON.stringify(this.tempUserData));
-            }
-            console.log('[SELECT_PLAN] Reconstruido tempUserData desde adomi_user:', this.tempUserData);
-          }
-        }
-      } catch (e) {
-        console.error('[SELECT_PLAN] Error reconstruyendo tempUserData:', e);
-      }
-      if (!this.tempUserData) {
-        console.warn('[SELECT_PLAN] No fue posible reconstruir tempUserData. Redirigiendo a /auth/register');
-        this.router.navigateByUrl('/auth/register');
-        return;
-      }
-    } else {
+    if (tempData) {
       try {
         this.tempUserData = JSON.parse(tempData);
         console.log('[SELECT_PLAN] tempUserData:', this.tempUserData);
       } catch (e) {
         console.error('[SELECT_PLAN] Error parseando tempUserData:', e);
+      }
+    }
+
+    if (!this.tempUserData) {
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser && currentUser.role === 'provider') {
+        this.tempUserData = {
+          name: currentUser.name || (currentUser.email ? String(currentUser.email).split('@')[0] : ''),
+          email: currentUser.email || '',
+          password: '',
+          role: 'provider'
+        } as any;
+        try {
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('tempUserData', JSON.stringify(this.tempUserData));
+          }
+        } catch {}
+        console.log('[SELECT_PLAN] tempUserData reconstruido desde currentUser provider');
+      } else {
+        console.warn('[SELECT_PLAN] tempUserData no encontrado. Intentando reconstruir desde localStorage.adomi_user');
+        try {
+          const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('adomi_user') : null;
+          if (raw) {
+            const u = JSON.parse(raw);
+            const intendedProvider = u?.intendedRole === 'provider' || u?.pending_role === 'provider' || u?.role === 'provider';
+            if (intendedProvider) {
+              this.tempUserData = {
+                name: u?.name || (u?.email ? String(u.email).split('@')[0] : ''),
+                email: u?.email || '',
+                password: '',
+                role: 'provider'
+              } as any;
+              if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.setItem('tempUserData', JSON.stringify(this.tempUserData));
+              }
+              console.log('[SELECT_PLAN] Reconstruido tempUserData desde adomi_user:', this.tempUserData);
+            }
+          }
+        } catch (e) {
+          console.error('[SELECT_PLAN] Error reconstruyendo tempUserData:', e);
+        }
+      }
+      if (!this.tempUserData) {
+        console.warn('[SELECT_PLAN] No fue posible reconstruir tempUserData. Redirigiendo a /auth/register');
+        this.router.navigateByUrl('/auth/register');
+        return;
       }
     }
     

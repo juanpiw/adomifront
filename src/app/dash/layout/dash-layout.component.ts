@@ -124,13 +124,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   showPromotionsMenu = false;
 
   ngOnInit() {
-    try {
-      if (this.sessionService.isFounder()) {
-        this.isFounderAccount = true;
-        this.updatePlanBadge();
-      }
-    } catch {}
-
     this.loadPlanInfo();
     this.loadProviderProfile();
     this.loadVerificationState();
