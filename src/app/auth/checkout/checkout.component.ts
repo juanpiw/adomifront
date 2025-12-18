@@ -204,9 +204,22 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         return;
       }
 
+      // Asegurar planId válido para free (si el front tuvo que derivar un starter sintético)
+      let planId = Number((this.selectedPlan as any)?.id || 0);
+      if (!Number.isFinite(planId) || planId <= 0) {
+        try {
+          const fallback = await firstValueFrom(this.http.get<{ ok: boolean; planId: number }>(`${environment.apiBaseUrl}/plans/free/default`));
+          if (fallback?.ok && fallback.planId) {
+            planId = Number(fallback.planId);
+          }
+        } catch (e) {
+          console.warn('[CHECKOUT] No se pudo obtener planId starter por fallback', e);
+        }
+      }
+
       const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
       const resp: any = await firstValueFrom(
-        this.http.post(`${environment.apiBaseUrl}/plans/free/activate`, { planId: this.selectedPlan.id }, { headers })
+        this.http.post(`${environment.apiBaseUrl}/plans/free/activate`, { planId }, { headers })
       );
 
       if (!resp?.ok) {
