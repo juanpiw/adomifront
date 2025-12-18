@@ -404,11 +404,13 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
           const planName = String(response.currentPlan.name || '').toLowerCase();
           const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
-          const isFounder =
-            !!(response.currentPlan as any)?.is_founder ||
-            !!(response.currentPlan as any)?.founder_expires_at ||
-            planName.includes('fundador') || planName.includes('founder') ||
-            planType.includes('fundador') || planType.includes('founder');
+            const planKey = String((response.currentPlan as any)?.plan_key || '').toLowerCase();
+            const planIsFounder =
+              planKey === 'founder' ||
+              planType.includes('founder') || planType.includes('fundador') ||
+              planName.includes('founder') || planName.includes('fundador');
+            const userFlagFounder = !!(response.currentPlan as any)?.is_founder;
+            const isFounder = planIsFounder || (userFlagFounder && !['starter', 'scale', 'pro', 'free', 'basico', 'básico'].includes(planKey || planType));
           this.isFounderAccount = isFounder;
           this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
             this.refreshPlanTierDescriptor();
@@ -834,13 +836,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       : null;
     const founderDiscountActive = !!plan?.founder_discount_active;
     const isFounderPlanType =
-      isFounder ||
+      planKey === 'founder' ||
       planType.includes('founder') ||
       planType.includes('fundador') ||
       planName.toLowerCase().includes('founder') ||
-      planName.toLowerCase().includes('fundador') ||
-      !!plan?.founder_expires_at ||
-      !!plan?.is_founder;
+      planName.toLowerCase().includes('fundador');
 
     const formatClp = (n: number) =>
       new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(Math.max(0, Math.round(n)));
