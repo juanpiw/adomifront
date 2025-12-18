@@ -151,11 +151,25 @@ export class SelectPlanComponent implements OnInit {
   }
 
   selectTier(key: 'starter' | 'pro' | 'scale') {
-    const plan = this.getPlanForKey(key);
+    // Intento 1: según billing actual
+    let plan = this.getPlanForKey(key);
+
+    // Fallback: si no existe en el intervalo actual, probar el otro intervalo y auto-cambiar el toggle
+    if (!plan) {
+      if (this.isAnnualBilling && this.monthlyPlans.length > 0) {
+        this.isAnnualBilling = false;
+        plan = this.getPlanForKey(key);
+      } else if (!this.isAnnualBilling && this.annualPlans.length > 0) {
+        this.isAnnualBilling = true;
+        plan = this.getPlanForKey(key);
+      }
+    }
+
     if (!plan) {
       this.error = 'Plan no disponible por ahora. Intenta más tarde.';
       return;
     }
+
     this.selectPlan(plan);
   }
 
@@ -350,6 +364,12 @@ export class SelectPlanComponent implements OnInit {
     console.log('[SELECT_PLAN] Separando planes por intervalo');
     this.annualPlans = this.plans.filter(plan => plan.interval === 'year');
     this.monthlyPlans = this.plans.filter(plan => plan.interval === 'month');
+    // Si el billing actual no tiene planes, hacer fallback automático al que sí exista
+    if (this.isAnnualBilling && this.annualPlans.length === 0 && this.monthlyPlans.length > 0) {
+      this.isAnnualBilling = false;
+    } else if (!this.isAnnualBilling && this.monthlyPlans.length === 0 && this.annualPlans.length > 0) {
+      this.isAnnualBilling = true;
+    }
     console.log('[SELECT_PLAN] monthlyPlans:', this.monthlyPlans.length, 'annualPlans:', this.annualPlans.length);
   }
 
