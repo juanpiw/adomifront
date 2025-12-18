@@ -113,8 +113,7 @@ export class SelectPlanComponent implements OnInit {
     bookings: 50
   };
 
-  // Pricing-v2 Founder request (mismo HTML que landing)
-  founderEmail: string = '';
+  // Fundador usa código promo (promoCode + applyPromoCode). No se solicita correo aquí.
 
   // Alias para reutilizar exactamente el HTML del pricing de Home
   get isAnnual(): boolean {
@@ -255,9 +254,8 @@ export class SelectPlanComponent implements OnInit {
           // Fallback defensivo: aunque backend filtre, evitamos que planes legacy aparezcan
           const allowed = new Set(['starter', 'pro', 'scale']);
           const filtered = (response.plans || []).filter(p => {
-            const meta: any = this.normalizePlanMetadata(p);
-            const key = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
-            return allowed.has(key);
+            const key = this.getPlanKey(p);
+            return !!key && allowed.has(key);
           });
           this.plans = filtered;
           this.separatePlansByInterval();
@@ -287,11 +285,25 @@ export class SelectPlanComponent implements OnInit {
   }
 
   // ===== Pricing-v2 helpers (para mantener el mismo HTML que la landing) =====
+  private getPlanKey(plan: Plan | null | undefined): 'starter' | 'pro' | 'scale' | null {
+    if (!plan) return null;
+    const meta: any = this.normalizePlanMetadata(plan);
+    const raw = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
+    if (raw === 'starter' || raw === 'pro' || raw === 'scale') return raw;
+
+    // Fallback por nombre (cuando backend no trae metadata.plan_key)
+    const name = String(plan.name || '').trim().toLowerCase();
+    if (name.includes('starter')) return 'starter';
+    if (name.includes('scale')) return 'scale';
+    // "pro mensual", "pro anual", etc.
+    if (name.includes(' pro') || name.startsWith('pro') || name.includes('profesional')) return 'pro';
+    return null;
+  }
+
   getPlanForKey(key: 'starter' | 'pro' | 'scale'): Plan | null {
     const plans = this.getCurrentPlans();
     for (const p of plans) {
-      const meta: any = this.normalizePlanMetadata(p);
-      const k = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
+      const k = this.getPlanKey(p);
       if (k === key) return p;
     }
     return null;
@@ -299,8 +311,7 @@ export class SelectPlanComponent implements OnInit {
 
   getTierKey(plan: Plan | null): 'starter' | 'pro' | 'scale' | 'unknown' {
     if (!plan) return 'unknown';
-    const meta: any = this.normalizePlanMetadata(plan);
-    const k = String(meta?.['plan_key'] || meta?.['planKey'] || '').trim().toLowerCase();
+    const k = this.getPlanKey(plan);
     if (k === 'starter' || k === 'pro' || k === 'scale') return k;
     return 'unknown';
   }
@@ -333,17 +344,7 @@ export class SelectPlanComponent implements OnInit {
     return fallback;
   }
 
-  onFounderRequestSubmit() {
-    // Igual que landing: envía al registro con email prellenado (no activa plan aquí).
-    const email = (this.founderEmail || '').trim();
-    void this.router.navigate(['/auth/register'], {
-      queryParams: {
-        plan: 'Fundador',
-        billing: this.isAnnualBilling ? 'anual' : 'mensual',
-        email: email || undefined
-      }
-    });
-  }
+  // Fundador ahora se activa validando código vía applyPromoCode()
 
   separatePlansByInterval() {
     console.log('[SELECT_PLAN] Separando planes por intervalo');
@@ -360,6 +361,23 @@ export class SelectPlanComponent implements OnInit {
     console.log('[SELECT_PLAN] Plan seleccionado:', plan);
     this.selectedPlan = plan;
     this.paymentMethod = 'stripe';
+
+    // UX: si es un plan pagado, llevar al selector de pasarela (Stripe/Webpay)
+    if (this.requiresPaymentSelection()) {
+      this.scrollToPaymentMethods();
+    }
+  }
+
+  private scrollToPaymentMethods(): void {
+    try {
+      if (typeof document === 'undefined') return;
+      setTimeout(() => {
+        const el = document.getElementById('paymentMethods');
+        if (el && typeof el.scrollIntoView === 'function') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    } catch {}
   }
 
   toggleBilling() {

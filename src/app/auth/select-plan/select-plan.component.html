@@ -76,7 +76,7 @@
         <div class="card-pricing">
           <div class="price-value">
             <span class="amount">$0</span>
-            <span class="period">/6 meses</span>
+            <span class="period">/{{ founderDurationMonths }} meses</span>
           </div>
           <div class="commission-box">
             <span class="comm-label">Tu Comisión</span>
@@ -108,24 +108,41 @@
         </ul>
 
         <div class="founder-input-area">
-          <form (ngSubmit)="onFounderRequestSubmit()" class="founder-request-form" novalidate>
+          <div class="promo-input-group">
             <input
-              type="email"
-              [(ngModel)]="founderEmail"
-              name="founderEmail"
-              placeholder="Tu correo electrónico"
-              required
-              autocomplete="email"
-              class="founder-request-input"
+              type="text"
+              placeholder="Ingresa tu código Fundador"
+              [(ngModel)]="promoCode"
+              name="promoCode"
+              [disabled]="promoDisabled || isPromoActive()"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
             />
-
-            <button type="submit" class="founder-request-button btn-founder">
-              Quiero ser de los primeros
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-              </svg>
+            <button
+              type="button"
+              class="btn-apply"
+              (click)="applyPromoCode()"
+              [disabled]="promoDisabled || !promoCode.trim() || isPromoActive()"
+            >
+              {{ promoLoading ? 'Validando…' : 'Validar y seleccionar' }}
             </button>
-          </form>
+            <button
+              class="btn-clear"
+              type="button"
+              *ngIf="isPromoActive()"
+              (click)="clearPromo()"
+            >
+              Quitar código
+            </button>
+          </div>
+
+          <div class="promo-status" *ngIf="promoSuccess">
+            <span class="success">{{ promoSuccess }}</span>
+          </div>
+          <div class="promo-status" *ngIf="promoError">
+            <span class="error">{{ promoError }}</span>
+          </div>
         </div>
       </div>
 
@@ -263,33 +280,34 @@
         <button type="button" class="btn-select btn-outline" (click)="selectTier('scale')">Elegir Scale</button>
       </div>
     </div>
-  </div>
 
-  <div *ngIf="!loading && !error && requiresPaymentSelection()" class="payment-methods">
-    <h3>Selecciona cómo quieres pagar</h3>
-    <p>Elige la pasarela de pago que prefieras para completar tu suscripción.</p>
+    <!-- Selector de pasarela (Stripe / Webpay) -->
+    <div *ngIf="!loading && !error && requiresPaymentSelection()" class="payment-methods" id="paymentMethods">
+      <h3>Selecciona cómo quieres pagar</h3>
+      <p>Elige la pasarela de pago que prefieras para completar tu suscripción.</p>
 
-    <div class="payment-options">
-      <label
-        class="payment-option"
-        *ngFor="let method of paymentMethods"
-        [class.selected]="paymentMethod === method.id"
-      >
-        <input
-          type="radio"
-          name="paymentMethod"
-          [value]="method.id"
-          [checked]="paymentMethod === method.id"
-          (change)="onPaymentMethodChange(method.id)"
-        />
-        <div class="payment-option__body">
-          <div class="payment-option__header">
-            <span class="payment-option__title">{{ method.label }}</span>
-            <span *ngIf="method.badge" class="payment-option__badge">{{ method.badge }}</span>
+      <div class="payment-options">
+        <label
+          class="payment-option"
+          *ngFor="let method of paymentMethods"
+          [class.selected]="paymentMethod === method.id"
+        >
+          <input
+            type="radio"
+            name="paymentMethod"
+            [value]="method.id"
+            [checked]="paymentMethod === method.id"
+            (change)="onPaymentMethodChange(method.id)"
+          />
+          <div class="payment-option__body">
+            <div class="payment-option__header">
+              <span class="payment-option__title">{{ method.label }}</span>
+              <span *ngIf="method.badge" class="payment-option__badge">{{ method.badge }}</span>
+            </div>
+            <p class="payment-option__description">{{ method.description }}</p>
           </div>
-          <p class="payment-option__description">{{ method.description }}</p>
-        </div>
-      </label>
+        </label>
+      </div>
     </div>
   </div>
 
