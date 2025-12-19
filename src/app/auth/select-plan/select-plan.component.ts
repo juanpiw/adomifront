@@ -1077,6 +1077,7 @@ export class SelectPlanComponent implements OnInit {
       code: this.promoPlan.promoCode
     }, { headers }).subscribe({
       next: async (response: any) => {
+        console.log('[SELECT_PLAN] /subscriptions/promo/apply response', response);
         if (response?.ok) {
           this.promoSuccess = 'Plan Fundador activado. Te estamos llevando a tu panel...';
           this.promoError = null;
