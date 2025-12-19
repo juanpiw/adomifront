@@ -392,9 +392,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       this.planService.getCurrentPlan(user.id).subscribe({
         next: (response) => {
           if (response.ok && response.currentPlan) {
-            this.planInfo = response.currentPlan;
+          this.planInfo = response.currentPlan;
+          this.planService.updatePlanInfo(this.planInfo);
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
 
+          const planId = response.currentPlan.id;
           const planName = String(response.currentPlan.name || '').toLowerCase();
           const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
           const planKey = String((response.currentPlan as any)?.plan_key || '').toLowerCase();
@@ -402,7 +404,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             planKey === 'founder' ||
             planType.includes('founder') || planType.includes('fundador') ||
             planName.includes('founder') || planName.includes('fundador');
-          const isFounder = planIsFounder;
+          const isFounder = !!planId && planIsFounder;
           this.isFounderAccount = isFounder;
           this.topbarPlanBadge = isFounder ? { label: 'Cuenta Fundador', variant: 'founder' } : null;
             this.refreshPlanTierDescriptor();
@@ -822,17 +824,21 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     const planName = String(plan?.name || '').trim();
     const planType = String(plan?.plan_type || '').toLowerCase();
     const billing = String(plan?.billing_period || '').toLowerCase();
+    const planId = plan?.id;
     const priceNum = plan?.price !== null && plan?.price !== undefined ? Number(plan.price) : null;
     const effectiveRate = plan?.effective_commission_rate !== null && plan?.effective_commission_rate !== undefined
       ? Number(plan.effective_commission_rate)
       : null;
     const founderDiscountActive = !!plan?.founder_discount_active;
     const isFounderPlanType =
-      planKey === 'founder' ||
-      planType.includes('founder') ||
-      planType.includes('fundador') ||
-      planName.toLowerCase().includes('founder') ||
-      planName.toLowerCase().includes('fundador');
+      !!planId &&
+      (
+        planKey === 'founder' ||
+        planType.includes('founder') ||
+        planType.includes('fundador') ||
+        planName.toLowerCase().includes('founder') ||
+        planName.toLowerCase().includes('fundador')
+      );
 
     const formatClp = (n: number) =>
       new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(Math.max(0, Math.round(n)));
