@@ -400,6 +400,14 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           const planName = String(response.currentPlan.name || '').toLowerCase();
           const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
           const planKey = String((response.currentPlan as any)?.plan_key || '').toLowerCase();
+          console.log('[DASH_LAYOUT] PlanInfo loaded', {
+            id: planId,
+            planKey,
+            planType,
+            name: response.currentPlan.name,
+            is_founder: (response.currentPlan as any)?.is_founder,
+            founder_expires_at: (response.currentPlan as any)?.founder_expires_at
+          });
           const planIsFounder =
             planKey === 'founder' ||
             planType.includes('founder') || planType.includes('fundador') ||
