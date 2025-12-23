@@ -100,9 +100,12 @@ export class AuthService {
   // Obtener token de acceso desde localStorage
   getAccessToken(): string | null {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      console.log('[AUTH] 🔒 getAccessToken: entorno sin window/localStorage');
       return null;
     }
-    return localStorage.getItem('adomi_access_token');
+    const token = localStorage.getItem('adomi_access_token');
+    console.log('[AUTH] 🔑 getAccessToken:', token ? token.substring(0, 12) + '...' : 'no-token');
+    return token;
   }
 
   // Obtener refresh token desde localStorage
@@ -115,17 +118,26 @@ export class AuthService {
 
   // Guardar tokens en localStorage
   private saveTokens(accessToken: string, refreshToken: string): void {
+    console.log('[AUTH] 💾 saveTokens', {
+      accessPrefix: accessToken?.substring(0, 12) || 'none',
+      refreshPrefix: refreshToken?.substring(0, 12) || 'none'
+    });
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.setItem('adomi_access_token', accessToken);
       localStorage.setItem('adomi_refresh_token', refreshToken);
+    } else {
+      console.warn('[AUTH] 💾 saveTokens: no localStorage disponible');
     }
   }
 
   // Limpiar tokens del localStorage
   private clearTokens(): void {
+    console.log('[AUTH] 🧹 clearTokens llamado');
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.removeItem('adomi_access_token');
       localStorage.removeItem('adomi_refresh_token');
+    } else {
+      console.warn('[AUTH] 🧹 clearTokens: no localStorage disponible');
     }
   }
 
