@@ -74,6 +74,8 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private baseUrl = environment.apiBaseUrl;
+  private tokenKey = 'adomi_access_token';
+  private refreshKey = 'adomi_refresh_token';
   
   // Subject para manejar el estado de autenticación
   private authStateSubject = new BehaviorSubject<AuthUser | null>(null);
@@ -99,25 +101,19 @@ export class AuthService {
 
   // Obtener token de acceso desde localStorage
   getAccessToken(): string | null {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      console.log('[AUTH] 🔒 getAccessToken: entorno sin window/localStorage');
-      return null;
-    }
-    const raw = localStorage.getItem('adomi_access_token');
-    if (!raw || raw === 'null' || raw === 'undefined') {
+    const token = this.readToken(this.tokenKey);
+    if (!token) {
       console.log('[AUTH] 🔑 getAccessToken: no-token');
       return null;
     }
-    console.log('[AUTH] 🔑 getAccessToken:', raw.substring(0, 12) + '...');
-    return raw;
+    console.log('[AUTH] 🔑 getAccessToken:', token.substring(0, 12) + '...');
+    return token;
   }
 
   // Obtener refresh token desde localStorage
   getRefreshToken(): string | null {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return null;
-    }
-    return localStorage.getItem('adomi_refresh_token');
+    const token = this.readToken(this.refreshKey);
+    return token;
   }
 
   // Guardar tokens en localStorage
@@ -138,22 +134,22 @@ export class AuthService {
       return;
     }
 
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem('adomi_access_token', accessToken);
-      localStorage.setItem('adomi_refresh_token', refreshToken);
-    } else {
-      console.warn('[AUTH] 💾 saveTokens: no localStorage disponible');
-    }
+    this.persistToken(this.tokenKey, accessToken);
+    this.persistToken(this.refreshKey, refreshToken);
   }
 
   // Limpiar tokens del localStorage
   private clearTokens(): void {
     console.log('[AUTH] 🧹 clearTokens llamado');
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.removeItem('adomi_access_token');
-      localStorage.removeItem('adomi_refresh_token');
-    } else {
-      console.warn('[AUTH] 🧹 clearTokens: no localStorage disponible');
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage?.removeItem(this.tokenKey);
+        localStorage?.removeItem(this.refreshKey);
+        sessionStorage?.removeItem(this.tokenKey);
+        sessionStorage?.removeItem(this.refreshKey);
+      } catch {
+        console.warn('[AUTH] 🧹 clearTokens: no storage disponible');
+      }
     }
   }
 
@@ -216,6 +212,29 @@ export class AuthService {
     const token = this.getAccessToken();
     const user = this.authStateSubject.value;
     return !!(token && user);
+  }
+
+  // Lectura defensiva de tokens desde storage
+  private readToken(key: string): string | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage?.getItem(key) || sessionStorage?.getItem(key);
+      if (!raw || raw === 'null' || raw === 'undefined') return null;
+      return raw;
+    } catch {
+      return null;
+    }
+  }
+
+  // Persistir token en localStorage + sessionStorage para evitar estados "null"
+  private persistToken(key: string, value: string): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage?.setItem(key, value);
+    } catch {}
+    try {
+      sessionStorage?.setItem(key, value);
+    } catch {}
   }
 
   // Obtener usuario actual

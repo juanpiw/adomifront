@@ -99,6 +99,7 @@
             <span class="plan-tier-tag__detail">{{ planTierInfo.detail }}</span>
             <ng-container *ngIf="planProgress">
               <div class="plan-progress" [attr.title]="planProgress.remainingLabel">
+                <div class="plan-progress__remaining">{{ planProgress.remainingLabel }}</div>
                 <div class="plan-progress__dates">
                   <span>{{ planProgress.startLabel }}</span>
                   <span>{{ planProgress.endLabel }}</span>

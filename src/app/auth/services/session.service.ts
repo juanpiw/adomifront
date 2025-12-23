@@ -147,40 +147,40 @@ export class SessionService {
 
   // Obtener access token
   getAccessToken(): string | null {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return null;
-    }
-    return localStorage.getItem('adomi_access_token');
+    return this.authService.getAccessToken();
   }
 
   // Obtener refresh token
   getRefreshToken(): string | null {
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return null;
-    }
-    return localStorage.getItem('adomi_refresh_token');
+    return this.authService.getRefreshToken();
   }
 
   // Establecer access token
   setAccessToken(token: string): void {
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem('adomi_access_token', token);
-    }
+    if (typeof window === 'undefined') return;
+    if (!token || token === 'null' || token === 'undefined') return;
+    try { localStorage?.setItem('adomi_access_token', token); } catch {}
+    try { sessionStorage?.setItem('adomi_access_token', token); } catch {}
   }
 
   // Establecer refresh token
   setRefreshToken(token: string): void {
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem('adomi_refresh_token', token);
-    }
+    if (typeof window === 'undefined') return;
+    if (!token || token === 'null' || token === 'undefined') return;
+    try { localStorage?.setItem('adomi_refresh_token', token); } catch {}
+    try { sessionStorage?.setItem('adomi_refresh_token', token); } catch {}
   }
 
   // Limpiar sesión completa
   clearSession(): void {
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.removeItem('adomi_access_token');
-      localStorage.removeItem('adomi_refresh_token');
-      localStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage?.removeItem('adomi_access_token');
+        localStorage?.removeItem('adomi_refresh_token');
+        localStorage?.removeItem(STORAGE_KEY);
+        sessionStorage?.removeItem('adomi_access_token');
+        sessionStorage?.removeItem('adomi_refresh_token');
+      } catch {}
     }
     this.userSig.set(null);
   }
