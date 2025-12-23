@@ -103,9 +103,13 @@ export class AuthService {
       console.log('[AUTH] 🔒 getAccessToken: entorno sin window/localStorage');
       return null;
     }
-    const token = localStorage.getItem('adomi_access_token');
-    console.log('[AUTH] 🔑 getAccessToken:', token ? token.substring(0, 12) + '...' : 'no-token');
-    return token;
+    const raw = localStorage.getItem('adomi_access_token');
+    if (!raw || raw === 'null' || raw === 'undefined') {
+      console.log('[AUTH] 🔑 getAccessToken: no-token');
+      return null;
+    }
+    console.log('[AUTH] 🔑 getAccessToken:', raw.substring(0, 12) + '...');
+    return raw;
   }
 
   // Obtener refresh token desde localStorage
@@ -118,10 +122,22 @@ export class AuthService {
 
   // Guardar tokens en localStorage
   private saveTokens(accessToken: string, refreshToken: string): void {
+    const validAccess = accessToken && accessToken !== 'null' && accessToken !== 'undefined';
+    const validRefresh = refreshToken && refreshToken !== 'null' && refreshToken !== 'undefined';
+
     console.log('[AUTH] 💾 saveTokens', {
-      accessPrefix: accessToken?.substring(0, 12) || 'none',
-      refreshPrefix: refreshToken?.substring(0, 12) || 'none'
+      accessPrefix: validAccess ? accessToken.substring(0, 12) : 'invalid',
+      refreshPrefix: validRefresh ? refreshToken.substring(0, 12) : 'invalid'
     });
+
+    if (!validAccess || !validRefresh) {
+      console.warn('[AUTH] 💾 saveTokens: tokens inválidos, no se guardan', {
+        hasAccess: !!accessToken,
+        hasRefresh: !!refreshToken
+      });
+      return;
+    }
+
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.setItem('adomi_access_token', accessToken);
       localStorage.setItem('adomi_refresh_token', refreshToken);
