@@ -7,6 +7,7 @@ import { AuthService } from '../auth/services/auth.service';
 export interface PlanInfo {
   id: number;
   name: string;
+  current_period_start?: string | null;
   expires_at: string | null;
   is_expired: boolean;
   days_remaining: number | null;

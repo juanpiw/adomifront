@@ -97,6 +97,17 @@
           <div *ngIf="planTierInfo" class="plan-tier-tag" [ngClass]="'plan-tier-tag--' + planTierInfo.variant">
             <span class="plan-tier-tag__chip">{{ planTierInfo.chip }}</span>
             <span class="plan-tier-tag__detail">{{ planTierInfo.detail }}</span>
+            <ng-container *ngIf="planProgress">
+              <div class="plan-progress" [attr.title]="planProgress.remainingLabel">
+                <div class="plan-progress__dates">
+                  <span>{{ planProgress.startLabel }}</span>
+                  <span>{{ planProgress.endLabel }}</span>
+                </div>
+                <div class="plan-progress__bar">
+                  <div class="plan-progress__fill" [style.width.%]="planProgress.percent"></div>
+                </div>
+              </div>
+            </ng-container>
           </div>
         </div>
       </div>

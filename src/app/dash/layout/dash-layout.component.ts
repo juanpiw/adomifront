@@ -61,6 +61,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   } | null = null;
   isFounderAccount: boolean = false;
   planTierInfo: PlanTierDescriptor | null = null;
+  planProgress: { percent: number; startLabel: string; endLabel: string; remainingLabel: string } | null = null;
   
   get isAdmin(): boolean {
     try {
@@ -395,6 +396,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.planInfo = response.currentPlan;
           this.planService.updatePlanInfo(this.planInfo);
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
+            this.planProgress = this.computePlanProgress(this.planInfo);
 
           const planId = response.currentPlan.id;
           const planName = String(response.currentPlan.name || '').toLowerCase();
@@ -823,6 +825,43 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   private refreshPlanTierDescriptor(): void {
     this.planTierInfo = this.resolvePlanTierDescriptor(this.planInfo, this.isFounderAccount);
+  }
+
+  private computePlanProgress(plan: PlanInfo | null): { percent: number; startLabel: string; endLabel: string; remainingLabel: string } | null {
+    if (!plan?.expires_at) return null;
+    const end = new Date(plan.expires_at);
+    if (Number.isNaN(end.getTime())) return null;
+
+    const start = (() => {
+      if (plan.current_period_start) {
+        const s = new Date(plan.current_period_start);
+        if (!Number.isNaN(s.getTime())) return s;
+      }
+      const billing = String(plan.billing_period || '').toLowerCase();
+      const months = billing === 'year' || billing === 'yearly' ? 12 : 1;
+      const s = new Date(end);
+      s.setMonth(s.getMonth() - months);
+      return s;
+    })();
+
+    if (!start || Number.isNaN(start.getTime())) return null;
+    const total = end.getTime() - start.getTime();
+    if (total <= 0) return null;
+
+    const now = new Date();
+    const elapsed = Math.min(Math.max(now.getTime() - start.getTime(), 0), total);
+    const percent = Math.round((elapsed / total) * 100);
+
+    const formatShort = (d: Date) =>
+      d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short' });
+    const remainingDays = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    return {
+      percent,
+      startLabel: formatShort(start),
+      endLabel: formatShort(end),
+      remainingLabel: `${remainingDays} días restantes`
+    };
   }
 
   private resolvePlanTierDescriptor(plan: any | null, isFounder: boolean): PlanTierDescriptor | null {

@@ -406,6 +406,37 @@
   }
 }
 
+.plan-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+
+  &__dates {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #6b7280;
+  }
+
+  &__bar {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  &__fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+}
+
 /* Punto de estado sobre el avatar en user-summary */
 .status-dot { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border: 2px solid #fff; border-radius: 9999px; background: #9CA3AF; }
 .status-dot.online { background: #10B981; }
