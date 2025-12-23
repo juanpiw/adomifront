@@ -3,12 +3,26 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IconComponent, IconName } from '../icon/icon.component';
 
+// Mantener este tipo alineado con PlanService.PlanInfo (extendido para nuevos campos)
 export interface PlanInfo {
   id: number;
   name: string;
   expires_at: string | null;
   is_expired: boolean;
   days_remaining: number | null;
+  // Campos extendidos opcionales
+  current_period_start?: string | null;
+  price?: number | null;
+  currency?: string | null;
+  billing_period?: 'month' | 'year' | string | null;
+  commission_rate?: number | null;
+  effective_commission_rate?: number | null;
+  plan_key?: string | null;
+  plan_type?: string | null;
+  promo_expires_at?: string | null;
+  founder_expires_at?: string | null;
+  founder_discount_until?: string | null;
+  founder_discount_active?: boolean;
 }
 
 @Component({
