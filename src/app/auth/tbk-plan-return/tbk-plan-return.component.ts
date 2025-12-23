@@ -101,6 +101,27 @@ export class TbkPlanReturnComponent implements OnInit {
           planId: response?.subscription?.plan_id
         });
       } catch {}
+
+      // Si el backend devuelve tokens, guardarlos para poder llamar /auth/me
+      if (response?.accessToken && response?.refreshToken) {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('adomi_access_token', response.accessToken);
+            localStorage.setItem('adomi_refresh_token', response.refreshToken);
+            if (response.user) {
+              localStorage.setItem('adomi_user', JSON.stringify(response.user));
+            }
+          }
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('adomi_access_token', response.accessToken);
+            sessionStorage.setItem('adomi_refresh_token', response.refreshToken);
+          }
+          console.log('[TBK_PLAN_RETURN] Tokens guardados tras commit');
+        } catch (err) {
+          console.warn('[TBK_PLAN_RETURN] No se pudieron guardar tokens devueltos', err);
+        }
+      }
+
       if (!response?.ok) {
         this.redirectWithError('commit_failed');
         return;

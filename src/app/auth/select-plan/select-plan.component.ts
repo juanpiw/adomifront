@@ -213,6 +213,13 @@ export class SelectPlanComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.pendingActivation = String(params['status'] || '') === 'pending_activation';
     });
+    // Si ya hay plan activo, permitir salir al dashboard
+    const currentUserEarly = this.authService.getCurrentUser() || this.getLocalUser();
+    if (currentUserEarly?.active_plan_id) {
+      console.log('[SELECT_PLAN] Usuario con plan activo, enviando a dash/home');
+      this.router.navigateByUrl('/dash/home');
+      return;
+    }
     // Verificar datos temporales; permitir continuar si ya es provider logueado aunque falte tempUserData
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;

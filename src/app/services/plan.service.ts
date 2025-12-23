@@ -147,12 +147,12 @@ export class PlanService {
     );
   }
 
-  commitTbkPlanPayment(token: string): Observable<{ ok: boolean; status: string; paymentId?: number; subscription?: any }> {
+  commitTbkPlanPayment(token: string): Observable<{ ok: boolean; status: string; paymentId?: number; subscription?: any; accessToken?: string; refreshToken?: string; expiresIn?: number; user?: any }> {
     console.log('[PLAN_SERVICE] commitTbkPlanPayment', {
       tokenPrefix: token ? token.substring(0, 8) : 'none'
     });
     // No requerimos Authorization aquí; el commit se valida por token_ws.
-    return this.http.post<{ ok: boolean; status: string; paymentId?: number; subscription?: any }>(
+    return this.http.post<{ ok: boolean; status: string; paymentId?: number; subscription?: any; accessToken?: string; refreshToken?: string; expiresIn?: number; user?: any }>(
       `${environment.apiBaseUrl}/plans/tbk/commit`,
       { token }
     );

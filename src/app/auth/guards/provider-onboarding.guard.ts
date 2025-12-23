@@ -8,6 +8,11 @@ const redirectToPlan = (): boolean | UrlTree => {
   const router = inject(Router);
   const user = auth.getCurrentUser() || getStoredUser();
 
+  // Si no hay usuario cargado aún, no forzar el guard (evita atrapar con token sin perfil)
+  if (!user) {
+    return true;
+  }
+
   if (!needsProviderPlan(user)) {
     return true;
   }

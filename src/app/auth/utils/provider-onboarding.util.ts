@@ -17,21 +17,13 @@ export function needsProviderPlan(user?: Partial<AuthUser> | null): boolean {
   if (!user) return false;
   const hasActivePlan = !!user.active_plan_id;
   const finalRoleProvider = user.role === 'provider';
-
-  // ✅ Estado corrupto/legacy: ya es provider pero no tiene plan asignado
-  // (tras el fix backend no debería ocurrir, pero evita acceso a /dash/* sin plan)
-  if (finalRoleProvider && !hasActivePlan) {
-    return true;
-  }
-
   const pendingProvider = user.pending_role === 'provider';
-  if (!pendingProvider) return false;
-  const switchInProgress = !!user.account_switch_in_progress;
-  // Si ya es provider y tiene plan activo, no necesita plan.
-  if (finalRoleProvider && hasActivePlan) {
-    return false;
-  }
-  return switchInProgress || !hasActivePlan;
+
+  // Si el usuario ya tiene plan activo, no forzar.
+  if (hasActivePlan) return false;
+
+  // Solo forzar si está en pending_role provider o es provider sin plan asignado.
+  return pendingProvider || finalRoleProvider;
 }
 
 /**
