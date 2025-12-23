@@ -828,19 +828,48 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   private computePlanProgress(plan: PlanInfo | null): { percent: number; startLabel: string; endLabel: string; remainingLabel: string } | null {
-    if (!plan?.expires_at) return null;
-    const end = new Date(plan.expires_at);
-    if (Number.isNaN(end.getTime())) return null;
+    if (!plan) return null;
+
+    const parseDate = (value: string | null | undefined): Date | null => {
+      if (!value) return null;
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+
+    const end =
+      parseDate(plan.expires_at) ||
+      parseDate((plan as any).founder_expires_at) ||
+      parseDate((plan as any).promo_expires_at) ||
+      parseDate((plan as any).founder_discount_until) ||
+      (() => {
+        if (plan.days_remaining !== null && plan.days_remaining !== undefined) {
+          const d = new Date();
+          d.setDate(d.getDate() + Math.max(0, plan.days_remaining));
+          return d;
+        }
+        return null;
+      })();
+
+    if (!end) return null;
 
     const start = (() => {
       if (plan.current_period_start) {
-        const s = new Date(plan.current_period_start);
-        if (!Number.isNaN(s.getTime())) return s;
+        const s = parseDate(plan.current_period_start);
+        if (s) return s;
       }
       const billing = String(plan.billing_period || '').toLowerCase();
-      const months = billing === 'year' || billing === 'yearly' ? 12 : 1;
+      if (billing === 'year' || billing === 'yearly') {
+        const s = new Date(end);
+        s.setMonth(s.getMonth() - 12);
+        return s;
+      }
+      if (plan.days_remaining !== null && plan.days_remaining !== undefined) {
+        const s = new Date(end);
+        s.setDate(s.getDate() - Math.max(30, plan.days_remaining || 0));
+        return s;
+      }
       const s = new Date(end);
-      s.setMonth(s.getMonth() - months);
+      s.setMonth(s.getMonth() - 1);
       return s;
     })();
 
@@ -854,7 +883,9 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
     const formatShort = (d: Date) =>
       d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short' });
-    const remainingDays = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    const remainingDays = plan.days_remaining !== null && plan.days_remaining !== undefined
+      ? Math.max(0, Math.round(plan.days_remaining))
+      : Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
     return {
       percent,

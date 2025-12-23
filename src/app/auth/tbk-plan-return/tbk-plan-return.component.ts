@@ -66,6 +66,17 @@ export class TbkPlanReturnComponent implements OnInit {
   message = 'Estamos confirmando tu suscripción con Webpay Plus.';
 
   async ngOnInit(): Promise<void> {
+    const storedToken = this.authService.getAccessToken();
+    const storedRefresh = this.authService.getRefreshToken?.() || null;
+    try {
+      console.log('[TBK_PLAN_RETURN] Tokens al iniciar', {
+        hasAccess: !!storedToken,
+        accessPrefix: storedToken ? storedToken.substring(0, 10) : 'none',
+        hasRefresh: !!storedRefresh,
+        refreshPrefix: storedRefresh ? String(storedRefresh).substring(0, 10) : 'none'
+      });
+    } catch {}
+
     const token = this.route.snapshot.queryParamMap.get('token_ws')
       || this.route.snapshot.queryParamMap.get('TBK_TOKEN')
       || '';
@@ -81,16 +92,30 @@ export class TbkPlanReturnComponent implements OnInit {
 
     try {
       const response = await firstValueFrom(this.planService.commitTbkPlanPayment(token));
+      try {
+        console.log('[TBK_PLAN_RETURN] commit response', {
+          ok: response?.ok,
+          status: response?.status,
+          paymentId: response?.paymentId,
+          subscriptionId: response?.subscription?.id,
+          planId: response?.subscription?.plan_id
+        });
+      } catch {}
       if (!response?.ok) {
         this.redirectWithError('commit_failed');
         return;
       }
 
       this.cleanupStorage();
-      try {
-        await firstValueFrom(this.authService.getCurrentUserInfo());
-      } catch (refreshError) {
-        console.warn('[TBK_PLAN_RETURN] No se pudo refrescar info de usuario:', refreshError);
+      const tokenAfter = this.authService.getAccessToken();
+      if (tokenAfter) {
+        try {
+          await firstValueFrom(this.authService.getCurrentUserInfo());
+        } catch (refreshError) {
+          console.warn('[TBK_PLAN_RETURN] No se pudo refrescar info de usuario:', refreshError);
+        }
+      } else {
+        console.warn('[TBK_PLAN_RETURN] Saltando /auth/me porque no hay accessToken en storage');
       }
 
       this.status = 'success';
