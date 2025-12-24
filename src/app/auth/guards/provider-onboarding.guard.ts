@@ -10,10 +10,17 @@ const redirectToPlan = (): boolean | UrlTree => {
 
   // Si no hay usuario cargado aún, no forzar el guard (evita atrapar con token sin perfil)
   if (!user) {
+    console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no user loaded yet');
     return true;
   }
 
   if (!needsProviderPlan(user)) {
+    console.log('[PROVIDER_ONBOARDING_GUARD] Allow: user has plan or not pending', {
+      userId: user?.id,
+      role: user?.role,
+      pending_role: user?.pending_role,
+      active_plan_id: user?.active_plan_id
+    });
     return true;
   }
 
