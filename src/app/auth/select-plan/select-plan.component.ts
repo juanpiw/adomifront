@@ -636,6 +636,7 @@ export class SelectPlanComponent implements OnInit {
         sessionStorage.removeItem('promoCode');
         sessionStorage.removeItem('paymentGateway');
         sessionStorage.removeItem('providerOnboarding');
+        sessionStorage.removeItem('tbkPlanPending');
       }
     } catch {
       // Ignorado: si no podemos limpiar sessionStorage no bloqueamos la navegación
@@ -660,6 +661,11 @@ export class SelectPlanComponent implements OnInit {
       } catch {}
       this.router.navigateByUrl('/client/reservas');
     } else {
+      // Para proveedores, aseguramos un estado limpio para re-login (borra tokens/usuario y va a login)
+      try {
+        console.log('[SELECT_PLAN] goBack proveedor: limpiando auth para re-login');
+        this.authService.logout();
+      } catch {}
       this.router.navigateByUrl('/auth/login');
     }
   }
