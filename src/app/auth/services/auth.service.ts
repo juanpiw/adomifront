@@ -226,6 +226,36 @@ export class AuthService {
     }
   }
 
+  /**
+   * Rehidrata la sesión cuando los tokens llegan desde flujos externos (ej. TBK).
+   */
+  hydrateFromExternalTokens(accessToken?: string | null, refreshToken?: string | null, user?: AuthUser | null) {
+    const validAccess = !!accessToken && accessToken !== 'null' && accessToken !== 'undefined';
+    const validRefresh = !!refreshToken && refreshToken !== 'null' && refreshToken !== 'undefined';
+
+    console.log('[AUTH] 💧 hydrateFromExternalTokens', {
+      hasAccess: validAccess,
+      hasRefresh: validRefresh,
+      userId: user?.id,
+      role: user?.role
+    });
+
+    if (validAccess && validRefresh) {
+      this.saveTokens(accessToken as string, refreshToken as string);
+    }
+
+    if (user) {
+      this.authStateSubject.next(user);
+      try {
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          localStorage.setItem('adomi_user', JSON.stringify(user));
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }
+
   // Persistir token en localStorage + sessionStorage para evitar estados "null"
   private persistToken(key: string, value: string): void {
     if (typeof window === 'undefined') return;
