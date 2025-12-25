@@ -1085,14 +1085,14 @@ export class SelectPlanComponent implements OnInit {
             console.warn('[SELECT_PLAN] No se pudo activar promo tras auto-registro/login. Resp:', resp);
             this.promoError = resp?.error || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('[SELECT_PLAN] Error aplicando promo tras auto-registro/login', err);
           this.promoError = err?.error?.error || err?.message || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
         }
       } else {
         this.promoError = 'No pudimos obtener tu sesión para activar el plan. Intenta iniciar sesión.';
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('[SELECT_PLAN] Error en registro/login antes de activar promo', err);
       this.promoError = 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
     } finally {
