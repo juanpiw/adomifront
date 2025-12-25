@@ -1,17 +1,32 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, CanActivateChildFn, Router, UrlTree } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { AuthService, AuthUser } from '../services/auth.service';
 import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
 
-const redirectToPlan = (): boolean | UrlTree => {
+const redirectToPlan = async (): Promise<boolean | UrlTree> => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  const user = auth.getCurrentUser() || getStoredUser();
+  let user = auth.getCurrentUser() || getStoredUser();
 
   // Si no hay usuario cargado aún, no forzar el guard (evita atrapar con token sin perfil)
   if (!user) {
     console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no user loaded yet');
     return true;
+  }
+
+  // Si parece necesitar plan, rehidratar desde /auth/me para obtener active_plan_id actualizado
+  if (needsProviderPlan(user)) {
+    try {
+      const me = await firstValueFrom(auth.getCurrentUserInfo());
+      const backendUser: AuthUser | null = (me as any)?.data || (me as any)?.user || null;
+      if (backendUser) {
+        auth.applyUserFromBackend(backendUser);
+        user = backendUser;
+      }
+    } catch (err) {
+      console.warn('[PROVIDER_ONBOARDING_GUARD] No se pudo refrescar /auth/me', err);
+    }
   }
 
   if (!needsProviderPlan(user)) {

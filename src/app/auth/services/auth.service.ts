@@ -428,6 +428,20 @@ export class AuthService {
     return this.http.post<RefreshTokenResponse>(`${this.baseUrl}/auth/refresh`, { refreshToken });
   }
 
+  /**
+   * Actualiza el usuario en memoria y localStorage con datos frescos del backend
+   * sin tocar tokens. Útil después de /auth/me o flujos externos.
+   */
+  applyUserFromBackend(user: AuthUser): void {
+    if (!user) return;
+    this.authStateSubject.next(user);
+    try {
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.setItem('adomi_user', JSON.stringify(user));
+      }
+    } catch {}
+  }
+
   // Logout
   logout(): Observable<LogoutResponse> {
     const refreshToken = this.getRefreshToken();
