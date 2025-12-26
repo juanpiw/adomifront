@@ -1318,19 +1318,6 @@ export class ClientReservasComponent implements OnInit {
       return;
     }
     this.payModalApptId = appointmentId || null;
-    // Bloquear montos sobre el tope de efectivo (no permitir pagar)
-    if (this.isCurrentAppointmentOverCashLimit()) {
-      this.notifications.createNotification({
-        type: 'system',
-        profile: 'client',
-        title: 'Pago no disponible',
-        message: `Este servicio supera el tope permitido (${this.cashCapCurrency}). No podemos procesar el pago.`,
-        priority: 'high',
-        actions: []
-      });
-      this.payModalApptId = null;
-      return;
-    }
 
     // Desactivamos el modal de método de pago para pruebas: ir directo a tarjeta/TBK
     this.showPayMethodModal = false;
@@ -1951,10 +1938,9 @@ export class ClientReservasComponent implements OnInit {
     return `${formattedDate} a las ${formattedTime}`;
   }
   
+  // Tope de efectivo desactivado para pruebas TBK
   isCurrentAppointmentOverCashLimit(): boolean {
-    if (!this.payModalApptId) return false;
-    const appointment = this.proximasConfirmadas.find(a => a.appointmentId === this.payModalApptId);
-    return appointment?.precio ? appointment.precio > this.cashCap : false;
+    return false;
   }
   payWithCard(){
     if (!this.payModalApptId || this.payModalLoading) return;

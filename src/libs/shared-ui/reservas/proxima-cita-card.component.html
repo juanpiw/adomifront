@@ -43,8 +43,8 @@
   <p *ngIf="!data.successHighlight && !data.verification_code && data.clientConfirmed && data.mostrarPagar" class="pc-hint pc-hint--info">
     Servicio confirmado. Selecciona cómo pagarás para completar el cobro.
   </p>
-  <!-- Advertencia de límite de efectivo -->
-  <div *ngIf="data.mostrarPagar && data.precio && data.precio > (data.cashCap ?? 150000)" class="pc-cash-limit-warning">
+  <!-- Advertencia de límite de efectivo (desactivada para pruebas TBK) -->
+  <div *ngIf="false" class="pc-cash-limit-warning">
     <div class="pc-cash-limit-warning__icon">💳</div>
     <div class="pc-cash-limit-warning__content">
       <div class="pc-cash-limit-warning__title">Solo pago con tarjeta</div>

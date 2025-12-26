@@ -17,7 +17,7 @@ export class TabsPerfilComponent {
   tabs = [
     { id: 'perfil-publico', label: 'Perfil Público' },
     { id: 'verificacion', label: 'Verificación' },
-    { id: 'configuracion', label: 'Configuración' },
+    { id: 'configuracion', label: 'Configuración de Horarios' },
     { id: 'ver-perfil-publico', label: 'Ver Perfil Público' }
   ] as const;
 
