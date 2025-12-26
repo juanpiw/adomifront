@@ -11,6 +11,8 @@ export interface BasicInfo {
   mainCommune: string;
   mainRegion?: string;
   yearsExperience: number;
+  phone?: string;
+  preferred_language?: string;
 }
 
 export interface Service {
@@ -155,6 +157,8 @@ export class ProviderProfileService {
       main_commune: info.mainCommune,
       main_region: info.mainRegion || null,
       years_experience: info.yearsExperience,
+      phone: info.phone,
+      preferred_language: info.preferred_language,
       bank_name: info.bank_name,
       bank_account: info.bank_account,
       account_holder: info.account_holder,

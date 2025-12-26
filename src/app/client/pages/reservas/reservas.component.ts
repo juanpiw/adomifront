@@ -1339,7 +1339,23 @@ export class ClientReservasComponent implements OnInit {
       return;
     }
     this.payModalApptId = appointmentId || null;
-    this.showPayMethodModal = true;
+    // Bloquear montos sobre el tope de efectivo (no permitir pagar)
+    if (this.isCurrentAppointmentOverCashLimit()) {
+      this.notifications.createNotification({
+        type: 'system',
+        profile: 'client',
+        title: 'Pago no disponible',
+        message: `Este servicio supera el tope permitido (${this.cashCapCurrency}). No podemos procesar el pago.`,
+        priority: 'high',
+        actions: []
+      });
+      this.payModalApptId = null;
+      return;
+    }
+
+    // Desactivamos el modal de método de pago para pruebas: ir directo a tarjeta/TBK
+    this.showPayMethodModal = false;
+
     // Traer info TBK hijo para habilitar pago con tarjeta (Oneclick Mall)
     if (appointmentId) {
       const providerId = this._providerByApptId[appointmentId];
@@ -1369,6 +1385,8 @@ export class ClientReservasComponent implements OnInit {
         }
       });
     }
+    // Ejecutar pago con tarjeta de inmediato (TBK/Oneclick) para las pruebas actuales
+    this.payWithCard();
     // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
   }
 

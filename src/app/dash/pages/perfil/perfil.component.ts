@@ -1719,16 +1719,30 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   }
 
   save() { 
-    console.log('Guardando perfil...', {
+    console.log('Guardando perfil (configuración app)...', {
       name: this.name,
-      bio: this.bio,
       phone: this.phone,
-      avatar: this.avatar,
-      basicInfo: this.basicInfo,
-      services: this.services,
-      portfolioImages: this.portfolioImages
+      lang: this.lang,
+      emailNoti: this.emailNoti,
+      pushNoti: this.pushNoti
     });
-    // TODO: Implementar persistencia
+    this.providerProfileService.updateBasicInfo({
+      fullName: this.name,
+      mainCommune: this.basicInfo.mainCommune,
+      mainRegion: this.basicInfo.mainRegion,
+      yearsExperience: this.basicInfo.yearsExperience,
+      professionalTitle: this.basicInfo.professionalTitle,
+      phone: this.phone,
+      preferred_language: this.lang
+    }).subscribe({
+      next: () => {
+        alert('✅ Configuración guardada');
+      },
+      error: (err) => {
+        console.error('[PERFIL] Error al guardar configuración', err);
+        alert('❌ No se pudo guardar. Intenta nuevamente.');
+      }
+    });
   }
 
   // Guardar horario semanal desde el tab Configuración del Perfil
