@@ -7,6 +7,7 @@ export interface BasicInfo {
   fullName: string;
   professionalTitle: string;
   mainCommune: string;
+  mainRegion?: string;
   yearsExperience: number;
 }
 
@@ -22,6 +23,7 @@ export class InfoBasicaComponent {
     fullName: '',
     professionalTitle: '',
     mainCommune: '',
+    mainRegion: '',
     yearsExperience: 0
   };
 

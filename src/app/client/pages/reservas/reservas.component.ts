@@ -314,39 +314,18 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     (reviewSubmitted)="onReviewSubmitted($event)">
   </app-review-modal>
   
-  <!-- Modal método de pago -->
-  <div *ngIf="showPayMethodModal" class="pay-modal__backdrop" (click)="closePayModal()"></div>
-  <div *ngIf="showPayMethodModal" class="pay-modal__container">
+  <!-- Modal método de pago (DESACTIVADO para pruebas TBK) -->
+  <div *ngIf="false" class="pay-modal__backdrop" (click)="closePayModal()"></div>
+  <div *ngIf="false" class="pay-modal__container">
     <div class="pay-modal__header">
       <h4>¿Cómo deseas pagar?</h4>
       <button class="pay-modal__close" (click)="closePayModal()">✕</button>
     </div>
     <div class="pay-modal__body">
-      <div *ngIf="isCurrentAppointmentOverCashLimit()" class="pay-modal__cash-limit-warning">
-        <div class="pay-modal__cash-limit-icon">💳</div>
-        <div class="pay-modal__cash-limit-content">
-          <div class="pay-modal__cash-limit-title">Solo pago con tarjeta</div>
-          <div class="pay-modal__cash-limit-text">Por el momento no podemos procesar pagos en efectivo de {{ cashCapCurrency }} o más. Este servicio debe pagarse con tarjeta.</div>
-        </div>
-      </div>
-      <div *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-pref-pill" [class.pay-pref-pill--cash]="clientPaymentPref==='cash'" [class.pay-pref-pill--card]="clientPaymentPref==='card'">
-        Predeterminado: {{ clientPaymentPref==='cash' ? 'Efectivo' : 'Tarjeta' }}
-      </div>
-      <p *ngIf="!isCurrentAppointmentOverCashLimit()" style="margin:8px 0 0;color:#475569;">Puedes cambiarlo para esta reserva.</p>
+      <!-- contenido desactivado -->
     </div>
     <div class="pay-modal__actions">
-      <button *ngIf="!isCurrentAppointmentOverCashLimit()" class="pay-modal__btn" (click)="payWithCash()" [disabled]="payModalLoading || isCurrentAppointmentOverCashLimit()">
-        <span *ngIf="!payModalLoading">Pagar en Efectivo</span>
-        <span *ngIf="payModalLoading">Procesando...</span>
-      </button>
-      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payWithCard()" [disabled]="payModalLoading || !canPayWithCard(payModalApptId)">
-        <span *ngIf="!payModalLoading">Pagar con Tarjeta</span>
-        <span *ngIf="payModalLoading">Procesando...</span>
-      </button>
-      <button *ngIf="tbkNeedsInscription" class="pay-modal__btn" (click)="startOcInscription()" [disabled]="payModalInscribing">
-        <span *ngIf="!payModalInscribing">Inscribir tarjeta (Oneclick)</span>
-        <span *ngIf="payModalInscribing">Redirigiendo...</span>
-      </button>
+      <!-- acciones desactivadas -->
     </div>
     <div *ngIf="tbkNeedsInscription && !payModalLoading && !canPayWithCard(payModalApptId)" class="pay-modal__hint">
       Necesitas inscribir tu tarjeta Oneclick antes de pagar con tarjeta.
