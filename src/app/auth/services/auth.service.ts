@@ -24,6 +24,7 @@ export interface AuthUser {
   role: 'client' | 'provider';
   name: string | null;
   active_plan_id?: number;
+  tbk_secondary_code?: string | null;
   profile_photo_url?: string | null;
   pending_role?: 'client' | 'provider' | null;
   account_switch_in_progress?: boolean;

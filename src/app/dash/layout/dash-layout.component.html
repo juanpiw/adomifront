@@ -167,7 +167,7 @@
 
       <div *ngIf="tbkBanner" class="verification-banner verification-banner--info">
         <div class="verification-banner__message">{{ tbkBanner.message }}</div>
-        <button *ngIf="tbkBanner.actionLink" type="button" (click)="router.navigateByUrl(tbkBanner.actionLink)">
+        <button *ngIf="tbkBanner.actionLink" type="button" (click)="onTbkBannerClick()">
           {{ tbkBanner.actionLabel || 'Configurar' }}
         </button>
       </div>

@@ -1028,6 +1028,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
+  onTbkBannerClick(): void {
+    if (this.tbkBanner?.actionLink) {
+      this.router.navigateByUrl(this.tbkBanner.actionLink);
+    }
+  }
+
   private evaluateTbkBlocking(): void {
     const shouldBlock = this.tbkOnboarding.requiresBlocking();
     let dismissed = false;
