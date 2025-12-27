@@ -332,6 +332,25 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
   </div>
 
+  <!-- Modal: proveedor no puede recibir pagos con tarjeta -->
+  <div *ngIf="showTbkUnavailableModal" class="pay-modal__backdrop" (click)="closeTbkUnavailableModal()"></div>
+  <div *ngIf="showTbkUnavailableModal" class="pay-modal__container pay-modal__container--info" role="dialog" aria-modal="true">
+    <div class="pay-modal__header">
+      <h4>Pago con tarjeta no disponible</h4>
+      <button class="pay-modal__close" (click)="closeTbkUnavailableModal()">✕</button>
+    </div>
+    <div class="pay-modal__body">
+      <p class="pay-modal__alert-title">El profesional aún no puede recibir pagos con tarjeta.</p>
+      <p class="pay-modal__alert-text">{{ tbkUnavailableMessage || 'Puedes pagar en efectivo directamente al profesional.' }}</p>
+    </div>
+    <div class="pay-modal__actions">
+      <button class="pay-modal__btn" (click)="closeTbkUnavailableModal()" [disabled]="payModalLoading">Cerrar</button>
+      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payCashFromUnavailableModal()" [disabled]="payModalLoading">
+        {{ payModalLoading ? 'Procesando...' : 'Pagar en efectivo' }}
+      </button>
+    </div>
+  </div>
+
   <!-- Modal cancelar cita -->
   <div *ngIf="showCancelModal" class="cancel-modal__backdrop" (click)="closeCancelModal()"></div>
   <div *ngIf="showCancelModal" class="cancel-modal__container">
@@ -441,6 +460,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     .reschedule-modal__btn:disabled{opacity:.6;cursor:not-allowed}
     .pay-modal__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
     .pay-modal__container{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:420px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);z-index:91;overflow:hidden}
+    .pay-modal__container--info{max-width:440px}
     .pay-modal__header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb}
     .pay-modal__close{background:transparent;border:none;font-size:18px;cursor:pointer}
     .pay-modal__body{padding:16px}
@@ -451,6 +471,8 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     .pay-modal__btn{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;color:#374151;font-weight:700;cursor:pointer}
     .pay-modal__btn--primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
     .pay-modal__hint{margin-top:6px;font-size:13px;color:#047857;font-weight:600}
+    .pay-modal__alert-title{margin:0 0 6px 0;font-weight:700;color:#111827}
+    .pay-modal__alert-text{margin:0;color:#374151;line-height:1.4}
     .pay-modal__cash-limit-warning{display:flex;gap:8px;align-items:flex-start;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px;margin-bottom:12px}
     .pay-modal__cash-limit-icon{font-size:18px;line-height:1}
     .pay-modal__cash-limit-content{flex:1}
@@ -767,6 +789,9 @@ export class ClientReservasComponent implements OnInit {
   tbkInfoByProvider: Record<number, { code: string | null; status: string; email: string | null }> = {};
   tbkClientProfile: { tbk_user?: string | null; username?: string | null } | null = null;
   tbkNeedsInscription = false;
+  // Modal de feedback cuando el proveedor no puede cobrar con tarjeta
+  showTbkUnavailableModal = false;
+  tbkUnavailableMessage = 'El profesional aún no puede recibir pagos con tarjeta.';
   ocReturnProcessing = false;
   ocReturnError: string | null = null;
   private readonly ocPendingKey = 'adomi_oc_pending_appt';
@@ -1968,6 +1993,10 @@ export class ClientReservasComponent implements OnInit {
         console.error('[RESERVAS] Error autorizando Oneclick', err);
         const code = err?.error?.error;
         const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
+        if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {
+          this.tbkUnavailableMessage = msg || 'El profesional aún no puede recibir pagos con tarjeta.';
+          this.showTbkUnavailableModal = true;
+        }
         this.notifications.createNotification({
           type: 'system',
           profile: 'client',
@@ -1978,6 +2007,15 @@ export class ClientReservasComponent implements OnInit {
         });
       }
     });
+  }
+
+  closeTbkUnavailableModal() {
+    this.showTbkUnavailableModal = false;
+  }
+
+  payCashFromUnavailableModal() {
+    this.showTbkUnavailableModal = false;
+    this.payWithCash();
   }
   confirmCancel(){
     if (!this.cancelModalAppointmentId || this.cancelModalLoading) {

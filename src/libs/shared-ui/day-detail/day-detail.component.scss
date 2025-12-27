@@ -361,6 +361,50 @@
     border-top: 1px solid #e5e7eb;
   }
 
+  &__appointment-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__action-btn {
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.4rem;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  &__action-btn--confirm {
+    background: #1d4ed8;
+    color: #fff;
+    box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.6);
+    animation: confirmPulse 1.2s ease-in-out infinite alternate;
+
+    &:hover {
+      background: #2563eb;
+      box-shadow: 0 12px 28px -6px rgba(37, 99, 235, 0.65);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__action-btn--delete {
+    background: #fff;
+    color: #dc2626;
+    border: 1px solid #fecdd3;
+
+    &:hover {
+      background: #fff1f2;
+      box-shadow: 0 8px 18px -10px rgba(220, 38, 38, 0.35);
+    }
+  }
+
   &__new-appointment {
     width: 100%;
     padding: 0.75rem;
@@ -459,6 +503,15 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes confirmPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(37, 99, 235, 0);
+  }
 }
 
 :host-context(.dark-theme) {
