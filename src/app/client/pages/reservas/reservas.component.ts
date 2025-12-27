@@ -604,47 +604,26 @@ export class ClientReservasComponent implements OnInit {
     this.payments.ocFinishInscription(tbkToken, appointmentId, this.loadOcPendingUsername() || undefined).subscribe({
       next: (finishResp) => {
         console.log('[RESERVAS][ONECLICK] Finish inscription OK', finishResp);
+        // Solo inscribir: no autorizar automáticamente. El cliente debe pagar en un segundo paso.
         this.tbkNeedsInscription = false;
-        // 2) Authorize payment for the appointment
-        // Pasamos tbk_user/username devueltos por finish para evitar race si DB aún no replica
-        const tbk_user = (finishResp as any)?.inscription?.tbk_user || (finishResp as any)?.inscription?.tbkUser;
+        const tbk_user = (finishResp as any)?.inscription?.tbk_user || (finishResp as any)?.inscription?.tbkUser || null;
         const username =
           (finishResp as any)?.inscription?.username ||
           this.loadOcPendingUsername() ||
-          undefined;
-        this.payments.ocAuthorize(appointmentId, tbk_user, username).subscribe({
-          next: (authResp) => {
-            console.log('[RESERVAS][ONECLICK] Authorization OK', authResp);
-            this.ocReturnProcessing = false;
-            this.loadAppointments();
-            this.clearOcPendingAppt();
-            this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
-          },
-          error: (err) => {
-            const tbkData = (err as any)?.error?.tbkData || (err as any)?.error?.details || (err as any)?.error;
-            console.error('[RESERVAS][ONECLICK] Authorization error', err, tbkData);
-            if (tbkData) {
-              console.error('[RESERVAS][ONECLICK] Authorization tbkData detail:', JSON.stringify(tbkData));
-            }
-            this.ocReturnProcessing = false;
-            const code = err?.error?.error;
-            const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
-            this.ocReturnError = msg;
-            if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {
-              this.notifications.createNotification({
-                type: 'system',
-                profile: 'client',
-                title: 'Pago con tarjeta no disponible',
-                message: msg,
-                priority: 'high',
-                actions: []
-              });
-            }
-            this.loadAppointments();
-            this.clearOcPendingAppt();
-            this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
-          }
+          null;
+        this.tbkClientProfile = { tbk_user, username };
+        this.notifications.createNotification({
+          type: 'system',
+          profile: 'client',
+          title: 'Tarjeta vinculada',
+          message: 'Tu tarjeta quedó vinculada. Ahora confirma el pago de la cita con tu tarjeta.',
+          priority: 'medium',
+          actions: []
         });
+        this.ocReturnProcessing = false;
+        this.loadAppointments();
+        this.clearOcPendingAppt();
+        this.router.navigate([], { queryParams: { tbk_token: null, appointmentId: null }, queryParamsHandling: 'merge' });
       },
       error: (err) => {
         console.error('[RESERVAS][ONECLICK] Finish inscription error', err);
