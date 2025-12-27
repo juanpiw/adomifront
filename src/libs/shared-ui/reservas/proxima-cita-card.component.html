@@ -111,6 +111,9 @@
       <button class="pc-btn primary pay-cta" (click)="onPrimaryAction()">
         {{ primaryCtaLabel }}
       </button>
+      <button *ngIf="data?.mostrarPagar && selectedMethod === 'card'" class="pc-btn ghost" style="margin-left:auto" (click)="onCambiarMetodoClick()">
+        Cambiar método de pago
+      </button>
     </div>
   </div>
 

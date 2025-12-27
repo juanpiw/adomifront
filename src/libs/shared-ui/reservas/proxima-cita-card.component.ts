@@ -49,6 +49,7 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   @Output() pagar = new EventEmitter<number>();
   @Output() pagarTarjeta = new EventEmitter<number>();
   @Output() pagarEfectivo = new EventEmitter<number>();
+  @Output() cambiarMetodo = new EventEmitter<number>();
   @Output() pedirDevolucion = new EventEmitter<{ appointmentId: number; reason: string }>();
   @Output() finalizarServicio = new EventEmitter<number>();
   @Output() reportarProblema = new EventEmitter<number>();
@@ -125,6 +126,11 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   onPagarEfectivoClick(): void {
     this.selectedMethod = 'cash';
     this.pagarEfectivo.emit(this.data?.appointmentId || 0);
+  }
+
+  onCambiarMetodoClick(): void {
+    if (!this.data?.appointmentId) return;
+    this.cambiarMetodo.emit(this.data.appointmentId);
   }
 
   onSelectMethod(method: 'card' | 'cash'): void {

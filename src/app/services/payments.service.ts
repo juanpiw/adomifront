@@ -179,6 +179,14 @@ export class PaymentsService {
     );
   }
 
+  ocReset(): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(
+      `${this.base}/client/tbk/oneclick/reset`,
+      {},
+      { headers: this.headers() }
+    );
+  }
+
   getTbkSecondaryInfo(providerId: number, appointmentId?: number): Observable<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>{
     return this.http.get<{ success: boolean; tbk: { code: string | null; status: string; email: string | null } }>(
       `${this.base}/providers/${providerId}/tbk/secondary/info`,

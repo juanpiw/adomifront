@@ -1043,7 +1043,10 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     this.tbkBlockingActive = shouldBlock && !dismissed && !this.isOnTbkSetupRoute();
 
     // Banner persistente en home hasta que exista comercio secundario
-    const hasSecondary = Boolean(this.sessionService.getUser()?.tbk_secondary_code);
+    const hasSecondary = Boolean(
+      this.tbkOnboarding.snapshot?.code ||
+      this.sessionService.getUser()?.tbk_secondary_code
+    );
     if (!hasSecondary) {
       this.tbkBanner = {
         message: 'Debes configurar tu comercio para recibir pagos con tarjeta.',
