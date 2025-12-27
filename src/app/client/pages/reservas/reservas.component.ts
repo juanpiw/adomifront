@@ -357,6 +357,26 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
   </div>
 
+  <!-- Modal: elegir tarjeta guardada u otra -->
+  <div *ngIf="showCardChoiceModal" class="pay-modal__backdrop" (click)="closeCardChoiceModal()"></div>
+  <div *ngIf="showCardChoiceModal" class="pay-modal__container" role="dialog" aria-modal="true">
+    <div class="pay-modal__header">
+      <h4>¿Cómo quieres pagar?</h4>
+      <button class="pay-modal__close" (click)="closeCardChoiceModal()">✕</button>
+    </div>
+    <div class="pay-modal__body">
+      <p class="pay-modal__alert-title">Tienes una tarjeta Oneclick vinculada.</p>
+      <p class="pay-modal__alert-text">Puedes usarla ahora o inscribir otra tarjeta antes de pagar.</p>
+    </div>
+    <div class="pay-modal__actions">
+      <button class="pay-modal__btn" (click)="payCashFromCardChoice()" [disabled]="payModalLoading">Pagar en efectivo</button>
+      <button class="pay-modal__btn" (click)="enrollAnotherCard()" [disabled]="payModalLoading || payModalInscribing">Inscribir otra</button>
+      <button class="pay-modal__btn pay-modal__btn--primary" (click)="confirmPayWithSavedCard()" [disabled]="payModalLoading">
+        {{ payModalLoading ? 'Procesando...' : 'Pagar con esta tarjeta' }}
+      </button>
+    </div>
+  </div>
+
   <!-- Modal cancelar cita -->
   <div *ngIf="showCancelModal" class="cancel-modal__backdrop" (click)="closeCancelModal()"></div>
   <div *ngIf="showCancelModal" class="cancel-modal__container">
@@ -778,6 +798,11 @@ export class ClientReservasComponent implements OnInit {
   showTbkUnavailableModal = false;
   tbkUnavailableMessage = 'El profesional aún no puede recibir pagos con tarjeta.';
   tbkShowEnrollButton = false;
+  // Modal para elegir tarjeta guardada vs inscribir otra
+  showCardChoiceModal = false;
+  cardChoiceApptId: number | null = null;
+  cardChoiceTbkUser: string | null = null;
+  cardChoiceUsername: string | null = null;
   ocReturnProcessing = false;
   ocReturnError: string | null = null;
   private readonly ocPendingKey = 'adomi_oc_pending_appt';
@@ -1971,48 +1996,12 @@ export class ClientReservasComponent implements OnInit {
           this.showTbkUnavailableModal = true;
           return;
         }
-        // Oneclick authorize (cliente)
-        this.payments.ocAuthorize(apptId, tbkUser, username).subscribe({
-          next: (resp) => {
-            this.payModalLoading = false;
-            this.closePayModal();
-            console.log('[RESERVAS] ocAuthorize resp:', resp);
-            if (resp?.success) {
-              this.clearClientConfirmed(apptId);
-              // Marcar la cita como pagada en UI
-              this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
-                card.appointmentId === apptId ? { ...card, successHighlight: true, mostrarPagar: false, clientConfirmed: true, paymentStatusLabel: 'Pago confirmado por el cliente (liberado)', subtitulo: 'Cita pagada' } : card
-              ));
-            } else {
-              console.error('[RESERVAS] ocAuthorize sin success', resp);
-            }
-          },
-          error: (err) => {
-            this.payModalLoading = false;
-            console.error('[RESERVAS] Error autorizando Oneclick', err);
-            const code = err?.error?.error;
-            const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
-            if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {
-              this.tbkUnavailableMessage = msg || 'El profesional aún no puede recibir pagos con tarjeta.';
-              this.tbkShowEnrollButton = false;
-              this.showTbkUnavailableModal = true;
-            } else if (err?.status === 400) {
-              // Sin inscripción/tbk_user inválido: ofrecer reinscribir
-              this.tbkNeedsInscription = true;
-              this.tbkShowEnrollButton = true;
-              this.tbkUnavailableMessage = msg || 'Necesitas inscribir o renovar tu tarjeta para pagar con Webpay.';
-              this.showTbkUnavailableModal = true;
-            }
-            this.notifications.createNotification({
-              type: 'system',
-              profile: 'client',
-              title: (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') ? 'Pago con tarjeta no disponible' : 'Error',
-              message: msg,
-              priority: 'high',
-              actions: []
-            });
-          }
-        });
+        // Hay tarjeta guardada: abrir modal de elección en lugar de cobrar de inmediato
+        this.payModalLoading = false;
+        this.cardChoiceApptId = apptId;
+        this.cardChoiceTbkUser = tbkUser || null;
+        this.cardChoiceUsername = username || null;
+        this.showCardChoiceModal = true;
       },
       error: (err) => {
         this.payModalLoading = false;
@@ -2033,6 +2022,78 @@ export class ClientReservasComponent implements OnInit {
   payCashFromUnavailableModal() {
     this.showTbkUnavailableModal = false;
     this.payWithCash();
+  }
+
+  closeCardChoiceModal() {
+    this.showCardChoiceModal = false;
+    this.cardChoiceApptId = null;
+    this.cardChoiceTbkUser = null;
+    this.cardChoiceUsername = null;
+  }
+
+  payCashFromCardChoice() {
+    this.closeCardChoiceModal();
+    this.payWithCash();
+  }
+
+  enrollAnotherCard() {
+    const apptId = this.cardChoiceApptId;
+    this.closeCardChoiceModal();
+    if (apptId) {
+      this.onChangePaymentMethod(apptId); // Esto llama ocReset y reabre flujo de pago
+    }
+  }
+
+  confirmPayWithSavedCard() {
+    if (!this.cardChoiceApptId || !this.cardChoiceTbkUser) {
+      this.closeCardChoiceModal();
+      return;
+    }
+    this.payModalLoading = true;
+    const apptId = this.cardChoiceApptId;
+    const tbkUser = this.cardChoiceTbkUser || undefined;
+    const username = this.cardChoiceUsername || undefined;
+    this.payments.ocAuthorize(apptId, tbkUser, username).subscribe({
+      next: (resp) => {
+        this.payModalLoading = false;
+        this.closeCardChoiceModal();
+        this.closePayModal();
+        console.log('[RESERVAS] ocAuthorize resp:', resp);
+        if (resp?.success) {
+          this.clearClientConfirmed(apptId);
+          this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+            card.appointmentId === apptId ? { ...card, successHighlight: true, mostrarPagar: false, clientConfirmed: true, paymentStatusLabel: 'Pago confirmado por el cliente (liberado)', subtitulo: 'Cita pagada' } : card
+          ));
+        } else {
+          console.error('[RESERVAS] ocAuthorize sin success', resp);
+        }
+      },
+      error: (err) => {
+        this.payModalLoading = false;
+        this.closeCardChoiceModal();
+        console.error('[RESERVAS] Error autorizando Oneclick', err);
+        const code = err?.error?.error;
+        const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
+        if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {
+          this.tbkUnavailableMessage = msg || 'El profesional aún no puede recibir pagos con tarjeta.';
+          this.tbkShowEnrollButton = false;
+          this.showTbkUnavailableModal = true;
+        } else if (err?.status === 400) {
+          this.tbkNeedsInscription = true;
+          this.tbkShowEnrollButton = true;
+          this.tbkUnavailableMessage = msg || 'Necesitas inscribir o renovar tu tarjeta para pagar con Webpay.';
+          this.showTbkUnavailableModal = true;
+        }
+        this.notifications.createNotification({
+          type: 'system',
+          profile: 'client',
+          title: (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') ? 'Pago con tarjeta no disponible' : 'Error',
+          message: msg,
+          priority: 'high',
+          actions: []
+        });
+      }
+    });
   }
 
   enrollCardFromUnavailableModal() {
