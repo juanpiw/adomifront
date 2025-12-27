@@ -659,6 +659,10 @@
   border-radius: 0.75rem;
   font-size: 0.95rem;
 
+  & + .verification-banner {
+    margin-top: -0.5rem;
+  }
+
   &__message {
     flex: 1;
   }

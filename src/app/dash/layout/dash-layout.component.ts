@@ -109,6 +109,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   verificationStatus: VerificationStatus = 'none';
   verificationRejectionReason: string | null = null;
   verificationBanner: { message: string; variant: 'info' | 'warning' | 'danger'; actionLabel?: string; actionLink?: string } | null = null;
+  tbkBanner: { message: string; actionLabel: string; actionLink: string; variant: 'info' | 'warning' } | null = null;
   showVerificationPrompt = false;
   tbkState: TbkOnboardingState | null = null;
   tbkBlockingActive = false;
@@ -1034,6 +1035,19 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       dismissed = typeof localStorage !== 'undefined' && localStorage.getItem(this.TBK_BLOCKER_DISMISSED_KEY) === 'true';
     } catch {}
     this.tbkBlockingActive = shouldBlock && !dismissed && !this.isOnTbkSetupRoute();
+
+    // Banner persistente en home hasta que exista comercio secundario
+    const hasSecondary = Boolean(this.sessionService.getUser()?.tbk_secondary_code);
+    if (!hasSecondary) {
+      this.tbkBanner = {
+        message: 'Debes configurar tu comercio para recibir pagos con tarjeta.',
+        actionLabel: 'Configurar',
+        actionLink: '/dash/ingresos?section=tbk',
+        variant: 'info'
+      };
+    } else {
+      this.tbkBanner = null;
+    }
   }
 
   private isOnTbkSetupRoute(): boolean {
