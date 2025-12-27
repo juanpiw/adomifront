@@ -446,6 +446,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
         this.providers = results.providers.data;
         this.services = results.services.data;
         this.filteredProviders = [...this.providers];
+        this.sortFilteredProviders();
         this.filteredServices = [...this.services];
 
         this.onProvidersUpdated(this.providers);
@@ -613,6 +614,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
               }
               return { ...p, min_price: minPrice };
             });
+            this.sortFilteredProviders();
             this.filteredServices = this.services;
 
             this.onProvidersUpdated(this.providers);
@@ -792,7 +794,8 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
           this.providers = results.providers.data;
           this.services = results.services.data;
-          this.filteredProviders = [...results.providers.data];
+        this.filteredProviders = [...results.providers.data];
+        this.sortFilteredProviders();
           this.filteredServices = [...results.services.data];
 
           this.onProvidersUpdated(this.providers);
@@ -1446,6 +1449,35 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       if (coords?.source === 'live') {
         this.ensureLiveLocationLabel(provider, coords);
       }
+    });
+  }
+
+  private planPriority(provider: Provider): number {
+    const rawKey = ((provider as any)?.plan_key || (provider as any)?.planKey || (provider as any)?.plan_type || (provider as any)?.planType || '').toString().toLowerCase();
+    let priority = 0;
+    if (rawKey.includes('scale')) priority = 4;
+    else if (rawKey.includes('pro')) priority = 3;
+    else if (rawKey.includes('founder') || rawKey.includes('fundador')) priority = 2;
+    else if (rawKey.includes('starter') || rawKey.includes('free') || rawKey.includes('grat')) priority = 1;
+    // Pioneer/founder flag refuerza prioridad 2
+    if ((provider as any)?.is_pioneer === true) {
+      priority = Math.max(priority, 2);
+    }
+    return priority;
+  }
+
+  private sortFilteredProviders(): void {
+    this.filteredProviders = [...(this.filteredProviders || [])].sort((a, b) => {
+      const pa = this.planPriority(a);
+      const pb = this.planPriority(b);
+      if (pb !== pa) return pb - pa;
+      const ra = Number(a.rating || 0);
+      const rb = Number(b.rating || 0);
+      if (rb !== ra) return rb - ra;
+      const rca = Number(a.review_count || 0);
+      const rcb = Number(b.review_count || 0);
+      if (rcb !== rca) return rcb - rca;
+      return (a.name || '').localeCompare(b.name || '');
     });
   }
 
