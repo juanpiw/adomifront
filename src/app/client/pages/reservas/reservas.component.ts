@@ -1982,8 +1982,8 @@ export class ClientReservasComponent implements OnInit {
     // Validar perfil Oneclick del cliente; si no hay inscripción, ofrecer vincular tarjeta
     this.payments.ocProfile().subscribe({
       next: (profile) => {
-        const tbkUser = profile?.tbk_user;
-        const username = profile?.username;
+        const tbkUser = profile?.tbk_user || undefined;
+        const username = profile?.username || undefined;
         if (!tbkUser) {
           this.payModalLoading = false;
           this.tbkNeedsInscription = true;
