@@ -37,8 +37,10 @@ export class InvitacionComponent implements OnInit {
 
   private fetchInviteMeta(token: string): void {
     const url = `${environment.apiBaseUrl}/provider/invites/public/${encodeURIComponent(token)}`;
+    console.log('[INVITACION] Fetching invite meta', { token, url });
     this.http.get<any>(url).subscribe({
       next: (resp) => {
+        console.log('[INVITACION] Meta response', resp);
         if (resp?.success && resp?.invite?.inviter) {
           this.hostName = resp.invite.inviter.name || this.hostName;
           const avatarFull = resp.invite.inviter.avatar_full;
