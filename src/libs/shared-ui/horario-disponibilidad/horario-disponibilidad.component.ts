@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface TimeBlock {
@@ -80,6 +80,27 @@ export class HorarioDisponibilidadComponent {
   @Output() addTimeBlock = new EventEmitter<{ day: string; block: TimeBlock }>();
   @Output() removeTimeBlock = new EventEmitter<{ day: string; blockId: string }>();
   @Output() toggleDay = new EventEmitter<{ day: string; enabled: boolean }>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['schedule'] && changes['schedule'].currentValue) {
+      this.schedule = this.normalizeSchedule(changes['schedule'].currentValue as WeeklySchedule);
+    }
+  }
+
+  private normalizeSchedule(schedule: WeeklySchedule): WeeklySchedule {
+    const dedupedDays = schedule.days.map(d => {
+      const seen = new Set<string>();
+      const uniqueBlocks: TimeBlock[] = [];
+      for (const b of d.timeBlocks || []) {
+        const key = `${b.start}-${b.end}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        uniqueBlocks.push(b);
+      }
+      return { ...d, timeBlocks: uniqueBlocks };
+    });
+    return { ...schedule, days: dedupedDays };
+  }
 
   onToggleDay(day: DaySchedule) {
     if (this.loading) {
