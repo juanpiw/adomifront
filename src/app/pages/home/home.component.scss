@@ -1100,6 +1100,124 @@ nav {
   }
 }
 
+/* Footer custom (non-tailwind) */
+.home-footer {
+  background: #0b1220;
+  color: #e5e7eb;
+  padding: 3.5rem 0;
+  margin-top: 0;
+}
+
+.footer-container {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1.6fr 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.footer-brand .footer-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.footer-title-main {
+  color: #7c6cf0;
+}
+
+.footer-title-sub {
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.footer-desc {
+  color: #cbd5e1;
+  max-width: 520px;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+}
+
+.footer-social {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.social-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.4);
+
+  svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.social-btn.ig { background: linear-gradient(135deg, #c13584, #e1306c, #f56040); }
+.social-btn.fb { background: linear-gradient(135deg, #1877f2, #2851a3); }
+.social-btn.ln { background: linear-gradient(135deg, #0e76a8, #0b5c81); }
+.social-btn.xt { background: linear-gradient(135deg, #111827, #000000); }
+
+.footer-column h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.footer-column a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-column a:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  border-top: 1px solid #1f2937;
+  padding-top: 1.5rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
 @media (min-width: 1200px) {
   .plans-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
