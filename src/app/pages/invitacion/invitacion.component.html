@@ -1,0 +1,145 @@
+<div class="invite-page bg-pattern">
+  <nav class="invite-nav">
+    <div class="brand">
+      <div class="brand-icon">A</div>
+      <span class="brand-name">Adomi</span>
+    </div>
+  </nav>
+
+  <main class="invite-main">
+    <div class="invite-layout fade-in-up">
+      <!-- Columna izquierda: Invitación VIP -->
+      <section class="ticket-column">
+        <div class="invite-header">
+          <div class="avatar-wrapper">
+            <img [src]="avatarUrl" alt="Perfil Profesional" class="avatar">
+            <div class="avatar-badge">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <p class="section-kicker">Invitación Personal</p>
+          <h2 class="section-title">
+            <span class="highlight">{{ hostName }}</span> te invita a su agenda
+          </h2>
+        </div>
+
+        <div class="ticket-card hover-lift">
+          <div class="ticket-top golden-gradient"></div>
+          <div class="ticket-body">
+            <div class="ticket-cut cut-left"></div>
+            <div class="ticket-cut cut-right"></div>
+
+            <div class="chip-row">
+              <span class="chip">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3l2.09 6.26H20l-5.17 3.76 1.97 6.04L12 15.77l-4.8 3.29 1.97-6.04L4 9.26h5.91z" />
+                </svg>
+                Cliente preferente
+              </span>
+            </div>
+
+            <h3 class="ticket-title">Acceso VIP con {{ hostName }}</h3>
+            <p class="ticket-text">
+              Únete a su lista de clientes frecuentes para ver disponibilidad real y agendar sin esperas.
+            </p>
+
+            <div class="benefits">
+              <div class="benefit">
+                <div class="benefit-icon success">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span>Reserva directa 24/7</span>
+              </div>
+              <div class="benefit">
+                <div class="benefit-icon success">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <span>Pagos seguros</span>
+              </div>
+            </div>
+
+            <div class="cta">
+              <button type="button" class="btn primary" (click)="acceptInvitation()">
+                <span>Aceptar invitación</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              <p class="cta-hint">Gratis y seguro</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna derecha: Crear cuenta -->
+      <section class="general-column">
+        <div class="invite-header">
+          <div class="avatar-wrapper neutral">
+            <svg viewBox="0 0 24 24" class="neutral-icon" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5C9.51472 4.5 7.5 6.51472 7.5 9C7.5 11.4853 9.51472 13.5 12 13.5C14.4853 13.5 16.5 11.4853 16.5 9C16.5 6.51472 14.4853 4.5 12 4.5Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 19.5C4.5 16.1863 7.18629 13.5 10.5 13.5H13.5C16.8137 13.5 19.5 16.1863 19.5 19.5" />
+            </svg>
+          </div>
+          <p class="section-kicker">Explora Adomi</p>
+          <h2 class="section-title">¿Nuevo en la app?</h2>
+        </div>
+
+        <div class="general-card hover-lift">
+          <div class="general-band"></div>
+          <div class="general-body">
+            <div class="chip-row">
+              <span class="chip soft">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 21v-2a4 4 0 00-3-3.87" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3.13a4 4 0 010 7.75" />
+                </svg>
+                Cuenta general
+              </span>
+            </div>
+
+            <h3 class="ticket-title">Crea tu propia cuenta</h3>
+            <p class="ticket-text">
+              Regístrate para buscar profesionales cercanos o <strong>comienza a ofrecer tus servicios</strong> hoy mismo.
+            </p>
+
+            <div class="options-grid">
+              <div class="option">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p>Buscar<br>Servicios</p>
+              </div>
+              <div class="option">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <p>Ofrecer<br>Servicios</p>
+              </div>
+            </div>
+
+            <div class="cta">
+              <button type="button" class="btn ghost" (click)="createAccount()">
+                <span>Crear cuenta gratis</span>
+              </button>
+              <p class="cta-hint">Sin invitación necesaria</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="invite-footer">
+      <p>© 2024 Adomi App</p>
+    </div>
+  </main>
+</div>
+

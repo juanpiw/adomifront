@@ -46,9 +46,11 @@ import { DashQuotesComponent } from './dash/pages/quotes/quotes.component';
 import { quotesFeatureGuard } from './dash/pages/quotes/quotes.guard';
 import { ClientQuotesComponent } from './client/pages/quotes/client-quotes.component';
 import { providerOnboardingGuard, providerOnboardingChildGuard } from './auth/guards/provider-onboarding.guard';
+import { InvitacionComponent } from './pages/invitacion/invitacion.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'invitacion', component: InvitacionComponent },
   { path: 'tbk/return', component: TbkReturnComponent },
   { path: 'tbk/oneclick/finish', component: TbkReturnComponent },
   { path: 'tbk/plan-return', component: TbkPlanReturnComponent },
