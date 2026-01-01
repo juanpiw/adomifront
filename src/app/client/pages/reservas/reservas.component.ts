@@ -230,7 +230,13 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
           </ng-container>
         </ng-container>
       </ng-container>
-      <ng-template #noConfirmadas></ng-template>
+      <ng-template #noConfirmadas>
+        <div class="empty-state">
+          <p class="muted" style="margin:8px 0 4px;">No tienes próximas reservas.</p>
+          <p class="muted" style="margin:0 0 12px;">Busca profesionales para agendar un servicio.</p>
+          <button class="btn primary" type="button" (click)="goExplore()">Explorar servicios</button>
+        </div>
+      </ng-template>
 
       <ng-container *ngIf="(pendientesList?.length || 0) > 0; else noPendientes">
         <div
@@ -245,7 +251,6 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
       </ng-container>
       <ng-template #noPendientes></ng-template>
 
-      <p *ngIf="(proximasConfirmadas?.length || 0) === 0 && (pendientesList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes próximas reservas.</p>
     </div>
 
     <div class="content" *ngIf="activeTab === 1">
@@ -2275,6 +2280,10 @@ export class ClientReservasComponent implements OnInit {
     const serviceName = card.titulo ? String(card.titulo).split(' con ')[0] : '';
     const extras = serviceName ? { queryParams: { q: serviceName } } : undefined;
     this.router.navigate(['/client/explorar'], extras);
+  }
+
+  goExplore(): void {
+    this.router.navigate(['/client/explorar']);
   }
 
   onRefund(ev: { appointmentId: number; reason: string }) {
