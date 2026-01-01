@@ -28,6 +28,7 @@ import { VerificacionPerfilComponent } from '../../../../libs/shared-ui/verifica
 import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-status-switch/online-status-switch.component';
 import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
+import { AuthService } from '../../../auth/services/auth.service';
 
 type PortfolioItemDisplay = PortfolioImage & { thumbnailUrl?: string | null; order?: number };
 interface EditableFaq extends Partial<ProviderFaq> {
@@ -77,6 +78,7 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   private availabilityService = inject(ProviderAvailabilityService);
   private progressService = inject(ProfileProgressService);
   private notifications = inject(NotificationService);
+  private auth = inject(AuthService);
 
   ngOnInit() {
     // Leer query parameters para activar tab específico
@@ -245,6 +247,22 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   lang = 'es';
   emailNoti = true;
   pushNoti = true;
+
+  // Seguridad / contraseña (proveedor)
+  showSecurityPanel = true;
+  securitySubmitting = false;
+  securityMessage = '';
+  securityMessageType: 'success' | 'error' | '' = '';
+  securityForm = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  };
+  passwordVisibility: Record<'current' | 'new' | 'confirm', boolean> = {
+    current: false,
+    new: false,
+    confirm: false
+  };
 
   // Datos para los nuevos componentes
   basicInfo: BasicInfo = {
@@ -1743,6 +1761,72 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
         alert('❌ No se pudo guardar. Intenta nuevamente.');
       }
     });
+  }
+
+  // ---------- Seguridad (contraseña) ----------
+  toggleSecurityPanel(show: boolean): void {
+    this.showSecurityPanel = show;
+    if (!show) {
+      this.securitySubmitting = false;
+      this.securityMessage = '';
+      this.securityMessageType = '';
+      this.securityForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    }
+  }
+
+  submitSecurityForm(): void {
+    if (this.securitySubmitting) return;
+
+    const { currentPassword, newPassword, confirmPassword } = this.securityForm;
+    this.securityMessage = '';
+    this.securityMessageType = '';
+
+    if (!newPassword || newPassword.length < 6) {
+      this.securityMessage = 'La nueva contraseña debe tener al menos 6 caracteres.';
+      this.securityMessageType = 'error';
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      this.securityMessage = 'Las contraseñas no coinciden.';
+      this.securityMessageType = 'error';
+      return;
+    }
+
+    this.securitySubmitting = true;
+
+    this.auth.changePassword(newPassword, currentPassword || undefined).subscribe({
+      next: (response) => {
+        this.securitySubmitting = false;
+
+        if (response?.success) {
+          this.securityMessage = response.message || 'Contraseña actualizada correctamente.';
+          this.securityMessageType = 'success';
+          this.securityForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+          return;
+        }
+
+        this.securityMessage = response?.error || 'No se pudo actualizar la contraseña.';
+        this.securityMessageType = 'error';
+      },
+      error: (error) => {
+        this.securitySubmitting = false;
+        this.securityMessage = error?.message || 'No se pudo actualizar la contraseña.';
+        this.securityMessageType = 'error';
+      }
+    });
+  }
+
+  togglePasswordVisibility(field: 'current' | 'new' | 'confirm'): void {
+    this.passwordVisibility[field] = !this.passwordVisibility[field];
+  }
+
+  isPasswordVisible(field: 'current' | 'new' | 'confirm'): boolean {
+    return this.passwordVisibility[field];
+  }
+
+  passwordInputType(field: 'current' | 'new' | 'confirm'): 'text' | 'password' {
+    return this.passwordVisibility[field] ? 'text' : 'password';
   }
 
   // Guardar horario semanal desde el tab Configuración del Perfil
