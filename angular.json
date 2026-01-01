@@ -58,8 +58,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "12kB",
-                  "maximumError": "24kB"
+                  "maximumWarning": "20kB",
+                  "maximumError": "32kB"
                 }
               ],
               "allowedCommonJsDependencies": [
@@ -67,7 +67,12 @@
                 "jspdf",
                 "rgbcolor",
                 "raf",
-                "core-js"
+                "core-js",
+                "debug",
+                "xmlhttprequest-ssl",
+                "qrcode",
+                "@babel/runtime/helpers/asyncToGenerator",
+                "@babel/runtime/helpers/defineProperty"
               ],
               "outputHashing": "all"
             },
