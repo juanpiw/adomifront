@@ -372,6 +372,15 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     <div class="pay-modal__body">
       <p class="pay-modal__alert-title">Tienes una tarjeta Oneclick vinculada.</p>
       <p class="pay-modal__alert-text">Puedes usarla ahora o inscribir otra tarjeta antes de pagar.</p>
+      <div class="pay-modal__field">
+        <label class="pay-modal__label">Cuotas</label>
+        <select class="pay-modal__select" [(ngModel)]="cardChoiceInstallments">
+          <option *ngFor="let opt of cardInstallmentsOptions" [ngValue]="opt">
+            {{ opt }} cuota{{ opt > 1 ? 's' : '' }}
+          </option>
+        </select>
+        <small class="pay-modal__hint-text">Se enviarán estas cuotas en la autorización Oneclick.</small>
+      </div>
     </div>
     <div class="pay-modal__actions">
       <button class="pay-modal__btn" (click)="payCashFromCardChoice()" [disabled]="payModalLoading">Pagar en efectivo</button>
@@ -808,6 +817,8 @@ export class ClientReservasComponent implements OnInit {
   cardChoiceApptId: number | null = null;
   cardChoiceTbkUser: string | null = null;
   cardChoiceUsername: string | null = null;
+  cardChoiceInstallments = 1;
+  cardInstallmentsOptions = [1, 2, 3, 4, 6, 12];
   ocReturnProcessing = false;
   ocReturnError: string | null = null;
   private readonly ocPendingKey = 'adomi_oc_pending_appt';
@@ -2006,6 +2017,7 @@ export class ClientReservasComponent implements OnInit {
         this.cardChoiceApptId = apptId;
         this.cardChoiceTbkUser = tbkUser || null;
         this.cardChoiceUsername = username || null;
+        this.cardChoiceInstallments = 1;
         this.showCardChoiceModal = true;
       },
       error: (err) => {
@@ -2034,6 +2046,7 @@ export class ClientReservasComponent implements OnInit {
     this.cardChoiceApptId = null;
     this.cardChoiceTbkUser = null;
     this.cardChoiceUsername = null;
+    this.cardChoiceInstallments = 1;
   }
 
   payCashFromCardChoice() {
@@ -2058,12 +2071,24 @@ export class ClientReservasComponent implements OnInit {
     const apptId = this.cardChoiceApptId;
     const tbkUser = this.cardChoiceTbkUser || undefined;
     const username = this.cardChoiceUsername || undefined;
-    this.payments.ocAuthorize(apptId, tbkUser, username).subscribe({
+    const installments = this.cardChoiceInstallments || 1;
+    console.log('[RESERVAS] ocAuthorize start', {
+      appointmentId: apptId,
+      tbk_user: tbkUser ? `${String(tbkUser).slice(0, 6)}***` : null,
+      username,
+      installments
+    });
+    this.payments.ocAuthorize(apptId, tbkUser, username, installments).subscribe({
       next: (resp) => {
         this.payModalLoading = false;
         this.closeCardChoiceModal();
         this.closePayModal();
         console.log('[RESERVAS] ocAuthorize resp:', resp);
+        const buyOrderParent = (resp as any)?.transaction?.buy_order || (resp as any)?.buy_order;
+        const detail = (resp as any)?.transaction?.details || (resp as any)?.details;
+        if (buyOrderParent) {
+          console.log('[RESERVAS] ocAuthorize buy_order padre:', buyOrderParent, 'details:', detail);
+        }
         if (resp?.success) {
           this.clearClientConfirmed(apptId);
           this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
@@ -2077,6 +2102,9 @@ export class ClientReservasComponent implements OnInit {
         this.payModalLoading = false;
         this.closeCardChoiceModal();
         console.error('[RESERVAS] Error autorizando Oneclick', err);
+        if (err?.error) {
+          console.error('[RESERVAS] ocAuthorize error body', err.error);
+        }
         const code = err?.error?.error;
         const msg = err?.error?.message || err?.error?.error || 'No se pudo autorizar el pago.';
         if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {

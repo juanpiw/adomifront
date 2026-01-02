@@ -171,10 +171,22 @@ export class PaymentsService {
     );
   }
 
-  ocAuthorize(appointmentId: number, tbk_user?: string, username?: string): Observable<{ success: boolean; transaction: any }>{
+  ocAuthorize(appointmentId: number, tbk_user?: string, username?: string, installments_number?: number): Observable<{ success: boolean; transaction: any }>{
+    const url = `${this.base}/client/tbk/oneclick/transactions`;
+    const payload: any = { appointment_id: appointmentId, tbk_user, username };
+    if (Number.isFinite(installments_number)) {
+      payload.installments_number = installments_number;
+    }
+    console.log('[PAYMENTS_SERVICE] ocAuthorize request ->', {
+      url,
+      appointmentId,
+      tbk_user: tbk_user ? `${String(tbk_user).slice(0, 6)}***` : null,
+      username,
+      installments_number: payload.installments_number ?? null
+    });
     return this.http.post<{ success: boolean; transaction: any }>(
-      `${this.base}/client/tbk/oneclick/transactions`,
-      { appointment_id: appointmentId, tbk_user, username },
+      url,
+      payload,
       { headers: this.headers() }
     );
   }
