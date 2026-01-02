@@ -83,6 +83,7 @@ export class HorarioDisponibilidadComponent {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['schedule'] && changes['schedule'].currentValue) {
+      console.log('[HORARIO-UI] schedule input changed', changes['schedule'].currentValue);
       this.schedule = this.normalizeSchedule(changes['schedule'].currentValue as WeeklySchedule);
     }
   }
@@ -106,6 +107,7 @@ export class HorarioDisponibilidadComponent {
     if (this.loading) {
       return;
     }
+    console.log('[HORARIO-UI] toggle day', day.day, 'current enabled:', day.enabled);
     const updatedSchedule = {
       ...this.schedule,
       days: this.schedule.days.map(d => 
@@ -121,6 +123,7 @@ export class HorarioDisponibilidadComponent {
     if (this.loading) {
       return;
     }
+    console.log('[HORARIO-UI] add block', day.day);
     const newBlock: TimeBlock = {
       id: Date.now().toString(),
       start: '09:00',
@@ -145,6 +148,7 @@ export class HorarioDisponibilidadComponent {
     if (this.loading) {
       return;
     }
+    console.log('[HORARIO-UI] remove block', day.day, 'blockId:', blockId);
     const updatedSchedule = {
       ...this.schedule,
       days: this.schedule.days.map(d => 
@@ -163,6 +167,7 @@ export class HorarioDisponibilidadComponent {
     if (this.loading) {
       return;
     }
+    console.log('[HORARIO-UI] change block', day.day, 'blockId:', blockId, field, '=>', value);
     const updatedSchedule = {
       ...this.schedule,
       days: this.schedule.days.map(d => 

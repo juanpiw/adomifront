@@ -216,7 +216,10 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
       fullName: profile.full_name,
       professionalTitle: profile.professional_title || '',
       mainCommune: profile.main_commune || '',
-      yearsExperience: profile.years_experience || 0
+      yearsExperience: profile.years_experience || 0,
+      phone: profile.phone || '',
+      mainRegion: profile.main_region || '',
+      preferred_language: profile.preferred_language || ''
     };
 
     this.profileProgress = profile.profile_completion || 0;
@@ -269,7 +272,10 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
     fullName: 'Elena Torres',
     professionalTitle: 'Estilista Profesional',
     mainCommune: 'Providencia',
-    yearsExperience: 5
+    yearsExperience: 5,
+    phone: '+56 9 1234 5678',
+    mainRegion: '',
+    preferred_language: ''
   };
 
   services: ProviderService[] = [
@@ -438,7 +444,10 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
       fullName: info.fullName,
       professionalTitle: info.professionalTitle,
       mainCommune: info.mainCommune,
-      yearsExperience: info.yearsExperience
+      yearsExperience: info.yearsExperience,
+      phone: info.phone,
+      mainRegion: info.mainRegion,
+      preferred_language: info.preferred_language
     };
 
     this.providerProfileService.updateBasicInfo(profileData).subscribe({

@@ -41,6 +41,14 @@
       </ui-input>
     </div>
     <div class="info-basica__field">
+      <label class="info-basica__label">Teléfono</label>
+      <ui-input
+        [value]="info.phone || ''"
+        (valueChange)="onFieldChange('phone', $event)"
+        placeholder="Ej: +56 9 1234 5678">
+      </ui-input>
+    </div>
+    <div class="info-basica__field">
       <label class="info-basica__label">Años de Experiencia</label>
       <ui-input
         type="number"

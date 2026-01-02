@@ -9,6 +9,8 @@ export interface BasicInfo {
   mainCommune: string;
   mainRegion?: string;
   yearsExperience: number;
+  phone?: string;
+  preferred_language?: string;
 }
 
 @Component({
@@ -24,7 +26,9 @@ export class InfoBasicaComponent {
     professionalTitle: '',
     mainCommune: '',
     mainRegion: '',
-    yearsExperience: 0
+    yearsExperience: 0,
+    phone: '',
+    preferred_language: ''
   };
 
   @Output() infoChange = new EventEmitter<BasicInfo>();
