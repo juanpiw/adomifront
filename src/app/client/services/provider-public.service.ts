@@ -19,6 +19,7 @@ export interface ProviderDetailResponse {
       rating: number;
       reviews_count: number;
       is_verified: boolean;
+      tbk_ready?: boolean;
     };
     services: Array<{
       id: number;

@@ -34,6 +34,7 @@ import { Subscription } from 'rxjs';
 export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   workerId: string | null = null;
   workerData: any = null;
+  tbkReady = false;
   loading: boolean = true;
   confirming: boolean = false;
   confirmError: string | null = null;
@@ -88,6 +89,7 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   isClientUser = false;
   clientDisplayName: string | null = null;
   clientEmail: string | null = null;
+  bookingPanelForceCash = false;
 
   // UX: Booking vs Cotización (pestañas)
   interactionMode: 'book' | 'quote' = 'book';
@@ -155,6 +157,8 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
           coverImage: this.resolveMediaUrl(d.profile.cover_url),
           avatar: this.resolveMediaUrl(d.profile.avatar_url)
         };
+        this.tbkReady = !!d.profile.tbk_ready;
+        this.bookingPanelForceCash = !this.tbkReady;
         // Mapear reseñas reales del backend
         const mappedReviews = (d.reviews || []).map((r: any, idx: number) => {
           const name = String(r.client_name || 'Cliente');

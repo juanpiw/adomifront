@@ -72,6 +72,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   @Input() futureSlots: FutureSlotSuggestion[] = [];
   @Input() loadingSlots: boolean = false;
   @Input() successMessage: string | null = null;
+  @Input() forceCash: boolean = false;
 
   @Output() serviceSelected = new EventEmitter<string>();
   @Output() dateSelected = new EventEmitter<string>();
@@ -101,7 +102,9 @@ export class BookingPanelComponent implements OnChanges, OnInit {
 
   ngOnInit(): void {
     // Precargar preferencia para mostrarla sin esperar a abrir el modal
-    if (!this.paymentPref && !this.loadingPaymentPref) {
+    if (this.forceCash) {
+      this.paymentPref = 'cash';
+    } else if (!this.paymentPref && !this.loadingPaymentPref) {
       this.loadingPaymentPref = true;
       this.clientProfile.getPaymentPreference().subscribe({
         next: (res) => {
@@ -251,7 +254,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
     if (!hasService || !hasDate || !hasTime) return;
 
     // Cargar preferencia de pago antes de abrir modal (si no está cargada)
-    if (!this.paymentPref && !this.loadingPaymentPref) {
+    if (!this.paymentPref && !this.loadingPaymentPref && !this.forceCash) {
       this.loadingPaymentPref = true;
       this.clientProfile.getPaymentPreference().subscribe({
         next: (res) => {
@@ -281,7 +284,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   confirmBookingNow() {
     // No cerrar aún; el padre manejará confirming y cierre cuando termine
     // Backup: si aún no cargó la preferencia, intentar una vez más sin bloquear UX
-    if (!this.paymentPref && !this.loadingPaymentPref) {
+    if (!this.paymentPref && !this.loadingPaymentPref && !this.forceCash) {
       this.loadingPaymentPref = true;
       this.clientProfile.getPaymentPreference().subscribe({
         next: (res) => { this.paymentPref = (res && res.success) ? (res.preference as any) : null; this.loadingPaymentPref = false; },
