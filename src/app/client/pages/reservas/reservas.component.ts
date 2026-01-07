@@ -1592,6 +1592,13 @@ export class ClientReservasComponent implements OnInit {
   }
 
   startOcInscription() {
+    console.log('[RESERVAS] startOcInscription click', {
+      payModalApptId: this.payModalApptId,
+      payModalInscribing: this.payModalInscribing,
+      tbkNeedsInscription: this.tbkNeedsInscription,
+      tbkInfoByProvider: this.tbkInfoByProvider,
+      _providerByApptId: this._providerByApptId
+    });
     if (!this.payModalApptId || this.payModalInscribing) return;
     this.payModalInscribing = true;
     const apptId = this.payModalApptId;
@@ -1599,6 +1606,7 @@ export class ClientReservasComponent implements OnInit {
     // Usa la URL de retorno configurada en backend (TBK_ONECLICK_RETURN_URL); si quieres override, pásala aquí.
     this.payments.ocStartInscription(apptId, undefined, undefined).subscribe({
       next: (resp) => {
+        console.log('[RESERVAS] ocStartInscription resp', resp);
         this.payModalInscribing = false;
         if (resp?.success && resp?.url_webpay && resp?.token) {
           const pendingUsername = (resp as any)?.username || (resp as any)?.userName || '';
@@ -1627,6 +1635,9 @@ export class ClientReservasComponent implements OnInit {
       error: (err) => {
         this.payModalInscribing = false;
         console.error('[RESERVAS] Error iniciando inscripción Oneclick', err);
+        if (err?.error) {
+          console.error('[RESERVAS] ocStartInscription error body', err.error);
+        }
       }
     });
   }
@@ -2130,6 +2141,7 @@ export class ClientReservasComponent implements OnInit {
   }
 
   enrollCardFromUnavailableModal() {
+    console.log('[RESERVAS] enrollCardFromUnavailableModal');
     this.showTbkUnavailableModal = false;
     this.startOcInscription();
   }
