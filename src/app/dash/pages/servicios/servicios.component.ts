@@ -78,6 +78,8 @@ export class DashServiciosComponent implements OnInit {
       next: (resp) => {
         const dtos = resp.services || [];
         this.services = dtos.map(this.mapDtoToService);
+        // Aseguramos que categorías/tipos personalizados aparezcan en los selects
+        this.services.forEach(s => this.ensureCategoryOptions(s.category, s.type));
         this.loading = false;
       },
       error: () => { this.loading = false; }
@@ -107,6 +109,7 @@ export class DashServiciosComponent implements OnInit {
 
   // Form events
   onServiceSaved(formData: ServiceFormData) {
+    console.log('[SERVICIOS] onServiceSaved', { formData, editing: !!this.editingService });
     if (this.editingService) {
       this.api.update(this.editingService.id, {
         name: formData.name,
@@ -116,12 +119,17 @@ export class DashServiciosComponent implements OnInit {
         custom_category: formData.category === 'Otro' ? formData.type : undefined,
       }).subscribe({
         next: (resp) => {
+          console.log('[SERVICIOS] update resp', resp);
           const updated = this.mapDtoToService(resp.service);
           const index = this.services.findIndex(s => s.id === updated.id);
           if (index !== -1) this.services[index] = updated;
+          this.ensureCategoryOptions(updated.category, updated.type);
           this.showToastMessage('success', 'Servicio actualizado correctamente');
           this.currentView = 'list';
           this.editingService = null;
+        },
+        error: (err) => {
+          console.error('[SERVICIOS] error al actualizar', err);
         }
       });
     } else {
@@ -133,11 +141,16 @@ export class DashServiciosComponent implements OnInit {
         custom_category: formData.category === 'Otro' ? formData.type : undefined,
       }).subscribe({
         next: (resp) => {
+          console.log('[SERVICIOS] create resp', resp);
           const created = this.mapDtoToService(resp.service);
           this.services.unshift(created);
+          this.ensureCategoryOptions(created.category, created.type);
           this.showToastMessage('success', 'Servicio creado correctamente');
           this.currentView = 'list';
           this.editingService = null;
+        },
+        error: (err) => {
+          console.error('[SERVICIOS] error al crear', err);
         }
       });
     }
@@ -192,10 +205,23 @@ export class DashServiciosComponent implements OnInit {
     name: dto.name,
     description: dto.description || '',
     category: dto.custom_category || 'Otros',
-    type: dto.custom_category || 'Servicio',
+    type: dto.custom_category || dto.name || 'Servicio',
     price: dto.price,
     duration: dto.duration_minutes,
     createdAt: dto.created_at ? new Date(dto.created_at) : new Date(),
     updatedAt: dto.updated_at ? new Date(dto.updated_at) : new Date(),
   });
+
+  // Agrega dinámicamente categorías/tipos para que el formulario pueda mostrarlos al editar
+  private ensureCategoryOptions(categoryName: string, typeName: string) {
+    if (!categoryName) return;
+    const existing = this.categories.find(c => c.name === categoryName);
+    if (!existing) {
+      this.categories.push({ name: categoryName, services: [typeName, 'Otro'] });
+      return;
+    }
+    if (typeName && !existing.services.includes(typeName)) {
+      existing.services = [...existing.services, typeName];
+    }
+  }
 }

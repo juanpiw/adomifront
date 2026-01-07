@@ -33,9 +33,11 @@ export class ServiceFormComponent implements OnInit {
   showCustomService = false;
   isEditMode = false;
   priceText: string = '';
+  private isInitializing = false;
 
   ngOnInit() {
     if (this.service) {
+      this.isInitializing = true;
       this.isEditMode = true;
       this.formData = {
         category: this.service.category,
@@ -46,15 +48,27 @@ export class ServiceFormComponent implements OnInit {
         price: this.service.price,
         duration: this.service.duration
       };
-      this.onCategoryChange();
+      // Preservar el type del servicio al cargar en modo edición
+      this.onCategoryChange(true);
+      this.onTypeChange();
+      this.isInitializing = false;
     }
     this.priceText = this.formatCLP(this.formData.price);
   }
 
-  onCategoryChange() {
+  onCategoryChange(preserveType = false) {
     const selectedCategory = this.categories.find(cat => cat.name === this.formData.category);
     this.availableServices = selectedCategory ? selectedCategory.services : [];
-    this.formData.type = '';
+    const previousType = this.formData.type;
+    if (!preserveType) {
+      this.formData.type = '';
+    } else if (previousType) {
+      // Si el tipo anterior no está en la lista, lo agregamos para que no se pierda
+      if (!this.availableServices.includes(previousType)) {
+        this.availableServices = [...this.availableServices, previousType];
+      }
+      this.formData.type = previousType;
+    }
     this.showCustomService = false;
   }
 
@@ -62,12 +76,18 @@ export class ServiceFormComponent implements OnInit {
     this.showCustomService = this.formData.type === 'Otro';
     if (!this.showCustomService) {
       this.formData.customType = '';
+    } else if (this.isEditMode && this.service?.customType && !this.formData.customType) {
+      // Restaura customType en edición
+      this.formData.customType = this.service.customType;
     }
   }
 
   onSubmit() {
+    console.log('[SERVICE_FORM] submit', { formData: this.formData, isEditMode: this.isEditMode });
     if (this.isFormValid()) {
       this.serviceSaved.emit(this.formData);
+    } else {
+      console.warn('[SERVICE_FORM] invalid form', { formData: this.formData, showCustomService: this.showCustomService });
     }
   }
 
