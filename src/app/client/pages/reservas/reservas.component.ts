@@ -2006,7 +2006,10 @@ export class ClientReservasComponent implements OnInit {
     return false;
   }
   payWithCard(){
-    if (!this.payModalApptId || this.payModalLoading) return;
+    if (!this.payModalApptId || this.payModalLoading) {
+      console.warn('[RESERVAS] payWithCard blocked: missing payModalApptId or loading', { payModalApptId: this.payModalApptId, payModalLoading: this.payModalLoading });
+      return;
+    }
     this.payModalLoading = true;
     const apptId = this.payModalApptId;
     console.log('[RESERVAS] payWithCard clicked for appt:', apptId);
@@ -2020,6 +2023,7 @@ export class ClientReservasComponent implements OnInit {
           this.tbkNeedsInscription = true;
           this.tbkShowEnrollButton = true;
           this.tbkUnavailableMessage = 'Debes vincular tu tarjeta Oneclick para pagar con Webpay.';
+          this.payModalApptId = apptId;
           this.showTbkUnavailableModal = true;
           return;
         }
@@ -2037,6 +2041,7 @@ export class ClientReservasComponent implements OnInit {
         this.tbkNeedsInscription = true;
         this.tbkShowEnrollButton = true;
         this.tbkUnavailableMessage = 'Necesitas inscribir tu tarjeta para pagar con Webpay.';
+        this.payModalApptId = apptId;
         this.showTbkUnavailableModal = true;
       }
     });
@@ -2143,6 +2148,14 @@ export class ClientReservasComponent implements OnInit {
   enrollCardFromUnavailableModal() {
     console.log('[RESERVAS] enrollCardFromUnavailableModal');
     this.showTbkUnavailableModal = false;
+    // Si el modal se abrió sin apptId, intenta tomar el último appointment confirmado sin pago
+    if (!this.payModalApptId) {
+      const pending = (this.proximasConfirmadas || []).find(p => p.mostrarPagar);
+      if (pending?.appointmentId) {
+        this.payModalApptId = pending.appointmentId;
+        console.log('[RESERVAS] Reasignando payModalApptId desde proximasConfirmadas', pending.appointmentId);
+      }
+    }
     this.startOcInscription();
   }
 
