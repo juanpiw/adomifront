@@ -2105,13 +2105,20 @@ export class ClientReservasComponent implements OnInit {
         if (buyOrderParent) {
           console.log('[RESERVAS] ocAuthorize buy_order padre:', buyOrderParent, 'details:', detail);
         }
-        if (resp?.success) {
+        const success = !!resp?.success;
+        const authorized = !!(resp as any)?.authorized; // autorizado viene del backend como boolean
+        if (success && authorized) {
           this.clearClientConfirmed(apptId);
           this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
             card.appointmentId === apptId ? { ...card, successHighlight: true, mostrarPagar: false, clientConfirmed: true, paymentStatusLabel: 'Pago confirmado por el cliente (liberado)', subtitulo: 'Cita pagada' } : card
           ));
         } else {
-          console.error('[RESERVAS] ocAuthorize sin success', resp);
+          console.warn('[RESERVAS] ocAuthorize no autorizado', resp);
+          this.proximasConfirmadas = (this.proximasConfirmadas || []).map(card => (
+            card.appointmentId === apptId
+              ? { ...card, successHighlight: false, mostrarPagar: true, clientConfirmed: false, paymentStatusLabel: 'Pago rechazado', subtitulo: 'Intenta nuevamente' }
+              : card
+          ));
         }
       },
       error: (err) => {
