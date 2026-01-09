@@ -18,6 +18,10 @@
 }
 .pc-kicker { font-size: .85rem; font-weight: 700; color: #4f46e5; }
 .pc-kicker--paid { color: #22c55e; background: rgba(34,197,94,.1); padding: .375rem .75rem; border-radius: .5rem; display: inline-block; }
+.pc-header { display:flex; align-items:flex-start; gap:12px; }
+.pc-toggle { margin-left:auto; display:inline-flex; align-items:center; gap:8px; background:transparent; border:none; color:#475569; font-weight:700; cursor:pointer; }
+.pc-toggle__icon { width:20px; height:20px; transition: transform .2s ease; }
+.pc-toggle__icon--open { transform: rotate(180deg); }
 .pc-reminder { display:flex; gap:.75rem; align-items:flex-start; margin-top:12px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:.75rem; padding:.75rem; }
 .pc-reminder__icon{ font-size:20px; line-height:1; }
 .pc-reminder__title{ font-weight:800; color:#111827; }

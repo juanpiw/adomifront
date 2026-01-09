@@ -6,43 +6,52 @@
         ? 'SERVICIO CONFIRMADO (PAGO PENDIENTE)'
         : (data.paymentPreference === 'cash' ? 'CITA CONFIRMADA (PAGO EN EFECTIVO)' : 'TU PRÓXIMA CITA (CONFIRMADA)')) }}
   </p>
-  <div class="pc-row">
-    <div class="pc-col">
-      <p class="pc-title">{{ data.titulo }}</p>
-      <div class="pc-meta">
-        <span class="pc-meta-item">
-          <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          {{ data.fecha }}
-        </span>
-        <span class="pc-meta-item">
-          <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          {{ data.hora }}
-        </span>
-        <span *ngIf="data.precio !== undefined && data.precio !== null" class="pc-meta-item">
-          <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-          ${{ data.precio | number:'1.0-0' }}
-        </span>
+  <div class="pc-header">
+    <div class="pc-row">
+      <div class="pc-col">
+        <p class="pc-title">{{ data.titulo }}</p>
+        <div class="pc-meta">
+          <span class="pc-meta-item">
+            <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            {{ data.fecha }}
+          </span>
+          <span class="pc-meta-item">
+            <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {{ data.hora }}
+          </span>
+          <span *ngIf="data.precio !== undefined && data.precio !== null" class="pc-meta-item">
+            <svg class="pc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+            ${{ data.precio | number:'1.0-0' }}
+          </span>
+        </div>
+      </div>
+      <div class="pc-count">
+        <p class="pc-days">{{ data.diasRestantes }}</p>
+        <p class="pc-days-label">días restantes</p>
       </div>
     </div>
-    <div class="pc-count">
-      <p class="pc-days">{{ data.diasRestantes }}</p>
-      <p class="pc-days-label">días restantes</p>
+    <button *ngIf="isPaid" class="pc-toggle" type="button" (click)="toggleContent()" [attr.aria-expanded]="expanded">
+      <span>{{ expanded ? 'Ocultar' : 'Ver detalle' }}</span>
+      <svg class="pc-toggle__icon" [class.pc-toggle__icon--open]="expanded" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+  </div>
+
+  <ng-container *ngIf="expanded">
+    <div *ngIf="data.paymentStatusLabel" class="pc-status-pill">
+      {{ data.paymentStatusLabel }}
     </div>
-  </div>
 
-  <div *ngIf="data.paymentStatusLabel" class="pc-status-pill">
-    {{ data.paymentStatusLabel }}
-  </div>
-
-  <p *ngIf="data.allowReprogram === false && data.reprogramDisabledReason" class="pc-hint">
-    {{ data.reprogramDisabledReason }}
-  </p>
-  <p *ngIf="!data.successHighlight && !data.verification_code && !data.clientConfirmed" class="pc-hint pc-hint--info">
-    Confirma que el servicio se realizó para habilitar el pago.
-  </p>
-  <p *ngIf="!data.successHighlight && !data.verification_code && data.clientConfirmed && data.mostrarPagar" class="pc-hint pc-hint--info">
-    Servicio confirmado. Selecciona cómo pagarás para completar el cobro.
-  </p>
+    <p *ngIf="data.allowReprogram === false && data.reprogramDisabledReason" class="pc-hint">
+      {{ data.reprogramDisabledReason }}
+    </p>
+    <p *ngIf="!data.successHighlight && !data.verification_code && !data.clientConfirmed" class="pc-hint pc-hint--info">
+      Confirma que el servicio se realizó para habilitar el pago.
+    </p>
+    <p *ngIf="!data.successHighlight && !data.verification_code && data.clientConfirmed && data.mostrarPagar" class="pc-hint pc-hint--info">
+      Servicio confirmado. Selecciona cómo pagarás para completar el cobro.
+    </p>
   <!-- Advertencia de límite de efectivo (desactivada para pruebas TBK) -->
   <div *ngIf="false" class="pc-cash-limit-warning">
     <div class="pc-cash-limit-warning__icon">💳</div>
@@ -52,8 +61,8 @@
     </div>
   </div>
 
-  <!-- Método de pago -->
-  <div *ngIf="data.mostrarPagar" class="pc-pay-box">
+    <!-- Método de pago -->
+    <div *ngIf="data.mostrarPagar" class="pc-pay-box">
     <div class="pc-pay-box__alert">
       <div class="pc-pay-box__icon">⚠️</div>
       <div>
@@ -115,10 +124,10 @@
         Cambiar método de pago
       </button>
     </div>
-  </div>
+    </div>
 
-  <!-- Acciones cuando no hay pago pendiente -->
-  <div class="pc-actions" *ngIf="!data.mostrarPagar">
+    <!-- Acciones cuando no hay pago pendiente -->
+    <div class="pc-actions" *ngIf="!data.mostrarPagar">
     <button class="pc-btn primary" (click)="onContactarClick()">Contactar</button>
     <button *ngIf="!isPaid" class="pc-btn secondary" (click)="onReprogramarClick()" [disabled]="data.allowReprogram === false" [title]="data.allowReprogram === false ? (data.reprogramDisabledReason || 'Disponible cuando la cita esté pagada') : ''">
       Reprogramar
@@ -132,27 +141,27 @@
     </button>
     <button *ngIf="!data.mostrarPagar && data.verification_code && !data.refundRequested && data.paymentPreference!=='cash'" class="pc-btn" (click)="onRefundClick()">Pedir devolución</button>
     <span *ngIf="data.refundRequested" style="color:#0e7490; font-weight:600; margin-left:8px;">Solicitud en proceso</span>
-  </div>
+    </div>
 
-  <!-- Recordatorio de pago en efectivo -->
-  <div *ngIf="data.paymentPreference==='cash'" class="pc-reminder">
+    <!-- Recordatorio de pago en efectivo -->
+    <div *ngIf="data.paymentPreference==='cash'" class="pc-reminder">
     <div class="pc-reminder__icon">⚠️</div>
     <div>
       <div class="pc-reminder__title">Recordatorio de Pago</div>
       <div class="pc-reminder__text">El pago de esta cita se realiza en efectivo, directamente al profesional al finalizar el servicio.</div>
     </div>
-  </div>
+    </div>
 
-  <!-- Código de verificación (tarjeta o efectivo). En efectivo se muestra desde la selección. -->
-  <div *ngIf="data.verification_code" style="margin-top:12px;">
+    <!-- Código de verificación (tarjeta o efectivo). En efectivo se muestra desde la selección. -->
+    <div *ngIf="data.verification_code" style="margin-top:12px;">
     <div *ngIf="data.paymentPreference==='cash'" style="font-size:13px;color:#6b7280;margin-bottom:6px;">
       Importante: paga en efectivo al finalizar y <strong>entrega este código</strong> al profesional.
     </div>
     <ui-verificacion-code-card [code]="data.verification_code"></ui-verificacion-code-card>
-  </div>
+    </div>
 
-  <!-- Área de devolución -->
-  <div *ngIf="showRefundArea" style="margin-top:12px;">
+    <!-- Área de devolución -->
+    <div *ngIf="showRefundArea" style="margin-top:12px;">
     <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px;">
       <div style="font-weight:600;margin-bottom:8px;">Solicitar devolución</div>
       <textarea [(ngModel)]="refundReason" rows="3" placeholder="Describe el motivo de la devolución (mínimo 10 caracteres)" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;"></textarea>
@@ -161,7 +170,8 @@
         <button class="pc-btn" (click)="showRefundArea=false">Cancelar</button>
       </div>
     </div>
-  </div>
+    </div>
+  </ng-container>
 </div>
 
 <!-- Modal: bloquear confirmación/pago antes de la fecha/hora -->

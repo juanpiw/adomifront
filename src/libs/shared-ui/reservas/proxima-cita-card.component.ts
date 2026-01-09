@@ -63,10 +63,12 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   tooEarlyModalOpen = false;
   tooEarlyModalTitle = 'Aún no puedes confirmar el servicio';
   tooEarlyModalMessage = '';
+  expanded = true;
 
   ngOnInit(): void {
     this.selectedMethod = (this.data?.paymentPreference || 'card') as 'card' | 'cash';
     this.updatePrimaryLabel();
+    this.expanded = !this.isPaid; // citas pagadas inician colapsadas
     try {
       console.log('[PROXIMA_CITA_CARD] Init', {
         appointmentId: this.data?.appointmentId,
@@ -99,6 +101,9 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
       if (appointmentChanged || prefInput) {
         this.selectedMethod = (prefInput || 'card') as 'card' | 'cash';
         this.updatePrimaryLabel();
+      }
+      if (this.isPaid) {
+        this.expanded = false; // al pasar a pagada, colapsar
       }
     } catch {}
   }
@@ -217,6 +222,14 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
       this.data?.verification_code ||
       this.data?.paymentStatus === 'paid'
     );
+  }
+
+  toggleContent(): void {
+    if (!this.isPaid) {
+      this.expanded = true;
+      return;
+    }
+    this.expanded = !this.expanded;
   }
 
   private updatePrimaryLabel(): void {
