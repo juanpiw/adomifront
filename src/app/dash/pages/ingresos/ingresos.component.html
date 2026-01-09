@@ -28,7 +28,8 @@
           </div>
           <div class="tbk-card__chips" *ngIf="!tbkSectionLoading">
             <span class="chip" [ngClass]="chipClass(tbkStatus)">Estado: {{ tbkStatusLabel }}</span>
-            <span *ngIf="tbkSecondaryCode" class="chip chip--neutral">Código Mall: {{ tbkSecondaryCode }}</span>
+            <span *ngIf="tbkMallCode" class="chip chip--neutral">Código Mall: {{ tbkMallCode }}</span>
+            <span *ngIf="tbkSecondaryCode" class="chip chip--neutral">Código hijo: {{ tbkSecondaryCode }}</span>
           </div>
         </div>
 

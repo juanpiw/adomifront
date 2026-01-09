@@ -75,6 +75,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   private toastSubscription?: Subscription;
   tbkStatus: TbkStatus = 'none';
   tbkSecondaryCode: string | null = null;
+  tbkMallCode: string | null = null;
+  tbkPlatformChildCode: string | null = null;
   tbkRemote: Record<string, any> | null = null;
   tbkSectionLoading = false;
   tbkActionLoading = false;
@@ -489,6 +491,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       const tbk = resp?.tbk || {};
       this.tbkStatus = (tbk.status || 'none') as TbkStatus;
       this.tbkSecondaryCode = tbk.code || null;
+      this.tbkMallCode = tbk.mall_code || null;
+      this.tbkPlatformChildCode = tbk.platform_child_code || null;
       this.tbkRemote = tbk.remote || null;
       this.tbkLastUpdated = new Date();
       this.tbkSecondaryShops = this.buildSecondaryShops(tbk);

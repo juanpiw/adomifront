@@ -674,8 +674,8 @@ export class ProviderProfileService {
     );
   }
 
-  tbkGetSecondaryStatus(providerId: number): Observable<{ success: boolean; tbk: { status: string; code: string | null; remote?: any } }>{
-    return this.http.get<{ success: boolean; tbk: { status: string; code: string | null; remote?: any } }>(
+  tbkGetSecondaryStatus(providerId: number): Observable<{ success: boolean; tbk: { status: string; code: string | null; remote?: any; mall_code?: string | null; platform_child_code?: string | null } }>{
+    return this.http.get<{ success: boolean; tbk: { status: string; code: string | null; remote?: any; mall_code?: string | null; platform_child_code?: string | null } }>(
       `${this.apiUrl}/providers/${providerId}/tbk/secondary/status`,
       { headers: this.getHeaders() }
     );
