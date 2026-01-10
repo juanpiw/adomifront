@@ -1,4 +1,4 @@
-<div class="rp-card">
+<div class="rp-card" [class.rp-card--paid]="data.isPaid">
   <button 
     *ngIf="data.estado === 'Completado'"
     type="button"
@@ -9,28 +9,34 @@
     [title]="data.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'">
     <ui-icon name="heart" class="rp-fav__icon"></ui-icon>
   </button>
-  <div class="rp-row">
-    <img [src]="avatarSrc" class="rp-avatar" [alt]="data.titulo" (error)="onAvatarError($event)">
-    <div class="rp-info">
-      <p class="rp-title">{{ data.titulo }}</p>
-      <p class="rp-date">{{ data.fecha }}</p>
-    </div>
-    <div class="rp-right">
-      <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
-        <p class="rp-price" style="margin:0;">{{ data.precio }}</p>
+  <button class="rp-toggle" type="button" (click)="toggle()" [attr.aria-expanded]="expanded">
+    <div class="rp-row">
+      <img [src]="avatarSrc" class="rp-avatar" [alt]="data.titulo" (error)="onAvatarError($event)">
+      <div class="rp-info">
+        <p class="rp-title">{{ data.titulo }}</p>
+        <p class="rp-date">{{ data.fecha }}</p>
       </div>
-      <p class="rp-state">{{ data.estado || 'Completado' }}</p>
+      <div class="rp-right">
+        <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end;">
+          <p class="rp-price" style="margin:0;">{{ data.precio }}</p>
+        </div>
+        <p class="rp-state">{{ data.estado || 'Completado' }}</p>
+      </div>
+      <ui-icon name="chevron-down" class="rp-toggle__icon" [class.rp-toggle__icon--open]="expanded"></ui-icon>
     </div>
-  </div>
-  <div *ngIf="data.estado === 'Completado'" class="rp-verified">
-    Servicio verificado
-  </div>
-  <div class="rp-actions">
-    <button class="rp-btn primary" (click)="onReview.emit()">Dejar una reseña</button>
-    <button class="rp-btn dark" (click)="onReschedule.emit()">Volver a Agendar</button>
-  </div>
-  <div *ngIf="data.verificationCode" style="margin-top:8px;">
-    <div style="font-size:12px;color:#64748b;margin-bottom:4px;">Código de verificación</div>
-    <div style="font-weight:800;font-size:18px;letter-spacing:2px;">{{ data.verificationCode }}</div>
+  </button>
+
+  <div class="rp-body" *ngIf="expanded">
+    <div *ngIf="data.estado === 'Completado'" class="rp-verified">
+      Servicio verificado
+    </div>
+    <div class="rp-actions">
+      <button class="rp-btn primary" (click)="onReview.emit()">Dejar una reseña</button>
+      <button class="rp-btn dark" (click)="onReschedule.emit()">Volver a Agendar</button>
+    </div>
+    <div *ngIf="data.verificationCode" style="margin-top:8px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:4px;">Código de verificación</div>
+      <div style="font-weight:800;font-size:18px;letter-spacing:2px;">{{ data.verificationCode }}</div>
+    </div>
   </div>
 </div>

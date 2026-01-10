@@ -254,9 +254,20 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
 
     <div class="content" *ngIf="activeTab === 1">
-      <ui-reserva-pasada-card *ngIf="pasada1 as pa1" [data]="pa1" (onReview)="openReviewModal('Javier Núñez', 'Soporte Técnico', '1')" style="margin-bottom:12px;"></ui-reserva-pasada-card>
-      <ui-reserva-pasada-card *ngIf="pasada2 as pa2" [data]="pa2" (onReview)="openReviewModal('Ana Pérez', 'Manicura', '2')"></ui-reserva-pasada-card>
-      <p *ngIf="!pasada1 && !pasada2" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas pasadas para mostrar.</p>
+      <div
+        *ngFor="let pa of pasadasList"
+        class="appt-anchor"
+        [attr.id]="pa.appointmentId ? ('appt-' + pa.appointmentId) : null"
+        style="margin-bottom:12px;"
+      >
+        <ui-reserva-pasada-card
+          [data]="pa"
+          [expanded]="pa.isPaid === true"
+          (onReview)="openReviewModal((pa.titulo.split(' con ')[1] || 'Profesional'), (pa.titulo.split(' con ')[0] || 'Servicio'), ('' + (pa.appointmentId || '')))"
+          (onReschedule)="onRebookCancelled(pa as any)">
+        </ui-reserva-pasada-card>
+      </div>
+      <p *ngIf="(pasadasList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas pasadas para mostrar.</p>
     </div>
 
     <div class="content" *ngIf="activeTab === 2">
@@ -739,8 +750,7 @@ export class ClientReservasComponent implements OnInit {
   // Datos de las reservas (se rellenan desde API)
   proximasConfirmadas: ProximaCitaData[] = [];
   pendientesList: PendienteData[] = [];
-  pasada1: ReservaPasadaData | null = null;
-  pasada2: ReservaPasadaData | null = null;
+  pasadasList: ReservaPasadaData[] = [];
   canceladasClienteList: CanceladaClienteData[] = [];
   canceladasProfesionalList: CanceladaProfesionalData[] = [];
   realizadasList: ReservaPasadaData[] = [];
@@ -1108,21 +1118,32 @@ export class ClientReservasComponent implements OnInit {
             hora: this.formatTime(a.start_time),
             appointmentId: Number((a as any).id || a.id || 0) || null
           }));
-        // Pasadas: mostrar dos primeras (por confirmar o confirmadas pero vencidas)
-        this.pasada1 = past[0] ? {
-          avatarUrl: this.resolveAvatar((past[0] as any).provider_avatar_url || (past[0] as any).avatar_url || ''),
-          titulo: `${past[0].service_name || 'Servicio'} con ${past[0].provider_name || 'Profesional'}`,
-          fecha: this.formatDate(past[0].date),
-          precio: past[0].price ? `$${Number(past[0].price).toLocaleString('es-CL')}` : '',
-          estado: past[0].status === 'confirmed' ? 'Confirmada' : 'Por confirmar'
-        } : null;
-        this.pasada2 = past[1] ? {
-          avatarUrl: this.resolveAvatar((past[1] as any).provider_avatar_url || (past[1] as any).avatar_url || ''),
-          titulo: `${past[1].service_name || 'Servicio'} con ${past[1].provider_name || 'Profesional'}`,
-          fecha: this.formatDate(past[1].date),
-          precio: past[1].price ? `$${Number(past[1].price).toLocaleString('es-CL')}` : '',
-          estado: past[1].status === 'confirmed' ? 'Confirmada' : 'Por confirmar'
-        } : null;
+        // Pasadas: todas (no completadas), prioridad pagadas y orden por fecha descendente
+        this.pasadasList = past.map(p => {
+          const paymentStatus = String((p as any).payment_status || '').toLowerCase();
+          const isPaid = ['paid','succeeded','completed'].includes(paymentStatus);
+          const sortKey = `${p.date || ''}${p.start_time || ''}`;
+          return {
+            avatarUrl: this.resolveAvatar((p as any).provider_avatar_url || (p as any).avatar_url || ''),
+            titulo: `${p.service_name || 'Servicio'} con ${p.provider_name || 'Profesional'}`,
+            fecha: this.formatDate(p.date),
+            precio: p.price ? `$${Number(p.price).toLocaleString('es-CL')}` : '',
+            estado: isPaid ? 'Pagada' : (p.status === 'confirmed' ? 'Confirmada' : 'Por confirmar'),
+            appointmentId: p.id as number,
+            providerId: (p as any).provider_id as number,
+            isPaid,
+            verificationCode: isPaid ? (p as any).verification_code : undefined,
+            // se almacena para ordenar
+            sortKey: sortKey as any
+          } as ReservaPasadaData & { sortKey: string };
+        }).sort((a, b) => {
+          if (!!a.isPaid !== !!b.isPaid) return a.isPaid ? -1 : 1; // pagadas primero
+          return String(b.sortKey || '').localeCompare(String(a.sortKey || '')); // fecha/hora desc
+        }).map(({ sortKey, ...rest }) => ({
+          ...rest,
+          // pagadas expandidas, otras colapsadas
+          isPaid: rest.isPaid,
+        }));
 
         this.canceladasClienteList = cancelled
           .filter(c => String((c as any).cancelled_by || 'client') === 'client')

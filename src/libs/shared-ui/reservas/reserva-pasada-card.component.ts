@@ -12,6 +12,7 @@ export interface ReservaPasadaData {
   providerId?: number;
   isFavorite?: boolean;
   verificationCode?: string;
+  isPaid?: boolean;
 }
 
 @Component({
@@ -26,6 +27,7 @@ export class ReservaPasadaCardComponent {
   @Output() onReview = new EventEmitter<void>();
   @Output() onReschedule = new EventEmitter<void>();
   @Output() onToggleFavorite = new EventEmitter<void>();
+  @Input() expanded: boolean = false;
 
   private avatarBroken = false;
 
@@ -49,5 +51,9 @@ export class ReservaPasadaCardComponent {
     const initial = (text || 'A').trim().charAt(0).toUpperCase() || 'A';
     const encoded = encodeURIComponent(initial);
     return `https://placehold.co/64x64/0f172a/ffffff?text=${encoded}`;
+  }
+
+  toggle(): void {
+    this.expanded = !this.expanded;
   }
 }
