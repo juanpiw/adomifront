@@ -140,7 +140,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     const user = this.sessionService.getUser();
     if (user && user.role === 'provider') {
       this.payments.cashSummary$.subscribe((summary) => {
-        console.log('[TRACE][TOPBAR] cashSummary$ emission', summary);
         if (summary) {
           const totalDue = Number(summary.total_due || 0);
           const overdueAmount = Number(summary.overdue_due || 0);
@@ -193,23 +192,16 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       this.appointments.connectSocket(me);
       this.appointments.onAppointmentCreated().subscribe((a: AppointmentDto) => {
         try {
-          console.log('🔔 [DASH_LAYOUT] ==================== NUEVA CITA RECIBIDA ====================');
-          console.log('🔔 [DASH_LAYOUT] Appointment:', a);
-          console.log('🔔 [DASH_LAYOUT] Status:', a.status);
-          
           // Incrementar contador de citas pendientes (solo las que están 'scheduled')
           if (a.status === 'scheduled') {
             this.pendingAppointmentsCount = Math.min(99, (this.pendingAppointmentsCount || 0) + 1);
-            console.log('🔔 [DASH_LAYOUT] ✅ Contador incrementado a:', this.pendingAppointmentsCount);
             
             // ✨ Activar animación del avatar
             this.hasNewAppointment = true;
-            console.log('🔔 [DASH_LAYOUT] ✨ Animación de avatar activada');
             
             // Desactivar la animación después de 5 segundos
             setTimeout(() => {
               this.hasNewAppointment = false;
-              console.log('🔔 [DASH_LAYOUT] ✨ Animación de avatar desactivada');
             }, 5000);
             
             // 🔊 Reproducir sonido de notificación
@@ -225,9 +217,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           const appointmentTime = a.start_time.slice(0,5);
           
           const notificationMessage = `${clientName} quiere agendar "${serviceName}" para el ${appointmentDate} a las ${appointmentTime}`;
-          
-          console.log('🔔 [DASH_LAYOUT] Creando notificación con mensaje:', notificationMessage);
-          
+
           this.notifications.createNotification({
             type: 'appointment',
             profile: 'provider',
@@ -244,8 +234,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
               time: appointmentTime
             }
           });
-          
-          console.log('🔔 [DASH_LAYOUT] ✅ Notificación creada en campana');
         } catch (err) {
           console.error('🔴 [DASH_LAYOUT] Error procesando nueva cita:', err);
         }
@@ -293,7 +281,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.unreadTotal = 0;
         }
         if (ev.urlAfterRedirects.includes('/dash/agenda')) {
-          console.log('🔔 [DASH_LAYOUT] Navegando a Agenda - Limpiando contador de citas');
           this.pendingAppointmentsCount = 0;
         }
       }
@@ -325,8 +312,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   private loadProviderProfile() {
-    console.log('[DASH_LAYOUT] Cargando perfil de provider...');
-    
     // Primero intentar desde localStorage
     const u = this.sessionService.getUser();
     if (u) {
@@ -334,13 +319,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       this.providerAvatarUrl = u.profile_photo_url ? 
         `${environment.apiBaseUrl}${u.profile_photo_url}` : null;
       // no siempre viene is_online en sesión; se obtiene del perfil
-      console.log('[DASH_LAYOUT] Datos desde sesión:', { name: this.providerName, avatar: this.providerAvatarUrl });
     }
     
     // Luego obtener desde el backend (datos frescos y completos)
     this.providerProfile.getProfile().subscribe({
       next: (profile) => {
-        console.log('[DASH_LAYOUT] Perfil obtenido del backend:', profile);
         if (profile) {
           this.providerName = profile.full_name || 'Provider';
           this.providerAvatarUrl = profile.profile_photo_url ? 
@@ -348,11 +331,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.isOnline = profile.is_online ?? null;
           this.isFounderAccount = this.isFounderAccount || false;
           this.evaluateVerificationStatus(profile.verification_status as VerificationStatus | undefined, this.verificationRejectionReason);
-          console.log('[DASH_LAYOUT] Datos actualizados desde backend:', { 
-            name: this.providerName, 
-            avatar: this.providerAvatarUrl,
-            isOnline: this.isOnline
-          });
         }
       },
       error: (error) => {
@@ -366,7 +344,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
               this.providerAvatarUrl = user.profile_photo_url ? 
                 `${environment.apiBaseUrl}${user.profile_photo_url}` : this.providerAvatarUrl;
               this.evaluateVerificationStatus((user as any)?.verification_status as VerificationStatus | undefined, this.verificationRejectionReason);
-              console.log('[DASH_LAYOUT] Datos desde fallback:', { name: this.providerName, avatar: this.providerAvatarUrl });
             }
           },
           error: (err) => console.error('[DASH_LAYOUT] Error en fallback:', err)
@@ -403,14 +380,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           const planName = String(response.currentPlan.name || '').toLowerCase();
           const planType = String((response.currentPlan as any).plan_type || '').toLowerCase();
           const planKey = String((response.currentPlan as any)?.plan_key || '').toLowerCase();
-          console.log('[DASH_LAYOUT] PlanInfo loaded', {
-            id: planId,
-            planKey,
-            planType,
-            name: response.currentPlan.name,
-            is_founder: (response.currentPlan as any)?.is_founder,
-            founder_expires_at: (response.currentPlan as any)?.founder_expires_at
-          });
           const planIsFounder =
             planKey === 'founder' ||
             planType.includes('founder') || planType.includes('fundador') ||
@@ -441,7 +410,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   onPlanUpgrade() {
     // El componente ya redirige a /auth/select-plan
-    console.log('Upgrading plan...');
   }
 
   onPlanAlertDismiss() {
@@ -473,16 +441,13 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   // Event handlers del topbar
   onHelpClick(helpContext: string): void {
-    console.log('Help clicked for context:', helpContext);
     // TODO: Implementar modal de ayuda contextual
     this.showHelpModal(helpContext);
   }
 
   private showHelpModal(context: string): void {
     // TODO: Implementar modal de ayuda
-    // Por ahora solo un console.log
     const helpContent = this.getHelpContent(context);
-    console.log('Mostrando ayuda para:', context, helpContent);
   }
 
   private getHelpContent(context: string): string {
@@ -574,8 +539,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
 
   onSettingsClick(): void {
-    console.log('Settings clicked');
-    
     // Si estamos en la página de perfil, navegar al tab de configuración
     if (this.router.url.includes('/dash/perfil')) {
       this.router.navigate(['/dash/perfil'], {
@@ -985,9 +948,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   private async initializeNotifications(): Promise<void> {
     try {
-      console.log('[DASH_LAYOUT] Inicializando notificaciones push...');
       await this.pushNotifications.initializeForUser();
-      console.log('[DASH_LAYOUT] Notificaciones push inicializadas');
 
       if (!this.pushMessageSub) {
         this.pushMessageSub = this.pushNotifications.foregroundMessages$.subscribe(() => {
@@ -1086,13 +1047,10 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   }
   
   private loadUnreadNotificationsCount(): void {
-    console.log('[DASH_LAYOUT] 🔔 Loading unread notifications count...');
     this.pushNotifications.getUnreadCount().subscribe({
       next: (resp: any) => {
-        console.log('[DASH_LAYOUT] 🔔 Unread count response:', resp);
         if (resp?.ok && typeof resp.count === 'number') {
           this.notifications.updateUnreadCount(resp.count);
-          console.log('[DASH_LAYOUT] 🔔 Unread notifications count updated:', resp.count);
         } else {
           console.warn('[DASH_LAYOUT] 🔔 Invalid response format:', resp);
         }

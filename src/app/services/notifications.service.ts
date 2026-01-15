@@ -78,10 +78,8 @@ export class NotificationsService {
     }
 
     try {
-      console.log('[NOTIFICATIONS_SERVICE] 🔔 Solicitando permisos de notificaciones al usuario...');
       const permission = await Notification.requestPermission();
       this.permissionSubject.next(permission);
-      console.log('[NOTIFICATIONS_SERVICE] 🔔 Respuesta del usuario:', permission);
 
       if (permission === 'granted') {
         await this.registerFCMToken();
@@ -226,7 +224,6 @@ export class NotificationsService {
     }
 
     if (this.currentToken === token) {
-      console.log('[NOTIFICATIONS_SERVICE] 🔔 Token FCM ya registrado');
       return;
     }
 
@@ -236,7 +233,6 @@ export class NotificationsService {
       try {
         window.localStorage.setItem(this.currentTokenKey, token);
       } catch {}
-      console.log('[NOTIFICATIONS_SERVICE] 🔔 Token FCM registrado correctamente');
     }
   }
 
@@ -558,7 +554,6 @@ export class NotificationsService {
     this.notificationState.setUserProfile(profile);
 
     const permission = this.checkPermission();
-    console.log('[NOTIFICATIONS_SERVICE] 🔔 Permiso actual:', permission);
 
     if (permission === 'default') {
       await this.requestPermission();
