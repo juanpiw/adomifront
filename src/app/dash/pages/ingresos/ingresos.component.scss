@@ -341,6 +341,11 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   transform: translateY(20px);
   transition: transform 0.3s;
+  box-sizing: border-box;
+  // Responsive: evitar que se salga del viewport en mobile (scroll interno)
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .help-modal-overlay.active .help-modal {
@@ -406,6 +411,20 @@
     &__body {
       padding: 16px;
     }
+  }
+
+  .help-modal {
+    width: 100%;
+    max-width: none;
+    padding: 18px;
+    border-radius: 12px;
+    max-height: calc(100dvh - 24px);
+  }
+
+  .help-content {
+    h2 { font-size: 1.15rem; }
+    .highlight-box { font-size: 0.9rem; }
+    .btn-email { font-size: 1rem; }
   }
 }
 

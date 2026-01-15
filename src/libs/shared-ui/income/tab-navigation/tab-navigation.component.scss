@@ -29,26 +29,21 @@
   }
 }
 
-// Mobile: convertir a "tabs scrolleables" para evitar saltos/overflow con textos largos
 @media (max-width: 768px) {
   .tab-navigation {
+    // Mobile: tabs en columna
+    flex-direction: column;
     gap: 0.5rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; // Firefox
-    padding: 0 0.25rem;
-
-    &::-webkit-scrollbar {
-      display: none; // Chrome/Safari
-    }
+    overflow: visible;
+    padding: 0;
 
     .tab-button {
-      flex: 0 0 auto;
-      white-space: nowrap;
-      padding: 0.6rem 0.9rem;
-      border-bottom-width: 3px;
-      min-height: 44px; // mejor tap-target
+      width: 100%;
+      text-align: left;
+      white-space: normal;
+      padding: 0.85rem 1rem;
+      border-bottom-width: 2px;
+      min-height: 44px;
     }
   }
 }
@@ -69,14 +64,6 @@
         color: #c7d2fe;
         border-bottom-color: #818cf8;
       }
-    }
-  }
-}
-
-:host-context(.dark-theme) {
-  @media (max-width: 768px) {
-    .tab-navigation {
-      scrollbar-width: none;
     }
   }
 }
