@@ -104,10 +104,8 @@ export class AuthService {
   getAccessToken(): string | null {
     const token = this.readToken(this.tokenKey);
     if (!token) {
-      console.log('[AUTH] 🔑 getAccessToken: no-token');
       return null;
     }
-    console.log('[AUTH] 🔑 getAccessToken:', token.substring(0, 12) + '...');
     return token;
   }
 
@@ -121,11 +119,6 @@ export class AuthService {
   private saveTokens(accessToken: string, refreshToken: string): void {
     const validAccess = accessToken && accessToken !== 'null' && accessToken !== 'undefined';
     const validRefresh = refreshToken && refreshToken !== 'null' && refreshToken !== 'undefined';
-
-    console.log('[AUTH] 💾 saveTokens', {
-      accessPrefix: validAccess ? accessToken.substring(0, 12) : 'invalid',
-      refreshPrefix: validRefresh ? refreshToken.substring(0, 12) : 'invalid'
-    });
 
     if (!validAccess || !validRefresh) {
       console.warn('[AUTH] 💾 saveTokens: tokens inválidos, no se guardan', {
@@ -141,7 +134,6 @@ export class AuthService {
 
   // Limpiar tokens del localStorage
   private clearTokens(): void {
-    console.log('[AUTH] 🧹 clearTokens llamado');
     if (typeof window !== 'undefined') {
       try {
         localStorage?.removeItem(this.tokenKey);
@@ -156,22 +148,17 @@ export class AuthService {
 
   // Cargar usuario desde localStorage
   private loadUserFromStorage(): void {
-    console.log('[AUTH] 🔄 loadUserFromStorage iniciado');
     // Verificar si estamos en el navegador
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      console.log('[AUTH] ⚠️ No estamos en el navegador, saltando carga');
       return;
     }
     
     const userStr = localStorage.getItem('adomi_user');
-    console.log('[AUTH] 📦 Usuario en localStorage:', userStr);
     
     if (userStr && userStr !== 'undefined' && userStr !== 'null') {
       try {
         const user = JSON.parse(userStr);
-        console.log('[AUTH] ✅ Usuario parseado correctamente:', user);
         this.authStateSubject.next(user);
-        console.log('[AUTH] ✅ Estado de autenticación actualizado');
         return;
       } catch (error) {
         console.error('[AUTH] ❌ Error parsing user from localStorage:', error);
@@ -179,17 +166,13 @@ export class AuthService {
         localStorage.removeItem('adomi_user');
       }
     } else {
-      console.log('[AUTH] ⚠️ No hay usuario válido en localStorage');
     }
 
     // Si no hay usuario pero sí token, intentar rehidratar desde el backend
     const token = this.getAccessToken();
-    console.log('[AUTH] 🔑 Token disponible para rehidratación:', token ? 'sí' : 'no');
     if (token) {
-      console.log('[AUTH] 🔄 Rehidratando usuario desde backend...');
       this.getCurrentUserInfo().subscribe({
         next: (response) => {
-          console.log('[AUTH] ✅ Usuario rehidratado desde backend:', response);
         },
         error: (error) => {
           console.error('[AUTH] ❌ Error rehidratando usuario:', error);
@@ -234,13 +217,6 @@ export class AuthService {
     const validAccess = !!accessToken && accessToken !== 'null' && accessToken !== 'undefined';
     const validRefresh = !!refreshToken && refreshToken !== 'null' && refreshToken !== 'undefined';
 
-    console.log('[AUTH] 💧 hydrateFromExternalTokens', {
-      hasAccess: validAccess,
-      hasRefresh: validRefresh,
-      userId: user?.id,
-      role: user?.role
-    });
-
     if (validAccess && validRefresh) {
       this.saveTokens(accessToken as string, refreshToken as string);
     }
@@ -271,7 +247,6 @@ export class AuthService {
   // Obtener usuario actual
   getCurrentUser(): AuthUser | null {
     const user = this.authStateSubject.value;
-    console.log('[AUTH] 👤 getCurrentUser llamado, usuario actual:', user);
     return user;
   }
 
@@ -299,23 +274,13 @@ export class AuthService {
 
   // Registro de usuario
   register(payload: RegisterPayload): Observable<AuthResponse> {
-    console.log('[AUTH] 🟢 register() llamado', {
-      email: payload.email,
-      role: payload.role,
-      hasPassword: !!payload.password,
-      hasName: !!payload.name,
-      ts: new Date().toISOString()
-    });
     this.loadingSubject.next(true);
     
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, payload)
       .pipe(
         tap(response => {
-          console.log('[AUTH] 🟢 register() respuesta cruda:', response);
           const data: any = (response as any)?.data || response;
-          console.log('[AUTH] 🟢 register() data normalizada:', data);
           if (response.success && data?.user && data?.accessToken && data?.refreshToken) {
-            console.log('[AUTH] 🟢 register() tokens presentes, guardando en localStorage');
             // Guardar usuario y tokens
             this.authStateSubject.next(data.user);
             this.saveTokens(data.accessToken, data.refreshToken);
@@ -343,21 +308,13 @@ export class AuthService {
 
   // Login de usuario
   login(payload: LoginPayload): Observable<AuthResponse> {
-    console.log('[AUTH] 🟢 login() llamado', {
-      email: payload.email,
-      hasPassword: !!payload.password,
-      ts: new Date().toISOString()
-    });
     this.loadingSubject.next(true);
     
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, payload)
       .pipe(
         tap(response => {
-          console.log('[AUTH] 🟢 login() respuesta cruda:', response);
           const data: any = (response as any)?.data || response;
-          console.log('[AUTH] 🟢 login() data normalizada:', data);
           if (response.success && data?.user && data?.accessToken && data?.refreshToken) {
-            console.log('[AUTH] 🟢 login() tokens presentes, guardando en localStorage');
             // Guardar usuario y tokens
             this.authStateSubject.next(data.user);
             this.saveTokens(data.accessToken, data.refreshToken);
@@ -484,9 +441,7 @@ export class AuthService {
 
   // Obtener información del usuario actual
   getCurrentUserInfo(): Observable<{ success: boolean; user: AuthUser }> {
-    console.log('[AUTH] getCurrentUserInfo llamado');
     const token = this.getAccessToken();
-    console.log('[AUTH] Token disponible:', token ? 'sí' : 'no');
     // Añadir parámetro de cache-busting para evitar 304 con payload obsoleto tras promoción
     const ts = Date.now().toString();
     return this.http.get<{ success: boolean; user: AuthUser }>(`${this.baseUrl}/auth/me`, {
@@ -494,11 +449,9 @@ export class AuthService {
       params: { t: ts }
     }).pipe(
       tap(response => {
-        console.log('[AUTH] Respuesta de /auth/me:', response);
         if (response.success) {
           // El backend retorna {success: true, data: {user: {...}}}
           const user = (response as any).data?.user || (response as any).user || response.user;
-          console.log('[AUTH] Usuario hidratado:', user);
           if (user) {
             this.authStateSubject.next(user);
             localStorage.setItem('adomi_user', JSON.stringify(user));

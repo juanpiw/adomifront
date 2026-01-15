@@ -14,7 +14,6 @@ export class SessionService {
   constructor() {
     // Suscribirse a los cambios del AuthService
     this.authService.authState$.subscribe(user => {
-      console.log('[SESSION] 🔄 authState$ update', user);
       this.userSig.set(user);
     });
   }
@@ -24,7 +23,6 @@ export class SessionService {
   }
 
   setUser(user: AuthUser | null) {
-    console.log('[SESSION] 💾 setUser', user);
     this.userSig.set(user);
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       if (user) {
@@ -54,7 +52,6 @@ export class SessionService {
 
   getUser(): AuthUser | null {
     const user = this.authService.getCurrentUser();
-    console.log('[SESSION] 👤 getUser', user);
     return user;
   }
 
@@ -192,7 +189,6 @@ export class SessionService {
       }
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? (JSON.parse(raw) as AuthUser) : null;
-      console.log('[SESSION] 📦 read()', { hasRaw: !!raw, userId: parsed?.id, role: parsed?.role });
       return parsed;
     } catch {
       return null;

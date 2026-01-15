@@ -28,18 +28,8 @@ export class RouterLoggerService {
       )
       .subscribe((event: Event) => {
         if (event instanceof NavigationStart) {
-          console.log('[ROUTER] 🚦 start', {
-            from: this.lastUrl,
-            to: event.url,
-            navId: event.id
-          });
         } else if (event instanceof NavigationEnd) {
           this.lastUrl = event.urlAfterRedirects || event.url;
-          console.log('[ROUTER] ✅ end', {
-            url: event.url,
-            urlAfterRedirects: event.urlAfterRedirects,
-            navId: event.id
-          });
         } else if (event instanceof NavigationCancel) {
           console.warn('[ROUTER] ⛔ cancel', {
             url: event.url,
