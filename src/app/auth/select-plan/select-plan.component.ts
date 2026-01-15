@@ -213,11 +213,13 @@ export class SelectPlanComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.pendingActivation = String(params['status'] || '') === 'pending_activation';
     });
-    // Si ya hay plan activo, permitir salir al dashboard
+    // Importante:
+    // - Este componente se usa tanto para onboarding (sin plan) como para "Cambiar plan" (con plan activo).
+    // - Antes redirigía a /dash/home si detectaba active_plan_id, lo que bloqueaba a providers que querían cambiar de plan.
     const currentUserEarly = this.authService.getCurrentUser() || this.getLocalUser();
-    if (currentUserEarly?.active_plan_id) {
-      console.log('[SELECT_PLAN] Usuario con plan activo, enviando a dash/home');
-      this.router.navigateByUrl('/dash/home');
+    if (currentUserEarly?.active_plan_id && currentUserEarly?.role !== 'provider' && currentUserEarly?.pending_role !== 'provider') {
+      console.log('[SELECT_PLAN] Usuario no-provider con plan activo, enviando a su destino');
+      this.router.navigateByUrl(currentUserEarly?.role === 'client' ? '/client/reservas' : '/');
       return;
     }
     // Verificar datos temporales; permitir continuar si ya es provider logueado aunque falte tempUserData

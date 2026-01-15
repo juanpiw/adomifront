@@ -216,6 +216,17 @@
   .dash-layout.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   .sidebar { transform: translateX(0); transition: transform .25s ease; }
   .panel { width: 220px; }
+
+  // En mobile el footer no debe empujar el contenido hacia abajo con margin-top:auto
+  .footer {
+    margin-top: 0;
+  }
+
+  // En mobile el rail puede quedar "cortado" abajo (safe-area / viewport),
+  // así que agregamos padding-bottom para subir el botón "Salir".
+  .rail {
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
 }
 .rail-toggle { width:48px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; background: transparent; border:1px solid rgba(255,255,255,0.12); cursor:pointer; }
 .rail-toggle:hover { background: rgba(255,255,255,0.08); color:#fff; }
