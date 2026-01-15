@@ -8,14 +8,19 @@
 }
 
 .tbk-card {
+  /* Diseño v2 (según HTML de referencia) */
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  position: relative;
   margin-bottom: 32px;
-  box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.45);
 
   &__header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
@@ -25,16 +30,16 @@
 
   &__title {
     h3 {
-      margin: 0;
-      font-size: 20px;
+      margin: 0 0 5px 0;
+      color: #1a1a1a;
+      font-size: 1.2rem;
       font-weight: 700;
-      color: #0f172a;
     }
 
     p {
-      margin: 4px 0 0;
-      font-size: 14px;
-      color: #475569;
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
     }
   }
 
@@ -42,6 +47,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    margin-top: 15px;
   }
 
   &__loader {
@@ -54,28 +60,31 @@
   }
 
   &__body {
-    margin-top: 24px;
+    padding: 20px;
   }
 
   &__meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 15px;
 
     .meta-label {
-      display: block;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #64748b;
+      display: inline;
+      font-size: 0.85rem;
+      text-transform: none;
+      letter-spacing: 0;
+      color: inherit;
     }
 
     .meta-value {
-      display: block;
-      font-weight: 600;
-      color: #0f172a;
-      margin-top: 4px;
+      display: inline;
+      font-weight: 500;
+      color: inherit;
+      margin-left: 6px;
     }
   }
 
@@ -120,8 +129,8 @@
 
   &__divider {
     border: none;
-    border-top: 1px solid #e2e8f0;
-    margin: 24px 0;
+    border-top: 1px solid #eee;
+    margin: 15px 0;
   }
 
   &__section-header {
@@ -130,14 +139,345 @@
     gap: 12px;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-top: 25px;
+    margin-bottom: 10px;
 
     h4 {
       margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #0f172a;
+      color: #333;
+      font-size: 1rem;
+      font-weight: 700;
     }
+  }
+
+  &__info {
+    p {
+      color: #444;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  }
+
+  /* Chips: estilo neutro base como referencia (manteniendo variantes por estado si se usan) */
+  .chip {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: #f5f5f5;
+    color: #555;
+    border: 1px solid #ddd;
+
+    &--neutral {
+      background: #f5f5f5;
+      color: #555;
+      border: 1px solid #ddd;
+    }
+
+    &--success {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #065f46;
+    }
+
+    &--warning {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: #92400e;
+    }
+
+    &--danger {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+  }
+
+  /* Formulario inline (manual code) */
+  .tbk-inline-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #fafafa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input {
+      margin-top: 5px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    small {
+      color: #777;
+      font-weight: 400;
+      margin-top: 4px;
+      font-size: 0.8rem;
+    }
+
+    .error {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #b91c1c;
+      font-weight: 500;
+    }
+
+    &__actions {
+      margin-top: 10px;
+    }
+  }
+
+  /* Botón primary del formulario inline (solo dentro de la card) */
+  .tbk-btn--primary {
+    background-color: #6200ee;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+    transition: background 0.2s;
+
+    &:hover:not(:disabled) {
+      background-color: #5000cc;
+    }
+  }
+
+  /* Trigger de ayuda integrado */
+  .help-inline-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #f0f7ff;
+    border: 1px dashed #0066cc;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e6f2ff;
+    }
+  }
+
+  .help-inline-icon {
+    background-color: #0066cc;
+    color: #ffffff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .help-inline-text {
+    font-size: 0.9rem;
+    color: #0066cc;
+    font-weight: 600;
+
+    span {
+      display: block;
+      font-size: 0.8rem;
+      color: #555;
+      font-weight: 400;
+    }
+  }
+}
+
+/* Modal de ayuda (fuera de la card) */
+.help-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+  padding: 16px;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.help-modal {
+  background: #ffffff;
+  padding: 30px;
+  width: 90%;
+  max-width: 450px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px);
+  transition: transform 0.3s;
+}
+
+.help-modal-overlay.active .help-modal {
+  transform: translateY(0);
+}
+
+.help-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #888;
+}
+
+.help-content {
+  h2 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.3rem;
+  }
+
+  p {
+    color: #555;
+    line-height: 1.6;
+  }
+
+  .highlight-box {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+
+  .contact-support {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: center;
+  }
+
+  .btn-email {
+    display: inline-block;
+    margin-top: 10px;
+    color: #0066cc;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1.1rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .tbk-card {
+    &__header,
+    &__body {
+      padding: 16px;
+    }
+  }
+}
+
+:host-context(.dark-theme) {
+  .tbk-card {
+    background: rgba(15, 23, 42, 0.55);
+    border-color: rgba(148, 163, 184, 0.25);
+
+    &__title {
+      h3 { color: #e2e8f0; }
+      p { color: rgba(226, 232, 240, 0.75); }
+    }
+
+    &__info {
+      p { color: rgba(226, 232, 240, 0.85); }
+      a { color: #93c5fd; }
+    }
+
+    .chip {
+      background: rgba(148, 163, 184, 0.14);
+      color: rgba(226, 232, 240, 0.85);
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+
+    .tbk-inline-form {
+      background: rgba(15, 23, 42, 0.35);
+      border-color: rgba(148, 163, 184, 0.22);
+
+      label { color: rgba(226, 232, 240, 0.9); }
+
+      input {
+        background: rgba(2, 6, 23, 0.4);
+        color: #e2e8f0;
+        border-color: rgba(148, 163, 184, 0.25);
+      }
+
+      small { color: rgba(226, 232, 240, 0.65); }
+    }
+
+    .help-inline-trigger {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: rgba(147, 197, 253, 0.6);
+    }
+
+    .help-inline-icon {
+      background-color: rgba(147, 197, 253, 0.85);
+      color: rgba(2, 6, 23, 0.9);
+    }
+
+    .help-inline-text {
+      color: rgba(147, 197, 253, 0.9);
+      span { color: rgba(226, 232, 240, 0.75); }
+    }
+  }
+
+  .help-modal {
+    background: rgba(15, 23, 42, 0.98);
+    color: #e2e8f0;
+  }
+
+  .help-close { color: rgba(226, 232, 240, 0.75); }
+
+  .help-content {
+    h2 { color: #e2e8f0; }
+    p { color: rgba(226, 232, 240, 0.85); }
+
+    .highlight-box {
+      background: rgba(59, 130, 246, 0.12);
+      border-left-color: rgba(147, 197, 253, 0.75);
+    }
+
+    .btn-email { color: rgba(147, 197, 253, 0.9); }
   }
 }
 

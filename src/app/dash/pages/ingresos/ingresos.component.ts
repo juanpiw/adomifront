@@ -89,6 +89,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   tbkPendingShopName: string | null = null;
   tbkToastMessage: string | null = null;
   tbkToastVisible = false;
+  // UI: modal de ayuda (solo diseño)
+  tbkHelpOpen = false;
   tbkSecondaryShops: Array<{ name: string; code: string; status: TbkStatus; remoteStatus?: string | null }> = [];
   tbkForm = this.fb.group({
     commerceName: ['', [Validators.required, Validators.minLength(3)]],
@@ -196,6 +198,30 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     // Cargar datos iniciales
     this.loadFinancialData();
     this.initializeTbkOnboarding();
+  }
+
+  // ============================================================
+  // UI: Ayuda Transbank (trigger inline + modal)
+  // ============================================================
+  openTbkHelp(): void {
+    this.tbkHelpOpen = true;
+  }
+
+  closeTbkHelp(): void {
+    this.tbkHelpOpen = false;
+  }
+
+  toggleTbkHelp(): void {
+    this.tbkHelpOpen = !this.tbkHelpOpen;
+  }
+
+  onTbkHelpOverlayClick(evt: MouseEvent): void {
+    // Cerrar solo cuando el click fue sobre el overlay (no dentro del modal)
+    const target = evt?.target as HTMLElement | null;
+    const currentTarget = evt?.currentTarget as HTMLElement | null;
+    if (target && currentTarget && target === currentTarget) {
+      this.closeTbkHelp();
+    }
   }
 
   onTabChanged(tabId: string) {

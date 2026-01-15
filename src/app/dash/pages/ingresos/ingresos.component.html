@@ -66,11 +66,28 @@
 
           <div class="tbk-card__info" *ngIf="!tbkSecondaryCode">
             <p>
-              Para activar Webpay Mall (Servicio Webpay Oneclick Mall) llama a Transbank al
-              <a href="tel:6006386380">600 638 6380</a> o a tu ejecutivo y solicita tu código de comercio hijo
-              asociado al mall <strong>597053032128</strong>.
+              Para activar Webpay Mall llama a Transbank al
+              <a href="tel:6006386380">600 638 6380</a> y solicita tu código de comercio hijo
+              asociado al mall <strong>{{ tbkMallCode || '—' }}</strong>.
             </p>
             <p>Ingresa abajo ese código junto a tu correo para validarlo y guardarlo en Adomi.</p>
+
+            <!-- Trigger de ayuda integrado (UI) -->
+            <div
+              class="help-inline-trigger"
+              role="button"
+              tabindex="0"
+              (click)="toggleTbkHelp()"
+              (keydown.enter)="toggleTbkHelp()"
+              (keydown.space)="toggleTbkHelp()"
+            >
+              <div class="help-inline-icon">?</div>
+              <div class="help-inline-text">
+                ¿Por qué debo pedir este código?
+                <span>Haz clic aquí si tienes dudas o problemas con Transbank</span>
+              </div>
+            </div>
+
             <form [formGroup]="tbkManualForm" (ngSubmit)="submitManualCode()" class="tbk-inline-form">
               <label>
                 Código de comercio hijo
@@ -385,6 +402,40 @@
       </ng-template>
     </div>
     
+  </div>
+</div>
+
+<!-- Modal de ayuda (UI) -->
+<div
+  class="help-modal-overlay"
+  [class.active]="tbkHelpOpen"
+  (click)="onTbkHelpOverlayClick($event)"
+  aria-hidden="true"
+>
+  <div class="help-modal" role="dialog" aria-modal="true" aria-label="Ayuda Transbank">
+    <button type="button" class="help-close" (click)="closeTbkHelp()" aria-label="Cerrar">&times;</button>
+
+    <div class="help-content">
+      <h2>¿Por qué necesito el Código Mall?</h2>
+
+      <p>El <strong>Código Mall</strong> es un identificador único que Transbank asigna a tu tienda.</p>
+
+      <div class="highlight-box">
+        <strong>¿Para qué sirve?</strong><br />
+        Permite que Adomi sepa exactamente a qué cuenta bancaria debe dirigir el dinero cuando un cliente te compra. Sin este código, no puedes recibir pagos.
+      </div>
+
+      <p>
+        Debes pedirlo llamando a Transbank e indicando que perteneces al Mall Adomi (código padre
+        <strong>{{ tbkMallCode || '—' }}</strong>).
+      </p>
+
+      <div class="contact-support">
+        <p>¿Transbank no te da respuesta?</p>
+        <p style="margin-bottom: 5px; font-size: 0.9rem; color: #666;">Escríbenos directamente:</p>
+        <a href="mailto:soporte@adomipp.cl" class="btn-email">soporte@adomipp.cl</a>
+      </div>
+    </div>
   </div>
 </div>
 
