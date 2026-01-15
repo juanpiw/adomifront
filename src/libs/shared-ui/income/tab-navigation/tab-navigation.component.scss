@@ -3,6 +3,8 @@
   display: flex;
   border-bottom: 1px solid #e2e8f0;
   margin-bottom: 1.5rem;
+  // Desktop: tabs pueden ocupar el ancho sin scroll
+  justify-content: flex-start;
   
   .tab-button {
     padding: 0.75rem 1.5rem;
@@ -27,6 +29,30 @@
   }
 }
 
+// Mobile: convertir a "tabs scrolleables" para evitar saltos/overflow con textos largos
+@media (max-width: 768px) {
+  .tab-navigation {
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; // Firefox
+    padding: 0 0.25rem;
+
+    &::-webkit-scrollbar {
+      display: none; // Chrome/Safari
+    }
+
+    .tab-button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      padding: 0.6rem 0.9rem;
+      border-bottom-width: 3px;
+      min-height: 44px; // mejor tap-target
+    }
+  }
+}
+
 :host-context(.dark-theme) {
   .tab-navigation {
     border-bottom-color: rgba(71, 85, 105, 0.65);
@@ -43,6 +69,14 @@
         color: #c7d2fe;
         border-bottom-color: #818cf8;
       }
+    }
+  }
+}
+
+:host-context(.dark-theme) {
+  @media (max-width: 768px) {
+    .tab-navigation {
+      scrollbar-width: none;
     }
   }
 }
