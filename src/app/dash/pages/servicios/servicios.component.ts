@@ -110,13 +110,16 @@ export class DashServiciosComponent implements OnInit {
   // Form events
   onServiceSaved(formData: ServiceFormData) {
     console.log('[SERVICIOS] onServiceSaved', { formData, editing: !!this.editingService });
+    const customCategory = this.normalizeCustomCategory(formData);
     if (this.editingService) {
       this.api.update(this.editingService.id, {
         name: formData.name,
         description: formData.description,
         price: formData.price,
         duration_minutes: formData.duration,
-        custom_category: formData.category === 'Otro' ? formData.type : undefined,
+        // Backend exige category_id válido o custom_category no vacío.
+        // En este UI no manejamos category_id desde BD, así que siempre enviamos custom_category.
+        custom_category: customCategory || undefined,
       }).subscribe({
         next: (resp) => {
           console.log('[SERVICIOS] update resp', resp);
@@ -130,6 +133,8 @@ export class DashServiciosComponent implements OnInit {
         },
         error: (err) => {
           console.error('[SERVICIOS] error al actualizar', err);
+          const msg = err?.error?.error || err?.error?.message || 'No se pudo actualizar el servicio. Intenta nuevamente.';
+          this.showToastMessage('error', msg);
         }
       });
     } else {
@@ -138,7 +143,9 @@ export class DashServiciosComponent implements OnInit {
         description: formData.description,
         price: formData.price,
         duration_minutes: formData.duration,
-        custom_category: formData.category === 'Otro' ? formData.type : undefined,
+        // Backend exige category_id válido o custom_category no vacío.
+        // En este UI no manejamos category_id desde BD, así que siempre enviamos custom_category.
+        custom_category: customCategory || undefined,
       }).subscribe({
         next: (resp) => {
           console.log('[SERVICIOS] create resp', resp);
@@ -151,6 +158,8 @@ export class DashServiciosComponent implements OnInit {
         },
         error: (err) => {
           console.error('[SERVICIOS] error al crear', err);
+          const msg = err?.error?.error || err?.error?.message || 'No se pudo crear el servicio. Intenta nuevamente.';
+          this.showToastMessage('error', msg);
         }
       });
     }
@@ -211,6 +220,14 @@ export class DashServiciosComponent implements OnInit {
     createdAt: dto.created_at ? new Date(dto.created_at) : new Date(),
     updatedAt: dto.updated_at ? new Date(dto.updated_at) : new Date(),
   });
+
+  private normalizeCustomCategory(formData: ServiceFormData): string | null {
+    const type = (formData?.type || '').trim();
+    const customType = (formData?.customType || '').trim();
+    // Si eligieron "Otro", se usa el texto personalizado; si no, el tipo seleccionado.
+    const chosen = type === 'Otro' ? customType : type;
+    return chosen.length > 0 ? chosen : null;
+  }
 
   // Agrega dinámicamente categorías/tipos para que el formulario pueda mostrarlos al editar
   private ensureCategoryOptions(categoryName: string, typeName: string) {

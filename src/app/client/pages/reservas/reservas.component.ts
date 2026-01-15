@@ -264,7 +264,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
           [data]="pa"
           [expanded]="pa.isPaid === true"
           (onReview)="openReviewModal((pa.titulo.split(' con ')[1] || 'Profesional'), (pa.titulo.split(' con ')[0] || 'Servicio'), ('' + (pa.appointmentId || '')))"
-          (onReschedule)="onRebookCancelled(pa as any)">
+          (onReschedule)="onRebookCancelled(pa)">
         </ui-reserva-pasada-card>
       </div>
       <p *ngIf="(pasadasList?.length || 0) === 0" style="color:#64748b;margin:8px 0 0 4px;">No tienes reservas pasadas para mostrar.</p>
@@ -2341,10 +2341,10 @@ export class ClientReservasComponent implements OnInit {
     }
   }
 
-  onRebookCancelled(card: CanceladaClienteData): void {
+  onRebookCancelled(card: CanceladaClienteData | ReservaPasadaData): void {
     if (!card) return;
-    const providerId = card.providerId || null;
-    const serviceId = card.serviceId || null;
+    const providerId = (card as any).providerId || null;
+    const serviceId = (card as any).serviceId || null;
     const extras = serviceId ? { queryParams: { serviceId } } : undefined;
     if (providerId) {
       this.router.navigate(['/client/explorar', providerId], extras);
