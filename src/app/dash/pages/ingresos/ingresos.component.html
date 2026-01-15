@@ -484,6 +484,6 @@
 </div>
 
 <!-- Toast de notificaciones -->
-<div class="tbk-toast" [class.tbk-toast--visible]="tbkToastVisible">
+<div *ngIf="tbkToastVisible && tbkToastMessage" class="tbk-toast tbk-toast--visible">
   {{ tbkToastMessage }}
 </div>

@@ -479,22 +479,43 @@
   .topbar {
     padding: 0.75rem 1rem; // Reducir padding en móvil
     height: auto;
+    // En mobile, el contenido de info + acciones suele desbordarse.
+    // Pasamos a layout en 2 filas para que sea estable y legible.
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     
     &__info {
       width: 100%;
-      justify-content: space-between;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      row-gap: 8px;
+      column-gap: 10px;
+      min-width: 0;
 
       .search {
         display: none; // Ocultar solo el search en móvil
       }
 
       .plan-badge {
-        margin-left: auto;
+        margin-left: 0;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .verification-badge {
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
     
     .actions {
       gap: 6px; // Reducir gap en móvil
+      justify-content: flex-end;
       
       .hamburger {
         display: flex; // Mostrar hamburger en móvil
