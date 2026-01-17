@@ -126,6 +126,8 @@ function refreshTokens(
       }),
       catchError((error) => {
         isRefreshing = false;
+        // Si falla refresh (ej: 401), limpiar sesión para evitar loops de refresh en background.
+        try { sessionService.clearSession(); } catch {}
         sessionExpired.open();
         return throwError(() => error);
       })

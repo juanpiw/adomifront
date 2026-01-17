@@ -209,7 +209,7 @@ export class SelectPlanComponent implements OnInit {
   private authService = inject(AuthService);
 
   ngOnInit() {
-    console.log('[SELECT_PLAN] Init');
+    // Nota: evitar logs en producción (y nunca loguear credenciales).
     this.route.queryParams.subscribe(params => {
       this.pendingActivation = String(params['status'] || '') === 'pending_activation';
     });
@@ -218,7 +218,6 @@ export class SelectPlanComponent implements OnInit {
     // - Antes redirigía a /dash/home si detectaba active_plan_id, lo que bloqueaba a providers que querían cambiar de plan.
     const currentUserEarly = this.authService.getCurrentUser() || this.getLocalUser();
     if (currentUserEarly?.active_plan_id && currentUserEarly?.role !== 'provider' && currentUserEarly?.pending_role !== 'provider') {
-      console.log('[SELECT_PLAN] Usuario no-provider con plan activo, enviando a su destino');
       this.router.navigateByUrl(currentUserEarly?.role === 'client' ? '/client/reservas' : '/');
       return;
     }
@@ -228,7 +227,6 @@ export class SelectPlanComponent implements OnInit {
     if (tempData) {
       try {
         this.tempUserData = JSON.parse(tempData);
-        console.log('[SELECT_PLAN] tempUserData:', this.tempUserData);
       } catch (e) {
         console.error('[SELECT_PLAN] Error parseando tempUserData:', e);
       }
@@ -248,7 +246,6 @@ export class SelectPlanComponent implements OnInit {
             sessionStorage.setItem('tempUserData', JSON.stringify(this.tempUserData));
           }
         } catch {}
-        console.log('[SELECT_PLAN] tempUserData reconstruido desde currentUser provider');
       } else {
         console.warn('[SELECT_PLAN] tempUserData no encontrado. Intentando reconstruir desde localStorage.adomi_user');
         try {
@@ -266,7 +263,6 @@ export class SelectPlanComponent implements OnInit {
               if (typeof sessionStorage !== 'undefined') {
                 sessionStorage.setItem('tempUserData', JSON.stringify(this.tempUserData));
               }
-              console.log('[SELECT_PLAN] Reconstruido tempUserData desde adomi_user:', this.tempUserData);
             }
           }
         } catch (e) {
@@ -282,7 +278,6 @@ export class SelectPlanComponent implements OnInit {
     
     // ✅ VALIDACIÓN CRÍTICA: Solo proveedores pueden acceder a planes
     if (this.tempUserData?.role !== 'provider') {
-      console.log('[SELECT_PLAN] Acceso denegado - rol no es provider:', this.tempUserData?.role);
       this.error = 'Los planes de pago están disponibles solo para profesionales.';
       this.loading = false;
       
@@ -317,11 +312,9 @@ export class SelectPlanComponent implements OnInit {
   }
 
   loadPlans() {
-    console.log('[SELECT_PLAN] Cargando planes...');
     this.http.get<{ ok: boolean; plans: Plan[] }>(`${environment.apiBaseUrl}/plans?scope=select_plan`)
       .subscribe({
         next: (response) => {
-          console.log('[SELECT_PLAN] Planes recibidos:', response);
           // Fallback defensivo: aunque backend filtre, evitamos que planes legacy aparezcan
           const allowed = new Set(['starter', 'pro', 'scale']);
           const filtered = (response.plans || []).map(p => {
