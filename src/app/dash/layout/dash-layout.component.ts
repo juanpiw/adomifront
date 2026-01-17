@@ -125,6 +125,23 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   hasQuotesFeature = false;
   showPromotionsMenu = false;
 
+  get isProviderLike(): boolean {
+    try {
+      const user: any = this.sessionService.getUser();
+      const role = String(user?.role || '').toLowerCase();
+      const pendingRole = String(user?.pending_role || user?.pendingRole || '').toLowerCase();
+      return role === 'provider' || pendingRole === 'provider';
+    } catch {
+      return false;
+    }
+  }
+
+  get showStarterFallbackTag(): boolean {
+    // Solo mostrar fallback si no pudimos resolver planTierInfo desde API.
+    // En ese caso, el comportamiento esperado es Starter (gratis) con fee por defecto (15%).
+    return this.isProviderLike && !this.planTierInfo;
+  }
+
   ngOnInit() {
     this.loadPlanInfo();
     this.loadProviderProfile();
