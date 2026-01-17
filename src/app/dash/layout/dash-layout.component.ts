@@ -896,7 +896,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     const effectiveRate = plan?.effective_commission_rate !== null && plan?.effective_commission_rate !== undefined
       ? Number(plan.effective_commission_rate)
       : null;
-    const founderDiscountActive = !!plan?.founder_discount_active;
     const isFounderPlanType =
       !!planId &&
       (
@@ -919,16 +918,9 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       : 'Comisión';
 
     if (isFounderPlanType) {
-      if (founderDiscountActive) {
-        return {
-          chip: '💎 Fundador',
-          detail: `Descuento Fundador · -15% fee por 6 meses · ${commissionLabel}`,
-          variant: 'founder'
-        };
-      }
       return {
         chip: '💎 Fundador',
-        detail: `Plan promocional · 0% comisión por 3 meses`,
+        detail: `Plan Fundador · ${commissionLabel}`,
         variant: 'founder'
       };
     }
@@ -949,13 +941,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       };
     }
     if (planKey === 'starter' || planName.toLowerCase().includes('starter') || planName.toLowerCase().includes('básico') || planName.toLowerCase().includes('basico') || planName.toLowerCase().includes('basic')) {
-      if (founderDiscountActive) {
-        return {
-          chip: 'Plan Starter',
-          detail: `Gratis · Descuento Fundador (-15% fee por 6 meses) · ${commissionLabel}`,
-          variant: 'basic'
-        };
-      }
       return {
         chip: 'Plan Starter',
         detail: `Para empezar · ${priceLabel} · ${commissionLabel}`,
