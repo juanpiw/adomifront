@@ -340,6 +340,13 @@
   }
 }
 
+/* Desktop: bajar la caja de métodos de pago */
+@media (min-width: 1024px) {
+  .payment-methods {
+    margin-top: 200px;
+  }
+}
+
 .payment-options {
   display: grid;
   gap: 16px;
