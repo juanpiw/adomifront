@@ -55,10 +55,22 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Form submission handlers
   onSubmit(event: Event) {
     event.preventDefault();
-    console.log('Form submitted with email:', this.email);
-    // Here you would typically send the email to your backend
-    alert('¡Gracias por tu interés! Te contactaremos pronto.');
-    this.email = '';
+    const email = String(this.email || '').trim();
+    if (!email) return;
+
+    this.http.post<{ ok: boolean; error?: string }>(`${environment.apiBaseUrl}/founder-code/request`, { email }).subscribe({
+      next: (resp) => {
+        if (resp?.ok) {
+          alert('Listo. Te enviaremos tu código de Fundador pronto.');
+          this.email = '';
+          return;
+        }
+        alert('No pudimos enviar tu solicitud. Intenta nuevamente.');
+      },
+      error: () => {
+        alert('No pudimos enviar tu solicitud. Intenta nuevamente.');
+      }
+    });
   }
 
   // Promo modal handlers

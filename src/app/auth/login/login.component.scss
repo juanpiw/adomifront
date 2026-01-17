@@ -8,6 +8,24 @@
     flex-direction: column;
   }
 
+  // Mobile: use a white canvas so the panel doesn't look like it's floating on a dark background.
+  // Keep dark background when the user is explicitly in dark theme.
+  @media (max-width: 768px) {
+    background: #ffffff;
+
+    .login-panel {
+      background: #ffffff;
+    }
+
+    :host-context(.dark-theme) & {
+      background: #0f172a;
+    }
+
+    :host-context(.dark-theme) & .login-panel {
+      background: #0f172a;
+    }
+  }
+
   .login-hero {
     flex: 1;
     background: linear-gradient(135deg, #4c1d95, #4338ca 55%, #312e81);
