@@ -367,7 +367,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   private loadPlanInfo() {
     const user = this.sessionService.getUser();
-    if (user && user.role === 'provider') {
+    const role = String((user as any)?.role || '').toLowerCase();
+    const pendingRole = String((user as any)?.pending_role || (user as any)?.pendingRole || '').toLowerCase();
+    // Importante: durante onboarding/pago, el usuario puede quedar como client + pending_role=provider.
+    // Igual necesitamos cargar el plan para mostrarlo en el menú y dar claridad del estado.
+    if (user && (role === 'provider' || pendingRole === 'provider')) {
       this.planService.getCurrentPlan(user.id).subscribe({
         next: (response) => {
           if (response.ok && response.currentPlan) {
@@ -399,8 +403,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading plan info:', error);
+          this.planInfo = null;
+          this.planProgress = null;
+          this.showPlanAlert = false;
           this.isFounderAccount = false;
           this.topbarPlanBadge = null;
+          this.refreshPlanTierDescriptor();
           this.refreshTopbarBadges();
           this.refreshFeatureFlags();
         }
