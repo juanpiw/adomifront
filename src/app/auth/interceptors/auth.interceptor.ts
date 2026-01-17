@@ -23,7 +23,8 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
     !!sessionService.getAccessToken() &&
     !!sessionService.getRefreshToken() &&
     sessionService.isTokenNearExpiry() &&
-    !isRefreshRequest(req);
+    !isRefreshRequest(req) &&
+    !isPublicAuthFlowRequest(req);
 
   const request$ = shouldPreRefresh
     ? refreshTokens(authService, sessionService, sessionExpired).pipe(
@@ -35,6 +36,10 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // Si es un error 401 (no autorizado)
       if (error.status === 401) {
+        // En rutas públicas de auth, no forzar redirect ni refresh: propagamos el error al componente.
+        if (isPublicAuthFlowRequest(authReq)) {
+          return throwError(() => error);
+        }
         const hasRefresh = !!sessionService.getRefreshToken();
         if (hasRefresh) {
           return handle401Error(authReq, next, authService, sessionService, sessionExpired);
@@ -69,6 +74,23 @@ function isRefreshRequest(req: any): boolean {
   try {
     const url = String(req?.url || '');
     return url.includes('/auth/refresh');
+  } catch {
+    return false;
+  }
+}
+
+function isPublicAuthFlowRequest(req: any): boolean {
+  try {
+    const url = String(req?.url || '');
+    // Rutas públicas que NO deben gatillar auto-refresh de tokens.
+    return (
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/forgot-password') ||
+      url.includes('/auth/reset-password') ||
+      url.includes('/auth/check-email') ||
+      url.includes('/auth/google')
+    );
   } catch {
     return false;
   }
