@@ -252,6 +252,10 @@ export class DashAgendaComponent implements OnInit {
         this.setView(viewParam as 'dashboard' | 'calendar' | 'cash' | 'config');
         this.updatingFromQuery = false;
       }
+      const focusParam = String(params.get('focus') || '').toLowerCase();
+      if (viewParam === 'config' && focusParam === 'horarios') {
+        this.scrollToHorariosConfig();
+      }
       const quoteContext = this.buildPendingQuoteContext(params);
       if (quoteContext) {
         this.pendingQuoteContext = quoteContext;
@@ -345,13 +349,7 @@ export class DashAgendaComponent implements OnInit {
     this.loadWeeklyAvailability();
   }
 
-  get showScheduleSetupBanner(): boolean {
-    // Mostrar sólo cuando ya intentamos cargar disponibilidad y no hay bloques configurados.
-    return !this.availabilityLoading && (this.timeBlocks?.length ?? 0) === 0;
-  }
-
-  goToScheduleConfig(): void {
-    this.setView('config');
+  private scrollToHorariosConfig(): void {
     try {
       if (typeof document === 'undefined') return;
       setTimeout(() => {

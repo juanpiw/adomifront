@@ -820,14 +820,15 @@ export class SelectPlanComponent implements OnInit {
   }
 
   get founderDurationMonths(): number {
-    const months = Number(this.promoMeta?.max_duration_months || this.promoPlan?.duration_months || 6);
-    return Number.isFinite(months) && months > 0 ? months : 6;
+    // Fundador: 3 meses por defecto (si backend envía otro valor, respetarlo).
+    const months = Number(this.promoMeta?.max_duration_months || this.promoPlan?.duration_months || 3);
+    return Number.isFinite(months) && months > 0 ? months : 3;
   }
 
   get founderFeatureRows(): PlanFeatureRow[] {
     const months = this.founderDurationMonths;
     return [
-      { label: `${months} meses sin comisión de plataforma`, enabled: true },
+      { label: `${months} meses de membresía $0`, enabled: true },
       { label: 'Prioridad en búsquedas locales', enabled: true },
       { label: 'Soporte directo del equipo Adomi', enabled: true },
       { label: 'Acceso a nuevas funciones beta', enabled: true },

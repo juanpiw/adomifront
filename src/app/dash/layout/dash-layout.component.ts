@@ -25,6 +25,7 @@ import { FeatureFlagsService } from '../../../libs/core/services/feature-flags.s
 import { GoldenInviteModalComponent } from '../../../libs/shared-ui/golden-invite-modal/golden-invite-modal.component';
 import { ProviderInviteService, ProviderInviteSummary } from '../../services/provider-invite.service';
 import { Notification } from '../../../libs/shared-ui/notifications/models/notification.model';
+import { ProviderAvailabilityService } from '../../services/provider-availability.service';
 
 interface PlanTierDescriptor {
   chip: string;
@@ -99,6 +100,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   private globalSearch = inject(GlobalSearchService);
   private providerInvites = inject(ProviderInviteService);
   private featureFlags = inject(FeatureFlagsService);
+  private availability = inject(ProviderAvailabilityService);
 
   private pushMessageSub?: Subscription;
   private unreadIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -110,6 +112,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   verificationRejectionReason: string | null = null;
   verificationBanner: { message: string; variant: 'info' | 'warning' | 'danger'; actionLabel?: string; actionLink?: string } | null = null;
   tbkBanner: { message: string; actionLabel: string; actionLink: string; variant: 'info' | 'warning' } | null = null;
+  planBanner: { message: string; variant: 'info' | 'warning' | 'danger'; actionLabel?: string; actionLink?: string } | null = null;
+  scheduleBanner: { message: string; actionLabel: string; actionLink: string; variant: 'info' | 'warning' } | null = null;
   showVerificationPrompt = false;
   tbkState: TbkOnboardingState | null = null;
   tbkBlockingActive = false;
@@ -148,6 +152,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     this.loadVerificationState();
     this.initializeNotifications();
     this.initializeTbkOnboarding();
+    this.loadScheduleBanner();
     this.globalSearch.setContext({
       userRole: 'provider',
       currentPage: this.router.url
@@ -396,6 +401,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.planService.updatePlanInfo(this.planInfo);
             this.showPlanAlert = this.planService.shouldShowUpgradeAlert();
             this.planProgress = this.computePlanProgress(this.planInfo);
+            this.refreshPlanBanner();
 
           const planId = response.currentPlan.id;
           const planName = String(response.currentPlan.name || '').toLowerCase();
@@ -413,6 +419,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           } else {
             this.isFounderAccount = false;
             this.topbarPlanBadge = null;
+            this.planBanner = null;
             this.refreshPlanTierDescriptor();
             this.refreshTopbarBadges();
           }
@@ -425,6 +432,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.showPlanAlert = false;
           this.isFounderAccount = false;
           this.topbarPlanBadge = null;
+          this.planBanner = null;
           this.refreshPlanTierDescriptor();
           this.refreshTopbarBadges();
           this.refreshFeatureFlags();
@@ -446,6 +454,84 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl('/auth/select-plan').catch(() => {
       try { window.location.assign('/auth/select-plan'); } catch {}
     });
+    this.onNav();
+  }
+
+  private loadScheduleBanner(): void {
+    if (!this.isProviderLike) {
+      this.scheduleBanner = null;
+      return;
+    }
+    this.availability.getWeekly().subscribe({
+      next: (resp: any) => {
+        const blocks = Array.isArray(resp?.blocks) ? resp.blocks : [];
+        if (blocks.length === 0) {
+          this.scheduleBanner = {
+            variant: 'info',
+            message: 'Configura tus horarios para recibir reservas.',
+            actionLabel: 'Configurar',
+            actionLink: '/dash/agenda?view=config&focus=horarios'
+          };
+          return;
+        }
+        this.scheduleBanner = null;
+      },
+      error: () => {
+        this.scheduleBanner = null;
+      }
+    });
+  }
+
+  onScheduleBannerClick(): void {
+    if (!this.scheduleBanner?.actionLink) return;
+    this.router.navigateByUrl(this.scheduleBanner.actionLink).catch(() => {});
+    this.onNav();
+  }
+
+  private refreshPlanBanner(): void {
+    const plan: any = this.planInfo;
+    if (!plan || !this.isProviderLike) {
+      this.planBanner = null;
+      return;
+    }
+
+    const price = plan.price !== null && plan.price !== undefined ? Number(plan.price) : 0;
+    if (!(price > 0)) {
+      // Starter/free: no mostrar banner de vencimiento.
+      this.planBanner = null;
+      return;
+    }
+
+    const isExpired = !!plan.is_expired;
+    const daysRemaining =
+      plan.days_remaining !== null && plan.days_remaining !== undefined ? Number(plan.days_remaining) : null;
+
+    if (isExpired) {
+      this.planBanner = {
+        variant: 'danger',
+        message: 'Tu plan venció. Tu cuenta volverá a Starter si no renuevas.',
+        actionLabel: 'Cambiar plan',
+        actionLink: '/auth/select-plan'
+      };
+      return;
+    }
+
+    if (daysRemaining !== null && Number.isFinite(daysRemaining) && daysRemaining >= 0 && daysRemaining <= 7) {
+      this.planBanner = {
+        variant: 'warning',
+        message: `Tu plan vence en ${Math.max(0, Math.round(daysRemaining))} día(s). Renueva para no bajar a Starter.`,
+        actionLabel: 'Renovar',
+        actionLink: '/auth/select-plan'
+      };
+      return;
+    }
+
+    this.planBanner = null;
+  }
+
+  onPlanBannerAction(): void {
+    if (!this.planBanner?.actionLink) return;
+    this.router.navigateByUrl(this.planBanner.actionLink).catch(() => {});
     this.onNav();
   }
 

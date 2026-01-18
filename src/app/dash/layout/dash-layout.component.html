@@ -112,7 +112,7 @@
           </div>
           <div *ngIf="showStarterFallbackTag" class="plan-tier-tag plan-tier-tag--basic">
             <span class="plan-tier-tag__chip">Plan Starter</span>
-            <span class="plan-tier-tag__detail">Gratis · 20% comisión</span>
+            <span class="plan-tier-tag__detail">Gratis · 25% comisión</span>
           </div>
         </div>
       </div>
@@ -173,6 +173,24 @@
         <div class="verification-banner__message">{{ tbkBanner.message }}</div>
         <button *ngIf="tbkBanner.actionLink" type="button" (click)="onTbkBannerClick()">
           {{ tbkBanner.actionLabel || 'Configurar' }}
+        </button>
+      </div>
+
+      <div *ngIf="scheduleBanner" class="verification-banner verification-banner--info">
+        <div class="verification-banner__message">{{ scheduleBanner.message }}</div>
+        <button *ngIf="scheduleBanner.actionLink" type="button" (click)="onScheduleBannerClick()">
+          {{ scheduleBanner.actionLabel || 'Configurar' }}
+        </button>
+      </div>
+
+      <div *ngIf="planBanner" class="verification-banner" [ngClass]="{
+        'verification-banner--info': planBanner.variant === 'info',
+        'verification-banner--warning': planBanner.variant === 'warning',
+        'verification-banner--danger': planBanner.variant === 'danger'
+      }">
+        <div class="verification-banner__message">{{ planBanner.message }}</div>
+        <button *ngIf="planBanner.actionLabel" type="button" (click)="onPlanBannerAction()">
+          {{ planBanner.actionLabel }}
         </button>
       </div>
       <router-outlet></router-outlet>
