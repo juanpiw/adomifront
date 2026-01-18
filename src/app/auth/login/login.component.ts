@@ -150,11 +150,21 @@ export class LoginComponent implements OnInit {
   private redirectToDashboard() {
     const user = this.session.getCurrentUser();
     if (!user) return;
+    
+    const providerLike = (() => {
+      try {
+        const role = String((user as any)?.role || '').toLowerCase();
+        const pendingRole = String((user as any)?.pending_role || (user as any)?.pendingRole || '').toLowerCase();
+        return role === 'provider' || pendingRole === 'provider';
+      } catch {
+        return false;
+      }
+    })();
 
     // Verificar si es la primera vez (no ha completado onboarding)
     if (!this.session.isOnboardingCompleted()) {
       // Proveedores: enviar al onboarding especial (servicio + horario)
-      if (user.role === 'provider') {
+      if (providerLike) {
         this.router.navigateByUrl('/dash/provider-setup');
       } else {
         this.router.navigateByUrl('/onboarding');

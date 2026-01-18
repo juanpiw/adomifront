@@ -8,10 +8,36 @@ const redirectToPlan = async (): Promise<boolean | UrlTree> => {
   const auth = inject(AuthService);
   const router = inject(Router);
   let user = auth.getCurrentUser() || getStoredUser();
+  const hasToken = !!auth.getAccessToken();
+  console.log('[PROVIDER_ONBOARDING_GUARD] start', {
+    hasToken,
+    hasUserInMemory: !!auth.getCurrentUser(),
+    hasUserStored: !!getStoredUser()
+  });
 
-  // Si no hay usuario cargado aún, no forzar el guard (evita atrapar con token sin perfil)
+  // Si hay token pero no user cargado aún, intentar rehidratar para decidir correctamente
+  if (!user && hasToken) {
+    try {
+      const me = await firstValueFrom(auth.getCurrentUserInfo());
+      const backendUser: AuthUser | null = (me as any)?.data?.user || (me as any)?.user || null;
+      if (backendUser) {
+        auth.applyUserFromBackend(backendUser);
+        user = backendUser;
+        console.log('[PROVIDER_ONBOARDING_GUARD] hydrated user from /auth/me', {
+          userId: backendUser?.id,
+          role: backendUser?.role,
+          pending_role: backendUser?.pending_role,
+          active_plan_id: backendUser?.active_plan_id
+        });
+      }
+    } catch (e) {
+      console.warn('[PROVIDER_ONBOARDING_GUARD] could not hydrate from /auth/me', e);
+    }
+  }
+
+  // Si sigue sin user, no forzar (evita lockout)
   if (!user) {
-    console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no user loaded yet');
+    console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no user available');
     return true;
   }
 
