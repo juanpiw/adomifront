@@ -48,11 +48,22 @@
           <label class="form-label">Categoría</label>
           <div class="input-wrapper">
             <span class="input-icon">☰</span>
+            <select class="form-input" [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange($event)" [disabled]="saving">
+              <option value="" disabled>Selecciona una categoría</option>
+              <option *ngFor="let c of categoryOptions" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="selectedCategory === 'Otra'">
+          <label class="form-label">Categoría personalizada</label>
+          <div class="input-wrapper">
+            <span class="input-icon">☰</span>
             <input
               type="text"
               class="form-input"
-              placeholder="Ej. Belleza, Hogar, Tecnología..."
-              [(ngModel)]="serviceCategory"
+              placeholder="Escribe tu categoría"
+              [(ngModel)]="customCategory"
               [disabled]="saving"
             />
           </div>
@@ -63,12 +74,14 @@
           <div class="input-wrapper">
             <span class="input-icon">$</span>
             <input
-              type="number"
+              type="text"
               class="form-input"
               placeholder="0"
-              [(ngModel)]="servicePrice"
+              inputmode="numeric"
+              autocomplete="off"
+              [value]="servicePriceDisplay"
+              (input)="onPriceInput($event)"
               [disabled]="saving"
-              min="0"
             />
           </div>
         </div>

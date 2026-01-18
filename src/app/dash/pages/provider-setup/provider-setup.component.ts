@@ -25,7 +25,12 @@ export class ProviderSetupComponent implements OnInit {
   // Step 1: Servicio
   serviceName = '';
   servicePrice: number | null = null;
-  serviceCategory = ''; // backend exige category_id o custom_category
+  servicePriceDisplay = '';
+
+  // Categorías (usar las mismas que maneja el dashboard de servicios)
+  readonly categoryOptions: string[] = ['Tecnología', 'Hogar', 'Belleza', 'Salud', 'Otra'];
+  selectedCategory = '';
+  customCategory = ''; // se usa cuando selectedCategory === 'Otra'
   durationOptions: DurationOption[] = [
     { label: '15 min', minutes: 15 },
     { label: '30 min', minutes: 30 },
@@ -82,7 +87,9 @@ export class ProviderSetupComponent implements OnInit {
   get canGoNext(): boolean {
     if (this.loading || this.saving) return false;
     if (this.currentStep === 1) {
-      return this.serviceName.trim().length >= 2 && this.serviceCategory.trim().length >= 2;
+      const nameOk = this.serviceName.trim().length >= 2;
+      const categoryOk = this.getResolvedCategory().trim().length >= 2;
+      return nameOk && categoryOk;
     }
     if (this.currentStep === 2) {
       // Validar horas si está en modo personalizado
@@ -102,6 +109,33 @@ export class ProviderSetupComponent implements OnInit {
     const n = Number(value ?? 0);
     const normalized = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
     return new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(normalized);
+  }
+
+  onPriceInput(evt: Event): void {
+    const el = evt.target as HTMLInputElement | null;
+    const raw = String(el?.value ?? '');
+    const digits = raw.replace(/[^\d]/g, '');
+    if (!digits) {
+      this.servicePrice = null;
+      this.servicePriceDisplay = '';
+      return;
+    }
+    const n = Number(digits);
+    const normalized = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+    this.servicePrice = normalized;
+    this.servicePriceDisplay = this.formatClp(normalized);
+  }
+
+  onCategoryChange(value: string): void {
+    this.selectedCategory = value;
+    if (value !== 'Otra') {
+      this.customCategory = '';
+    }
+  }
+
+  private getResolvedCategory(): string {
+    if (this.selectedCategory === 'Otra') return this.customCategory.trim();
+    return String(this.selectedCategory || '').trim();
   }
 
   selectDuration(opt: DurationOption): void {
@@ -156,7 +190,7 @@ export class ProviderSetupComponent implements OnInit {
 
     this.saving = true;
     const name = this.serviceName.trim();
-    const customCategory = this.serviceCategory.trim();
+    const customCategory = this.getResolvedCategory();
     const price = Number.isFinite(Number(this.servicePrice)) ? Math.max(0, Number(this.servicePrice)) : 0;
     const duration_minutes = Number(this.selectedDurationMinutes || 30);
 
