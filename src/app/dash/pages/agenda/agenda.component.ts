@@ -345,6 +345,24 @@ export class DashAgendaComponent implements OnInit {
     this.loadWeeklyAvailability();
   }
 
+  get showScheduleSetupBanner(): boolean {
+    // Mostrar sólo cuando ya intentamos cargar disponibilidad y no hay bloques configurados.
+    return !this.availabilityLoading && (this.timeBlocks?.length ?? 0) === 0;
+  }
+
+  goToScheduleConfig(): void {
+    this.setView('config');
+    try {
+      if (typeof document === 'undefined') return;
+      setTimeout(() => {
+        const el = document.getElementById('horarios-config-anchor');
+        if (el && typeof el.scrollIntoView === 'function') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    } catch {}
+  }
+
   payDebtWithStripe(): void {
     if (this.debtStripePaying) return;
     const amount = Number(this.debtStripeAmount ?? this.cashTotal ?? 0);

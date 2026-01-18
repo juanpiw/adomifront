@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService, AuthUser } from '../services/auth.service';
 import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
 import { firstValueFrom } from 'rxjs';
+import { finalize, timeout } from 'rxjs/operators';
 
 interface Plan {
   id: number;
@@ -312,7 +313,16 @@ export class SelectPlanComponent implements OnInit {
   }
 
   loadPlans() {
-    this.http.get<{ ok: boolean; plans: Plan[] }>(`${environment.apiBaseUrl}/plans?scope=select_plan`)
+    this.loading = true;
+    this.error = null;
+    this.http
+      .get<{ ok: boolean; plans: Plan[] }>(`${environment.apiBaseUrl}/plans?scope=select_plan`)
+      .pipe(
+        timeout(15000),
+        finalize(() => {
+          this.loading = false;
+        })
+      )
       .subscribe({
         next: (response) => {
           // Fallback defensivo: aunque backend filtre, evitamos que planes legacy aparezcan
@@ -330,12 +340,13 @@ export class SelectPlanComponent implements OnInit {
           this.plans = filtered;
           this.separatePlansByInterval();
           this.tryAutoApplyPromoFromSession();
-          this.loading = false;
+          if (this.plans.length === 0) {
+            this.error = 'No hay planes disponibles en este momento. Inténtalo nuevamente en unos minutos.';
+          }
         },
         error: (error) => {
-          console.error('Error loading plans:', error);
+          console.error('[SELECT_PLAN] Error loading plans:', error);
           this.error = 'Error al cargar los planes. Inténtalo nuevamente.';
-          this.loading = false;
         }
       });
   }
@@ -417,7 +428,6 @@ export class SelectPlanComponent implements OnInit {
   // Fundador ahora se activa validando código vía applyPromoCode()
 
   separatePlansByInterval() {
-    console.log('[SELECT_PLAN] Separando planes por intervalo');
     this.annualPlans = this.plans.filter(plan => plan.interval === 'year');
     this.monthlyPlans = this.plans.filter(plan => plan.interval === 'month');
 
@@ -435,7 +445,6 @@ export class SelectPlanComponent implements OnInit {
     } else if (!this.isAnnualBilling && this.monthlyPlans.length === 0 && this.annualPlans.length > 0) {
       this.isAnnualBilling = true;
     }
-    console.log('[SELECT_PLAN] monthlyPlans:', this.monthlyPlans.length, 'annualPlans:', this.annualPlans.length);
   }
 
   private deriveAnnualPlansFromMonthly(monthly: Plan[]): Plan[] {
@@ -461,10 +470,8 @@ export class SelectPlanComponent implements OnInit {
 
   selectPlan(plan: Plan) {
     if (this.isPromoActive()) {
-      console.log('[SELECT_PLAN] Ignorando selección de plan porque hay promo activa');
       return;
     }
-    console.log('[SELECT_PLAN] Plan seleccionado:', plan);
     this.selectedPlan = plan;
     this.paymentMethod = 'stripe';
 
@@ -592,7 +599,6 @@ export class SelectPlanComponent implements OnInit {
       return;
     }
 
-    console.log('[SELECT_PLAN] Continuar a pago con plan:', this.selectedPlan);
     // Guardar plan seleccionado temporalmente
     if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
       sessionStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
@@ -606,11 +612,9 @@ export class SelectPlanComponent implements OnInit {
       } else {
         sessionStorage.removeItem('paymentGateway');
       }
-      console.log('[SELECT_PLAN] selectedPlan guardado en sessionStorage');
     }
     
     // Redirigir a checkout
-    console.log('[SELECT_PLAN] Navegando a /auth/checkout');
     this.router.navigateByUrl('/auth/checkout');
   }
 
@@ -658,7 +662,6 @@ export class SelectPlanComponent implements OnInit {
     } else {
       // Para proveedores, aseguramos un estado limpio para re-login (borra tokens/usuario y va a login)
       try {
-        console.log('[SELECT_PLAN] goBack proveedor: limpiando auth para re-login');
         this.authService.logout();
       } catch {}
       this.router.navigateByUrl('/auth/login');
@@ -902,7 +905,6 @@ export class SelectPlanComponent implements OnInit {
           this.selectedPlan = this.promoPlan;
           this.promoSuccess = 'Código validado. Activando Plan Fundador...';
           this.promoError = null;
-          console.log('[SELECT_PLAN] Promo aplicada:', this.promoMeta, this.promoPlan);
           this.trackFunnelEvent('promo_validated', {
             duration_months: response.plan.duration_months || null,
             max_services: response.plan.max_services,
@@ -977,7 +979,6 @@ export class SelectPlanComponent implements OnInit {
       code: this.promoPlan.promoCode
     }, { headers }).subscribe({
       next: async (response: any) => {
-        console.log('[SELECT_PLAN] /subscriptions/promo/apply response', response);
         if (response?.ok) {
           this.promoSuccess = 'Plan Fundador activado. Te estamos llevando a tu panel...';
           this.promoError = null;
@@ -1028,7 +1029,6 @@ export class SelectPlanComponent implements OnInit {
         return;
       }
 
-      console.log('[SELECT_PLAN] Registrando usuario provider antes de activar promo', { email, role });
       try {
         const registerResp: any = await firstValueFrom(
           this.authService.register({ email, password, role, name })
@@ -1050,7 +1050,6 @@ export class SelectPlanComponent implements OnInit {
       }
 
       // Login inmediato para obtener token
-      console.log('[SELECT_PLAN] Haciendo login automático para activar promo');
       try {
         await firstValueFrom(this.authService.login({ email, password }));
         await firstValueFrom(this.authService.getCurrentUserInfo());
@@ -1075,7 +1074,6 @@ export class SelectPlanComponent implements OnInit {
           );
 
           if (resp?.ok) {
-            console.log('[SELECT_PLAN] Promo aplicada tras auto-registro/login, navegando a dash/home');
             this.cleanupSessionStorage();
             this.promoSuccess = 'Plan Fundador activado. Te llevamos a tu panel...';
             this.promoError = null;

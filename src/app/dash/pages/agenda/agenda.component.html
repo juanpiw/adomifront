@@ -1,4 +1,13 @@
 <div class="agenda-container">
+  <!-- Banner: configurar horarios (si aún no hay bloques) -->
+  <div *ngIf="showScheduleSetupBanner" class="verification-banner verification-banner--info">
+    <div class="verification-banner__message">
+      Configura tus horarios para recibir reservas.
+    </div>
+    <button type="button" (click)="goToScheduleConfig()">
+      Configurar
+    </button>
+  </div>
   <!-- Navegación de la agenda -->
   <nav class="agenda-nav">
     <button 
@@ -202,6 +211,7 @@
   <div *ngIf="currentView === 'config'" class="agenda-content">
     <div class="agenda-content__main">
       <!-- Configuración de Horarios -->
+      <div id="horarios-config-anchor"></div>
       <app-horarios-config 
         [timeBlocks]="timeBlocks"
         [loading]="loading || availabilityLoading"

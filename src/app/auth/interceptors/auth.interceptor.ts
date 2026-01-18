@@ -143,14 +143,16 @@ function refreshTokens(
           return of(accessToken);
         }
 
-        sessionExpired.open();
+        // Si el refresh responde pero no es "ok", tratamos como sesión expirada para evitar UI rota (spinners infinitos).
+        try { sessionService.clearSession(); } catch {}
+        sessionExpired.forceRedirect('Tu sesión expiró. Por favor vuelve a iniciar sesión.');
         return throwError(() => new Error('Token refresh failed'));
       }),
       catchError((error) => {
         isRefreshing = false;
         // Si falla refresh (ej: 401), limpiar sesión para evitar loops de refresh en background.
         try { sessionService.clearSession(); } catch {}
-        sessionExpired.open();
+        sessionExpired.forceRedirect('Tu sesión expiró. Por favor vuelve a iniciar sesión.');
         return throwError(() => error);
       })
     );

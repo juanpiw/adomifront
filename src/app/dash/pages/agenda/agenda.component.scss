@@ -4,6 +4,59 @@
   background: #f8fafc;
 }
 
+/* Banner "configura tus horarios" (mismo look & feel del banner de verificación del dashboard) */
+.verification-banner button {
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.28);
+  }
+}
+
+.verification-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+
+  & + .verification-banner {
+    margin-top: -0.5rem;
+  }
+
+  &__message {
+    flex: 1;
+  }
+
+  button {
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  &--info {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+}
+
+#horarios-config-anchor {
+  scroll-margin-top: 12px;
+}
+
 .agenda-nav {
   display: flex;
   gap: 0.5rem;
