@@ -108,32 +108,62 @@
         <h2>Define tu disponibilidad</h2>
         <p class="subtitle">¿En qué horario quieres recibir reservas? Adomi bloqueará automáticamente las horas ocupadas.</p>
 
-        <div class="switch-container">
-          <div class="switch-label">
-            <strong>Horario de Oficina Estándar</strong>
-            <span>Lunes a Viernes, 09:00 a 18:00 hrs</span>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" [(ngModel)]="useStandardHours" (ngModelChange)="onToggleStandardHours($event)" [disabled]="saving" />
-            <span class="slider"></span>
-          </label>
+        <div class="schedule-presets">
+          <button type="button" class="btn btn-secondary" (click)="applyPresetStandard()" [disabled]="saving">
+            Usar Lun–Vie 09:00–18:00
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="applyPresetStandardWithWeekends()" [disabled]="saving">
+            Usar Lun–Dom 09:00–18:00
+          </button>
+          <button type="button" class="btn btn-ghost" (click)="clearDraft()" [disabled]="saving">
+            Limpiar
+          </button>
         </div>
 
-        <div class="switch-container alt-switch">
-          <div class="switch-label">
-            <strong>¿Trabajas fines de semana?</strong>
+        <div class="schedule-builder">
+          <div class="schedule-row">
+            <div class="schedule-field">
+              <label class="form-label">Día</label>
+              <select class="form-input" [(ngModel)]="scheduleDay" [disabled]="saving">
+                <option *ngFor="let d of dayOptions" [value]="d.key">{{ d.label }}</option>
+              </select>
+            </div>
+            <div class="schedule-field">
+              <label class="form-label">Desde</label>
+              <input type="time" class="form-input" [(ngModel)]="scheduleStart" [disabled]="saving" />
+            </div>
+            <div class="schedule-field">
+              <label class="form-label">Hasta</label>
+              <input type="time" class="form-input" [(ngModel)]="scheduleEnd" [disabled]="saving" />
+            </div>
+            <div class="schedule-field schedule-field--actions">
+              <label class="form-label">&nbsp;</label>
+              <button type="button" class="btn btn-primary" (click)="addBlock()" [disabled]="saving">Agregar bloque</button>
+            </div>
           </div>
-          <label class="toggle">
-            <input type="checkbox" [(ngModel)]="worksWeekends" [disabled]="saving" />
-            <span class="slider"></span>
-          </label>
-        </div>
 
-        <div class="time-row" [class.disabled]="useStandardHours">
-          <span class="time-row__label">Personalizar horas:</span>
-          <input type="time" class="time-input" [(ngModel)]="customStartTime" [disabled]="saving || useStandardHours" />
-          <span>a</span>
-          <input type="time" class="time-input" [(ngModel)]="customEndTime" [disabled]="saving || useStandardHours" />
+          <div class="schedule-blocks">
+            <div class="schedule-day" *ngFor="let g of getDraftGrouped()">
+              <h4 class="schedule-day__title">{{ g.label }}</h4>
+              <div *ngIf="g.blocks.length === 0" class="schedule-day__empty">Sin horarios configurados</div>
+              <div class="schedule-block" *ngFor="let b of g.blocks">
+                <div class="schedule-block__info">
+                  <span class="schedule-block__time">{{ b.start_time }} - {{ b.end_time }}</span>
+                  <span class="schedule-block__status" [class.active]="b.is_active" [class.inactive]="!b.is_active">
+                    {{ b.is_active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="schedule-block__actions">
+                  <button type="button" class="schedule-block__btn" (click)="toggleDraftActive(b.index)" [disabled]="saving" title="Activar/Desactivar">
+                    ✓
+                  </button>
+                  <button type="button" class="schedule-block__btn schedule-block__btn--danger" (click)="removeDraft(b.index)" [disabled]="saving" title="Eliminar">
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -11,6 +11,13 @@ export interface WeeklyBlockDTO {
   is_active: boolean;
 }
 
+export interface WeeklyBlockInput {
+  day_of_week: WeeklyBlockDTO['day_of_week'];
+  start_time: string; // HH:mm
+  end_time: string;   // HH:mm
+  is_active?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProviderAvailabilityService {
   private http = inject(HttpClient);
@@ -27,6 +34,18 @@ export class ProviderAvailabilityService {
 
   createWeekly(day_of_week: WeeklyBlockDTO['day_of_week'], start_time: string, end_time: string, is_active: boolean): Observable<{ success: boolean; block: WeeklyBlockDTO }> {
     return this.http.post<{ success: boolean; block: WeeklyBlockDTO }>(`${this.baseUrl}/provider/availability/weekly`, { day_of_week, start_time, end_time, is_active }, { headers: this.headers() });
+  }
+
+  /**
+   * Guarda disponibilidad semanal en un solo request (evita deadlocks por múltiples transacciones).
+   * Nota: el backend reemplaza los días presentes en el payload.
+   */
+  saveWeeklyBlocks(blocks: WeeklyBlockInput[]): Observable<{ success: boolean; blocks: WeeklyBlockDTO[] }> {
+    return this.http.post<{ success: boolean; blocks: WeeklyBlockDTO[] }>(
+      `${this.baseUrl}/provider/availability/weekly`,
+      Array.isArray(blocks) ? blocks : [],
+      { headers: this.headers() }
+    );
   }
 
   updateWeekly(id: number, data: Partial<Pick<WeeklyBlockDTO, 'start_time'|'end_time'|'is_active'>>): Observable<{ success: boolean; block: WeeklyBlockDTO }> {

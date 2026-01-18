@@ -4,11 +4,22 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
-import { ProviderAvailabilityService, WeeklyBlockDTO } from '../../../services/provider-availability.service';
+import { ProviderAvailabilityService, WeeklyBlockDTO, WeeklyBlockInput } from '../../../services/provider-availability.service';
 import { ProviderServicesService, ProviderServiceDto } from '../../../services/provider-services.service';
 
 type WizardStep = 1 | 2 | 3;
 type DurationOption = { label: string; minutes: number };
+type DayKey = WeeklyBlockDTO['day_of_week'];
+
+const DAY_LABELS: Array<{ key: DayKey; label: string }> = [
+  { key: 'monday', label: 'Lunes' },
+  { key: 'tuesday', label: 'Martes' },
+  { key: 'wednesday', label: 'Miércoles' },
+  { key: 'thursday', label: 'Jueves' },
+  { key: 'friday', label: 'Viernes' },
+  { key: 'saturday', label: 'Sábado' },
+  { key: 'sunday', label: 'Domingo' }
+];
 
 @Component({
   selector: 'app-provider-setup',
@@ -40,10 +51,11 @@ export class ProviderSetupComponent implements OnInit {
   selectedDurationMinutes = 30;
 
   // Step 2: Horario
-  useStandardHours = true; // Lun-Vie 09:00-18:00
-  worksWeekends = false;
-  customStartTime = '09:00';
-  customEndTime = '18:00';
+  dayOptions = DAY_LABELS;
+  scheduleDay: DayKey = 'monday';
+  scheduleStart = '09:00';
+  scheduleEnd = '18:00';
+  weeklyDraft: WeeklyBlockInput[] = [];
 
   // State
   loading = false;
@@ -92,11 +104,7 @@ export class ProviderSetupComponent implements OnInit {
       return nameOk && categoryOk;
     }
     if (this.currentStep === 2) {
-      // Validar horas si está en modo personalizado
-      if (!this.useStandardHours) {
-        return !!this.customStartTime && !!this.customEndTime && this.customStartTime < this.customEndTime;
-      }
-      return true;
+      return (this.weeklyDraft.length || 0) > 0;
     }
     return true;
   }
@@ -171,8 +179,83 @@ export class ProviderSetupComponent implements OnInit {
     this.router.navigateByUrl('/dash/home').catch(() => {});
   }
 
-  onToggleStandardHours(next: boolean): void {
-    this.useStandardHours = !!next;
+  addBlock(): void {
+    const start = String(this.scheduleStart || '').slice(0, 5);
+    const end = String(this.scheduleEnd || '').slice(0, 5);
+    if (!this.scheduleDay || !start || !end || start >= end) {
+      this.error = 'Revisa el horario: la hora de inicio debe ser menor que la de término.';
+      return;
+    }
+    this.error = null;
+    this.weeklyDraft.push({
+      day_of_week: this.scheduleDay,
+      start_time: start,
+      end_time: end,
+      is_active: true
+    });
+    // Ordenar por día y hora para que se vea bien
+    this.weeklyDraft = this.sortDraft(this.weeklyDraft);
+  }
+
+  removeDraft(index: number): void {
+    if (index < 0 || index >= this.weeklyDraft.length) return;
+    this.weeklyDraft = this.weeklyDraft.filter((_, i) => i !== index);
+  }
+
+  toggleDraftActive(index: number): void {
+    const b = this.weeklyDraft[index];
+    if (!b) return;
+    this.weeklyDraft[index] = { ...b, is_active: !b.is_active };
+  }
+
+  clearDraft(): void {
+    this.weeklyDraft = [];
+  }
+
+  applyPresetStandard(): void {
+    // Lun-Vie 09:00-18:00
+    const blocks: WeeklyBlockInput[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].map((d) => ({
+      day_of_week: d as DayKey,
+      start_time: '09:00',
+      end_time: '18:00',
+      is_active: true
+    }));
+    this.weeklyDraft = this.sortDraft(blocks);
+  }
+
+  applyPresetStandardWithWeekends(): void {
+    const blocks: WeeklyBlockInput[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((d) => ({
+      day_of_week: d as DayKey,
+      start_time: '09:00',
+      end_time: '18:00',
+      is_active: true
+    }));
+    this.weeklyDraft = this.sortDraft(blocks);
+  }
+
+  getDraftGrouped(): Array<{ day: DayKey; label: string; blocks: Array<WeeklyBlockInput & { index: number }> }> {
+    const groups = new Map<DayKey, Array<WeeklyBlockInput & { index: number }>>();
+    this.weeklyDraft.forEach((b, idx) => {
+      const arr = groups.get(b.day_of_week) || [];
+      arr.push({ ...b, index: idx });
+      groups.set(b.day_of_week, arr);
+    });
+    return this.dayOptions.map((d) => ({
+      day: d.key,
+      label: d.label,
+      blocks: groups.get(d.key) || []
+    }));
+  }
+
+  private sortDraft(list: WeeklyBlockInput[]): WeeklyBlockInput[] {
+    const order = new Map<DayKey, number>(this.dayOptions.map((d, i) => [d.key, i]));
+    return [...list].sort((a, b) => {
+      const da = order.get(a.day_of_week) ?? 999;
+      const db = order.get(b.day_of_week) ?? 999;
+      if (da !== db) return da - db;
+      if (a.start_time !== b.start_time) return a.start_time.localeCompare(b.start_time);
+      return a.end_time.localeCompare(b.end_time);
+    });
   }
 
   goToTransbankSetup(): void {
@@ -246,36 +329,33 @@ export class ProviderSetupComponent implements OnInit {
             this.currentStep = 3;
             return;
           }
-          this.createScheduleBlocks();
+          this.saveDraftBlocks();
         },
         error: () => {
           // Si no pudimos leer, igual intentamos crear (mejor esfuerzo)
-          this.createScheduleBlocks();
+          this.saveDraftBlocks();
         }
       });
   }
 
-  private createScheduleBlocks(): void {
-    const start = this.useStandardHours ? '09:00' : this.customStartTime;
-    const end = this.useStandardHours ? '18:00' : this.customEndTime;
-
-    const baseDays: WeeklyBlockDTO['day_of_week'][] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    const weekendDays: WeeklyBlockDTO['day_of_week'][] = this.worksWeekends ? ['saturday', 'sunday'] : [];
-    const days = [...baseDays, ...weekendDays];
-
-    if (!start || !end || start >= end) {
-      this.error = 'Revisa el horario: la hora de inicio debe ser menor que la de término.';
+  private saveDraftBlocks(): void {
+    const blocks = Array.isArray(this.weeklyDraft) ? this.weeklyDraft : [];
+    if (blocks.length === 0) {
+      this.error = 'Agrega al menos un bloque de disponibilidad para continuar.';
       this.saving = false;
       return;
     }
-
-    forkJoin(days.map((d) => this.availabilityApi.createWeekly(d, start, end, true))).pipe(finalize(() => (this.saving = false))).subscribe({
-      next: () => {
-        this.scheduleCreated = true;
-        this.currentStep = 3;
+    this.availabilityApi.saveWeeklyBlocks(blocks).pipe(finalize(() => (this.saving = false))).subscribe({
+      next: (resp: any) => {
+        if (resp?.success) {
+          this.scheduleCreated = true;
+          this.currentStep = 3;
+          return;
+        }
+        this.error = resp?.error || 'No pudimos guardar tu horario. Intenta nuevamente.';
       },
       error: (err: any) => {
-        this.error = err?.error?.error || err?.message || 'No pudimos guardar tu horario. Intenta nuevamente.';
+        this.error = err?.error?.error || err?.error?.message || err?.message || 'No pudimos guardar tu horario. Intenta nuevamente.';
       }
     });
   }

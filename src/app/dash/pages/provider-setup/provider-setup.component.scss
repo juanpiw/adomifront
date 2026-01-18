@@ -313,6 +313,117 @@ input:checked + .slider:before {
   border-radius: 6px;
 }
 
+/* Step 2: Scheduler builder (similar UX to HorariosConfig) */
+.schedule-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.schedule-builder {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.1fr;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.schedule-field--actions .btn {
+  width: 100%;
+}
+
+.schedule-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-day__title {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.schedule-day__empty {
+  color: #888;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.schedule-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fafafa;
+  margin-bottom: 8px;
+}
+
+.schedule-block__time {
+  font-weight: 700;
+  color: #111827;
+}
+
+.schedule-block__status {
+  margin-left: 10px;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.schedule-block__status.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #047857;
+}
+
+.schedule-block__status.inactive {
+  background: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #475569;
+}
+
+.schedule-block__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.schedule-block__btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  font-weight: 800;
+  color: #111827;
+}
+
+.schedule-block__btn--danger {
+  color: #b00020;
+}
+
+@media (max-width: 600px) {
+  .schedule-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .success-preview {
   text-align: center;
   padding: 20px 0;
