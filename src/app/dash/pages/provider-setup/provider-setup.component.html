@@ -45,6 +45,20 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <div class="input-wrapper">
+            <span class="input-icon">☰</span>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="Ej. Belleza, Hogar, Tecnología..."
+              [(ngModel)]="serviceCategory"
+              [disabled]="saving"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Precio</label>
           <div class="input-wrapper">
             <span class="input-icon">$</span>
@@ -119,7 +133,7 @@
 
           <div class="preview-card">
             <h4>{{ serviceName.trim() || 'Servicio General' }}</h4>
-            <span class="price">$ {{ (servicePrice ?? 0) || 0 }}</span>
+            <span class="price">$ {{ formatClp(servicePrice) }}</span>
             <span class="meta">⏱ {{ selectedDurationMinutes }} min · 📅 Disponible {{ worksWeekends ? 'Lun-Dom' : 'Lun-Vie' }}</span>
           </div>
 
