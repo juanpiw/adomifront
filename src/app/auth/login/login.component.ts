@@ -153,7 +153,12 @@ export class LoginComponent implements OnInit {
 
     // Verificar si es la primera vez (no ha completado onboarding)
     if (!this.session.isOnboardingCompleted()) {
-      this.router.navigateByUrl('/onboarding');
+      // Proveedores: enviar al onboarding especial (servicio + horario)
+      if (user.role === 'provider') {
+        this.router.navigateByUrl('/dash/provider-setup');
+      } else {
+        this.router.navigateByUrl('/onboarding');
+      }
     } else {
       // Redirigir al dashboard correspondiente según el rol
       if (user.role === 'provider') {

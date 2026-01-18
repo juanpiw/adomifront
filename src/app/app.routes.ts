@@ -47,6 +47,8 @@ import { quotesFeatureGuard } from './dash/pages/quotes/quotes.guard';
 import { ClientQuotesComponent } from './client/pages/quotes/client-quotes.component';
 import { providerOnboardingGuard, providerOnboardingChildGuard } from './auth/guards/provider-onboarding.guard';
 import { InvitacionComponent } from './pages/invitacion/invitacion.component';
+import { ProviderSetupComponent } from './dash/pages/provider-setup/provider-setup.component';
+import { providerSetupGuard, providerSetupChildGuard } from './auth/guards/provider-setup.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -56,7 +58,7 @@ export const routes: Routes = [
   { path: 'tbk/plan-return', component: TbkPlanReturnComponent },
   { path: 'libreria', component: LibraryComponent },
   { path: 'onboarding', component: OnboardingComponent },
-  { path: 'client', component: ClientLayoutComponent, canActivate: [providerOnboardingGuard], canActivateChild: [providerOnboardingChildGuard], children: [
+  { path: 'client', component: ClientLayoutComponent, canActivate: [providerOnboardingGuard, providerSetupGuard], canActivateChild: [providerOnboardingChildGuard, providerSetupChildGuard], children: [
       { path: '', redirectTo: 'explorar', pathMatch: 'full' },
       { path: 'explorar', component: ExplorarComponent },
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
@@ -91,8 +93,9 @@ export const routes: Routes = [
           { path: 'google/callback', component: GoogleCallbackComponent },
           { path: 'google/success', component: GoogleSuccessComponent }
         ] },
-  { path: 'dash', component: DashLayoutComponent, canActivate: [providerOnboardingGuard], canActivateChild: [providerOnboardingChildGuard], children: [
+  { path: 'dash', component: DashLayoutComponent, canActivate: [providerOnboardingGuard, providerSetupGuard], canActivateChild: [providerOnboardingChildGuard, providerSetupChildGuard], children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'provider-setup', component: ProviderSetupComponent },
       { path: 'home', component: DashHomeComponent },
       { path: 'agenda', component: DashAgendaComponent },
       { path: 'ingresos', component: DashIngresosComponent },

@@ -21,7 +21,7 @@ import {
 } from '../../../../libs/shared-ui/inicio-solicitudes';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
-import { AppointmentsService } from '../../../services/appointments.service';
+import { AppointmentsService, ProviderPaymentPipelineSummary } from '../../../services/appointments.service';
 import { PaymentsService, ProviderEarningsSummary } from '../../../services/payments.service';
 import { TbkOnboardingService, TbkOnboardingState } from '../../../services/tbk-onboarding.service';
 import { ProviderInviteService, ProviderInvite, ProviderInviteSummary } from '../../../services/provider-invite.service';
@@ -116,6 +116,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     this.loadPaidUpcoming();
     this.loadNextAppointment();
     this.loadEarningsData();
+    this.loadPaymentPipelineSummary();
     this.initializeTbkBanner();
     this.checkAvailabilitySetup();
     this.loadInviteData();
@@ -358,11 +359,6 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('[DASH_HOME] Error cargando ingresos del mes:', error);
         this.ingresosData = this.buildFallbackEarnings(this.ingresosData);
-        this.releaseSummary = {
-          pending: '$0',
-          releasable: '$0',
-          released: '$0'
-        };
       }
     });
 
@@ -383,17 +379,48 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   private buildMonthlyEarnings(summary: ProviderEarningsSummary): IngresosData {
     const chart = this.mapSummaryToChart(summary);
-    this.releaseSummary = {
-      pending: this.formatCurrencyCLP(summary.pending || 0),
-      releasable: this.formatCurrencyCLP(summary.releasable || 0),
-      released: this.formatCurrencyCLP(summary.released || 0)
-    };
     return {
       amount: this.formatCurrencyCLP(summary.releasable || 0),
       completedAppointments: summary.paidCount || 0,
       averageRating: this.providerRatingAverage ?? this.ingresosData.averageRating,
       chartData: chart.values,
       chartLabels: chart.labels
+    };
+  }
+
+  private loadPaymentPipelineSummary() {
+    this.appointmentsService.getPaymentPipelineSummary().subscribe({
+      next: (resp) => {
+        if (!resp?.success || !resp.summary) {
+          this.releaseSummary = {
+            pending: this.formatCurrencyCLP(0),
+            releasable: this.formatCurrencyCLP(0),
+            released: this.formatCurrencyCLP(0)
+          };
+          return;
+        }
+        this.applyPaymentPipelineSummary(resp.summary);
+      },
+      error: (err) => {
+        console.error('[DASH_HOME] Error cargando payment pipeline summary:', err);
+        this.releaseSummary = {
+          pending: this.formatCurrencyCLP(0),
+          releasable: this.formatCurrencyCLP(0),
+          released: this.formatCurrencyCLP(0)
+        };
+      }
+    });
+  }
+
+  private applyPaymentPipelineSummary(summary: ProviderPaymentPipelineSummary) {
+    // UI (mantener estructura existente `releaseSummary` para no rearmar layout)
+    this.releaseSummary = {
+      // Pendiente de pago
+      pending: this.formatCurrencyCLP(summary.pending_unpaid_amount || 0),
+      // Pagadas (por atender)
+      releasable: this.formatCurrencyCLP(summary.paid_upcoming_amount || 0),
+      // Pagadas este mes
+      released: this.formatCurrencyCLP(summary.paid_month_amount || 0)
     };
   }
 

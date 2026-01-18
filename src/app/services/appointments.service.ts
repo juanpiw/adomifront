@@ -44,6 +44,16 @@ export interface TimeSlotDto {
   reason?: 'booked' | 'blocked' | string;
 }
 
+export interface ProviderPaymentPipelineSummary {
+  currency: 'CLP' | string;
+  pending_unpaid_amount: number;
+  pending_unpaid_count: number;
+  paid_upcoming_amount: number;
+  paid_upcoming_count: number;
+  paid_month_amount: number;
+  paid_month_count: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
   private http = inject(HttpClient);
@@ -369,6 +379,16 @@ export class AppointmentsService {
       error?: string;
     }>(
       `${this.api}/provider/appointments/paid`,
+      { headers: this.headers() }
+    );
+  }
+
+  /**
+   * Resumen de pipeline de pagos (PROVEEDOR) - solo tarjeta
+   */
+  getPaymentPipelineSummary(): Observable<{ success: boolean; summary: ProviderPaymentPipelineSummary; error?: string }> {
+    return this.http.get<{ success: boolean; summary: ProviderPaymentPipelineSummary; error?: string }>(
+      `${this.api}/provider/appointments/payment-pipeline-summary`,
       { headers: this.headers() }
     );
   }

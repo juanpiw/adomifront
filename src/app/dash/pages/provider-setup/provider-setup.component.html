@@ -1,0 +1,159 @@
+<div class="wizard-page" *ngIf="!loading; else loadingTpl">
+  <div class="wizard-card">
+    <div class="wizard-header">
+      <div class="progress-container">
+        <div class="progress-line"></div>
+        <div class="progress-line-fill" [style.width.%]="progressPercent"></div>
+
+        <div class="step-indicator" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Servicio</div>
+        </div>
+
+        <div class="step-indicator" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Horario</div>
+        </div>
+
+        <div class="step-indicator" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Listo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-body">
+      <div class="error-box" *ngIf="error">{{ error }}</div>
+
+      <!-- STEP 1 -->
+      <div class="step-content" [class.active]="currentStep === 1">
+        <h2>¿Qué servicio ofreces?</h2>
+        <p class="subtitle">Crea tu primer servicio para que los clientes puedan reservar. Podrás editarlo después.</p>
+
+        <div class="form-group">
+          <label class="form-label">Nombre del servicio</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✎</span>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="Ej. Corte de Cabello, Asesoría Legal..."
+              [(ngModel)]="serviceName"
+              [disabled]="saving"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Precio</label>
+          <div class="input-wrapper">
+            <span class="input-icon">$</span>
+            <input
+              type="number"
+              class="form-input"
+              placeholder="0"
+              [(ngModel)]="servicePrice"
+              [disabled]="saving"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Duración aproximada</label>
+          <div class="chips-container">
+            <button
+              type="button"
+              class="chip-option"
+              *ngFor="let opt of durationOptions"
+              [class.selected]="isDurationSelected(opt)"
+              (click)="selectDuration(opt)"
+              [disabled]="saving"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-content" [class.active]="currentStep === 2">
+        <h2>Define tu disponibilidad</h2>
+        <p class="subtitle">¿En qué horario quieres recibir reservas? Adomi bloqueará automáticamente las horas ocupadas.</p>
+
+        <div class="switch-container">
+          <div class="switch-label">
+            <strong>Horario de Oficina Estándar</strong>
+            <span>Lunes a Viernes, 09:00 a 18:00 hrs</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="useStandardHours" (ngModelChange)="onToggleStandardHours($event)" [disabled]="saving" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-container alt-switch">
+          <div class="switch-label">
+            <strong>¿Trabajas fines de semana?</strong>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="worksWeekends" [disabled]="saving" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="time-row" [class.disabled]="useStandardHours">
+          <span class="time-row__label">Personalizar horas:</span>
+          <input type="time" class="time-input" [(ngModel)]="customStartTime" [disabled]="saving || useStandardHours" />
+          <span>a</span>
+          <input type="time" class="time-input" [(ngModel)]="customEndTime" [disabled]="saving || useStandardHours" />
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-content" [class.active]="currentStep === 3">
+        <div class="success-preview">
+          <div class="success-icon">🎉</div>
+          <h2>¡Todo listo para empezar!</h2>
+          <p class="subtitle">Así es como verán tus clientes tu nuevo servicio.</p>
+
+          <div class="preview-card">
+            <h4>{{ serviceName?.trim() || 'Servicio General' }}</h4>
+            <span class="price">$ {{ (servicePrice ?? 0) || 0 }}</span>
+            <span class="meta">⏱ {{ selectedDurationMinutes }} min · 📅 Disponible {{ worksWeekends ? 'Lun-Dom' : 'Lun-Vie' }}</span>
+          </div>
+
+          <p class="final-note">Al confirmar, tu perfil será visible en el marketplace.</p>
+
+          <div class="tbk-reminder">
+            <div class="tbk-title">Recuerda configurar tu tienda Mall de Transbank</div>
+            <div class="tbk-subtitle">Para recibir pagos con tarjeta en tus reservas.</div>
+            <button type="button" class="btn btn-secondary" (click)="goToTransbankSetup()" [disabled]="saving">
+              Configurar Transbank
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-footer">
+      <button type="button" class="btn btn-ghost" (click)="prevStep()" [style.visibility]="currentStep === 1 ? 'hidden' : 'visible'" [disabled]="saving">
+        Atrás
+      </button>
+      <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="!canGoNext">
+        <span *ngIf="!saving">{{ nextLabel }}</span>
+        <span *ngIf="saving">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="wizard-loading">
+    <div class="wizard-loading__card">
+      <div class="wizard-loading__title">Preparando tu configuración...</div>
+      <div class="wizard-loading__subtitle">Un momento, por favor.</div>
+    </div>
+  </div>
+</ng-template>
+
