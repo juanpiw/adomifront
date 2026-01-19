@@ -15,12 +15,13 @@
      Sidebar off-canvas (no debe tapar el contenido cuando está cerrado).
      Se abre/cierra con el botón hamburger del topbar. */
   .client-layout {
-    display: block; /* en móvil no usar grid */
-    grid-template-columns: none;
+    /* Mantener grid (layout base), pero sin reservar columna para sidebar */
+    display: grid;
+    grid-template-columns: 1fr;
   }
   .client-layout.sidebar-collapsed {
-    display: block;
-    grid-template-columns: none;
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .sidebar {
@@ -69,11 +70,17 @@
   }
 }
 
+/* Desktop/default sidebar container */
 .sidebar { 
   display: flex; 
-  position: relative; 
   z-index: 3; 
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 901px) {
+  .sidebar {
+    position: relative;
+  }
 }
 
 .sidebar.collapsed { 
