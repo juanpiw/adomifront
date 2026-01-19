@@ -177,7 +177,7 @@
           <div class="preview-card">
             <h4>{{ serviceName.trim() || 'Servicio General' }}</h4>
             <span class="price">$ {{ formatClp(servicePrice) }}</span>
-            <span class="meta">⏱ {{ selectedDurationMinutes }} min · 📅 Disponible {{ worksWeekends ? 'Lun-Dom' : 'Lun-Vie' }}</span>
+            <span class="meta">⏱ {{ selectedDurationMinutes }} min · 📅 {{ availabilityLabel }}</span>
           </div>
 
           <p class="final-note">Al confirmar, tu perfil será visible en el marketplace.</p>

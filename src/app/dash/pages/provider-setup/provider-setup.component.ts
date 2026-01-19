@@ -113,6 +113,15 @@ export class ProviderSetupComponent implements OnInit {
     return this.currentStep === 3 ? 'Publicar Servicio' : 'Continuar';
   }
 
+  get availabilityLabel(): string {
+    const blocks = Array.isArray(this.weeklyDraft) ? this.weeklyDraft : [];
+    if (blocks.length === 0) return 'Disponible (por definir)';
+    const hasWeekend = blocks.some(
+      (b) => (b.day_of_week === 'saturday' || b.day_of_week === 'sunday') && (b.is_active ?? true) !== false
+    );
+    return hasWeekend ? 'Disponible Lun-Dom' : 'Disponible Lun-Vie';
+  }
+
   formatClp(value: number | null | undefined): string {
     const n = Number(value ?? 0);
     const normalized = Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
