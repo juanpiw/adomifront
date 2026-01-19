@@ -71,6 +71,7 @@ export class SelectPlanComponent implements OnInit {
   loading = true;
   error: string | null = null;
   tempUserData: TempUserData | null = null;
+  // Temporal: ocultar TBK en selector de plan (dejar solo Stripe)
   paymentMethod: 'stripe' | 'tbk' = 'stripe';
   readonly paymentMethods: Array<{
     id: 'stripe' | 'tbk';
@@ -83,11 +84,6 @@ export class SelectPlanComponent implements OnInit {
       label: 'Tarjeta de crédito / débito',
       description: 'Procesado por Stripe. Acepta tarjetas internacionales.',
       badge: 'Recomendado'
-    },
-    {
-      id: 'tbk',
-      label: 'Webpay Plus (Transbank)',
-      description: 'Paga con tarjetas chilenas o RedCompra mediante Webpay.'
     }
   ];
   

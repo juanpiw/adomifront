@@ -328,9 +328,7 @@
     >
       {{
         selectedPlan
-          ? (paymentMethod === 'tbk' && requiresPaymentSelection()
-            ? 'Pagar con Webpay Plus'
-            : 'Pagar con Stripe')
+          ? 'Pagar con Stripe'
           : 'Selecciona un plan'
       }}
     </button>
