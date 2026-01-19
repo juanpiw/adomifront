@@ -11,8 +11,9 @@
 }
 
 @media (max-width: 900px) {
-  /* Mobile: mantener SIEMPRE el rail visible (60px).
-     El panel es lo único que se expande/colapsa. */
+  /* Mobile: patrón estándar.
+     Sidebar off-canvas (no debe tapar el contenido cuando está cerrado).
+     Se abre/cierra con el botón hamburger del topbar. */
   .client-layout {
     display: block; /* en móvil no usar grid */
     grid-template-columns: none;
@@ -30,21 +31,21 @@
     height: 100vh;
     z-index: 1001;
     display: flex;
-    width: 60px; /* rail */
-    transform: none;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 280px;
+    transform: translateX(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: auto;
   }
 
-  .sidebar:not(.collapsed) {
-    width: 280px; /* rail + panel */
+  .sidebar.collapsed {
+    transform: translateX(-100%);
   }
 
   /* Overlay solo cuando el panel está abierto */
   .sidebar-overlay {
     position: fixed;
     top: 0;
-    left: 60px; /* comienza después del rail */
+    left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
@@ -55,10 +56,16 @@
   /* Contenido: ocupar el ancho restante del viewport */
   .content {
     padding: 16px;
-    margin-left: 60px;
-    width: calc(100% - 60px);
+    margin-left: 0;
+    width: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
+  }
+
+  /* En móvil, el panel del sidebar puede ser redundante; dejamos solo rail (iconos).
+     El panel igual se puede mostrar (siempre hay espacio), pero el rail-toggle sobra. */
+  .rail-toggle {
+    display: none;
   }
 }
 
