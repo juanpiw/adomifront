@@ -10,43 +10,55 @@
   grid-template-columns: 60px 1fr; 
 }
 
-// En móvil, el sidebar se vuelve overlay cuando está abierto
 @media (max-width: 900px) {
+  /* Mobile: mantener SIEMPRE el rail visible (60px).
+     El panel es lo único que se expande/colapsa. */
   .client-layout {
-    grid-template-columns: 1fr;
+    display: block; /* en móvil no usar grid */
+    grid-template-columns: none;
   }
-  
+  .client-layout.sidebar-collapsed {
+    display: block;
+    grid-template-columns: none;
+  }
+
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
+    bottom: 0;
     height: 100vh;
-    z-index: 1001; // Mayor z-index que el overlay
-    transform: translateX(0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 280px; // Ancho fijo del sidebar
-    pointer-events: auto; // Asegurar que sea clickeable
+    z-index: 1001;
+    display: flex;
+    width: 60px; /* rail */
+    transform: none;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
   }
-  
-  .sidebar.collapsed {
-    transform: translateX(-100%);
+
+  .sidebar:not(.collapsed) {
+    width: 280px; /* rail + panel */
   }
-  
+
+  /* Overlay solo cuando el panel está abierto */
   .sidebar-overlay {
     position: fixed;
     top: 0;
-    left: 280px; // Empezar después del sidebar
+    left: 60px; /* comienza después del rail */
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1000; // Menor z-index que el sidebar
-    pointer-events: auto; // Asegurar que sea clickeable para cerrar
+    z-index: 1000;
+    pointer-events: auto;
   }
-  
-  // Asegurar que el contenido principal no se vea afectado
+
+  /* Contenido: ocupar el ancho restante del viewport */
   .content {
-    width: 100%;
-    margin-left: 0;
+    padding: 16px;
+    margin-left: 60px;
+    width: calc(100% - 60px);
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 }
 
@@ -422,40 +434,4 @@
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
-/* Mobile layout */
-@media (max-width: 900px) {
-  .client-layout { 
-    grid-template-columns: 1fr; 
-  }
-  
-  .client-layout.sidebar-collapsed { 
-    grid-template-columns: 1fr; /* Override: 100% width on mobile */
-  }
-  
-  .sidebar { 
-    position: fixed; 
-    left: 0; 
-    top: 0; 
-    bottom: 0; 
-    display: flex;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25); 
-    transform: translateX(0); 
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-  }
-  
-  .client-layout.sidebar-collapsed .sidebar { 
-    transform: translateX(-100%); 
-  }
-  
-  .rail {
-    width: 60px;
-  }
-  
-  .panel { 
-    width: 220px; 
-  }
-  
-  .content {
-    padding: 16px;
-  }
-}
+/* (removido) Segundo bloque mobile duplicado: mantenemos un solo @media (max-width: 900px) */
