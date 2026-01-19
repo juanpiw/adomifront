@@ -347,6 +347,13 @@
   z-index: 1; 
 }
 
+/* En mobile, el padding 24px se siente enorme y rompe el layout visual. */
+@media (max-width: 900px) {
+  .content {
+    padding: 0 !important;
+  }
+}
+
 /* Topbar styles moved to TopbarComponent */
 
 .main-slot { 
