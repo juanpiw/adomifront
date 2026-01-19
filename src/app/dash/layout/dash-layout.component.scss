@@ -109,6 +109,8 @@
 .sidebar.collapsed { grid-template-columns: 72px 0px; }
 .rail { background: linear-gradient(180deg, #0b1220, #151c2f); color:#e5e7eb; padding:12px 8px; display:flex; flex-direction:column; gap:8px; align-items:center; border-right:1px solid rgba(255,255,255,0.08); }
 .rail .rail-item { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; text-decoration:none; transition: all .2s ease; position: relative; }
+.rail .rail-item--disabled { opacity: 0.35; pointer-events: none; filter: grayscale(0.4); }
+.rail .rail-item--logout { margin-bottom: 2px; }
 .rail .rail-item .badge-unread { position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 9999px; background: #ef4444; color: #fff; font-size: 11px; line-height: 16px; text-align: center; font-weight: 700; box-shadow: 0 0 0 2px #0b1220, 0 0 8px rgba(239, 68, 68, 0.6); }
 
 /* Badge especial para citas con animación de pulso */
@@ -216,6 +218,14 @@
   .dash-layout.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   .sidebar { transform: translateX(0); transition: transform .25s ease; }
   .panel { width: 220px; }
+
+  /* Mobile safe-area: subir el botón Salir para que no quede tapado */
+  .rail {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px) + 18px);
+  }
+  .rail .rail-item--logout {
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  }
 
   // En mobile el footer no debe empujar el contenido hacia abajo con margin-top:auto
   .footer {

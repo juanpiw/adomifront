@@ -70,9 +70,20 @@
       </a>
       <a class="rail-item" routerLink="/dash/servicios" routerLinkActive="active" title="Servicios" (click)="onNav()"><ui-icon name="briefcase" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/soporte" routerLinkActive="active" title="Soporte" (click)="onNav()"><ui-icon name="help-circle" [size]="20"></ui-icon></a>
-      <a class="rail-item" routerLink="/dash/perfil" routerLinkActive="active" title="Perfil" (click)="onNav()"><ui-icon name="user" [size]="20"></ui-icon></a>
+      <a
+        class="rail-item"
+        [class.rail-item--disabled]="isProviderSetupRoute"
+        routerLink="/dash/perfil"
+        routerLinkActive="active"
+        title="Perfil"
+        (click)="isProviderSetupRoute ? $event.preventDefault() : onNav()"
+        [attr.aria-disabled]="isProviderSetupRoute ? 'true' : null"
+        [attr.tabindex]="isProviderSetupRoute ? -1 : null"
+      >
+        <ui-icon name="user" [size]="20"></ui-icon>
+      </a>
       <div class="spacer"></div>
-      <a class="rail-item" (click)="logout()" title="Salir" style="cursor: pointer;"><ui-icon name="logout" [size]="20"></ui-icon></a>
+      <a class="rail-item rail-item--logout" (click)="logout()" title="Salir" style="cursor: pointer;"><ui-icon name="logout" [size]="20"></ui-icon></a>
     </div>
     <div class="panel elevated">
       <div class="user-summary">
