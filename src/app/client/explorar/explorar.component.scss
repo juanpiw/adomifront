@@ -41,6 +41,21 @@
   padding: 20px;
   
 }
+
+/* Mobile: hero banner content should stack */
+@media (max-width: 640px) {
+  .order {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .order button {
+    width: 100%;
+  }
+}
 // Custom shadows from the example HTML
 .custom-shadow {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
@@ -250,6 +265,21 @@ section {
         width: 1rem;
         height: 1rem;
         margin-right: 0.5rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-section {
+    .flex {
+      .filter-select {
+        width: 100%;
+        min-width: 0;
+      }
+      .clear-filters-btn {
+        width: 100%;
+        justify-content: center;
       }
     }
   }

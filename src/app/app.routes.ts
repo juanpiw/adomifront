@@ -52,6 +52,8 @@ import { providerSetupGuard, providerSetupChildGuard } from './auth/guards/provi
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'terminos', component: ClientTerminosComponent, data: { tab: 'terminos' } },
+  { path: 'privacidad', component: ClientTerminosComponent, data: { tab: 'privacidad' } },
   { path: 'invitacion', component: InvitacionComponent },
   { path: 'tbk/return', component: TbkReturnComponent },
   { path: 'tbk/oneclick/finish', component: TbkReturnComponent },

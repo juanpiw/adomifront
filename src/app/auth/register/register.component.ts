@@ -419,6 +419,7 @@ export class RegisterComponent implements OnInit {
   }
 
   goToTerms() {
-    this.router.navigate(['/auth/terms']);
+    const url = this.router.serializeUrl(this.router.createUrlTree(['/terminos']));
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 }

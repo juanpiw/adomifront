@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../../libs/shared-ui/icon/icon.component';
 import jsPDF from 'jspdf';
+import { ActivatedRoute } from '@angular/router';
 
 type TabType = 'terminos' | 'privacidad';
 
@@ -12,9 +13,19 @@ type TabType = 'terminos' | 'privacidad';
   templateUrl: './terminos.component.html',
   styleUrls: ['./terminos.component.scss']
 })
-export class ClientTerminosComponent {
+export class ClientTerminosComponent implements OnInit {
   lastUpdated = 'Octubre 2025';
   activeTab: TabType = 'terminos';
+  private route = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    const tabFromData = String(this.route.snapshot.data?.['tab'] || '').toLowerCase();
+    const tabFromQuery = String(this.route.snapshot.queryParamMap.get('tab') || '').toLowerCase();
+    const tab = (tabFromData || tabFromQuery) as TabType;
+    if (tab === 'privacidad' || tab === 'terminos') {
+      this.activeTab = tab;
+    }
+  }
 
   onTabChange(tab: TabType) {
     this.activeTab = tab;

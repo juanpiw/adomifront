@@ -147,7 +147,9 @@
 @media (max-width: 768px) {
   .elegant-map-container {
     border-radius: 16px;
-    margin: 16px;
+    margin: 0;
+    height: auto !important; /* override inline fixed height on mobile */
+    min-height: 0;
   }
   
   .professionals-section {
@@ -159,6 +161,13 @@
     border-radius: 0 0 16px 16px;
     min-height: 280px; /* tighter */
     padding: 8px 0; /* reduce inner padding if any */
+  }
+
+  /* On mobile, avoid inner scroll in the list; let the page scroll naturally */
+  .professional-card-container {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
   
   .section-title {

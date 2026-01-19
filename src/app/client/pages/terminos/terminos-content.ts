@@ -1,9 +1,9 @@
 // Contenido completo de Términos y Condiciones para PDFs y HTML
 export const TERMINOS_COMPLETO = {
   lastUpdated: '3 de octubre de 2025',
-  razonSocial: '[Razón Social de la empresa]',
-  rut: 'xx.xxx.xxx-x',
-  domicilio: '[comuna, ciudad, Chile]',
+  razonSocial: 'Aicomstudio SpA',
+  rut: '77.491.066-2',
+  domicilio: 'Apoquindo 6410, Of. 605, Las Condes, Chile',
   contacto: {
     email: 'profesionales@adomiapp.com',
     phone: '+56 9 XXXX XXXX',
@@ -15,7 +15,7 @@ export const TERMINOS_COMPLETO = {
       numero: '1',
       titulo: 'Definiciones',
       items: [
-        { term: 'Plataforma', def: 'El sitio web, app móvil y APIs de Adomiapp, operados por [Razón Social].' },
+        { term: 'Plataforma', def: 'El sitio web, app móvil y APIs de Adomiapp, operados por Aicomstudio SpA.' },
         { term: 'Profesional', def: 'Proveedor/a independiente que ofrece Servicios a través de la Plataforma.' },
         { term: 'Cliente', def: 'Usuario/a que solicita y contrata Servicios de un Profesional.' },
         { term: 'Servicios', def: 'Actividades profesionales ofrecidas por los Profesionales a los Clientes.' },

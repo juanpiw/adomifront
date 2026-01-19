@@ -422,6 +422,58 @@
   }
 }
 
+/* Mobile: stack fields + avoid horizontal overflow from fixed popovers */
+@media (max-width: 640px) {
+  .advanced-search-container {
+    .search-bar-main {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      min-height: unset;
+    }
+
+    .field-separator {
+      display: none;
+    }
+
+    .search-field {
+      width: 100%;
+    }
+
+    .search-field input,
+    .search-field .location-display,
+    .search-field .date-display {
+      font-size: 1rem;
+      padding: 0.5rem 0.5rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.875rem;
+      border-radius: 1rem;
+      justify-content: center;
+    }
+
+    /* Popovers should fit inside viewport */
+    .popover {
+      width: calc(100vw - 32px) !important;
+      max-width: 560px;
+      min-width: 0 !important;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%);
+      box-sizing: border-box;
+      max-height: 80vh;
+      overflow: auto;
+    }
+
+    .popover.location-popover {
+      min-width: 0 !important;
+    }
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 1024px) {
   .advanced-search-container {
