@@ -5,7 +5,8 @@ export const environment = {
   apiBaseUrl: 'https://adomi.impactrenderstudio.com',
   gaMeasurementId: 'G-ZQYRWPHT60',
   clarityProjectId: 'v4211tl2fp',
-  stripePublishableKey: 'pk_test_51SMwb8LqBmLxjDKEBO7WzPjK6dL2uYhHdN5FhfqtCYSadKt4nNbpk07ffgOgMu9PbKd7smFB1u8nq4bbMUPgnoTI00TJyeWOfI', // TEST
+  // Publishable key (pública) - necesaria para Stripe.js en frontend.
+  stripePublishableKey: 'pk_live_51Opto6Lae2ozUqcfkEx6dKK4p8jRPlibbXBIfsTqg8KKNXQzIyDhNO0Ok0Y1uhdGw8QXglvcyJowQh7PuKS9b5db00ddVgUejq',
   connectEnabled: false,
   googleClientId: '319925819744-4snhnq7vtcb33g516a67qu7bu42r2hk1.apps.googleusercontent.com',
   googleRedirectUri: 'https://adomi.impactrenderstudio.com/auth/google/callback',
