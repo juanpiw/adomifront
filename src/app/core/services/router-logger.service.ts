@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, Event } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 /**
  * Logger liviano para depurar rutas y flujo de navegación.
@@ -10,10 +11,14 @@ import { filter } from 'rxjs/operators';
 export class RouterLoggerService {
   private router = inject(Router);
   private lastUrl = '(init)';
+  private readonly debug = !environment.production;
 
   constructor() {
     // Evitar ruido en SSR
     if (typeof window === 'undefined') {
+      return;
+    }
+    if (!this.debug) {
       return;
     }
 

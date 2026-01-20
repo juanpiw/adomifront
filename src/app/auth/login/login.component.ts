@@ -8,6 +8,7 @@ import { AuthService, AuthResponse, LoginPayload } from '../services/auth.servic
 import { SessionService } from '../services/session.service';
 import { ErrorHandlerService, ErrorDetails } from '../../core/services/error-handler.service';
 import { GoogleAuthService } from '../services/google-auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,7 @@ export class LoginComponent implements OnInit {
   private session = inject(SessionService);
   private errorHandler = inject(ErrorHandlerService);
   private googleAuth = inject(GoogleAuthService);
+  private readonly debug = !environment.production;
 
   ngOnInit() {
     // Si ya está autenticado, redirigir al dashboard correspondiente
@@ -50,11 +52,13 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
-    console.log('🔵 [LOGIN] submit() start', {
-      email: this.email,
-      hasPassword: !!this.password,
-      ts: new Date().toISOString()
-    });
+    if (this.debug) {
+      console.log('🔵 [LOGIN] submit() start', {
+        email: this.email,
+        hasPassword: !!this.password,
+        ts: new Date().toISOString()
+      });
+    }
     // Limpiar errores anteriores
     this.clearErrors();
 
@@ -70,25 +74,42 @@ export class LoginComponent implements OnInit {
       password: this.password
     };
 
-    console.log('🔵 [LOGIN] Payload normalizado:', loginPayload);
+    // Nunca loguear password (ni siquiera en dev)
+    if (this.debug) {
+      console.log('🔵 [LOGIN] Payload normalizado:', {
+        email: loginPayload.email,
+        hasPassword: !!loginPayload.password
+      });
+    }
 
     this.auth.login(loginPayload)
       .subscribe({
         next: (response: AuthResponse) => { 
           this.loading = false;
-          console.log('🟢 [LOGIN] Respuesta subscribe next:', response);
+          if (this.debug) {
+            console.log('🟢 [LOGIN] Respuesta subscribe next:', {
+              success: (response as any)?.success,
+              hasUser: !!(response as any)?.user,
+              userId: (response as any)?.user?.id,
+              role: (response as any)?.user?.role
+            });
+          }
           
           if (response.success && response.user) {
             // El AuthService ya maneja el guardado del usuario y tokens
             this.redirectToDashboard();
           } else {
             this.errorMessage = response.error || 'Error al iniciar sesión';
-            console.warn('🟠 [LOGIN] Respuesta sin success/user, errorMessage seteado:', this.errorMessage);
+            if (this.debug) {
+              console.warn('🟠 [LOGIN] Respuesta sin success/user, errorMessage seteado:', this.errorMessage);
+            }
           }
         },
         error: (err) => {
           this.loading = false;
-          console.error('🔴 [LOGIN] Error en subscribe:', err);
+          if (this.debug) {
+            console.error('🔴 [LOGIN] Error en subscribe:', err);
+          }
           this.handleLoginError(err);
         }
       });
@@ -125,7 +146,9 @@ export class LoginComponent implements OnInit {
   }
 
   private handleLoginError(err: any) {
-    console.error('Login error:', err);
+    if (this.debug) {
+      console.error('Login error:', err);
+    }
     
     const errorDetails: ErrorDetails = this.errorHandler.handleAuthError(err);
     
@@ -202,22 +225,28 @@ export class LoginComponent implements OnInit {
 
   // Método para login con Google
   signInWithGoogle() {
-    console.log('🔵 [LOGIN] ==================== INICIO LOGIN CON GOOGLE ====================');
-    console.log('🔵 [LOGIN] Timestamp:', new Date().toISOString());
-    console.log('🔵 [LOGIN] localStorage antes del login:', {
-      access_token: localStorage.getItem('adomi_access_token')?.substring(0, 20) + '...',
-      refresh_token: localStorage.getItem('adomi_refresh_token')?.substring(0, 20) + '...',
-      user: localStorage.getItem('adomi_user')
-    });
+    if (this.debug) {
+      console.log('🔵 [LOGIN] ==================== INICIO LOGIN CON GOOGLE ====================');
+      console.log('🔵 [LOGIN] Timestamp:', new Date().toISOString());
+      console.log('🔵 [LOGIN] localStorage antes del login:', {
+        has_access_token: !!localStorage.getItem('adomi_access_token'),
+        has_refresh_token: !!localStorage.getItem('adomi_refresh_token'),
+        has_user: !!localStorage.getItem('adomi_user')
+      });
+    }
     
     if (!this.googleAuth.isGoogleAuthAvailable()) {
-      console.error('🔴 [LOGIN] Google Auth NO disponible');
+      if (this.debug) {
+        console.error('🔴 [LOGIN] Google Auth NO disponible');
+      }
       this.errorMessage = 'Autenticación con Google no está disponible en este momento.';
       return;
     }
 
-    console.log('🔵 [LOGIN] Google Auth disponible, iniciando proceso...');
-    console.log('🔵 [LOGIN] Parámetros: role=client, mode=login');
+    if (this.debug) {
+      console.log('🔵 [LOGIN] Google Auth disponible, iniciando proceso...');
+      console.log('🔵 [LOGIN] Parámetros: role=client, mode=login');
+    }
     
     // Usar modo 'login' - NO crear cuenta si no existe
     this.googleAuth.signInWithGoogle('client', 'login');

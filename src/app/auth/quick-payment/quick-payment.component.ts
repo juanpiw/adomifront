@@ -148,6 +148,7 @@ export class QuickPaymentComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private stripeService = inject(StripeService);
+  private readonly debug = !environment.production;
 
   ngOnInit() {
     // Obtener plan desde sessionStorage o route params
@@ -198,13 +199,13 @@ export class QuickPaymentComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Quick payment error:', error);
+          if (this.debug) console.error('Quick payment error:', error);
           this.error = 'Error al procesar el pago. Inténtalo nuevamente.';
           this.loading = false;
         }
       });
     } catch (error) {
-      console.error('Error en proceedToPayment:', error);
+      if (this.debug) console.error('Error en proceedToPayment:', error);
       this.error = 'Error inesperado. Inténtalo nuevamente.';
       this.loading = false;
     }

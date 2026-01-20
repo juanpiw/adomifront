@@ -3,17 +3,21 @@ import { CanActivateFn, CanActivateChildFn, Router, UrlTree } from '@angular/rou
 import { firstValueFrom } from 'rxjs';
 import { AuthService, AuthUser } from '../services/auth.service';
 import { ensureTempUserData, needsProviderPlan } from '../utils/provider-onboarding.util';
+import { environment } from '../../../environments/environment';
 
 const redirectToPlan = async (): Promise<boolean | UrlTree> => {
   const auth = inject(AuthService);
   const router = inject(Router);
   let user = auth.getCurrentUser() || getStoredUser();
   const hasToken = !!auth.getAccessToken();
-  console.log('[PROVIDER_ONBOARDING_GUARD] start', {
-    hasToken,
-    hasUserInMemory: !!auth.getCurrentUser(),
-    hasUserStored: !!getStoredUser()
-  });
+  const debug = !environment.production;
+  if (debug) {
+    console.log('[PROVIDER_ONBOARDING_GUARD] start', {
+      hasToken,
+      hasUserInMemory: !!auth.getCurrentUser(),
+      hasUserStored: !!getStoredUser()
+    });
+  }
 
   // Si hay token pero no user cargado aún, intentar rehidratar para decidir correctamente
   if (!user && hasToken) {
@@ -23,21 +27,27 @@ const redirectToPlan = async (): Promise<boolean | UrlTree> => {
       if (backendUser) {
         auth.applyUserFromBackend(backendUser);
         user = backendUser;
-        console.log('[PROVIDER_ONBOARDING_GUARD] hydrated user from /auth/me', {
-          userId: backendUser?.id,
-          role: backendUser?.role,
-          pending_role: backendUser?.pending_role,
-          active_plan_id: backendUser?.active_plan_id
-        });
+        if (debug) {
+          console.log('[PROVIDER_ONBOARDING_GUARD] hydrated user from /auth/me', {
+            userId: backendUser?.id,
+            role: backendUser?.role,
+            pending_role: backendUser?.pending_role,
+            active_plan_id: backendUser?.active_plan_id
+          });
+        }
       }
     } catch (e) {
-      console.warn('[PROVIDER_ONBOARDING_GUARD] could not hydrate from /auth/me', e);
+      if (debug) {
+        console.warn('[PROVIDER_ONBOARDING_GUARD] could not hydrate from /auth/me', e);
+      }
     }
   }
 
   // Si sigue sin user, no forzar (evita lockout)
   if (!user) {
-    console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no user available');
+    if (debug) {
+      console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no user available');
+    }
     return true;
   }
 
@@ -51,27 +61,33 @@ const redirectToPlan = async (): Promise<boolean | UrlTree> => {
         user = backendUser;
       }
     } catch (err) {
-      console.warn('[PROVIDER_ONBOARDING_GUARD] No se pudo refrescar /auth/me', err);
+      if (debug) {
+        console.warn('[PROVIDER_ONBOARDING_GUARD] No se pudo refrescar /auth/me', err);
+      }
     }
   }
 
   if (!needsProviderPlan(user)) {
-    console.log('[PROVIDER_ONBOARDING_GUARD] Allow: user has plan or not pending', {
-      userId: user?.id,
-      role: user?.role,
-      pending_role: user?.pending_role,
-      active_plan_id: user?.active_plan_id
-    });
+    if (debug) {
+      console.log('[PROVIDER_ONBOARDING_GUARD] Allow: user has plan or not pending', {
+        userId: user?.id,
+        role: user?.role,
+        pending_role: user?.pending_role,
+        active_plan_id: user?.active_plan_id
+      });
+    }
     return true;
   }
 
-  console.warn('[PROVIDER_ONBOARDING_GUARD] Forzando /auth/select-plan para usuario pendiente', {
-    userId: user?.id,
-    role: user?.role,
-    pending_role: user?.pending_role,
-    account_switch_in_progress: user?.account_switch_in_progress,
-    active_plan_id: user?.active_plan_id
-  });
+  if (debug) {
+    console.warn('[PROVIDER_ONBOARDING_GUARD] Forzando /auth/select-plan para usuario pendiente', {
+      userId: user?.id,
+      role: user?.role,
+      pending_role: user?.pending_role,
+      account_switch_in_progress: user?.account_switch_in_progress,
+      active_plan_id: user?.active_plan_id
+    });
+  }
 
   ensureTempUserData(user || undefined);
   try {

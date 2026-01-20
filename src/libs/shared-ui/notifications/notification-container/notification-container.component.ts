@@ -6,6 +6,7 @@ import { NotificationBellComponent } from '../notification-bell/notification-bel
 import { NotificationPanelComponent } from '../notification-panel/notification-panel.component';
 import { NotificationService } from '../services/notification.service';
 import { Notification, UserProfile } from '../models/notification.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ui-notification-container',
@@ -20,6 +21,7 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
 
   isOpen: boolean = false;
   private subscriptions: Subscription[] = [];
+  private readonly debug = !environment.production;
 
   constructor(
     private notificationService: NotificationService,
@@ -28,7 +30,7 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Configurar el perfil de usuario
-    console.log('🔔 [NOTIFICATION_CONTAINER] ngOnInit perfil:', this.userProfile);
+    if (this.debug) console.log('🔔 [NOTIFICATION_CONTAINER] ngOnInit perfil:', this.userProfile);
     this.notificationService.setUserProfile(this.userProfile);
   }
 
@@ -47,25 +49,25 @@ export class NotificationContainerComponent implements OnInit, OnDestroy {
   }
 
   togglePanel(): void {
-    console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel antes:', this.isOpen);
+    if (this.debug) console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel antes:', this.isOpen);
     const willOpen = !this.isOpen;
     if (willOpen) {
       // Al abrir el panel marcamos todo como leído para que el badge se reinicie
       this.notificationService.markAllAsRead();
     }
     this.isOpen = willOpen;
-    console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel después:', this.isOpen);
+    if (this.debug) console.log('🔔 [NOTIFICATION_CONTAINER] togglePanel después:', this.isOpen);
   }
 
   closePanel(): void {
     if (this.isOpen) {
-      console.log('🔔 [NOTIFICATION_CONTAINER] closePanel cerrando panel');
+      if (this.debug) console.log('🔔 [NOTIFICATION_CONTAINER] closePanel cerrando panel');
     }
     this.isOpen = false;
   }
 
   onNotificationClick(notification: Notification): void {
-    console.log('🔔 [NOTIFICATION_CONTAINER] onNotificationClick', notification?.id, notification?.title);
+    if (this.debug) console.log('🔔 [NOTIFICATION_CONTAINER] onNotificationClick', notification?.id, notification?.title);
     this.closePanel();
     
     // Navegación: si es notificación de cita y soy proveedor, ir directo a Agenda y enfocar la cita.

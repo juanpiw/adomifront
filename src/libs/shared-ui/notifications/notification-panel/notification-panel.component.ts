@@ -6,6 +6,7 @@ import { IconComponent } from '../../icon/icon.component';
 import { NotificationService } from '../services/notification.service';
 import { Notification, NotificationFilters } from '../models/notification.model';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ui-notification-panel',
@@ -39,22 +40,30 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
   unreadNotifications: Notification[] = [];
   readNotifications: Notification[] = [];
   private subscriptions: Subscription[] = [];
+  private readonly debug = !environment.production;
 
   constructor(private notificationService: NotificationService, private router: Router) {}
 
   ngOnInit(): void {
-    console.log('🔔 [NOTIFICATION_PANEL] Componente inicializado');
+    if (this.debug) console.log('🔔 [NOTIFICATION_PANEL] Componente inicializado');
     // Cargar notificaciones
     this.loadNotifications();
     
     // ✅ Escuchar cambios en tiempo real
     this.subscriptions.push(
       this.notificationService.notifications$.subscribe(notifications => {
-        console.log('🔔 [NOTIFICATION_PANEL] Notificaciones actualizadas:', notifications.length);
+        if (this.debug) console.log('🔔 [NOTIFICATION_PANEL] Notificaciones actualizadas:', notifications.length);
         this.notifications = notifications;
         this.unreadNotifications = notifications.filter(n => n.status === 'unread');
         this.readNotifications = notifications.filter(n => n.status === 'read');
-        console.log('🔔 [NOTIFICATION_PANEL] No leídas:', this.unreadNotifications.length, 'Leídas:', this.readNotifications.length);
+        if (this.debug) {
+          console.log(
+            '🔔 [NOTIFICATION_PANEL] No leídas:',
+            this.unreadNotifications.length,
+            'Leídas:',
+            this.readNotifications.length
+          );
+        }
       })
     );
   }
@@ -64,10 +73,10 @@ export class NotificationPanelComponent implements OnInit, OnDestroy {
   }
 
   private loadNotifications(): void {
-    console.log('🔔 [NOTIFICATION_PANEL] Cargando notificaciones iniciales...');
+    if (this.debug) console.log('🔔 [NOTIFICATION_PANEL] Cargando notificaciones iniciales...');
     this.subscriptions.push(
       this.notificationService.getNotifications().subscribe(notifications => {
-        console.log('🔔 [NOTIFICATION_PANEL] Notificaciones cargadas:', notifications.length);
+        if (this.debug) console.log('🔔 [NOTIFICATION_PANEL] Notificaciones cargadas:', notifications.length);
         this.notifications = notifications;
         this.unreadNotifications = notifications.filter(n => n.status === 'unread');
         this.readNotifications = notifications.filter(n => n.status === 'read');

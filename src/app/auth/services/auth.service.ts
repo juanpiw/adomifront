@@ -75,6 +75,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private baseUrl = environment.apiBaseUrl;
+  private readonly debug = !environment.production;
   private tokenKey = 'adomi_access_token';
   private refreshKey = 'adomi_refresh_token';
   
@@ -121,10 +122,12 @@ export class AuthService {
     const validRefresh = refreshToken && refreshToken !== 'null' && refreshToken !== 'undefined';
 
     if (!validAccess || !validRefresh) {
-      console.warn('[AUTH] 💾 saveTokens: tokens inválidos, no se guardan', {
-        hasAccess: !!accessToken,
-        hasRefresh: !!refreshToken
-      });
+      if (this.debug) {
+        console.warn('[AUTH] 💾 saveTokens: tokens inválidos, no se guardan', {
+          hasAccess: !!accessToken,
+          hasRefresh: !!refreshToken
+        });
+      }
       return;
     }
 
@@ -141,7 +144,9 @@ export class AuthService {
         sessionStorage?.removeItem(this.tokenKey);
         sessionStorage?.removeItem(this.refreshKey);
       } catch {
-        console.warn('[AUTH] 🧹 clearTokens: no storage disponible');
+        if (this.debug) {
+          console.warn('[AUTH] 🧹 clearTokens: no storage disponible');
+        }
       }
     }
   }
@@ -161,7 +166,9 @@ export class AuthService {
         this.authStateSubject.next(user);
         return;
       } catch (error) {
-        console.error('[AUTH] ❌ Error parsing user from localStorage:', error);
+        if (this.debug) {
+          console.error('[AUTH] ❌ Error parsing user from localStorage:', error);
+        }
         // No eliminar tokens; solo limpiar el usuario y rehidratar desde /auth/me si hay token
         localStorage.removeItem('adomi_user');
       }
@@ -175,7 +182,9 @@ export class AuthService {
         next: (response) => {
         },
         error: (error) => {
-          console.error('[AUTH] ❌ Error rehidratando usuario:', error);
+          if (this.debug) {
+            console.error('[AUTH] ❌ Error rehidratando usuario:', error);
+          }
         }
       });
     }
@@ -288,18 +297,22 @@ export class AuthService {
               localStorage.setItem('adomi_user', JSON.stringify(data.user));
             }
           } else {
-            console.warn('[AUTH] 🟠 register() faltan datos clave en la respuesta', {
-              success: response.success,
-              hasUser: !!data?.user,
-              hasAccess: !!data?.accessToken,
-              hasRefresh: !!data?.refreshToken
-            });
+            if (this.debug) {
+              console.warn('[AUTH] 🟠 register() faltan datos clave en la respuesta', {
+                success: response.success,
+                hasUser: !!data?.user,
+                hasAccess: !!data?.accessToken,
+                hasRefresh: !!data?.refreshToken
+              });
+            }
           }
           this.loadingSubject.next(false);
         }),
         map(response => this.normalizeAuthResponse(response)),
         catchError(error => {
-          console.error('[AUTH] 🔴 register() catchError', error);
+          if (this.debug) {
+            console.error('[AUTH] 🔴 register() catchError', error);
+          }
           this.loadingSubject.next(false);
           return this.handleError(error);
         })
@@ -322,18 +335,22 @@ export class AuthService {
               localStorage.setItem('adomi_user', JSON.stringify(data.user));
             }
           } else {
-            console.warn('[AUTH] 🟠 login() faltan datos clave en la respuesta', {
-              success: response.success,
-              hasUser: !!data?.user,
-              hasAccess: !!data?.accessToken,
-              hasRefresh: !!data?.refreshToken
-            });
+            if (this.debug) {
+              console.warn('[AUTH] 🟠 login() faltan datos clave en la respuesta', {
+                success: response.success,
+                hasUser: !!data?.user,
+                hasAccess: !!data?.accessToken,
+                hasRefresh: !!data?.refreshToken
+              });
+            }
           }
           this.loadingSubject.next(false);
         }),
         map(response => this.normalizeAuthResponse(response)),
         catchError(error => {
-          console.error('[AUTH] 🔴 login() catchError', error);
+          if (this.debug) {
+            console.error('[AUTH] 🔴 login() catchError', error);
+          }
           this.loadingSubject.next(false);
           return this.handleError(error);
         })
@@ -412,7 +429,9 @@ export class AuthService {
         .pipe(
           catchError(error => {
             // Aunque falle el logout en el servidor, ya limpiamos localmente
-            console.warn('Logout request failed:', error);
+            if (this.debug) {
+              console.warn('Logout request failed:', error);
+            }
             return throwError(() => error);
           })
         );
@@ -456,12 +475,16 @@ export class AuthService {
             this.authStateSubject.next(user);
             localStorage.setItem('adomi_user', JSON.stringify(user));
           } else {
-            console.error('[AUTH] No se pudo extraer usuario de la respuesta');
+            if (this.debug) {
+              console.error('[AUTH] No se pudo extraer usuario de la respuesta');
+            }
           }
         }
       }),
       catchError(error => {
-        console.error('[AUTH] Error en getCurrentUserInfo:', error);
+        if (this.debug) {
+          console.error('[AUTH] Error en getCurrentUserInfo:', error);
+        }
         return this.handleError(error);
       })
     );
@@ -513,12 +536,15 @@ export class AuthService {
 
   // Manejo de errores
   private handleError(error: any): Observable<never> {
-    console.error('[AUTH] ❌ AuthService Error:', {
-      status: error?.status,
-      message: error?.message,
-      errorBody: error?.error,
-      url: error?.url
-    });
+    // Mantener silencioso en prod para no spamear consola del usuario
+    if (this.debug) {
+      console.error('[AUTH] ❌ AuthService Error:', {
+        status: error?.status,
+        message: error?.message,
+        errorBody: error?.error,
+        url: error?.url
+      });
+    }
     
     let errorMessage = 'Ha ocurrido un error inesperado';
     

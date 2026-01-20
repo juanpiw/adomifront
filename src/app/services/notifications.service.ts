@@ -18,6 +18,7 @@ export class NotificationsService {
   private auth = inject(AuthService);
   private notificationState = inject(NotificationService);
   private apiBase = environment.apiBaseUrl;
+  private readonly debug = !environment.production;
 
   private permissionSubject = new BehaviorSubject<NotificationPermission>('default');
   public permission$ = this.permissionSubject.asObservable();
@@ -73,7 +74,7 @@ export class NotificationsService {
    */
   async requestPermission(): Promise<NotificationPermission> {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Este entorno no soporta notificaciones');
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 Este entorno no soporta notificaciones');
       return 'denied';
     }
 
@@ -84,12 +85,12 @@ export class NotificationsService {
       if (permission === 'granted') {
         await this.registerFCMToken();
       } else {
-        console.warn('[NOTIFICATIONS_SERVICE] 🔔 Permisos denegados por el usuario');
+        if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 Permisos denegados por el usuario');
       }
 
       return permission;
     } catch (error) {
-      console.error('[NOTIFICATIONS_SERVICE] 🔔 Error solicitando permisos:', error);
+      if (this.debug) console.error('[NOTIFICATIONS_SERVICE] 🔔 Error solicitando permisos:', error);
       this.permissionSubject.next('denied');
       return 'denied';
     }
@@ -104,14 +105,14 @@ export class NotificationsService {
     }
 
     if (!environment.firebase) {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Configuración de Firebase no encontrada');
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 Configuración de Firebase no encontrada');
       return null;
     }
 
     if (!this.messagingModulePromise) {
       this.messagingModulePromise = import('firebase/messaging')
         .catch((error) => {
-          console.error('[NOTIFICATIONS_SERVICE] 🔔 Error cargando firebase/messaging:', error);
+          if (this.debug) console.error('[NOTIFICATIONS_SERVICE] 🔔 Error cargando firebase/messaging:', error);
           return null;
         });
     }
@@ -123,7 +124,7 @@ export class NotificationsService {
 
     const supported = await messagingModule.isSupported();
     if (!supported) {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Firebase messaging no soportado en este navegador');
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 Firebase messaging no soportado en este navegador');
       return null;
     }
 
@@ -152,7 +153,7 @@ export class NotificationsService {
           }
           return await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         } catch (error) {
-          console.error('[NOTIFICATIONS_SERVICE] 🔔 Error registrando service worker de Firebase:', error);
+          if (this.debug) console.error('[NOTIFICATIONS_SERVICE] 🔔 Error registrando service worker de Firebase:', error);
           return null;
         }
       })();
@@ -170,13 +171,13 @@ export class NotificationsService {
     const { messagingModule, messaging } = context;
     const registration = await this.ensureServiceWorkerRegistration();
     if (!registration) {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 No se pudo registrar el service worker de Firebase');
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 No se pudo registrar el service worker de Firebase');
       return null;
     }
 
     const vapidKey = environment.firebase?.vapidKey;
     if (!vapidKey || vapidKey === 'YOUR_VAPID_KEY_HERE') {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Falta la VAPID key de Firebase Web Push');
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 Falta la VAPID key de Firebase Web Push');
       return null;
     }
 
@@ -187,7 +188,7 @@ export class NotificationsService {
       });
       return token || null;
     } catch (error) {
-      console.error('[NOTIFICATIONS_SERVICE] 🔔 Error obteniendo token FCM:', error);
+      if (this.debug) console.error('[NOTIFICATIONS_SERVICE] 🔔 Error obteniendo token FCM:', error);
       return null;
     }
   }
@@ -196,7 +197,7 @@ export class NotificationsService {
     try {
       await firstValueFrom(this.removeDeviceToken(token));
     } catch (error) {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 Error eliminando token previo en backend:', error);
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 Error eliminando token previo en backend:', error);
     }
   }
 
@@ -210,7 +211,7 @@ export class NotificationsService {
 
     const user = this.auth.getCurrentUser();
     if (!user) {
-      console.warn('[NOTIFICATIONS_SERVICE] 🔔 No hay usuario autenticado; se omite el registro del token');
+      if (this.debug) console.warn('[NOTIFICATIONS_SERVICE] 🔔 No hay usuario autenticado; se omite el registro del token');
       return;
     }
 

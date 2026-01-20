@@ -5,6 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 import { AuthService, AuthUser } from '../services/auth.service';
 import { ProviderAvailabilityService, WeeklyBlockDTO } from '../../services/provider-availability.service';
 import { ProviderServicesService, ProviderServiceDto } from '../../services/provider-services.service';
+import { environment } from '../../../environments/environment';
 
 function getStoredUser(): AuthUser | null {
   if (typeof localStorage === 'undefined') return null;
@@ -32,15 +33,18 @@ const guardImpl = async (targetUrl?: string): Promise<boolean | UrlTree> => {
   const router = inject(Router);
   const servicesApi = inject(ProviderServicesService);
   const availabilityApi = inject(ProviderAvailabilityService);
+  const debug = !environment.production;
 
   const hasToken = !!auth.getAccessToken();
   let user: AuthUser | null = auth.getCurrentUser() || getStoredUser();
-  console.log('[PROVIDER_SETUP_GUARD] start', {
-    url: targetUrl,
-    hasToken,
-    hasUserInMemory: !!auth.getCurrentUser(),
-    hasUserStored: !!getStoredUser()
-  });
+  if (debug) {
+    console.log('[PROVIDER_SETUP_GUARD] start', {
+      url: targetUrl,
+      hasToken,
+      hasUserInMemory: !!auth.getCurrentUser(),
+      hasUserStored: !!getStoredUser()
+    });
+  }
 
   // Si hay token pero no user cargado, intentar rehidratar desde /auth/me para decidir correctamente
   if (!user && hasToken) {
@@ -50,31 +54,39 @@ const guardImpl = async (targetUrl?: string): Promise<boolean | UrlTree> => {
       if (backendUser) {
         auth.applyUserFromBackend(backendUser);
         user = backendUser;
-        console.log('[PROVIDER_SETUP_GUARD] hydrated user from /auth/me', {
-          userId: backendUser?.id,
-          role: backendUser?.role,
-          pending_role: backendUser?.pending_role,
-          active_plan_id: backendUser?.active_plan_id
-        });
+        if (debug) {
+          console.log('[PROVIDER_SETUP_GUARD] hydrated user from /auth/me', {
+            userId: backendUser?.id,
+            role: backendUser?.role,
+            pending_role: backendUser?.pending_role,
+            active_plan_id: backendUser?.active_plan_id
+          });
+        }
       }
     } catch (e) {
-      console.warn('[PROVIDER_SETUP_GUARD] could not hydrate from /auth/me', e);
+      if (debug) {
+        console.warn('[PROVIDER_SETUP_GUARD] could not hydrate from /auth/me', e);
+      }
     }
   }
 
   // Evitar bloquear cuando el usuario aún no está disponible y no se puede rehidratar
   if (!user) {
-    console.log('[PROVIDER_SETUP_GUARD] allow (no user available)');
+    if (debug) {
+      console.log('[PROVIDER_SETUP_GUARD] allow (no user available)');
+    }
     return true;
   }
 
   // Solo aplica a cuentas provider-like
   if (!isProviderLike(user)) {
-    console.log('[PROVIDER_SETUP_GUARD] allow (not provider-like)', {
-      userId: user?.id,
-      role: user?.role,
-      pending_role: (user as any)?.pending_role
-    });
+    if (debug) {
+      console.log('[PROVIDER_SETUP_GUARD] allow (not provider-like)', {
+        userId: user?.id,
+        role: user?.role,
+        pending_role: (user as any)?.pending_role
+      });
+    }
     return true;
   }
 
@@ -86,33 +98,41 @@ const guardImpl = async (targetUrl?: string): Promise<boolean | UrlTree> => {
       if (backendUser) {
         auth.applyUserFromBackend(backendUser);
         user = backendUser;
-        console.log('[PROVIDER_SETUP_GUARD] refreshed user due to missing active_plan_id', {
-          userId: backendUser?.id,
-          role: backendUser?.role,
-          pending_role: backendUser?.pending_role,
-          active_plan_id: backendUser?.active_plan_id
-        });
+        if (debug) {
+          console.log('[PROVIDER_SETUP_GUARD] refreshed user due to missing active_plan_id', {
+            userId: backendUser?.id,
+            role: backendUser?.role,
+            pending_role: backendUser?.pending_role,
+            active_plan_id: backendUser?.active_plan_id
+          });
+        }
       }
     } catch {
       // si falla, no bloqueamos por no poder validar
-      console.warn('[PROVIDER_SETUP_GUARD] allow (failed to refresh /auth/me)');
+      if (debug) {
+        console.warn('[PROVIDER_SETUP_GUARD] allow (failed to refresh /auth/me)');
+      }
       return true;
     }
   }
 
   // Solo forzar wizard si ya tiene plan activo
   if (!user.active_plan_id) {
-    console.log('[PROVIDER_SETUP_GUARD] allow (no active_plan_id yet)', {
-      userId: user?.id,
-      role: user?.role,
-      pending_role: (user as any)?.pending_role
-    });
+    if (debug) {
+      console.log('[PROVIDER_SETUP_GUARD] allow (no active_plan_id yet)', {
+        userId: user?.id,
+        role: user?.role,
+        pending_role: (user as any)?.pending_role
+      });
+    }
     return true;
   }
 
   const url = targetUrl || '';
   if (isAllowedDuringSetup(url)) {
-    console.log('[PROVIDER_SETUP_GUARD] allow (allowed during setup)', { url });
+    if (debug) {
+      console.log('[PROVIDER_SETUP_GUARD] allow (allowed during setup)', { url });
+    }
     return true;
   }
 
@@ -134,23 +154,31 @@ const guardImpl = async (targetUrl?: string): Promise<boolean | UrlTree> => {
     const hasService = (services?.length || 0) > 0;
     const hasSchedule = (blocks?.length || 0) > 0;
 
-    console.log('[PROVIDER_SETUP_GUARD] status', {
-      userId: user?.id,
-      active_plan_id: user?.active_plan_id,
-      servicesCount: services?.length || 0,
-      blocksCount: blocks?.length || 0
-    });
+    if (debug) {
+      console.log('[PROVIDER_SETUP_GUARD] status', {
+        userId: user?.id,
+        active_plan_id: user?.active_plan_id,
+        servicesCount: services?.length || 0,
+        blocksCount: blocks?.length || 0
+      });
+    }
 
     if (hasService && hasSchedule) {
-      console.log('[PROVIDER_SETUP_GUARD] allow (setup complete)');
+      if (debug) {
+        console.log('[PROVIDER_SETUP_GUARD] allow (setup complete)');
+      }
       return true;
     }
 
-    console.warn('[PROVIDER_SETUP_GUARD] redirect -> /dash/provider-setup (setup incomplete)');
+    if (debug) {
+      console.warn('[PROVIDER_SETUP_GUARD] redirect -> /dash/provider-setup (setup incomplete)');
+    }
     return router.parseUrl('/dash/provider-setup');
   } catch {
     // Si no pudimos verificar, no bloqueamos (evita lockout por errores transitorios)
-    console.warn('[PROVIDER_SETUP_GUARD] allow (verification failed)');
+    if (debug) {
+      console.warn('[PROVIDER_SETUP_GUARD] allow (verification failed)');
+    }
     return true;
   }
 };

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 import { 
   Notification, 
   NotificationType, 
@@ -35,10 +36,11 @@ export class NotificationService {
   private events: NotificationEvent[] = [];
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
+  private readonly debug = !environment.production;
 
   constructor() {
     // Sin datos de demo; se inicializa configuración y se carga lista vacía
-    console.log('🔔 [NOTIFICATION_SERVICE] Constructor inicializado');
+    if (this.debug) console.log('🔔 [NOTIFICATION_SERVICE] Constructor inicializado');
     this.loadConfiguration();
     this.notificationsSubject.next([]);
   }
@@ -54,11 +56,21 @@ export class NotificationService {
   // ===== CONFIGURACIÓN =====
   
   setUserProfile(profile: UserProfile): void {
-    console.log('🔔 [NOTIFICATION_SERVICE] setUserProfile llamado', { profileAnterior: this.currentProfile, nuevoPerfil: profile });
+    if (this.debug) {
+      console.log('🔔 [NOTIFICATION_SERVICE] setUserProfile llamado', {
+        profileAnterior: this.currentProfile,
+        nuevoPerfil: profile
+      });
+    }
     this.currentProfile = profile;
     this.loadConfiguration();
     this.loadNotifications();
-    console.log('🔔 [NOTIFICATION_SERVICE] Perfil establecido, notificaciones actuales:', this.notificationsByProfile[profile]?.length || 0);
+    if (this.debug) {
+      console.log(
+        '🔔 [NOTIFICATION_SERVICE] Perfil establecido, notificaciones actuales:',
+        this.notificationsByProfile[profile]?.length || 0
+      );
+    }
   }
 
   getCurrentProfile(): UserProfile {
@@ -66,7 +78,7 @@ export class NotificationService {
   }
 
   private loadConfiguration(): void {
-    console.log('🔔 [NOTIFICATION_SERVICE] Configurando perfil', this.currentProfile);
+    if (this.debug) console.log('🔔 [NOTIFICATION_SERVICE] Configurando perfil', this.currentProfile);
     const config: NotificationConfig = {
       profile: this.currentProfile,
       enabledTypes: this.getDefaultEnabledTypes(),
@@ -126,17 +138,19 @@ export class NotificationService {
     const readAt = normalizeDate(notification.readAt);
     const metadata = this.normalizeMetadata(notification.metadata);
 
-    console.log('🔔 [NOTIFICATION_SERVICE] enrichNotification', {
-      id: notification.id,
-      type: notification.type,
-      createdAt: createdAt?.toISOString?.() ?? createdAt,
-      rawCreatedAt: notification.createdAt,
-      metaDate: notification.metadata?.['appointmentDate'] ?? notification.metadata?.['date'],
-      metaTime: notification.metadata?.['appointmentTime'] ?? notification.metadata?.['time'],
-      normalizedDate: metadata?.['appointmentDate'],
-      normalizedTime: metadata?.['appointmentTime'],
-      message: notification.message
-    });
+    if (this.debug) {
+      console.log('🔔 [NOTIFICATION_SERVICE] enrichNotification', {
+        id: notification.id,
+        type: notification.type,
+        createdAt: createdAt?.toISOString?.() ?? createdAt,
+        rawCreatedAt: notification.createdAt,
+        metaDate: notification.metadata?.['appointmentDate'] ?? notification.metadata?.['date'],
+        metaTime: notification.metadata?.['appointmentTime'] ?? notification.metadata?.['time'],
+        normalizedDate: metadata?.['appointmentDate'],
+        normalizedTime: metadata?.['appointmentTime'],
+        message: notification.message
+      });
+    }
 
     return {
       ...defaults,
@@ -182,10 +196,17 @@ export class NotificationService {
   private initializeNotifications(): void { /* removido demo */ }
 
   private loadNotifications(): void {
-    console.log('🔔 [NOTIFICATION_SERVICE] loadNotifications ejecutado. Perfil:', this.currentProfile);
+    if (this.debug) console.log('🔔 [NOTIFICATION_SERVICE] loadNotifications ejecutado. Perfil:', this.currentProfile);
     this.notificationsSubject.next(this.getProfileNotifications());
     this.updateUnreadCountValue();
-    console.log('🔔 [NOTIFICATION_SERVICE] Después de loadNotifications -> total:', this.notificationsByProfile[this.currentProfile]?.length || 0, 'no leídas:', this.notificationsByProfile[this.currentProfile]?.filter(n => n.status === 'unread').length || 0);
+    if (this.debug) {
+      console.log(
+        '🔔 [NOTIFICATION_SERVICE] Después de loadNotifications -> total:',
+        this.notificationsByProfile[this.currentProfile]?.length || 0,
+        'no leídas:',
+        this.notificationsByProfile[this.currentProfile]?.filter((n) => n.status === 'unread').length || 0
+      );
+    }
   }
 
   private normalizeMetadata(metadata?: Record<string, any>): Record<string, any> | undefined {

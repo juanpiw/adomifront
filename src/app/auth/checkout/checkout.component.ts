@@ -58,9 +58,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private stripeService = inject(StripeService);
   private authService = inject(AuthService);
+  private readonly debug = !environment.production;
 
   ngOnInit() {
-    console.log('[CHECKOUT] Init');
+    if (this.debug) console.log('[CHECKOUT] Init');
     // Verificar que hay datos temporales
     const tempData = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined' 
       ? sessionStorage.getItem('tempUserData') : null;
@@ -68,13 +69,30 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       ? sessionStorage.getItem('selectedPlan') : null;
     
     if (!tempData || !planData) {
-      console.warn('[CHECKOUT] Faltan tempUserData o selectedPlan. Redirigiendo a /auth/register');
+      if (this.debug) console.warn('[CHECKOUT] Faltan tempUserData o selectedPlan. Redirigiendo a /auth/register');
       this.router.navigateByUrl('/auth/register');
       return;
     }
 
-    try { this.tempUserData = JSON.parse(tempData); console.log('[CHECKOUT] tempUserData:', this.tempUserData); } catch (e) { console.error('[CHECKOUT] Error parseando tempUserData:', e); }
-    try { this.selectedPlan = JSON.parse(planData); console.log('[CHECKOUT] selectedPlan:', this.selectedPlan); } catch (e) { console.error('[CHECKOUT] Error parseando selectedPlan:', e); }
+    try {
+      this.tempUserData = JSON.parse(tempData);
+      // No loguear datos sensibles (password en tempUserData)
+      if (this.debug) {
+        console.log('[CHECKOUT] tempUserData loaded', {
+          hasData: !!this.tempUserData,
+          email: this.tempUserData?.email,
+          role: this.tempUserData?.role
+        });
+      }
+    } catch (e) {
+      if (this.debug) console.error('[CHECKOUT] Error parseando tempUserData:', e);
+    }
+    try {
+      this.selectedPlan = JSON.parse(planData);
+      if (this.debug) console.log('[CHECKOUT] selectedPlan loaded', this.selectedPlan);
+    } catch (e) {
+      if (this.debug) console.error('[CHECKOUT] Error parseando selectedPlan:', e);
+    }
 
     this.promoCode = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined'
       ? sessionStorage.getItem('promoCode')
@@ -102,7 +120,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
           sessionStorage.removeItem('tempUserData');
           sessionStorage.removeItem('selectedPlan');
-          console.log('[CHECKOUT] Removidos tempUserData/selectedPlan por sesión activa');
+          if (this.debug) console.log('[CHECKOUT] Removidos tempUserData/selectedPlan por sesión activa');
         }
       } catch {}
     } else if (this.requiresPlan) {
@@ -115,7 +133,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   async proceedToPayment() {
     if (!this.selectedPlan) {
-      console.warn('[CHECKOUT] No hay selectedPlan. Abortando.');
+      if (this.debug) console.warn('[CHECKOUT] No hay selectedPlan. Abortando.');
       return;
     }
 
@@ -126,7 +144,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     try {
       const hasToken = !!this.authService.getAccessToken();
       if (!hasToken && this.tempUserData) {
-        console.log('[CHECKOUT] No hay token. Registrando usuario primero...');
+        if (this.debug) console.log('[CHECKOUT] No hay token. Registrando usuario primero...');
         await this.registerUserFirst();
       }
 
@@ -148,12 +166,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         return;
       }
 
-      console.log('[CHECKOUT] Creando sesión de Stripe para planId:', this.selectedPlan.id);
+      if (this.debug) console.log('[CHECKOUT] Creando sesión de Stripe para planId:', this.selectedPlan.id);
       this.http.post<CheckoutResponse>(`${environment.apiBaseUrl}/stripe/create-checkout-session`, {
         planId: this.selectedPlan.id
       }).subscribe({
         next: async (response) => {
-          console.log('[CHECKOUT] Respuesta create-checkout-session:', response);
+          if (this.debug) console.log('[CHECKOUT] Respuesta create-checkout-session:', response);
           if (response.ok && response.sessionId) {
             const result = await this.stripeService.redirectToCheckout({
               sessionId: response.sessionId,
@@ -162,7 +180,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             });
 
             if (!result.success && result.error) {
-              console.error('[CHECKOUT] redirectToCheckout error:', result.error);
+              if (this.debug) console.error('[CHECKOUT] redirectToCheckout error:', result.error);
               if (typeof result.error === 'string') {
                 this.stripeError = result.error;
               } else {
@@ -171,19 +189,19 @@ export class CheckoutComponent implements OnInit, OnDestroy {
               this.loading = false;
             }
           } else {
-            console.error('[CHECKOUT] Error creando sesión de pago:', response);
+            if (this.debug) console.error('[CHECKOUT] Error creando sesión de pago:', response);
             this.error = response.error || 'Error al crear sesión de pago';
             this.loading = false;
           }
         },
         error: (error) => {
-          console.error('Checkout error:', error);
+          if (this.debug) console.error('Checkout error:', error);
           this.error = 'Error al procesar el pago. Inténtalo nuevamente.';
           this.loading = false;
         }
       });
     } catch (error) {
-      console.error('Error en proceedToPayment:', error);
+      if (this.debug) console.error('Error en proceedToPayment:', error);
       this.error = 'Error inesperado. Inténtalo nuevamente.';
       this.loading = false;
     }
@@ -213,7 +231,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             planId = Number(fallback.planId);
           }
         } catch (e) {
-          console.warn('[CHECKOUT] No se pudo obtener planId starter por fallback', e);
+          if (this.debug) console.warn('[CHECKOUT] No se pudo obtener planId starter por fallback', e);
         }
       }
 
@@ -231,14 +249,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       try {
         await firstValueFrom(this.authService.getCurrentUserInfo());
       } catch (err) {
-        console.warn('[CHECKOUT] No se pudo refrescar /auth/me después de activar plan free', err);
+        if (this.debug) console.warn('[CHECKOUT] No se pudo refrescar /auth/me después de activar plan free', err);
       }
 
       this.cleanupSessionStorage();
       this.loading = false;
       this.router.navigateByUrl('/dash/home');
     } catch (error: any) {
-      console.error('[CHECKOUT] Error activando plan free:', error);
+      if (this.debug) console.error('[CHECKOUT] Error activando plan free:', error);
       const message = error?.error?.error || error?.message || 'No pudimos activar el plan Free. Intenta nuevamente.';
       this.error = message;
       this.loading = false;
@@ -277,7 +295,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
       this.redirectToTbk(response.url, response.token);
     } catch (error: any) {
-      console.error('[CHECKOUT] Error iniciando pago TBK:', error);
+      if (this.debug) console.error('[CHECKOUT] Error iniciando pago TBK:', error);
       const message = error?.error?.error || error?.message || 'No pudimos iniciar el pago con Webpay Plus.';
       this.error = message;
       this.loading = false;
@@ -351,7 +369,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } catch (error: any) {
       const message = String(error?.error?.error || error?.message || '').toLowerCase();
       if (message.includes('exists') || message.includes('ya existe') || message.includes('duplicate')) {
-        console.warn('[CHECKOUT] Email ya existe (registroUserFirst), intentando continuar');
+        if (this.debug) console.warn('[CHECKOUT] Email ya existe (registroUserFirst), intentando continuar');
         this.tempUserData = null;
         try {
           if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
@@ -380,7 +398,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         const resp: any = await firstValueFrom(this.authService.getCurrentUserInfo());
         providerId = resp?.data?.user?.id || resp?.user?.id || null;
       } catch (error) {
-        console.error('[CHECKOUT] No se pudo obtener el usuario actual:', error);
+        if (this.debug) console.error('[CHECKOUT] No se pudo obtener el usuario actual:', error);
       }
     }
 
@@ -410,14 +428,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       try {
         await firstValueFrom(this.authService.getCurrentUserInfo());
       } catch (err) {
-        console.warn('[CHECKOUT] No se pudo refrescar /auth/me después de aplicar promo', err);
+        if (this.debug) console.warn('[CHECKOUT] No se pudo refrescar /auth/me después de aplicar promo', err);
       }
 
       this.cleanupSessionStorage();
       this.loading = false;
       this.router.navigateByUrl('/dash/home');
     } catch (error: any) {
-      console.error('[CHECKOUT] Error aplicando promo:', error);
+      if (this.debug) console.error('[CHECKOUT] Error aplicando promo:', error);
       const message = error?.error?.error || error?.message || 'No pudimos activar tu Plan Fundador. Intenta nuevamente.';
       this.error = message;
       this.loading = false;
@@ -446,10 +464,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         metadata
       };
       this.http.post(`${environment.apiBaseUrl}/subscriptions/funnel/event`, payload).subscribe({
-        error: (err) => console.warn('[CHECKOUT] No se pudo registrar evento de funnel', err)
+        error: (err) => {
+          if (this.debug) console.warn('[CHECKOUT] No se pudo registrar evento de funnel', err);
+        }
       });
     } catch (err) {
-      console.warn('[CHECKOUT] Error interno trackFunnelEvent', err);
+      if (this.debug) console.warn('[CHECKOUT] Error interno trackFunnelEvent', err);
     }
   }
 

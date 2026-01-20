@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { IconComponent } from '../../icon/icon.component';
 import { NotificationService } from '../services/notification.service';
 import { Notification } from '../models/notification.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ui-notification-bell',
@@ -20,6 +21,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   unreadCount: number = 0;
   hasUnreadNotifications: boolean = false;
   private subscriptions: Subscription[] = [];
+  private readonly debug = !environment.production;
 
   constructor(private notificationService: NotificationService) {}
 
@@ -27,7 +29,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     // Suscribirse al contador de notificaciones no leídas
     this.subscriptions.push(
       this.notificationService.unreadCount$.subscribe(count => {
-        console.log('🔔 [NOTIFICATION_BELL] Contador actualizado:', count);
+        if (this.debug) console.log('🔔 [NOTIFICATION_BELL] Contador actualizado:', count);
         this.unreadCount = count;
         this.hasUnreadNotifications = count > 0;
       })
@@ -39,7 +41,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   toggleNotifications(): void {
-    console.log('🔔 [NOTIFICATION_BELL] toggleNotifications, estado actual:', this.isOpen);
+    if (this.debug) console.log('🔔 [NOTIFICATION_BELL] toggleNotifications, estado actual:', this.isOpen);
     this.toggle.emit();
   }
 

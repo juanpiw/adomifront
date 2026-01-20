@@ -28,6 +28,7 @@ import { ProviderInviteService, ProviderInvite, ProviderInviteSummary } from '..
 import { ProviderAvailabilityService } from '../../../services/provider-availability.service';
 import { Subscription } from 'rxjs';
 import { SessionService } from '../../../auth/services/session.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-d-home',
@@ -55,6 +56,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   private availabilityService = inject(ProviderAvailabilityService);
   private route = inject(ActivatedRoute);
   private providerRatingAverage: number | null = null;
+  private readonly debug = !environment.production;
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
@@ -137,7 +139,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   private loadProviderName() {
-    console.log('[DASH_HOME] Cargando nombre del provider...');
+    if (this.debug) console.log('[DASH_HOME] Cargando nombre del provider...');
     
     // Primero intentar desde el AuthService (localStorage)
     const currentUser = this.auth.getCurrentUser();
@@ -146,25 +148,25 @@ export class DashHomeComponent implements OnInit, OnDestroy {
         ...this.headerData,
         userName: currentUser.name
       };
-      console.log('[DASH_HOME] Nombre desde caché:', currentUser.name);
+      if (this.debug) console.log('[DASH_HOME] Nombre desde caché:', currentUser.name);
     }
     
     // Luego obtener desde el backend (datos frescos)
     this.providerProfile.getProfile().subscribe({
       next: (profile) => {
-        console.log('[DASH_HOME] Perfil obtenido:', profile);
+        if (this.debug) console.log('[DASH_HOME] Perfil obtenido:', profile);
         if (profile) {
           const name = profile.full_name || 'Usuario';
           this.headerData = {
             ...this.headerData,
             userName: name
           };
-          console.log('[DASH_HOME] Nombre actualizado desde backend:', name);
+          if (this.debug) console.log('[DASH_HOME] Nombre actualizado desde backend:', name);
           this.applyProviderRating(profile.rating_average);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] Error obteniendo perfil:', error);
+        if (this.debug) console.error('[DASH_HOME] Error obteniendo perfil:', error);
         // Fallback con getCurrentUserInfo si falla el endpoint de perfil
         this.auth.getCurrentUserInfo().subscribe({
           next: (res) => {
@@ -174,10 +176,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
                 ...this.headerData,
                 userName: user.name
               };
-              console.log('[DASH_HOME] Nombre desde fallback:', user.name);
+              if (this.debug) console.log('[DASH_HOME] Nombre desde fallback:', user.name);
             }
           },
-          error: (err) => console.error('[DASH_HOME] Error en fallback:', err)
+          error: (err) => {
+            if (this.debug) console.error('[DASH_HOME] Error en fallback:', err);
+          }
         });
       }
     });
@@ -203,10 +207,10 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   private loadPendingRequests() {
-    console.log('[DASH_HOME] 🎯 Cargando solicitudes pendientes (citas confirmadas sin pagar)...');
+    if (this.debug) console.log('[DASH_HOME] 🎯 Cargando solicitudes pendientes (citas confirmadas sin pagar)...');
     this.appointmentsService.listPendingRequests().subscribe({
       next: (response) => {
-        console.log('[DASH_HOME] 📦 Respuesta completa de solicitudes pendientes:', response);
+        if (this.debug) console.log('[DASH_HOME] 📦 Respuesta completa de solicitudes pendientes:', response);
         const raw = (response && response.success && Array.isArray((response as any).appointments))
           ? (response as any).appointments
           : [];
@@ -223,7 +227,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
         });
 
         if (upcoming.length > 0) {
-          console.log('[DASH_HOME] 📋 Citas confirmadas sin pagar encontradas (filtradas):', upcoming.length);
+          if (this.debug) console.log('[DASH_HOME] 📋 Citas confirmadas sin pagar encontradas (filtradas):', upcoming.length);
           this.solicitudesData = upcoming.map((appt: any) => {
             const solicitud = {
               id: String(appt.id),
@@ -236,18 +240,20 @@ export class DashHomeComponent implements OnInit, OnDestroy {
               location: 'Ubicación por confirmar',
               estimatedIncome: appt.scheduled_price || appt.price || 0
             };
-            console.log('[DASH_HOME] 🔄 Mapeando cita:', appt.id, '->', solicitud);
+            if (this.debug) console.log('[DASH_HOME] 🔄 Mapeando cita:', appt.id, '->', solicitud);
             return solicitud;
           });
-          console.log('[DASH_HOME] ✅ Solicitudes mapeadas exitosamente:', this.solicitudesData);
+          if (this.debug) console.log('[DASH_HOME] ✅ Solicitudes mapeadas exitosamente:', this.solicitudesData);
         } else {
           this.solicitudesData = [];
-          console.log('[DASH_HOME] ⚠️ No hay solicitudes pendientes - response:', response);
+          if (this.debug) console.log('[DASH_HOME] ⚠️ No hay solicitudes pendientes - response:', response);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] ❌ Error cargando solicitudes pendientes:', error);
-        console.error('[DASH_HOME] ❌ Error details:', error.status, error.statusText, error.url);
+        if (this.debug) {
+          console.error('[DASH_HOME] ❌ Error cargando solicitudes pendientes:', error);
+          console.error('[DASH_HOME] ❌ Error details:', error.status, error.statusText, error.url);
+        }
         this.solicitudesData = [];
       }
     });
@@ -308,13 +314,13 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   private loadNextAppointment() {
-    console.log('[DASH_HOME] 🎯 Cargando próxima cita confirmada...');
+    if (this.debug) console.log('[DASH_HOME] 🎯 Cargando próxima cita confirmada...');
     this.appointmentsService.getNextAppointment().subscribe({
       next: (response) => {
-        console.log('[DASH_HOME] 📦 Respuesta completa de próxima cita:', response);
+        if (this.debug) console.log('[DASH_HOME] 📦 Respuesta completa de próxima cita:', response);
         if (response.success && response.appointment) {
           const appt = response.appointment;
-          console.log('[DASH_HOME] 📅 Datos de la próxima cita:', appt);
+          if (this.debug) console.log('[DASH_HOME] 📅 Datos de la próxima cita:', appt);
           this.proximaCitaData = {
             id: String(appt.id),
             time: this.formatTime(appt.start_time),
@@ -328,50 +334,52 @@ export class DashHomeComponent implements OnInit, OnDestroy {
             location: 'Ubicación por confirmar',
             mapUrl: 'https://maps.google.com/?q=Ubicacion'
           };
-          console.log('[DASH_HOME] ✅ Próxima cita mapeada exitosamente:', this.proximaCitaData);
+          if (this.debug) console.log('[DASH_HOME] ✅ Próxima cita mapeada exitosamente:', this.proximaCitaData);
         } else {
           this.proximaCitaData = null;
-          console.log('[DASH_HOME] ⚠️ No hay próxima cita - response:', response);
+          if (this.debug) console.log('[DASH_HOME] ⚠️ No hay próxima cita - response:', response);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] ❌ Error cargando próxima cita:', error);
-        console.error('[DASH_HOME] ❌ Error details:', error.status, error.statusText, error.url);
+        if (this.debug) {
+          console.error('[DASH_HOME] ❌ Error cargando próxima cita:', error);
+          console.error('[DASH_HOME] ❌ Error details:', error.status, error.statusText, error.url);
+        }
         this.proximaCitaData = null;
       }
     });
   }
 
   private loadEarningsData() {
-    console.log('[DASH_HOME] Cargando datos de ingresos...');
+    if (this.debug) console.log('[DASH_HOME] Cargando datos de ingresos...');
     const today = new Date();
     const monthParam = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     const dayParam = `${monthParam}-${String(today.getDate()).padStart(2, '0')}`;
 
     this.paymentsService.getProviderEarningsSummary({ month: monthParam }).subscribe({
       next: (response) => {
-        console.log('[DASH_HOME] Ingresos del mes recibidos:', response);
+        if (this.debug) console.log('[DASH_HOME] Ingresos del mes recibidos:', response);
         if (response.success && response.summary) {
           this.ingresosData = this.buildMonthlyEarnings(response.summary);
-          console.log('[DASH_HOME] Ingresos del mes mapeados:', this.ingresosData);
+          if (this.debug) console.log('[DASH_HOME] Ingresos del mes mapeados:', this.ingresosData);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] Error cargando ingresos del mes:', error);
+        if (this.debug) console.error('[DASH_HOME] Error cargando ingresos del mes:', error);
         this.ingresosData = this.buildFallbackEarnings(this.ingresosData);
       }
     });
 
     this.paymentsService.getProviderEarningsSummary({ day: dayParam }).subscribe({
       next: (response) => {
-        console.log('[DASH_HOME] Ingresos del día recibidos:', response);
+        if (this.debug) console.log('[DASH_HOME] Ingresos del día recibidos:', response);
         if (response.success && response.summary) {
           this.ingresosDiaData = this.buildDailyEarnings(response.summary);
-          console.log('[DASH_HOME] Ingresos del día mapeados:', this.ingresosDiaData);
+          if (this.debug) console.log('[DASH_HOME] Ingresos del día mapeados:', this.ingresosDiaData);
         }
       },
       error: (error) => {
-        console.error('[DASH_HOME] Error cargando ingresos del día:', error);
+        if (this.debug) console.error('[DASH_HOME] Error cargando ingresos del día:', error);
         this.ingresosDiaData = this.buildFallbackEarnings(this.ingresosDiaData);
       }
     });
@@ -487,17 +495,17 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   private checkAvailabilitySetup() {
-    console.log('[DASH_HOME] Verificando configuración de disponibilidad...');
+    if (this.debug) console.log('[DASH_HOME] Verificando configuración de disponibilidad...');
 
     this.availabilityService.getWeekly().subscribe({
       next: (response) => {
         const activeBlocks = (response?.blocks || []).filter(block => block.is_active);
         this.availabilityBlocksCount = activeBlocks.length;
         this.showAvailabilityAlert = activeBlocks.length === 0;
-        console.log('[DASH_HOME] Bloques activos:', this.availabilityBlocksCount);
+        if (this.debug) console.log('[DASH_HOME] Bloques activos:', this.availabilityBlocksCount);
       },
       error: (error) => {
-        console.error('[DASH_HOME] Error obteniendo disponibilidad semanal:', error);
+        if (this.debug) console.error('[DASH_HOME] Error obteniendo disponibilidad semanal:', error);
         this.showAvailabilityAlert = false;
       }
     });
@@ -588,12 +596,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
   // Event handlers
   onNotificationClick(notification: any) {
-    console.log('Notificación clickeada', notification);
+    if (this.debug) console.log('Notificación clickeada', notification);
     // TODO: Implementar lógica de notificaciones en home si se requiere
   }
 
   onPublicProfileClick() {
-    console.log('Ver perfil público');
+    if (this.debug) console.log('Ver perfil público');
     // Navegar al perfil del trabajador y activar el tab "Ver Perfil Público"
     this.router.navigate(['/dash/perfil'], {
       queryParams: { tab: 'ver-perfil-publico' }
@@ -602,43 +610,43 @@ export class DashHomeComponent implements OnInit, OnDestroy {
 
 
   onViewDetailsClick(data: ProximaCitaData) {
-    console.log('Ver detalles de cita:', data);
+    if (this.debug) console.log('Ver detalles de cita:', data);
     // El modal se maneja automáticamente en el componente
   }
 
   onCitaAction(result: CitaDetalleResult) {
-    console.log('Acción en cita:', result);
+    if (this.debug) console.log('Acción en cita:', result);
     switch (result.action) {
       case 'contact':
-        console.log('Contactar cliente:', result.data);
+        if (this.debug) console.log('Contactar cliente:', result.data);
         // TODO: Implementar lógica de contacto (chat, llamada, etc.)
         break;
       case 'reschedule':
-        console.log('Reprogramar cita:', result.data);
+        if (this.debug) console.log('Reprogramar cita:', result.data);
         // TODO: Implementar lógica de reprogramación
         break;
     }
   }
 
   onCitaCancel(result: CancelCitaResult) {
-    console.log('Cancelar cita:', result);
+    if (this.debug) console.log('Cancelar cita:', result);
     // TODO: Implementar lógica de API para cancelar cita
     // TODO: Mostrar toast de confirmación
     // TODO: Actualizar lista de citas
   }
 
   onViewReportClick(data: IngresosData) {
-    console.log('Ver reporte completo:', data);
+    if (this.debug) console.log('Ver reporte completo:', data);
     // TODO: Navegar al reporte completo
   }
 
   onViewDayReportClick(data: IngresosDiaData) {
-    console.log('Ver reporte del día:', data);
+    if (this.debug) console.log('Ver reporte del día:', data);
     // TODO: Navegar al reporte del día
   }
 
   onNavigateToReport(navigationData: {period: string, type: string}) {
-    console.log('Navegando a reporte:', navigationData);
+    if (this.debug) console.log('Navegando a reporte:', navigationData);
     
     // Navegar a la página de ingresos con query parameters
     this.router.navigate(['/dash/ingresos'], {
@@ -656,24 +664,24 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   }
 
   onAcceptClick(data: SolicitudData) {
-    console.log('Aceptar solicitud:', data);
+    if (this.debug) console.log('Aceptar solicitud:', data);
     // Los modales se manejan automáticamente en el componente
   }
 
   onDeclineClick(data: SolicitudData) {
-    console.log('Rechazar solicitud:', data);
+    if (this.debug) console.log('Rechazar solicitud:', data);
     // Los modales se manejan automáticamente en el componente
   }
 
   onReservaAccepted(result: AcceptReservaResult) {
-    console.log('Reserva aceptada:', result);
+    if (this.debug) console.log('Reserva aceptada:', result);
     // TODO: Implementar lógica de API para aceptar reserva
     // TODO: Mostrar toast de éxito
     // TODO: Actualizar lista de solicitudes
   }
 
   onReservaRejected(result: RejectReservaResult) {
-    console.log('Reserva rechazada:', result);
+    if (this.debug) console.log('Reserva rechazada:', result);
     // TODO: Implementar lógica de API para rechazar reserva
     // TODO: Mostrar toast de información
     // TODO: Actualizar lista de solicitudes
@@ -686,12 +694,12 @@ export class DashHomeComponent implements OnInit, OnDestroy {
       status: 'confirmed' as const
     };
     this.gestionData.timeBlocks = [...this.gestionData.timeBlocks, newBlock];
-    console.log('Bloque de tiempo agregado:', newBlock);
+    if (this.debug) console.log('Bloque de tiempo agregado:', newBlock);
   }
 
   onRemoveTimeBlock(blockId: string) {
     this.gestionData.timeBlocks = this.gestionData.timeBlocks.filter((block) => block.id !== blockId);
-    console.log('Bloque de tiempo eliminado:', blockId);
+    if (this.debug) console.log('Bloque de tiempo eliminado:', blockId);
   }
 
   private initializeTbkBanner(): void {
@@ -703,7 +711,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     }
 
     void this.tbkOnboarding.refreshStatus().catch((error) => {
-      console.warn('[DASH_HOME] No se pudo refrescar el estado TBK:', error);
+      if (this.debug) console.warn('[DASH_HOME] No se pudo refrescar el estado TBK:', error);
     });
   }
 
