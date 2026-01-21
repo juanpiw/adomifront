@@ -10,6 +10,25 @@
   .payment-form-container {
     max-width: 32rem; // max-w-xl
   }
+
+  // Transferencias bancarias: deshabilitado (UI en gris y sin interacción)
+  .transfer-disabled {
+    opacity: 0.55;
+    filter: grayscale(0.2);
+
+    &__fieldset {
+      border: 0;
+      margin: 0;
+      padding: 0;
+
+      // refuerzo: aunque algún navegador no aplique bien "disabled"
+      pointer-events: none;
+    }
+
+    .save-payment-btn {
+      background-color: #94a3b8; // slate-400
+    }
+  }
   
   .payment-settings-form {
     .form-group {

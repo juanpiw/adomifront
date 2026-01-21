@@ -62,7 +62,6 @@ export class PaymentsService {
       { headers: this.headers() }
     ).pipe(
       tap((resp) => {
-        console.log('[TRACE][PAYMENTS_SERVICE] refreshCashSummary response', resp);
         if (resp?.success) {
           this.cashSummarySubject.next(resp.summary || null);
         }
@@ -116,7 +115,6 @@ export class PaymentsService {
   }
 
   createCheckoutSession(appointmentId: number): Observable<{ success: boolean; url: string }>{
-    console.log('[PAYMENTS_SERVICE] createCheckoutSession ->', { appointmentId });
     return this.http.post<{ success: boolean; url: string }>(
       `${this.base}/payments/appointments/${appointmentId}/checkout-session`,
       {},
@@ -129,7 +127,6 @@ export class PaymentsService {
     appointment_id: number;
     client_reference?: string;
   }): Observable<{ success: boolean; token?: string; url?: string; buy_order?: string }>{
-    console.log('[PAYMENTS_SERVICE] tbkCreateMallTransaction ->', params);
     return this.http.post<{ success: boolean; token?: string; url?: string; buy_order?: string }>(
       `${this.base}/tbk/mall/transactions`,
       params,
@@ -139,7 +136,6 @@ export class PaymentsService {
 
   // TBK Mall: commit
   tbkCommit(token: string): Observable<{ success: boolean; commit: any }>{
-    console.log('[PAYMENTS_SERVICE] tbkCommit ->', { token });
     return this.http.post<{ success: boolean; commit: any }>(
       `${this.base}/tbk/mall/commit`,
       { token },
@@ -177,13 +173,6 @@ export class PaymentsService {
     if (Number.isFinite(installments_number)) {
       payload.installments_number = installments_number;
     }
-    console.log('[PAYMENTS_SERVICE] ocAuthorize request ->', {
-      url,
-      appointmentId,
-      tbk_user: tbk_user ? `${String(tbk_user).slice(0, 6)}***` : null,
-      username,
-      installments_number: payload.installments_number ?? null
-    });
     return this.http.post<{ success: boolean; transaction: any }>(
       url,
       payload,
@@ -207,7 +196,6 @@ export class PaymentsService {
   }
 
   getPaymentStatus(appointmentId: number): Observable<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>{
-    console.log('[PAYMENTS_SERVICE] getPaymentStatus ->', { appointmentId });
     return this.http.get<{ success: boolean; payment: { status: string; paid_at?: string; amount?: number } }>(
       `${this.base}/payments/appointments/${appointmentId}/status`,
       { headers: this.headers() }
@@ -215,7 +203,6 @@ export class PaymentsService {
   }
 
   confirmAppointmentPayment(appointmentId: number, sessionId: string): Observable<{ success: boolean; confirmed: boolean; payment?: any }>{
-    console.log('[PAYMENTS_SERVICE] confirmAppointmentPayment ->', { appointmentId, sessionId });
     return this.http.get<{ success: boolean; confirmed: boolean; payment?: any }>(
       `${this.base}/payments/appointments/${appointmentId}/confirm`,
       { headers: this.headers(), params: { session_id: sessionId } as any }
@@ -227,7 +214,6 @@ export class PaymentsService {
     const params: Record<string, string> = {};
     if (filters?.month) params['month'] = filters.month;
     if (filters?.day) params['day'] = filters.day;
-    console.log('[PAYMENTS_SERVICE] getProviderEarningsSummary ->', params);
     return this.http.get<{ success: boolean; summary: ProviderEarningsSummary }>(
       `${this.base}/provider/earnings/summary`,
       { headers: this.headers(), params }

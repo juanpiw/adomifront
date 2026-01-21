@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ThemeSwitchComponent } from '../../../libs/shared-ui/theme-switch/theme-switch.component';

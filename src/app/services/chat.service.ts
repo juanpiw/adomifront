@@ -121,20 +121,18 @@ export class ChatService {
         auth: { token }
       });
       this.socket.on('connect_error', (err: any) => {
-        console.error('[CHAT SOCKET] connect_error:', err?.message || err);
+        // silent in prod
       });
       this.socket.on('error', (err: any) => {
-        console.error('[CHAT SOCKET] error:', err);
+        // silent in prod
       });
       this.socket.on('disconnect', (reason: any) => {
-        console.warn('[CHAT SOCKET] disconnected:', reason);
+        // silent in prod
       });
       this.socket.on('connect', () => {
-        try { console.log('[CHAT SOCKET] connected:', this.socket?.id); } catch {}
         // Re-join previously joined rooms on reconnect
         try {
           this.joinedRooms.forEach((convId) => {
-            console.log('[CHAT SOCKET] rejoin:conversation', convId);
             this.socket?.emit('join:conversation', convId);
           });
           // También unirse a la sala del usuario para badges globales
@@ -142,18 +140,15 @@ export class ChatService {
           const me = meRaw ? JSON.parse(meRaw) : null;
           if (me?.id) {
             this.socket?.emit('join:user', Number(me.id));
-            console.log('[CHAT SOCKET] join:user', me.id);
           }
         } catch {}
       });
       this.socket.on('reconnect', () => {
         try {
-          console.log('[CHAT SOCKET] reconnected, rejoining rooms');
           this.joinedRooms.forEach((convId) => this.socket?.emit('join:conversation', convId));
         } catch {}
       });
       this.socket.on('message:new', (msg: MessageDto) => {
-        console.log('[CHAT SOCKET] message:new', msg);
         // Asegurar ejecución dentro de Angular para disparar Change Detection
         this.zone.run(() => this.messageNew$.next(msg));
       });
@@ -172,7 +167,6 @@ export class ChatService {
   async joinConversation(conversationId: number): Promise<void> {
     if (!this.socket) await this.connectSocket();
     try {
-      console.log('[CHAT SOCKET] join:conversation', conversationId);
       this.socket?.emit('join:conversation', conversationId);
       this.joinedRooms.add(conversationId);
     } catch {}

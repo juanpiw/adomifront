@@ -39,6 +39,8 @@
         </div>
 
         <div *ngIf="!tbkSectionLoading" class="tbk-card__body">
+          <!-- tbk-card__meta oculto por ahora -->
+          <!--
           <div class="tbk-card__meta">
             <div>
               <span class="meta-label">Última actualización</span>
@@ -49,9 +51,12 @@
               <span class="meta-value">{{ tbkRemoteStatusLabel }}</span>
             </div>
           </div>
+          -->
 
           <div *ngIf="tbkError" class="tbk-card__error">{{ tbkError }}</div>
 
+          <!-- tbk-card__alert oculto por ahora -->
+          <!--
           <div *ngIf="!tbkKycReady && !tbkSecondaryCode" class="tbk-card__alert">
             <h4>Completa estos datos antes de solicitar el alta:</h4>
             <ul>
@@ -61,6 +66,7 @@
               Ir a completar mi ficha bancaria
             </button>
           </div>
+          -->
 
           <hr class="tbk-card__divider" />
 
