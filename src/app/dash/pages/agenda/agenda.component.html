@@ -211,8 +211,8 @@
         (updateTimeBlock)="onUpdateTimeBlock($event)">
       </app-horarios-config>
 
-      <div class="flex justify-end mt-4">
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg"
+      <div class="agenda-actions">
+        <button class="agenda-actions__save-btn"
                 [disabled]="loading"
                 (click)="onSaveSchedule()">
           {{ loading ? 'Guardando...' : 'Guardar Horario' }}

@@ -429,10 +429,8 @@ export class DashAgendaComponent implements OnInit {
 
   private loadCashSummary() {
     this.cashSummaryLoading = true;
-    console.log('[TRACE][AGENDA] loadCashSummary start');
     this.payments.refreshCashSummary().subscribe({
       next: (res) => {
-        console.log('[TRACE][AGENDA] loadCashSummary response', res);
         if (res?.success && res.summary) {
           this.cashTotal = Number(res.summary.total_due || 0);
           this.cashOverdueTotal = Number(res.summary.overdue_due || 0);
@@ -459,7 +457,6 @@ export class DashAgendaComponent implements OnInit {
           } else {
             this.cashPaymentLocalState = 'idle';
           }
-          console.log('[TRACE][AGENDA] loadCashSummary parsed', this.cashSummary);
           const debtIdx = this.dashboardMetrics.findIndex(m => m.label === 'Deuda a la aplicación');
           if (debtIdx >= 0) {
             this.dashboardMetrics[debtIdx] = { ...this.dashboardMetrics[debtIdx], value: `$${this.cashTotal.toLocaleString('es-CL')}` } as any;
@@ -478,12 +475,10 @@ export class DashAgendaComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('[TRACE][AGENDA] loadCashSummary error', err);
         this.cashSummaryLoading = false;
       },
       complete: () => {
         this.cashSummaryLoading = false;
-        console.log('[TRACE][AGENDA] loadCashSummary complete');
       }
     });
   }
@@ -1708,7 +1703,6 @@ export class DashAgendaComponent implements OnInit {
   private updateScheduledCount(): void {
     const scheduledCount = this.calendarEvents.filter(e => e.status === 'scheduled').length;
     this.scheduledAppointmentsCount = scheduledCount;
-    console.log(`🔔 [AGENDA] Contador actualizado: ${scheduledCount} citas programadas`);
   }
 
   private onRealtimeUpsert(a: AppointmentDto) {

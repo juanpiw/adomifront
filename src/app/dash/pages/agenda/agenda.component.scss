@@ -104,6 +104,35 @@
   }
 }
 
+/* Acciones de configuración (Guardar Horario) */
+.agenda-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.agenda-actions__save-btn {
+  background: #4f46e5; /* indigo-600 */
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #4338ca; /* indigo-700 */
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
 /* 🔔 Badge rojo de citas pendientes en el botón */
 .agenda-nav__badge {
   position: absolute;
