@@ -63,6 +63,7 @@ export class ProviderSetupComponent implements OnInit {
   error: string | null = null;
   createdServiceId: number | null = null;
   scheduleCreated = false;
+  published = false;
 
   private router = inject(Router);
   private servicesApi = inject(ProviderServicesService);
@@ -110,7 +111,8 @@ export class ProviderSetupComponent implements OnInit {
   }
 
   get nextLabel(): string {
-    return this.currentStep === 3 ? 'Publicar Servicio' : 'Continuar';
+    if (this.currentStep !== 3) return 'Continuar';
+    return this.published ? 'Configurar perfil' : 'Publicar Servicio';
   }
 
   get availabilityLabel(): string {
@@ -184,8 +186,12 @@ export class ProviderSetupComponent implements OnInit {
       return;
     }
 
-    // Step 3: finalizar
-    this.router.navigateByUrl('/dash/home').catch(() => {});
+    // Step 3: "Publicar" (finalizar onboarding)
+    if (!this.published) {
+      this.published = true;
+      return;
+    }
+    this.goToProfile();
   }
 
   addBlock(): void {
@@ -269,6 +275,10 @@ export class ProviderSetupComponent implements OnInit {
 
   goToTransbankSetup(): void {
     this.router.navigate(['/dash/ingresos'], { queryParams: { section: 'tbk', onboarding: '1' } }).catch(() => {});
+  }
+
+  goToProfile(): void {
+    this.router.navigateByUrl('/dash/perfil').catch(() => {});
   }
 
   private async persistServiceAndGoNext(): Promise<void> {

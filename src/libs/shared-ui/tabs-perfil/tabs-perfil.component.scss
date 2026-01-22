@@ -37,6 +37,25 @@
   }
 }
 
+@media (max-width: 768px) {
+  .tabs-perfil {
+    &__nav {
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0;
+    }
+
+    &__button {
+      width: 100%;
+      text-align: left;
+      white-space: normal;
+      padding: 0.85rem 1rem;
+      border-bottom-width: 2px;
+      min-height: 44px;
+    }
+  }
+}
+
 
 
 

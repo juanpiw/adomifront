@@ -52,7 +52,8 @@
         </p>
       </div>
       
-      <div class="fade-in-up mb-16">
+      <!-- Desktop/Tablet: Founder code request -->
+      <div class="fade-in-up mb-16 hidden sm:block">
         <form (ngSubmit)="onSubmit($event)" class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
           <input 
             type="email" 
@@ -72,6 +73,16 @@
             </svg>
           </button>
         </form>
+      </div>
+
+      <!-- Mobile: simple CTA -->
+      <div class="fade-in-up mb-12 sm:hidden">
+        <a
+          routerLink="/auth/register"
+          class="inline-flex w-full max-w-md mx-auto items-center justify-center rounded-full bg-indigo-600 px-8 py-4 font-semibold text-white transition-colors hover:bg-indigo-700"
+        >
+          Crear cuenta
+        </a>
       </div>
       
       <!-- Mockup de imagen -->

@@ -262,7 +262,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
             }
           });
         } catch (err) {
-          console.error('🔴 [DASH_LAYOUT] Error procesando nueva cita:', err);
+          // ignore
         }
       });
       // Realtime: cuando se actualiza la deuda (pago o revisión), refrescar resumen cash para banners/CTA
@@ -303,6 +303,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
         this.currentUrl = ev.urlAfterRedirects;
         this.evaluateTbkBlocking();
+        // Refrescar banner de horarios al navegar (el estado puede cambiar durante /dash/provider-setup sin recargar el layout)
+        this.loadScheduleBanner();
 
         if (ev.urlAfterRedirects.includes('/dash/mensajes')) {
           this.unreadTotal = 0;
@@ -328,13 +330,9 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       // Crear un elemento de audio dinámicamente
       const audio = new Audio('/assets/sounds/notification.mp3');
       audio.volume = 0.5; // Volumen al 50%
-      audio.play().catch(err => {
-        console.warn('🔴 [DASH_LAYOUT] No se pudo reproducir el sonido:', err);
-        // Los navegadores bloquean audio automático sin interacción del usuario
-        // Este es el comportamiento esperado en la primera carga
-      });
+      audio.play().catch(() => {});
     } catch (err) {
-      console.error('🔴 [DASH_LAYOUT] Error reproduciendo sonido:', err);
+      // ignore
     }
   }
 
@@ -361,7 +359,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('[DASH_LAYOUT] Error obteniendo perfil:', error);
+        // ignore
         // Si falla, intentar con getCurrentUserInfo como fallback
         this.auth.getCurrentUserInfo().subscribe({
           next: (res) => {
@@ -373,7 +371,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
               this.evaluateVerificationStatus((user as any)?.verification_status as VerificationStatus | undefined, this.verificationRejectionReason);
             }
           },
-          error: (err) => console.error('[DASH_LAYOUT] Error en fallback:', err)
+          error: () => {}
         });
       }
     });
@@ -431,7 +429,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
           this.refreshFeatureFlags();
         },
         error: (error) => {
-          console.error('Error loading plan info:', error);
+          // ignore
           this.planInfo = null;
           this.planProgress = null;
           this.showPlanAlert = false;
@@ -464,6 +462,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   private loadScheduleBanner(): void {
     if (!this.isProviderLike) {
+      this.scheduleBanner = null;
+      return;
+    }
+    // Si estamos en el onboarding de proveedor, este banner estorba (el wizard ya cubre este paso)
+    const urlNow = this.currentUrl || this.router.url || '';
+    if (urlNow.includes('/dash/provider-setup')) {
       this.scheduleBanner = null;
       return;
     }
@@ -547,7 +551,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         this.router.navigateByUrl('/');
       },
       error: (error) => {
-        console.error('Error during logout:', error);
+      // ignore
         // Aunque falle el logout en el servidor, ya se limpiaron los datos localmente
         // Redirigir al home de todas formas
         this.router.navigateByUrl('/');
@@ -1067,7 +1071,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         }, 30000);
       }
     } catch (error) {
-      console.error('[DASH_LAYOUT] Error inicializando notificaciones:', error);
+      // ignore
     }
   }
 
@@ -1080,7 +1084,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     }
 
     void this.tbkOnboarding.refreshStatus().catch((error) => {
-      console.warn('[DASH_LAYOUT] No se pudo refrescar el estado TBK:', error);
+      // ignore
     });
   }
 
@@ -1153,11 +1157,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
         if (resp?.ok && typeof resp.count === 'number') {
           this.notifications.updateUnreadCount(resp.count);
         } else {
-          console.warn('[DASH_LAYOUT] 🔔 Invalid response format:', resp);
+          // ignore
         }
       },
       error: (err) => {
-        console.error('[DASH_LAYOUT] 🔔 Error loading unread count:', err);
+        // ignore
       }
     });
   }

@@ -429,6 +429,12 @@ input:checked + .slider:before {
   padding: 20px 0;
 }
 
+.publish-cta {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 6px;
+}
+
 .success-icon {
   font-size: 3rem;
   margin-bottom: 10px;

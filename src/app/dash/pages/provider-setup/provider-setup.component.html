@@ -170,9 +170,18 @@
       <!-- STEP 3 -->
       <div class="step-content" [class.active]="currentStep === 3">
         <div class="success-preview">
-          <div class="success-icon">🎉</div>
-          <h2>¡Todo listo para empezar!</h2>
-          <p class="subtitle">Así es como verán tus clientes tu nuevo servicio.</p>
+          <div class="success-icon">{{ published ? '✅' : '🎉' }}</div>
+          <h2>{{ published ? 'Servicio publicado' : '¡Todo listo para empezar!' }}</h2>
+          <p class="subtitle" *ngIf="!published">Así es como verán tus clientes tu nuevo servicio.</p>
+          <p class="subtitle" *ngIf="published">
+            Tu último paso: configura tu perfil para que los clientes te conozcan.
+          </p>
+
+          <div class="publish-cta" *ngIf="published">
+            <button type="button" class="btn btn-primary" (click)="goToProfile()">
+              Configurar perfil
+            </button>
+          </div>
 
           <div class="preview-card">
             <h4>{{ serviceName.trim() || 'Servicio General' }}</h4>

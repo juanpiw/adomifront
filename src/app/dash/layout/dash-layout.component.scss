@@ -227,6 +227,12 @@
     margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
   }
 
+  /* En mobile NO queremos empujar "Salir" al fondo: debe quedar justo bajo "Perfil" */
+  .rail .spacer {
+    display: none;
+    flex: 0 0 auto;
+  }
+
   // En mobile el footer no debe empujar el contenido hacia abajo con margin-top:auto
   .footer {
     margin-top: 0;

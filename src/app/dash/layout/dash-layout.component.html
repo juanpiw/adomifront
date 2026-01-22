@@ -187,7 +187,7 @@
         </button>
       </div>
 
-      <div *ngIf="scheduleBanner" class="verification-banner verification-banner--info">
+      <div *ngIf="scheduleBanner && !isProviderSetupRoute" class="verification-banner verification-banner--info">
         <div class="verification-banner__message">{{ scheduleBanner.message }}</div>
         <button *ngIf="scheduleBanner.actionLink" type="button" (click)="onScheduleBannerClick()">
           {{ scheduleBanner.actionLabel || 'Configurar' }}
