@@ -273,8 +273,8 @@ export class ProviderSetupComponent implements OnInit {
     });
   }
 
-  goToTransbankSetup(): void {
-    this.router.navigate(['/dash/ingresos'], { queryParams: { section: 'tbk', onboarding: '1' } }).catch(() => {});
+  goToMercadoPagoSetup(): void {
+    this.router.navigate(['/dash/ingresos'], { queryParams: { section: 'mp', onboarding: '1' } }).catch(() => {});
   }
 
   goToProfile(): void {
