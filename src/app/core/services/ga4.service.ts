@@ -54,8 +54,11 @@ export class Ga4Service {
     window.dataLayer = window.dataLayer || [];
     window.gtag =
       window.gtag ||
-      function gtagShim(...args: any[]) {
-        window.dataLayer!.push(args);
+      function gtagShim() {
+        // Importante: gtag.js espera que se encole `arguments` (como el snippet oficial),
+        // no un array de args. Si se encola mal, no se envían hits a GA4.
+        // eslint-disable-next-line prefer-rest-params
+        window.dataLayer!.push(arguments as any);
       };
 
     // Insertar script solo una vez
@@ -70,7 +73,14 @@ export class Ga4Service {
 
     // Config base
     window.gtag('js', new Date());
-    window.gtag('config', this.measurementId, { send_page_view: false });
+    const debugMode = (() => {
+      try {
+        return localStorage.getItem('ga_debug') === '1';
+      } catch {
+        return false;
+      }
+    })();
+    window.gtag('config', this.measurementId, { send_page_view: false, debug_mode: debugMode });
   }
 
   pageView(path: string): void {
