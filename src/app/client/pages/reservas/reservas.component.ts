@@ -349,59 +349,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
   </div>
 
-  <!-- Modal: proveedor no puede recibir pagos con tarjeta -->
-  <div *ngIf="showTbkUnavailableModal" class="pay-modal__backdrop" (click)="closeTbkUnavailableModal()"></div>
-  <div *ngIf="showTbkUnavailableModal" class="pay-modal__container pay-modal__container--info" role="dialog" aria-modal="true">
-    <div class="pay-modal__header">
-      <h4>Pago con tarjeta no disponible</h4>
-      <button class="pay-modal__close" (click)="closeTbkUnavailableModal()">✕</button>
-    </div>
-    <div class="pay-modal__body">
-      <p class="pay-modal__alert-title">
-        {{ tbkShowEnrollButton ? 'Debes vincular tu tarjeta Oneclick.' : 'El profesional aún no puede recibir pagos con tarjeta.' }}
-      </p>
-      <p class="pay-modal__alert-text">{{ tbkUnavailableMessage || 'Puedes pagar en efectivo directamente al profesional.' }}</p>
-    </div>
-    <div class="pay-modal__actions">
-      <button class="pay-modal__btn" (click)="closeTbkUnavailableModal()" [disabled]="payModalLoading">Cerrar</button>
-      <button *ngIf="tbkShowEnrollButton" class="pay-modal__btn pay-modal__btn--primary" (click)="enrollCardFromUnavailableModal()" [disabled]="payModalLoading || payModalInscribing">
-        {{ payModalInscribing ? 'Abriendo Webpay...' : 'Vincular tarjeta' }}
-      </button>
-      <button class="pay-modal__btn pay-modal__btn--primary" (click)="payCashFromUnavailableModal()" [disabled]="payModalLoading">
-        {{ payModalLoading ? 'Procesando...' : 'Pagar en efectivo' }}
-      </button>
-    </div>
-  </div>
-
-  <!-- Modal: elegir tarjeta guardada u otra -->
-  <div *ngIf="showCardChoiceModal" class="pay-modal__backdrop" (click)="closeCardChoiceModal()"></div>
-  <div *ngIf="showCardChoiceModal" class="pay-modal__container" role="dialog" aria-modal="true">
-    <div class="pay-modal__header">
-      <h4>¿Cómo quieres pagar?</h4>
-      <button class="pay-modal__close" (click)="closeCardChoiceModal()">✕</button>
-    </div>
-    <div class="pay-modal__body">
-      <p class="pay-modal__alert-title">Tienes una tarjeta Oneclick vinculada.</p>
-      <p class="pay-modal__alert-text">Puedes usarla ahora o inscribir otra tarjeta antes de pagar.</p>
-      <div class="pay-modal__field">
-        <label class="pay-modal__label">Cuotas</label>
-        <select class="pay-modal__select" [(ngModel)]="cardChoiceInstallments">
-          <option *ngFor="let opt of cardInstallmentsOptions" [ngValue]="opt">
-            {{ opt }} cuota{{ opt > 1 ? 's' : '' }}
-          </option>
-        </select>
-        <small class="pay-modal__hint-text">Se enviarán estas cuotas en la autorización Oneclick.</small>
-      </div>
-    </div>
-    <div class="pay-modal__actions">
-      <button class="pay-modal__btn" (click)="payCashFromCardChoice()" [disabled]="payModalLoading">Pagar en efectivo</button>
-      <button class="pay-modal__btn" (click)="payMercadoPagoFromCardChoice()" [disabled]="payModalLoading">Pagar con Mercado Pago</button>
-      <button class="pay-modal__btn" (click)="enrollAnotherCard()" [disabled]="payModalLoading || payModalInscribing">Inscribir otra</button>
-      <button class="pay-modal__btn pay-modal__btn--primary" (click)="confirmPayWithSavedCard()" [disabled]="payModalLoading">
-        {{ payModalLoading ? 'Procesando...' : 'Pagar con esta tarjeta' }}
-      </button>
-    </div>
-  </div>
+  <!-- Pagos de citas: dejamos solo Mercado Pago (sin modales Oneclick/TBK) -->
 
   <!-- Modal cancelar cita -->
   <div *ngIf="showCancelModal" class="cancel-modal__backdrop" (click)="closeCancelModal()"></div>
@@ -891,17 +839,10 @@ export class ClientReservasComponent implements OnInit {
     this.validateProfile();
     // Preferencia de pago del cliente
     try { this.clientProfile.getPaymentPreference().subscribe({ next: (res:any) => this.clientPaymentPref = (res?.preference ?? null) as any, error: () => this.clientPaymentPref = null }); } catch {}
-    // Si venimos de Oneclick (TBK_TOKEN), Stripe o Mercado Pago, procesar query y luego cargar
-    const tbkToken = this.route.snapshot.queryParamMap.get('tbk_token');
-    const appointmentIdOc = Number(this.route.snapshot.queryParamMap.get('appointmentId') || this.loadOcPendingAppt());
+    // Si venimos de Mercado Pago (retorno), procesar query y luego cargar
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
-    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
     const gateway = String(this.route.snapshot.queryParamMap.get('gateway') || '').toLowerCase();
     const mpPaymentId = Number(this.route.snapshot.queryParamMap.get('payment_id') || 0);
-    if (tbkToken && appointmentIdOc) {
-      this.processOneclickReturn(tbkToken, appointmentIdOc);
-      return;
-    }
     if (appointmentId && gateway === 'mp' && mpPaymentId > 0) {
       this.payments.mpConfirmAppointmentPayment(appointmentId, mpPaymentId).subscribe({
         next: () => {
@@ -915,26 +856,7 @@ export class ClientReservasComponent implements OnInit {
       });
       return;
     }
-    if (appointmentId && sessionId) {
-      console.log('[RESERVAS] Processing payment return from Stripe:', { appointmentId, sessionId });
-      this.payments.confirmAppointmentPayment(appointmentId, sessionId).subscribe({
-        next: (resp) => {
-          console.log('[RESERVAS] Payment confirmed:', resp);
-          // Log adicional para trazar envío de emails en backend
-          console.log('[RESERVAS][TRACE] Confirm API returned. If webhook ran, backend should have logged email sending.');
-          this.loadAppointments();
-          this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
-        },
-        error: (err) => {
-          console.error('[RESERVAS] Error confirming payment:', err);
-          console.warn('[RESERVAS][TRACE] Confirm API error; webhook may still send emails asynchronously if event delivered.');
-          this.loadAppointments();
-          this.router.navigate([], { queryParams: { appointmentId: null, session_id: null }, queryParamsHandling: 'merge' });
-        }
-      });
-    } else {
-      this.loadAppointments();
-    }
+    this.loadAppointments();
     // Realtime: refrescar lista ante cambios relevantes
     this.appointments.onPaymentCompleted().subscribe(() => this.loadAppointments());
     this.appointments.onAppointmentUpdated().subscribe((appt) => {
@@ -1408,41 +1330,34 @@ export class ClientReservasComponent implements OnInit {
     }
     this.payModalApptId = appointmentId || null;
 
-    // Desactivamos el modal de método de pago para pruebas: ir directo a tarjeta/TBK
+    // Citas: solo Mercado Pago (no Stripe / no Oneclick/TBK)
     this.showPayMethodModal = false;
 
-    // Traer info TBK hijo para habilitar pago con tarjeta (Oneclick Mall)
     if (appointmentId) {
-      const providerId = this._providerByApptId[appointmentId];
-      if (providerId) {
-        this.payments.getTbkSecondaryInfo(providerId, appointmentId).subscribe({
-          next: (resp) => {
-            if (resp?.success) {
-              this.tbkInfoByProvider[providerId] = resp.tbk;
-              console.log('[TBK][PAY_MODAL] secondary info', { providerId, appointmentId, tbk: resp.tbk });
-            }
-          },
-          error: (err) => {
-            console.warn('[TBK][PAY_MODAL] secondary info error', { providerId, appointmentId, err });
-          }
-        });
-      }
-      // Perfil Oneclick del cliente
-      this.payments.ocProfile().subscribe({
-        next: (resp) => {
-          this.tbkClientProfile = resp || null;
-          this.tbkNeedsInscription = !resp?.tbk_user;
-          console.log('[TBK][PAY_MODAL] client oc profile', resp);
-        },
-        error: (err) => {
-          console.warn('[TBK][PAY_MODAL] oc profile error', err);
-          this.tbkNeedsInscription = true;
-        }
-      });
+      this.payWithMercadoPago(appointmentId);
     }
-    // Ejecutar pago con tarjeta de inmediato (TBK/Oneclick) para las pruebas actuales
-    this.payWithCard();
-    // Evitar redirección automática a Stripe en reintentos: no llames createCheckoutSession aquí
+  }
+
+  private payWithMercadoPago(appointmentId: number): void {
+    if (!appointmentId || this.payModalLoading) return;
+    this.payModalLoading = true;
+    this.payments.mpCreatePreference(appointmentId).subscribe({
+      next: (resp: any) => {
+        this.payModalLoading = false;
+        const url = String(resp?.init_point || '').trim();
+        if (resp?.success && url) {
+          try { window.location.assign(url); } catch { window.open(url, '_self'); }
+          return;
+        }
+        const msg = resp?.message || resp?.error || 'No pudimos iniciar Mercado Pago.';
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: msg, priority: 'high', actions: [] });
+      },
+      error: (err) => {
+        this.payModalLoading = false;
+        const msg = err?.error?.message || err?.error?.error || 'No pudimos iniciar Mercado Pago.';
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: msg, priority: 'high', actions: [] });
+      }
+    });
   }
 
   onPagarEfectivo(appointmentId: number) {
