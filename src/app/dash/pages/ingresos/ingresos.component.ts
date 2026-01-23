@@ -59,6 +59,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private tbkOnboarding = inject(TbkOnboardingService);
   private payments = inject(PaymentsService);
+  // TBK desactivado (Mercado Pago es el gateway principal por ahora)
+  showTbkSection = false;
   tabsConfig: TabConfig[] = [
     { id: 'resumen', label: 'Resumen de Ingresos', isActive: true },
     { id: 'wallet', label: 'Billetera Adomi', isActive: false },

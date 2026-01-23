@@ -1117,7 +1117,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       this.tbkBanner = {
         message: 'Debes configurar tu comercio para recibir pagos con tarjeta.',
         actionLabel: 'Configurar',
-        actionLink: '/dash/ingresos?section=tbk',
+        actionLink: '/dash/ingresos?section=mp',
         variant: 'info'
       };
     } else {
