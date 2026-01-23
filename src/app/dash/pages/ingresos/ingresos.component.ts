@@ -339,13 +339,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       startDate: filterChange.startDate,
       endDate: filterChange.endDate
     };
-    
-    console.log('Filtro de tiempo cambiado:', {
-      period: filterChange.period,
-      startDate: filterChange.startDate,
-      endDate: filterChange.endDate
-    });
-    
+
     // Recargar datos con el nuevo rango de fechas
     this.loadFinancialData();
   }

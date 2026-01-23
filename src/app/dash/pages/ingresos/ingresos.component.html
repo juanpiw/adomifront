@@ -20,6 +20,36 @@
     
     <!-- Pestaña: Resumen de Ingresos -->
     <div *ngIf="activeTab === 'resumen'" class="tab-panel">
+      <!-- Mercado Pago Split (Checkout Pro) -->
+      <section class="tbk-card">
+        <div class="tbk-card__header">
+          <div class="tbk-card__title">
+            <h3>Mercado Pago (Split)</h3>
+            <p>Conecta tu cuenta para recibir pagos con tarjeta vía Mercado Pago.</p>
+          </div>
+          <div class="tbk-card__chips">
+            <span class="chip chip--neutral">Estado: {{ mpStatusLabel }}</span>
+            <span *ngIf="mpUserId" class="chip chip--neutral">Usuario MP: {{ mpUserId }}</span>
+          </div>
+        </div>
+
+        <div class="tbk-card__body">
+          <div class="tbk-card__info">
+            <p *ngIf="!mpConnected">
+              Mercado Pago puede activarse más rápido que otros gateways. Conecta tu cuenta y empieza a cobrar por tus citas.
+            </p>
+            <p *ngIf="mpConnected && mpExpiresAt">
+              Conexión activa. Expira: <strong>{{ mpExpiresAt | date:'shortDate' }}</strong>
+            </p>
+            <div class="tbk-inline-form__actions">
+              <button type="button" class="tbk-btn tbk-btn--primary" (click)="connectMercadoPago()" [disabled]="mpActionLoading">
+                {{ mpActionLoading ? 'Abriendo…' : (mpConnected ? 'Reconectar' : 'Conectar Mercado Pago') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="tbk-card">
         <div class="tbk-card__header">
           <div class="tbk-card__title">
@@ -163,36 +193,6 @@
               <p>Crea tu primer comercio para comenzar a procesar pagos con Webpay Mall.</p>
             </div>
           </ng-template>
-        </div>
-      </section>
-
-      <!-- Mercado Pago Split (Checkout Pro) -->
-      <section class="tbk-card" style="margin-top: 16px;">
-        <div class="tbk-card__header">
-          <div class="tbk-card__title">
-            <h3>Mercado Pago (Split)</h3>
-            <p>Conecta tu cuenta para recibir pagos con tarjeta vía Mercado Pago.</p>
-          </div>
-          <div class="tbk-card__chips">
-            <span class="chip chip--neutral">Estado: {{ mpStatusLabel }}</span>
-            <span *ngIf="mpUserId" class="chip chip--neutral">Usuario MP: {{ mpUserId }}</span>
-          </div>
-        </div>
-
-        <div class="tbk-card__body">
-          <div class="tbk-card__info">
-            <p *ngIf="!mpConnected">
-              Mercado Pago puede activarse más rápido que otros gateways. Conecta tu cuenta y empieza a cobrar por tus citas.
-            </p>
-            <p *ngIf="mpConnected && mpExpiresAt">
-              Conexión activa. Expira: <strong>{{ mpExpiresAt | date:'shortDate' }}</strong>
-            </p>
-            <div class="tbk-inline-form__actions">
-              <button type="button" class="tbk-btn tbk-btn--primary" (click)="connectMercadoPago()" [disabled]="mpActionLoading">
-                {{ mpActionLoading ? 'Abriendo…' : (mpConnected ? 'Reconectar' : 'Conectar Mercado Pago') }}
-              </button>
-            </div>
-          </div>
         </div>
       </section>
 
