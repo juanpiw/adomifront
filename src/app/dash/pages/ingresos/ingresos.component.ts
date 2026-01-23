@@ -195,10 +195,6 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['period']) {
         this.selectedTimeFilter = params['period'];
-        console.log('Filtro configurado automáticamente desde query params:', params['period']);
-      }
-      if (params['type']) {
-        console.log('Tipo de reporte:', params['type']);
       }
     });
     
