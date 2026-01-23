@@ -69,57 +69,25 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
     this.selectedMethod = (this.data?.paymentPreference || 'card') as 'card' | 'cash';
     this.updatePrimaryLabel();
     this.expanded = !this.isPaid; // citas pagadas inician colapsadas
-    try {
-      console.log('[PROXIMA_CITA_CARD] Init', {
-        appointmentId: this.data?.appointmentId,
-        titulo: this.data?.titulo,
-        fecha: this.data?.fecha,
-        hora: this.data?.hora,
-        diasRestantes: this.data?.diasRestantes,
-        mostrarPagar: this.data?.mostrarPagar,
-        successHighlight: this.data?.successHighlight,
-        verification_code: this.data?.verification_code
-      });
-    } catch {}
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    try {
-      const paid = !!this.data?.verification_code;
-      console.log('[PROXIMA_CITA_CARD] Changes', {
-        appointmentId: this.data?.appointmentId,
-        hasVerificationCode: paid,
-        mostrarPagar: this.data?.mostrarPagar,
-        successHighlight: this.data?.successHighlight
-      });
-      const dataChange = changes['data'];
-      const prevId = dataChange?.previousValue?.appointmentId;
-      const currId = dataChange?.currentValue?.appointmentId;
-      const appointmentChanged = prevId !== currId;
-      const prefInput = this.data?.paymentPreference as ('card' | 'cash' | null | undefined);
+    const dataChange = changes['data'];
+    const prevId = dataChange?.previousValue?.appointmentId;
+    const currId = dataChange?.currentValue?.appointmentId;
+    const appointmentChanged = prevId !== currId;
+    const prefInput = this.data?.paymentPreference as ('card' | 'cash' | null | undefined);
 
-      if (appointmentChanged || prefInput) {
-        this.selectedMethod = (prefInput || 'card') as 'card' | 'cash';
-        this.updatePrimaryLabel();
-      }
-      if (this.isPaid) {
-        this.expanded = false; // al pasar a pagada, colapsar
-      }
-    } catch {}
+    if (appointmentChanged || prefInput) {
+      this.selectedMethod = (prefInput || 'card') as 'card' | 'cash';
+      this.updatePrimaryLabel();
+    }
+    if (this.isPaid) {
+      this.expanded = false; // al pasar a pagada, colapsar
+    }
   }
 
   onPagarClick(): void {
-    try {
-      console.log('[PROXIMA_CITA_CARD] PAGAR click', {
-        appointmentId: this.data?.appointmentId,
-        titulo: this.data?.titulo,
-        fecha: this.data?.fecha,
-        hora: this.data?.hora,
-        mostrarPagar: this.data?.mostrarPagar,
-        successHighlight: this.data?.successHighlight,
-        verification_code: this.data?.verification_code
-      });
-    } catch {}
     this.pagar.emit(this.data?.appointmentId || 0);
   }
 
@@ -131,11 +99,6 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   onPagarEfectivoClick(): void {
     this.selectedMethod = 'cash';
     this.pagarEfectivo.emit(this.data?.appointmentId || 0);
-  }
-
-  onCambiarMetodoClick(): void {
-    if (!this.data?.appointmentId) return;
-    this.cambiarMetodo.emit(this.data.appointmentId);
   }
 
   onSelectMethod(method: 'card' | 'cash'): void {
@@ -164,17 +127,10 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   }
 
   onContactarClick(): void {
-    try { console.log('[PROXIMA_CITA_CARD] CONTACTAR click', { appointmentId: this.data?.appointmentId }); } catch {}
     this.contactar.emit();
   }
 
   onReprogramarClick(): void {
-    try {
-      console.log('[PROXIMA_CITA_CARD] REPROGRAMAR click', {
-        appointmentId: this.data?.appointmentId,
-        allowReprogram: this.data?.allowReprogram
-      });
-    } catch {}
     if (this.data?.allowReprogram === false) {
       return;
     }
@@ -182,7 +138,6 @@ export class ProximaCitaCardComponent implements OnInit, OnChanges {
   }
 
   onCancelarClick(): void {
-    try { console.log('[PROXIMA_CITA_CARD] CANCELAR click', { appointmentId: this.data?.appointmentId }); } catch {}
     if (this.data?.appointmentId) {
       this.cancelar.emit(this.data.appointmentId);
     } else {

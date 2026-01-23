@@ -71,6 +71,7 @@ export class DashHomeComponent implements OnInit, OnDestroy {
   showTbkUrgentBanner = false;
   tbkState: TbkOnboardingState | null = null;
   private tbkStateSub?: Subscription;
+  mpConnectedForPayments = false;
   showAvailabilityAlert = false;
   availabilityBlocksCount = 0;
 
@@ -663,6 +664,13 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  goToPaymentsSetup(): void {
+    // Prioridad actual: Mercado Pago (Split)
+    this.router.navigate(['/dash/ingresos'], {
+      queryParams: { section: 'mp' }
+    });
+  }
+
   onAcceptClick(data: SolicitudData) {
     if (this.debug) console.log('Aceptar solicitud:', data);
     // Los modales se manejan automáticamente en el componente
@@ -706,12 +714,23 @@ export class DashHomeComponent implements OnInit, OnDestroy {
     if (!this.tbkStateSub) {
       this.tbkStateSub = this.tbkOnboarding.state$.subscribe((state) => {
         this.tbkState = state;
-        this.showTbkUrgentBanner = state?.status === 'none';
       });
     }
 
     void this.tbkOnboarding.refreshStatus().catch((error) => {
       if (this.debug) console.warn('[DASH_HOME] No se pudo refrescar el estado TBK:', error);
+    });
+
+    // Prioridad: si Mercado Pago NO está conectado, mostramos el banner (aunque TBK esté configurado o no).
+    this.paymentsService.mpProviderStatus().subscribe({
+      next: (resp: any) => {
+        this.mpConnectedForPayments = !!resp?.connected;
+        this.showTbkUrgentBanner = !this.mpConnectedForPayments;
+      },
+      error: () => {
+        this.mpConnectedForPayments = false;
+        this.showTbkUrgentBanner = true;
+      }
     });
   }
 

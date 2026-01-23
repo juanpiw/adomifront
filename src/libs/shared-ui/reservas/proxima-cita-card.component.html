@@ -83,8 +83,8 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
         </div>
         <div>
-          <div class="pc-pay-card__title">Webpay / Tarjeta</div>
-          <div class="pc-pay-card__text">Pago seguro inmediato</div>
+          <div class="pc-pay-card__title">Mercado Pago / Tarjeta</div>
+          <div class="pc-pay-card__text">Pago seguro con Mercado Pago</div>
         </div>
       </button>
 
@@ -119,9 +119,6 @@
       </div>
       <button class="pc-btn primary pay-cta" (click)="onPrimaryAction()">
         {{ primaryCtaLabel }}
-      </button>
-      <button *ngIf="data?.mostrarPagar && selectedMethod === 'card'" class="pc-btn ghost" style="margin-left:auto" (click)="onCambiarMetodoClick()">
-        Cambiar método de pago
       </button>
     </div>
     </div>

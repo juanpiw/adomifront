@@ -128,7 +128,6 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
               (pagar)="onPagar($event)"
               (pagarTarjeta)="onPagar($event)"
               (pagarEfectivo)="onPagarEfectivo($event)"
-              (cambiarMetodo)="onChangePaymentMethod($event)"
               (pedirDevolucion)="onRefund($event)"
               (reprogramar)="onRequestReschedule($event)"
               (contactar)="onContactar(p.appointmentId)"
