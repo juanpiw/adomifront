@@ -570,6 +570,23 @@ export class ClientReservasComponent implements OnInit {
   private favorites = inject(FavoritesService);
   private clientProfile = inject(ClientProfileService);
 
+  private readonly mpTraceEnabled = (() => {
+    try {
+      // Activa trazas en consola: localStorage.setItem('mp_trace','1')
+      return localStorage.getItem('mp_trace') === '1';
+    } catch {
+      return false;
+    }
+  })();
+
+  private mpTrace(message: string, data?: any): void {
+    if (!this.mpTraceEnabled) return;
+    try {
+      // No loguear tokens/PII; solo ids/estados.
+      console.log(`[MP_TRACE][RESERVAS] ${message}`, data || '');
+    } catch {}
+  }
+
   activeTab = 0;
   tabBadges: Array<number | null> = [null, null, null, null, null];
   highlightAppointmentId: number | null = null;
@@ -843,12 +860,15 @@ export class ClientReservasComponent implements OnInit {
     const gateway = String(this.route.snapshot.queryParamMap.get('gateway') || '').toLowerCase();
     const mpPaymentId = Number(this.route.snapshot.queryParamMap.get('payment_id') || 0);
     if (appointmentId && gateway === 'mp' && mpPaymentId > 0) {
+      this.mpTrace('Return from Mercado Pago detected', { appointmentId, mpPaymentId });
       this.payments.mpConfirmAppointmentPayment(appointmentId, mpPaymentId).subscribe({
-        next: () => {
+        next: (resp: any) => {
+          this.mpTrace('Confirm endpoint response', { appointmentId, mpPaymentId, resp });
           this.loadAppointments();
           this.router.navigate([], { queryParams: { appointmentId: null, gateway: null, payment_id: null }, queryParamsHandling: 'merge' });
         },
-        error: () => {
+        error: (err) => {
+          this.mpTrace('Confirm endpoint error', { appointmentId, mpPaymentId, status: err?.status, error: err?.error?.error || err?.message });
           this.loadAppointments();
           this.router.navigate([], { queryParams: { appointmentId: null, gateway: null, payment_id: null }, queryParamsHandling: 'merge' });
         }
@@ -1340,11 +1360,19 @@ export class ClientReservasComponent implements OnInit {
   private payWithMercadoPago(appointmentId: number): void {
     if (!appointmentId || this.payModalLoading) return;
     this.payModalLoading = true;
+    this.mpTrace('Creating preference', { appointmentId });
     this.payments.mpCreatePreference(appointmentId).subscribe({
       next: (resp: any) => {
         this.payModalLoading = false;
+        this.mpTrace('Preference response', {
+          appointmentId,
+          success: !!resp?.success,
+          preference_id: resp?.preference_id || null,
+          hasInitPoint: !!resp?.init_point
+        });
         const url = String(resp?.init_point || '').trim();
         if (resp?.success && url) {
+          this.mpTrace('Redirecting to Mercado Pago init_point', { appointmentId });
           try { window.location.assign(url); } catch { window.open(url, '_self'); }
           return;
         }
@@ -1353,6 +1381,7 @@ export class ClientReservasComponent implements OnInit {
       },
       error: (err) => {
         this.payModalLoading = false;
+        this.mpTrace('Preference error', { appointmentId, status: err?.status, error: err?.error?.error || err?.error?.message || err?.message });
         const msg = err?.error?.message || err?.error?.error || 'No pudimos iniciar Mercado Pago.';
         this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: msg, priority: 'high', actions: [] });
       }

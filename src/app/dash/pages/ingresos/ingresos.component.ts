@@ -211,6 +211,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       next: (resp: any) => {
         const connected = !!resp?.connected;
         this.mpConnected = connected;
+        // Si Mercado Pago NO está conectado, mostramos TBK como alternativa.
+        this.showTbkSection = !connected;
         this.mpUserId = resp?.mp_user_id ? Number(resp.mp_user_id) : null;
         this.mpExpiresAt = resp?.expires_at ? new Date(resp.expires_at) : null;
         if (connected) {
@@ -226,6 +228,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       error: () => {
         this.mpConnected = false;
         this.mpStatusLabel = 'No conectado';
+        // Si no podemos consultar estado MP, mostramos TBK como fallback.
+        this.showTbkSection = true;
       }
     });
   }
