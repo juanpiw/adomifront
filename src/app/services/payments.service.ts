@@ -143,6 +143,40 @@ export class PaymentsService {
     );
   }
 
+  // Mercado Pago (Split): provider OAuth start (returns auth URL)
+  mpOAuthStart(): Observable<{ success: boolean; url?: string; error?: string }>{
+    return this.http.post<{ success: boolean; url?: string; error?: string }>(
+      `${this.base}/provider/mercadopago/oauth/start`,
+      {},
+      { headers: this.headers() }
+    );
+  }
+
+  // Mercado Pago (Split): provider status
+  mpProviderStatus(): Observable<{ success: boolean; connected: boolean; status?: string; mp_user_id?: number | null; expires_at?: string | null }>{
+    return this.http.get<{ success: boolean; connected: boolean; status?: string; mp_user_id?: number | null; expires_at?: string | null }>(
+      `${this.base}/provider/mercadopago/status`,
+      { headers: this.headers() }
+    );
+  }
+
+  // Mercado Pago (Split): create preference for appointment payment
+  mpCreatePreference(appointmentId: number): Observable<{ success: boolean; init_point?: string; preference_id?: string; error?: string; message?: string }>{
+    return this.http.post<{ success: boolean; init_point?: string; preference_id?: string; error?: string; message?: string }>(
+      `${this.base}/payments/appointments/${appointmentId}/mercadopago/preference`,
+      {},
+      { headers: this.headers() }
+    );
+  }
+
+  // Mercado Pago (Split): confirm after redirect
+  mpConfirmAppointmentPayment(appointmentId: number, paymentId: number): Observable<{ success: boolean; confirmed: boolean; status?: string; error?: string }>{
+    return this.http.get<{ success: boolean; confirmed: boolean; status?: string; error?: string }>(
+      `${this.base}/payments/appointments/${appointmentId}/mercadopago/confirm`,
+      { headers: this.headers(), params: { payment_id: String(paymentId) } as any }
+    );
+  }
+
   // Oneclick (cliente)
   ocProfile(): Observable<{ success: boolean; tbk_user?: string | null; username?: string | null }>{
     return this.http.get<{ success: boolean; tbk_user?: string | null; username?: string | null }>(

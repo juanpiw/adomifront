@@ -395,6 +395,7 @@ import { ClientQuoteTabId } from '../../../services/quotes-client.service';
     </div>
     <div class="pay-modal__actions">
       <button class="pay-modal__btn" (click)="payCashFromCardChoice()" [disabled]="payModalLoading">Pagar en efectivo</button>
+      <button class="pay-modal__btn" (click)="payMercadoPagoFromCardChoice()" [disabled]="payModalLoading">Pagar con Mercado Pago</button>
       <button class="pay-modal__btn" (click)="enrollAnotherCard()" [disabled]="payModalLoading || payModalInscribing">Inscribir otra</button>
       <button class="pay-modal__btn pay-modal__btn--primary" (click)="confirmPayWithSavedCard()" [disabled]="payModalLoading">
         {{ payModalLoading ? 'Procesando...' : 'Pagar con esta tarjeta' }}
@@ -890,13 +891,28 @@ export class ClientReservasComponent implements OnInit {
     this.validateProfile();
     // Preferencia de pago del cliente
     try { this.clientProfile.getPaymentPreference().subscribe({ next: (res:any) => this.clientPaymentPref = (res?.preference ?? null) as any, error: () => this.clientPaymentPref = null }); } catch {}
-    // Si venimos de Oneclick (TBK_TOKEN) o Stripe success/cancel, procesar query y luego cargar
+    // Si venimos de Oneclick (TBK_TOKEN), Stripe o Mercado Pago, procesar query y luego cargar
     const tbkToken = this.route.snapshot.queryParamMap.get('tbk_token');
     const appointmentIdOc = Number(this.route.snapshot.queryParamMap.get('appointmentId') || this.loadOcPendingAppt());
     const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId'));
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    const gateway = String(this.route.snapshot.queryParamMap.get('gateway') || '').toLowerCase();
+    const mpPaymentId = Number(this.route.snapshot.queryParamMap.get('payment_id') || 0);
     if (tbkToken && appointmentIdOc) {
       this.processOneclickReturn(tbkToken, appointmentIdOc);
+      return;
+    }
+    if (appointmentId && gateway === 'mp' && mpPaymentId > 0) {
+      this.payments.mpConfirmAppointmentPayment(appointmentId, mpPaymentId).subscribe({
+        next: () => {
+          this.loadAppointments();
+          this.router.navigate([], { queryParams: { appointmentId: null, gateway: null, payment_id: null }, queryParamsHandling: 'merge' });
+        },
+        error: () => {
+          this.loadAppointments();
+          this.router.navigate([], { queryParams: { appointmentId: null, gateway: null, payment_id: null }, queryParamsHandling: 'merge' });
+        }
+      });
       return;
     }
     if (appointmentId && sessionId) {
@@ -2089,6 +2105,37 @@ export class ClientReservasComponent implements OnInit {
   payCashFromCardChoice() {
     this.closeCardChoiceModal();
     this.payWithCash();
+  }
+
+  payMercadoPagoFromCardChoice() {
+    const apptId = this.cardChoiceApptId;
+    this.closeCardChoiceModal();
+    if (!apptId || this.payModalLoading) return;
+    this.payModalLoading = true;
+    this.payments.mpCreatePreference(apptId).subscribe({
+      next: (resp: any) => {
+        this.payModalLoading = false;
+        const url = String(resp?.init_point || '').trim();
+        if (resp?.success && url) {
+          try { window.location.assign(url); } catch { window.open(url, '_self'); }
+          return;
+        }
+        const msg = resp?.message || resp?.error || 'No pudimos iniciar Mercado Pago.';
+        this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: msg, priority: 'high', actions: [] });
+      },
+      error: (err) => {
+        this.payModalLoading = false;
+        const code = err?.error?.error;
+        const msg = err?.error?.message || err?.error?.error || 'No pudimos iniciar Mercado Pago.';
+        if (err?.status === 403 && code === 'PAYMENT_PROVIDER_NOT_READY') {
+          this.tbkUnavailableMessage = msg;
+          this.tbkShowEnrollButton = false;
+          this.showTbkUnavailableModal = true;
+        } else {
+          this.notifications.createNotification({ type: 'system', profile: 'client', title: 'Error', message: msg, priority: 'high', actions: [] });
+        }
+      }
+    });
   }
 
   enrollAnotherCard() {

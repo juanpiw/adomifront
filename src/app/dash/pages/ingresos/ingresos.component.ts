@@ -29,6 +29,7 @@ import { firstValueFrom, Subscription, timer, forkJoin } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProviderIncomeGoalDto } from '../../../services/finances.service';
 import { TbkOnboardingService } from '../../../services/tbk-onboarding.service';
+import { PaymentsService } from '../../../services/payments.service';
 
 type TbkStatus = 'none' | 'pending' | 'active' | 'restricted';
 
@@ -57,6 +58,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   private providerProfile = inject(ProviderProfileService);
   private fb = inject(FormBuilder);
   private tbkOnboarding = inject(TbkOnboardingService);
+  private payments = inject(PaymentsService);
   tabsConfig: TabConfig[] = [
     { id: 'resumen', label: 'Resumen de Ingresos', isActive: true },
     { id: 'wallet', label: 'Billetera Adomi', isActive: false },
@@ -92,6 +94,11 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   // UI: modal de ayuda (solo diseño)
   tbkHelpOpen = false;
   tbkSecondaryShops: Array<{ name: string; code: string; status: TbkStatus; remoteStatus?: string | null }> = [];
+  mpConnected = false;
+  mpStatusLabel = 'No conectado';
+  mpUserId: number | null = null;
+  mpExpiresAt: Date | null = null;
+  mpActionLoading = false;
   tbkForm = this.fb.group({
     commerceName: ['', [Validators.required, Validators.minLength(3)]],
     commerceEmail: ['', [Validators.required, Validators.email]]
@@ -198,6 +205,51 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     // Cargar datos iniciales
     this.loadFinancialData();
     this.initializeTbkOnboarding();
+    this.loadMercadoPagoStatus();
+  }
+
+  loadMercadoPagoStatus(): void {
+    this.payments.mpProviderStatus().subscribe({
+      next: (resp: any) => {
+        const connected = !!resp?.connected;
+        this.mpConnected = connected;
+        this.mpUserId = resp?.mp_user_id ? Number(resp.mp_user_id) : null;
+        this.mpExpiresAt = resp?.expires_at ? new Date(resp.expires_at) : null;
+        if (connected) {
+          this.mpStatusLabel = 'Conectado';
+        } else if (resp?.status === 'revoked') {
+          this.mpStatusLabel = 'Desconectado';
+        } else if (resp?.status === 'expired') {
+          this.mpStatusLabel = 'Expirado';
+        } else {
+          this.mpStatusLabel = 'No conectado';
+        }
+      },
+      error: () => {
+        this.mpConnected = false;
+        this.mpStatusLabel = 'No conectado';
+      }
+    });
+  }
+
+  connectMercadoPago(): void {
+    if (this.mpActionLoading) return;
+    this.mpActionLoading = true;
+    this.payments.mpOAuthStart().subscribe({
+      next: (resp: any) => {
+        this.mpActionLoading = false;
+        const url = String(resp?.url || '').trim();
+        if (resp?.success && url) {
+          try { window.location.assign(url); } catch { window.open(url, '_self'); }
+          return;
+        }
+        this.mpStatusLabel = 'Error';
+      },
+      error: () => {
+        this.mpActionLoading = false;
+        this.mpStatusLabel = 'Error';
+      }
+    });
   }
 
   // ============================================================
