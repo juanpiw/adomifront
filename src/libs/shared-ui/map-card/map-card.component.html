@@ -1,11 +1,36 @@
 <!-- Elegant Map Card Container -->
-<div class="elegant-map-container" [style.height]="height">
+<div
+  class="elegant-map-container"
+  [style.height]="height"
+  [class.mobile-tab--cards]="isMobile && mobileTab === 'cards'"
+  [class.mobile-tab--map]="isMobile && mobileTab === 'map'"
+>
+
+  <!-- Mobile-only Tabs: Cards / Map -->
+  <div class="mobile-tabs" *ngIf="isMobile">
+    <button
+      type="button"
+      class="mobile-tabs__btn"
+      [class.active]="mobileTab === 'cards'"
+      (click)="setMobileTab('cards')"
+    >
+      Cards
+    </button>
+    <button
+      type="button"
+      class="mobile-tabs__btn"
+      [class.active]="mobileTab === 'map'"
+      (click)="setMobileTab('map')"
+    >
+      Mapa
+    </button>
+  </div>
   
   <!-- Main Content Wrapper -->
   <div class="content-wrapper">
     
     <!-- Left Panel: Professionals Section -->
-    <aside class="professionals-section">
+    <aside class="professionals-section" [class.mobile-hidden]="isMobile && mobileTab === 'map'">
       <div class="section-header">
         <h3 class="section-title">{{ professionals.length }} {{ title.toLowerCase() }}</h3>
       </div>
@@ -40,7 +65,7 @@
     </aside>
 
     <!-- Right Panel: Map Section -->
-    <div class="map-section">
+    <div class="map-section" [class.mobile-hidden]="isMobile && mobileTab === 'cards'">
       <!-- Render MapView also on mobile, with reduced height -->
       <ui-map-view
         [title]="'Mapa de Servicios'"

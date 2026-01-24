@@ -7,16 +7,21 @@
 
         <div class="step-indicator" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
           <div class="step-circle">1</div>
-          <div class="step-label">Servicio</div>
+          <div class="step-label">Perfil</div>
         </div>
 
         <div class="step-indicator" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
           <div class="step-circle">2</div>
-          <div class="step-label">Horario</div>
+          <div class="step-label">Servicio</div>
         </div>
 
         <div class="step-indicator" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
           <div class="step-circle">3</div>
+          <div class="step-label">Horario</div>
+        </div>
+
+        <div class="step-indicator" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
+          <div class="step-circle">4</div>
           <div class="step-label">Listo</div>
         </div>
       </div>
@@ -27,6 +32,79 @@
 
       <!-- STEP 1 -->
       <div class="step-content" [class.active]="currentStep === 1">
+        <h2>Información Básica</h2>
+        <p class="subtitle">Completa tu perfil profesional para generar confianza.</p>
+
+        <div class="avatar-upload">
+          <div class="avatar-preview">
+            <ng-container *ngIf="profilePhotoPreviewUrl; else avatarFallback">
+              <img [src]="profilePhotoPreviewUrl" alt="Avatar" />
+            </ng-container>
+            <ng-template #avatarFallback>📷</ng-template>
+          </div>
+          <div class="avatar-upload__actions">
+            <button type="button" class="avatar-btn" (click)="fileInput.click()" [disabled]="saving">
+              Subir Foto de Perfil
+            </button>
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              style="display: none"
+              (change)="onProfilePhotoSelected(($event.target as HTMLInputElement)?.files?.[0] || null)"
+            />
+            <div class="avatar-hint">Se verá en tu ficha de reserva</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre Completo</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" class="form-input" placeholder="Ingresa tu nombre completo" [(ngModel)]="profileFullName" [disabled]="saving" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Título Profesional</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🎓</span>
+            <input type="text" class="form-input" placeholder="Ej: Estilista, Masajista, Chef" [(ngModel)]="profileProfessionalTitle" [disabled]="saving" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Comuna Principal</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📍</span>
+            <input type="text" class="form-input" placeholder="Ej: Providencia, Las Condes" [(ngModel)]="profileMainCommune" [disabled]="saving" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Teléfono</label>
+              <div class="input-wrapper">
+                <span class="input-icon">📞</span>
+                <input type="tel" class="form-input" placeholder="+56 9..." [(ngModel)]="profilePhone" [disabled]="saving" />
+              </div>
+            </div>
+          </div>
+          <div class="form-col">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Años de Experiencia</label>
+              <div class="input-wrapper">
+                <span class="input-icon">⭐</span>
+                <input type="number" class="form-input" placeholder="Ej: 5" [(ngModel)]="profileYearsExperience" [disabled]="saving" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-content" [class.active]="currentStep === 2">
         <h2>¿Qué servicio ofreces?</h2>
         <p class="subtitle">Crea tu primer servicio para que los clientes puedan reservar. Podrás editarlo después.</p>
 
@@ -103,8 +181,8 @@
         </div>
       </div>
 
-      <!-- STEP 2 -->
-      <div class="step-content" [class.active]="currentStep === 2">
+      <!-- STEP 3 -->
+      <div class="step-content" [class.active]="currentStep === 3">
         <h2>Define tu disponibilidad</h2>
         <p class="subtitle">¿En qué horario quieres recibir reservas? Adomi bloqueará automáticamente las horas ocupadas.</p>
 
@@ -167,8 +245,8 @@
         </div>
       </div>
 
-      <!-- STEP 3 -->
-      <div class="step-content" [class.active]="currentStep === 3">
+      <!-- STEP 4 -->
+      <div class="step-content" [class.active]="currentStep === 4">
         <div class="success-preview">
           <div class="success-icon">{{ published ? '✅' : '🎉' }}</div>
           <h2>{{ published ? 'Servicio publicado' : '¡Todo listo para empezar!' }}</h2>

@@ -6,8 +6,9 @@ import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 import { ProviderAvailabilityService, WeeklyBlockDTO, WeeklyBlockInput } from '../../../services/provider-availability.service';
 import { ProviderServicesService, ProviderServiceDto } from '../../../services/provider-services.service';
+import { ProviderProfileService } from '../../../services/provider-profile.service';
 
-type WizardStep = 1 | 2 | 3;
+type WizardStep = 1 | 2 | 3 | 4;
 type DurationOption = { label: string; minutes: number };
 type DayKey = WeeklyBlockDTO['day_of_week'];
 
@@ -31,9 +32,19 @@ const DAY_LABELS: Array<{ key: DayKey; label: string }> = [
 export class ProviderSetupComponent implements OnInit {
   // Wizard
   currentStep: WizardStep = 1;
-  readonly totalSteps = 3;
+  readonly totalSteps = 4;
 
-  // Step 1: Servicio
+  // Step 1: Perfil
+  profilePhotoFile: File | null = null;
+  profilePhotoPreviewUrl: string | null = null;
+  profileFullName = '';
+  profileProfessionalTitle = '';
+  profileMainCommune = '';
+  profilePhone = '';
+  profileYearsExperience: number | null = null;
+  profileSaved = false;
+
+  // Step 2: Servicio
   serviceName = '';
   servicePrice: number | null = null;
   servicePriceDisplay = '';
@@ -50,7 +61,7 @@ export class ProviderSetupComponent implements OnInit {
   ];
   selectedDurationMinutes = 30;
 
-  // Step 2: Horario
+  // Step 3: Horario
   dayOptions = DAY_LABELS;
   scheduleDay: DayKey = 'monday';
   scheduleStart = '09:00';
@@ -68,11 +79,13 @@ export class ProviderSetupComponent implements OnInit {
   private router = inject(Router);
   private servicesApi = inject(ProviderServicesService);
   private availabilityApi = inject(ProviderAvailabilityService);
+  private profileApi = inject(ProviderProfileService);
 
   ngOnInit(): void {
     // Si ya tiene servicio + horario, no mostrar wizard
     this.loading = true;
     forkJoin({
+      profile: this.profileApi.getProfile().pipe(catchError(() => of(null))),
       services: this.servicesApi.list().pipe(
         map((r: any) => (Array.isArray(r?.services) ? (r.services as ProviderServiceDto[]) : [])),
         catchError(() => of([] as ProviderServiceDto[]))
@@ -83,7 +96,19 @@ export class ProviderSetupComponent implements OnInit {
       )
     })
       .pipe(finalize(() => (this.loading = false)))
-      .subscribe(({ services, blocks }) => {
+      .subscribe(({ profile, services, blocks }) => {
+        // Prefill básico del perfil (si existe)
+        if (profile) {
+          const p: any = profile as any;
+          this.profileFullName = String(p?.full_name || p?.name || '').trim();
+          this.profileProfessionalTitle = String(p?.professional_title || '').trim();
+          this.profileMainCommune = String(p?.main_commune || '').trim();
+          this.profilePhone = String(p?.phone || '').trim();
+          const years = Number(p?.years_experience);
+          this.profileYearsExperience = Number.isFinite(years) ? years : null;
+          const photoUrl = String(p?.profile_photo_url || '').trim();
+          this.profilePhotoPreviewUrl = photoUrl || null;
+        }
         if ((services?.length || 0) > 0 && (blocks?.length || 0) > 0) {
           this.router.navigateByUrl('/dash/home').catch(() => {});
         }
@@ -100,18 +125,23 @@ export class ProviderSetupComponent implements OnInit {
   get canGoNext(): boolean {
     if (this.loading || this.saving) return false;
     if (this.currentStep === 1) {
-      const nameOk = this.serviceName.trim().length >= 2;
-      const categoryOk = this.getResolvedCategory().trim().length >= 2;
-      return nameOk && categoryOk;
+      const nameOk = this.profileFullName.trim().length >= 2;
+      return nameOk;
     }
     if (this.currentStep === 2) {
+      const nameOk = this.serviceName.trim().length >= 2;
+      const categoryOk = this.getResolvedCategory().trim().length >= 2;
+      const priceOk = Number.isFinite(Number(this.servicePrice)) && Number(this.servicePrice) > 0;
+      return nameOk && categoryOk && priceOk;
+    }
+    if (this.currentStep === 3) {
       return (this.weeklyDraft.length || 0) > 0;
     }
     return true;
   }
 
   get nextLabel(): string {
-    if (this.currentStep !== 3) return 'Continuar';
+    if (this.currentStep !== 4) return 'Continuar';
     return this.published ? 'Configurar perfil' : 'Publicar Servicio';
   }
 
@@ -177,21 +207,42 @@ export class ProviderSetupComponent implements OnInit {
     this.error = null;
 
     if (this.currentStep === 1) {
-      void this.persistServiceAndGoNext();
+      void this.persistProfileAndGoNext();
       return;
     }
 
     if (this.currentStep === 2) {
+      void this.persistServiceAndGoNext();
+      return;
+    }
+
+    if (this.currentStep === 3) {
       void this.persistScheduleAndGoNext();
       return;
     }
 
-    // Step 3: "Publicar" (finalizar onboarding)
+    // Step 4: "Publicar" (finalizar onboarding)
     if (!this.published) {
       this.published = true;
       return;
     }
     this.goToProfile();
+  }
+
+  onProfilePhotoSelected(file: File | null): void {
+    this.profilePhotoFile = file;
+    this.profilePhotoPreviewUrl = null;
+    if (!file) return;
+
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.profilePhotoPreviewUrl = typeof reader.result === 'string' ? reader.result : null;
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      this.profilePhotoPreviewUrl = null;
+    }
   }
 
   addBlock(): void {
@@ -281,19 +332,65 @@ export class ProviderSetupComponent implements OnInit {
     this.router.navigateByUrl('/dash/perfil').catch(() => {});
   }
 
+  private async persistProfileAndGoNext(): Promise<void> {
+    if (!this.canGoNext) return;
+
+    // Evitar guardar 2 veces si el usuario vuelve atrás
+    if (this.profileSaved) {
+      this.currentStep = 2;
+      return;
+    }
+
+    this.saving = true;
+
+    const payload: any = {
+      fullName: this.profileFullName.trim(),
+      professionalTitle: this.profileProfessionalTitle.trim(),
+      mainCommune: this.profileMainCommune.trim(),
+      yearsExperience: Number.isFinite(Number(this.profileYearsExperience)) ? Number(this.profileYearsExperience) : 0,
+      phone: this.profilePhone.trim()
+    };
+
+    // 1) Foto (opcional) — no bloquea si falla.
+    const upload$ = this.profilePhotoFile
+      ? this.profileApi.uploadPhoto(this.profilePhotoFile, 'profile').pipe(catchError(() => of(null)))
+      : of(null);
+
+    // 2) Datos básicos
+    const save$ = this.profileApi.updateBasicInfo(payload).pipe(catchError((err) => of({ __err: err })));
+
+    forkJoin({ upload: upload$, saved: save$ })
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe(({ saved }) => {
+        if ((saved as any)?.__err) {
+          const err = (saved as any).__err;
+          this.error = err?.error?.error || err?.message || 'No pudimos guardar tu perfil. Intenta nuevamente.';
+          return;
+        }
+        this.profileSaved = true;
+        this.currentStep = 2;
+      });
+  }
+
   private async persistServiceAndGoNext(): Promise<void> {
     if (!this.canGoNext) return;
 
     // Evitar crear 2 veces si el usuario volvió atrás
     if (this.createdServiceId) {
-      this.currentStep = 2;
+      this.currentStep = 3;
       return;
     }
 
     this.saving = true;
     const name = this.serviceName.trim();
     const customCategory = this.getResolvedCategory();
-    const price = Number.isFinite(Number(this.servicePrice)) ? Math.max(0, Number(this.servicePrice)) : 0;
+    const parsedPrice = Number(this.servicePrice);
+    const price = Number.isFinite(parsedPrice) ? Math.max(0, parsedPrice) : 0;
+    if (!price || price <= 0) {
+      this.error = 'Ingresa un precio válido (mayor a 0) para continuar.';
+      this.saving = false;
+      return;
+    }
     const duration_minutes = Number(this.selectedDurationMinutes || 30);
 
     this.servicesApi
@@ -311,7 +408,7 @@ export class ProviderSetupComponent implements OnInit {
         next: (resp: any) => {
           if (resp?.success && resp?.service?.id) {
             this.createdServiceId = Number(resp.service.id);
-            this.currentStep = 2;
+            this.currentStep = 3;
             return;
           }
           this.error = resp?.error || 'No pudimos crear tu servicio. Intenta nuevamente.';
@@ -327,7 +424,7 @@ export class ProviderSetupComponent implements OnInit {
 
     // Evitar crear 2 veces si el usuario volvió atrás
     if (this.scheduleCreated) {
-      this.currentStep = 3;
+      this.currentStep = 4;
       return;
     }
 
@@ -345,7 +442,7 @@ export class ProviderSetupComponent implements OnInit {
           if ((existing?.length || 0) > 0) {
             this.scheduleCreated = true;
             this.saving = false;
-            this.currentStep = 3;
+            this.currentStep = 4;
             return;
           }
           this.saveDraftBlocks();
@@ -368,7 +465,7 @@ export class ProviderSetupComponent implements OnInit {
       next: (resp: any) => {
         if (resp?.success) {
           this.scheduleCreated = true;
-          this.currentStep = 3;
+          this.currentStep = 4;
           return;
         }
         this.error = resp?.error || 'No pudimos guardar tu horario. Intenta nuevamente.';

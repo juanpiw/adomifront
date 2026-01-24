@@ -49,6 +49,7 @@ export class MapCardComponent implements OnInit {
   @Input() showMapLegend: boolean = true;
 
   isMobile: boolean = false;
+  mobileTab: 'cards' | 'map' = 'cards';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -73,6 +74,18 @@ export class MapCardComponent implements OnInit {
     // Si no hay profesional destacado, tomar el primero de la lista
     if (!this.highlightedProfessional && this.professionals.length > 0) {
       this.highlightedProfessional = this.professionals[0];
+    }
+  }
+
+  setMobileTab(tab: 'cards' | 'map'): void {
+    this.mobileTab = tab;
+    // Cuando mostramos el mapa después de estar oculto, forzar reflow para que Google Maps calcule tamaños.
+    if (tab === 'map' && isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        try {
+          window.dispatchEvent(new Event('resize'));
+        } catch {}
+      }, 60);
     }
   }
 
