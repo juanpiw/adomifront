@@ -245,6 +245,12 @@ export class ProviderSetupComponent implements OnInit {
     }
   }
 
+  onProfilePhotoInputChange(evt: Event): void {
+    const input = evt.target as HTMLInputElement | null;
+    const file = input?.files?.[0] || null;
+    this.onProfilePhotoSelected(file);
+  }
+
   addBlock(): void {
     const start = String(this.scheduleStart || '').slice(0, 5);
     const end = String(this.scheduleEnd || '').slice(0, 5);

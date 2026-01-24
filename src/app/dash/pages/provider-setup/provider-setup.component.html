@@ -51,7 +51,7 @@
               type="file"
               accept="image/*"
               style="display: none"
-              (change)="onProfilePhotoSelected(($event.target as HTMLInputElement)?.files?.[0] || null)"
+              (change)="onProfilePhotoInputChange($event)"
             />
             <div class="avatar-hint">Se verá en tu ficha de reserva</div>
           </div>
