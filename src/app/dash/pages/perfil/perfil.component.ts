@@ -127,6 +127,7 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
         console.log('[PERFIL] Perfil cargado:', profile);
         this.updateLocalDataFromProfile(profile);
         this.updateProgress();
+        this.maybeAutofillProfessionalTitleFromServices();
       },
       error: (err) => {
         console.error('[PERFIL] Error al cargar perfil:', err);
@@ -154,6 +155,8 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
           created_at: s.created_at || new Date().toISOString(),
           updated_at: s.updated_at || new Date().toISOString()
         }));
+
+        this.maybeAutofillProfessionalTitleFromServices();
       },
       error: (err) => {
         console.error('[PERFIL] Error al cargar servicios:', err);
@@ -238,6 +241,27 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
       this.setLiveLocationState('off', 'Activa "Compartir ubicación en tiempo real" para mostrar tu posición en el mapa.');
     }
     this.syncLiveLocationWatcher();
+  }
+
+  /**
+   * Si el proveedor viene solo con onboarding (creó servicio) pero no completó perfil,
+   * autocompletamos el título profesional con su primer servicio para mejorar el card de búsqueda.
+   * No persiste automáticamente (solo UX); el usuario puede cambiarlo y luego Guardar.
+   */
+  private maybeAutofillProfessionalTitleFromServices(): void {
+    const current = String(this.basicInfo?.professionalTitle || '').trim();
+    if (current.length > 0) return;
+    if (!Array.isArray(this.services) || this.services.length === 0) return;
+
+    const first = this.services[0];
+    const inferred =
+      String((first as any)?.custom_category || '').trim() ||
+      String((first as any)?.name || '').trim();
+    if (!inferred) return;
+
+    this.basicInfo = { ...this.basicInfo, professionalTitle: inferred };
+    // No marcamos hasChanges automáticamente para no forzar guardado; al editar cualquier campo se activará.
+    this.updateProgress();
   }
 
   // Datos básicos del perfil
