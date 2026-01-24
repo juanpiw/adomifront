@@ -1090,7 +1090,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
   onForceTbkSetup(): void {
     this.router.navigate(['/dash/ingresos'], {
-      queryParams: { section: 'tbk', onboarding: '1' }
+      queryParams: { section: 'mp', onboarding: '1' }
     });
   }
 
