@@ -162,6 +162,12 @@
 
 @media (max-width: 1023px) {
   .content-wrapper {
+    display: flex;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+    align-items: center;
+    padding: 10px;
     flex-direction: column;
   }
 

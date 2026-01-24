@@ -25,6 +25,11 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
+
+  /* Mobile: quitar padding para que el contenido use todo el ancho */
+  @media (max-width: 639.98px) {
+    padding: 0;
+  }
   
   @media (min-width: 640px) {
     padding: 1.5rem;
