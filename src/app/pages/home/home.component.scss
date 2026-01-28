@@ -1153,6 +1153,31 @@ nav {
   font-size: 1rem;
 }
 
+.footer-legal {
+  margin: 0 0 1.25rem 0;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.footer-legal p {
+  margin: 0 0 6px 0;
+}
+
+.footer-legal strong {
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.footer-legal a {
+  color: #e5e7eb;
+  text-decoration: underline;
+}
+
+.footer-legal a:hover {
+  color: #ffffff;
+}
+
 .footer-social {
   display: flex;
   gap: 0.9rem;
