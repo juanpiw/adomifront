@@ -5,6 +5,9 @@
   &__content {
     padding: 2rem;
     overflow-y: auto;
+    overflow-x: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
 }
@@ -317,6 +320,8 @@
     display: flex;
     gap: 2rem;
     align-items: flex-start;
+    max-width: 100%;
+    min-width: 0;
     
     @media (max-width: 1024px) {
         flex-direction: column;
@@ -329,6 +334,8 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .ingresos-container{
@@ -336,6 +343,8 @@
     flex-direction: row;
     gap: 1rem;
     flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
     
     @media (max-width: 768px) {
         flex-direction: column;
@@ -394,6 +403,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-width: 100%;
+  box-sizing: border-box;
   box-shadow: 0 20px 45px -30px rgba(217, 119, 6, 0.35);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
@@ -411,6 +422,7 @@
     justify-content: space-between;
     gap: 1rem;
     width: 100%;
+    min-width: 0;
     border: none;
     background: transparent;
     text-align: left;
@@ -428,6 +440,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0;
 
     h3 {
       margin: 0;
@@ -548,6 +561,8 @@
     display: flex;
     gap: 0.75rem;
     align-items: center;
+    max-width: 100%;
+    min-width: 0;
 
     .metric {
       min-width: 90px;
@@ -559,6 +574,7 @@
       flex-direction: column;
       align-items: center;
       gap: 0.25rem;
+      box-sizing: border-box;
 
       .label {
         font-size: 0.75rem;
@@ -1073,9 +1089,21 @@
     width: 100%;
     justify-content: space-between;
     flex-wrap: wrap;
+    row-gap: 0.75rem;
   }
 
   .golden-invite__table table {
     font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .golden-invite__metrics {
+    justify-content: flex-start;
+  }
+
+  .golden-invite__metrics .metric {
+    min-width: 0;
+    flex: 1 1 120px;
   }
 }

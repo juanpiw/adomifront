@@ -51,3 +51,28 @@
 .theme-switch.size-lg { width: 72px; height: 42px; }
 .theme-switch.size-lg .thumb { width: 32px; height: 32px; }
 .theme-switch.size-lg .thumb.is-dark { transform: translateX(30px); }
+
+/* Icon-only (useful for mobile rail) */
+.theme-switch.icon-only {
+  width: 44px;
+  height: 44px;
+  justify-content: center;
+}
+
+.theme-switch.icon-only .thumb {
+  width: 44px;
+  height: 44px;
+  margin-left: 0;
+  border-radius: 14px;
+  transform: none !important;
+  background: color-mix(in srgb, var(--color-bg) 90%, var(--color-text) 10%);
+}
+
+.theme-switch.icon-only .thumb.is-dark {
+  transform: none !important;
+}
+
+.theme-switch.icon-only .icon {
+  width: 18px;
+  height: 18px;
+}

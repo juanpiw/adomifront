@@ -13,6 +13,7 @@ export class ThemeSwitchComponent {
   private themeService = inject(ThemeService);
   theme = this.themeService.theme;
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() iconOnly = false;
   @Input() ariaLabel = 'Toggle theme';
 
   toggleTheme() {

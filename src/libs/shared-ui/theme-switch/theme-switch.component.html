@@ -1,5 +1,5 @@
-﻿<button class="theme-switch" type="button" [attr.aria-label]="ariaLabel" [class.size-sm]="size==='sm'" [class.size-lg]="size==='lg'" (click)="toggleTheme()">
-  <span class="track"></span>
+﻿<button class="theme-switch" type="button" [attr.aria-label]="ariaLabel" [class.size-sm]="size==='sm'" [class.size-lg]="size==='lg'" [class.icon-only]="iconOnly" (click)="toggleTheme()">
+  <span class="track" *ngIf="!iconOnly"></span>
   <span class="thumb" [class.is-dark]="theme() === 'dark'">
     <svg *ngIf="theme() === 'light'" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="5"></circle>
