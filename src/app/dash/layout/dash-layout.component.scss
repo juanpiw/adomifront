@@ -214,10 +214,26 @@
     display: block;
     min-height: 100vh;
   }
-  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; grid-template-columns: 72px 220px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    grid-template-columns: 72px 220px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
   .dash-layout.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   .sidebar { transform: translateX(0); transition: transform .25s ease; }
-  .panel { width: 220px; }
+  .panel {
+    width: 220px;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
 
   /* Mobile safe-area: subir el botón Salir para que no quede tapado */
   .rail {
@@ -242,6 +258,12 @@
   // así que agregamos padding-bottom para subir el botón "Salir".
   .rail {
     padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  // En el perfil del proveedor, el padding de `.content` achica mucho el layout.
+  // Solo lo removemos en mobile para que el contenido use todo el ancho.
+  .content.content--no-padding {
+    padding: 0;
   }
 }
 .rail-toggle { width:48px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; background: transparent; border:1px solid rgba(255,255,255,0.12); cursor:pointer; }

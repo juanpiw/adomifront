@@ -145,6 +145,11 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     return url.includes('/dash/provider-setup');
   }
 
+  get isProviderProfileRoute(): boolean {
+    const url = this.currentUrl || this.router.url || '';
+    return url.includes('/dash/perfil');
+  }
+
   get showStarterFallbackTag(): boolean {
     // Solo mostrar fallback si no pudimos resolver planTierInfo desde API.
     // En ese caso, el comportamiento esperado es Starter (gratis) con fee por defecto (15%).
