@@ -98,3 +98,51 @@
     height: 18px;
   }
 }
+
+/* Dark theme */
+:host-context(.dark-theme) {
+  .ui-input-label {
+    color: #e2e8f0;
+  }
+
+  .ui-input {
+    color: #e2e8f0;
+    caret-color: #e2e8f0;
+    border-color: rgba(71, 85, 105, 0.65);
+    background: rgba(15, 23, 42, 0.92);
+    box-shadow: inset 0 1px 2px rgba(2, 6, 23, 0.55), 0 10px 30px rgba(2, 6, 23, 0.35);
+
+    &::placeholder {
+      color: rgba(226, 232, 240, 0.55);
+    }
+
+    &:hover {
+      border-color: rgba(129, 140, 248, 0.55);
+    }
+
+    &:focus {
+      background: rgba(15, 23, 42, 0.98);
+      border-color: #818cf8;
+      box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.18), 0 18px 45px rgba(2, 6, 23, 0.45);
+      transform: translateY(-2px);
+    }
+
+    &:focus::placeholder {
+      color: rgba(226, 232, 240, 0.35);
+      transform: translateY(-2px);
+    }
+  }
+
+  .ui-input-hint {
+    color: rgba(226, 232, 240, 0.6);
+  }
+
+  .password-toggle-btn {
+    color: rgba(226, 232, 240, 0.65);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+    }
+  }
+}

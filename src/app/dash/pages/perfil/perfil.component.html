@@ -297,9 +297,9 @@
       </button>
 
       <!-- Horario y Disponibilidad -->
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+      <div class="online-status-hint">
         <app-online-status-switch [isOnline]="locationSettings.availableForNewBookings" (statusChange)="onOnlineToggle($event)"></app-online-status-switch>
-        <span style="font-size:12px; color:#6b7280;">Si estás Online, podrás aparecer en búsquedas “Ahora” cuando tu horario lo permita.</span>
+        <span class="online-status-hint__text">Si estás Online, podrás aparecer en búsquedas “Ahora” cuando tu horario lo permita.</span>
       </div>
       <app-horario-disponibilidad 
         [schedule]="weeklySchedule"
