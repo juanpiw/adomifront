@@ -288,7 +288,7 @@
 
   <form *ngIf="!adminSecret" style="margin:12px 0;" (ngSubmit)="setSecretAndLoad()">
     <label for="admin-secret-input">Admin Secret</label>
-    <input id="admin-secret-input" type="password" [(ngModel)]="adminSecret" name="adminSecret" placeholder="Pega el ADMIN_PANEL_SECRET" />
+    <input id="admin-secret-input" type="password" [(ngModel)]="adminSecret" name="adminSecret" autocomplete="new-password" placeholder="Pega el ADMIN_PANEL_SECRET" />
     <button class="btn-primary" type="submit">Acceder</button>
   </form>
 
