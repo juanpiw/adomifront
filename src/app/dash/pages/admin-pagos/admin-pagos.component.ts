@@ -188,37 +188,66 @@ export class AdminPagosComponent implements OnInit {
     this.analyticsError = null;
     const from = this.startISO;
     const to = this.endISO;
+    console.log('[ADMIN_ANALYTICS] Iniciando carga de métricas', { from, to });
 
     // Primer endpoint como health-check de disponibilidad de analytics en backend.
     // Si responde 404, evitamos disparar las otras 3 llamadas para no contaminar consola.
     this.adminApi.analyticsTopTerms(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
       next: (res: any) => {
+        console.log('[ADMIN_ANALYTICS] OK /admin/analytics/search/top-terms', {
+          count: Array.isArray(res?.data) ? res.data.length : 0
+        });
         this.analyticsTopTerms = res?.data || [];
 
         this.adminApi.analyticsMostVisitedProviders(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
           next: (r: any) => {
+            console.log('[ADMIN_ANALYTICS] OK /admin/analytics/providers/most-visited', {
+              count: Array.isArray(r?.data) ? r.data.length : 0
+            });
             this.analyticsMostVisited = r?.data || [];
           },
-          error: () => {
+          error: (err: any) => {
+            console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/providers/most-visited', {
+              status: err?.status,
+              message: err?.error?.error || err?.message,
+              url: err?.url
+            });
             this.analyticsMostVisited = [];
           }
         });
 
         this.adminApi.analyticsSearchTrends(this.adminSecret, token, { from, to, group: 'day' }).subscribe({
           next: (r: any) => {
+            console.log('[ADMIN_ANALYTICS] OK /admin/analytics/search/trends', {
+              count: Array.isArray(r?.data) ? r.data.length : 0
+            });
             this.analyticsTrends = r?.data || [];
           },
-          error: () => {
+          error: (err: any) => {
+            console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/search/trends', {
+              status: err?.status,
+              message: err?.error?.error || err?.message,
+              url: err?.url
+            });
             this.analyticsTrends = [];
           }
         });
 
         this.adminApi.analyticsWhoSearchesWhom(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
           next: (r: any) => {
+            console.log('[ADMIN_ANALYTICS] OK /admin/analytics/search/who-searches-whom', {
+              count: Array.isArray(r?.data) ? r.data.length : 0
+            });
             this.analyticsWhoSearchesWhom = r?.data || [];
             this.analyticsLoading = false;
+            console.log('[ADMIN_ANALYTICS] Carga finalizada');
           },
           error: (err: any) => {
+            console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/search/who-searches-whom', {
+              status: err?.status,
+              message: err?.error?.error || err?.message,
+              url: err?.url
+            });
             this.analyticsWhoSearchesWhom = [];
             this.analyticsLoading = false;
             this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
@@ -226,6 +255,11 @@ export class AdminPagosComponent implements OnInit {
         });
       },
       error: (err: any) => {
+        console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/search/top-terms', {
+          status: err?.status,
+          message: err?.error?.error || err?.message,
+          url: err?.url
+        });
         this.analyticsTopTerms = [];
         this.analyticsMostVisited = [];
         this.analyticsTrends = [];
