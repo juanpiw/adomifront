@@ -286,11 +286,11 @@
     ></app-admin-cash-review-panel>
   </section>
 
-  <div *ngIf="!adminSecret" style="margin:12px 0;">
-    <label>Admin Secret</label>
-    <input type="password" [(ngModel)]="adminSecret" placeholder="Pega el ADMIN_PANEL_SECRET" />
-    <button class="btn-primary" (click)="setSecretAndLoad()">Acceder</button>
-  </div>
+  <form *ngIf="!adminSecret" style="margin:12px 0;" (ngSubmit)="setSecretAndLoad()">
+    <label for="admin-secret-input">Admin Secret</label>
+    <input id="admin-secret-input" type="password" [(ngModel)]="adminSecret" name="adminSecret" placeholder="Pega el ADMIN_PANEL_SECRET" />
+    <button class="btn-primary" type="submit">Acceder</button>
+  </form>
 
   <section *ngIf="adminSecret" class="support-admin">
     <div class="support-admin__header">

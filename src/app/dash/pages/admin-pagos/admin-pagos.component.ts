@@ -189,42 +189,53 @@ export class AdminPagosComponent implements OnInit {
     const from = this.startISO;
     const to = this.endISO;
 
+    // Primer endpoint como health-check de disponibilidad de analytics en backend.
+    // Si responde 404, evitamos disparar las otras 3 llamadas para no contaminar consola.
     this.adminApi.analyticsTopTerms(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
       next: (res: any) => {
         this.analyticsTopTerms = res?.data || [];
-      },
-      error: () => {
-        this.analyticsTopTerms = [];
-      }
-    });
 
-    this.adminApi.analyticsMostVisitedProviders(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
-      next: (res: any) => {
-        this.analyticsMostVisited = res?.data || [];
-      },
-      error: () => {
-        this.analyticsMostVisited = [];
-      }
-    });
+        this.adminApi.analyticsMostVisitedProviders(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+          next: (r: any) => {
+            this.analyticsMostVisited = r?.data || [];
+          },
+          error: () => {
+            this.analyticsMostVisited = [];
+          }
+        });
 
-    this.adminApi.analyticsSearchTrends(this.adminSecret, token, { from, to, group: 'day' }).subscribe({
-      next: (res: any) => {
-        this.analyticsTrends = res?.data || [];
-      },
-      error: () => {
-        this.analyticsTrends = [];
-      }
-    });
+        this.adminApi.analyticsSearchTrends(this.adminSecret, token, { from, to, group: 'day' }).subscribe({
+          next: (r: any) => {
+            this.analyticsTrends = r?.data || [];
+          },
+          error: () => {
+            this.analyticsTrends = [];
+          }
+        });
 
-    this.adminApi.analyticsWhoSearchesWhom(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
-      next: (res: any) => {
-        this.analyticsWhoSearchesWhom = res?.data || [];
-        this.analyticsLoading = false;
+        this.adminApi.analyticsWhoSearchesWhom(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+          next: (r: any) => {
+            this.analyticsWhoSearchesWhom = r?.data || [];
+            this.analyticsLoading = false;
+          },
+          error: (err: any) => {
+            this.analyticsWhoSearchesWhom = [];
+            this.analyticsLoading = false;
+            this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
+          }
+        });
       },
       error: (err: any) => {
+        this.analyticsTopTerms = [];
+        this.analyticsMostVisited = [];
+        this.analyticsTrends = [];
         this.analyticsWhoSearchesWhom = [];
         this.analyticsLoading = false;
-        this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
+        if (err?.status === 404) {
+          this.analyticsError = 'Los endpoints de analytics aún no están desplegados en backend.';
+        } else {
+          this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
+        }
       }
     });
   }
