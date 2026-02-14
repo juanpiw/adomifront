@@ -62,8 +62,16 @@ export class ProviderPublicService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl;
 
-  getProviderDetail(id: number): Observable<ProviderDetailResponse> {
-    return this.http.get<ProviderDetailResponse>(`${this.baseUrl}/client/providers/${id}/detail`);
+  getProviderDetail(id: number, options?: { searchEventId?: number | null; source?: string | null }): Observable<ProviderDetailResponse> {
+    const params = new URLSearchParams();
+    if (options?.searchEventId && Number.isFinite(options.searchEventId)) {
+      params.set('search_event_id', String(options.searchEventId));
+    }
+    if (options?.source) {
+      params.set('source', String(options.source));
+    }
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get<ProviderDetailResponse>(`${this.baseUrl}/client/providers/${id}/detail${qs}`);
   }
 
   getProviderFaqs(id: number): Observable<ProviderFaqResponse> {

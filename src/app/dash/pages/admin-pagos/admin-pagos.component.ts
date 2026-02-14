@@ -100,6 +100,12 @@ export class AdminPagosComponent implements OnInit {
   supportReply = '';
   supportUpdatingStatus = false;
   supportReplying = false;
+  analyticsLoading = false;
+  analyticsError: string | null = null;
+  analyticsTopTerms: Array<{ term: string; total: number; unique_clients?: number; last_seen_at?: string }> = [];
+  analyticsMostVisited: Array<{ provider_id: number; provider_name: string; visits: number; unique_clients?: number; last_visit_at?: string }> = [];
+  analyticsTrends: Array<{ period: string; total_searches: number; unique_clients?: number }> = [];
+  analyticsWhoSearchesWhom: Array<{ client_id: number | null; client_name?: string | null; provider_id: number; provider_name: string; search_term?: string | null; visits: number; last_seen_at?: string }> = [];
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -163,6 +169,7 @@ export class AdminPagosComponent implements OnInit {
           }
           this.loadVerificationRequests(this.verificationFilter);
           this.loadFounderCodes();
+          this.loadAnalytics();
         } else {
           this.error = 'Respuesta inválida';
         }
@@ -170,6 +177,54 @@ export class AdminPagosComponent implements OnInit {
       error: (err: any) => {
         this.loading = false;
         this.error = err?.error?.error || 'Error cargando pagos';
+      }
+    });
+  }
+
+  loadAnalytics() {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.analyticsLoading = true;
+    this.analyticsError = null;
+    const from = this.startISO;
+    const to = this.endISO;
+
+    this.adminApi.analyticsTopTerms(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+      next: (res: any) => {
+        this.analyticsTopTerms = res?.data || [];
+      },
+      error: () => {
+        this.analyticsTopTerms = [];
+      }
+    });
+
+    this.adminApi.analyticsMostVisitedProviders(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+      next: (res: any) => {
+        this.analyticsMostVisited = res?.data || [];
+      },
+      error: () => {
+        this.analyticsMostVisited = [];
+      }
+    });
+
+    this.adminApi.analyticsSearchTrends(this.adminSecret, token, { from, to, group: 'day' }).subscribe({
+      next: (res: any) => {
+        this.analyticsTrends = res?.data || [];
+      },
+      error: () => {
+        this.analyticsTrends = [];
+      }
+    });
+
+    this.adminApi.analyticsWhoSearchesWhom(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+      next: (res: any) => {
+        this.analyticsWhoSearchesWhom = res?.data || [];
+        this.analyticsLoading = false;
+      },
+      error: (err: any) => {
+        this.analyticsWhoSearchesWhom = [];
+        this.analyticsLoading = false;
+        this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
       }
     });
   }

@@ -7,6 +7,7 @@ export interface SearchFilters {
   search?: string;
   category?: string;
   location?: string;
+  source?: string;
   date?: string; // YYYY-MM-DD
   start?: string; // HH:mm
   end?: string;   // HH:mm
@@ -103,6 +104,9 @@ export interface SearchResponse<T> {
     offset: number;
     total: number;
     has_more: boolean;
+  };
+  meta?: {
+    search_event_id?: number | null;
   };
 }
 
@@ -275,7 +279,7 @@ export class SearchService {
   /**
    * Buscar proveedores disponibles por fecha/hora
    */
-  searchAvailableProviders(filters: Pick<SearchFilters, 'date'|'start'|'end'|'location'|'category'|'limit'|'offset'> & { is_now?: boolean }): Observable<SearchResponse<Provider>> {
+  searchAvailableProviders(filters: Pick<SearchFilters, 'date'|'start'|'end'|'location'|'category'|'limit'|'offset'|'source'> & { is_now?: boolean }): Observable<SearchResponse<Provider>> {
     let params = new HttpParams();
     Object.entries(filters).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
@@ -289,7 +293,7 @@ export class SearchService {
   /**
    * Buscar proveedores cercanos (nearby) por lat/lng y radio
    */
-  searchNearbyProviders(args: { lat: number; lng: number; radius_km: number; search?: string; category?: string; rating_min?: number; is_now?: boolean; date?: string; start?: string; end?: string; limit?: number; offset?: number; }): Observable<SearchResponse<Provider>> {
+  searchNearbyProviders(args: { lat: number; lng: number; radius_km: number; search?: string; category?: string; rating_min?: number; is_now?: boolean; date?: string; start?: string; end?: string; source?: string; limit?: number; offset?: number; }): Observable<SearchResponse<Provider>> {
     let params = new HttpParams();
     Object.entries(args).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
@@ -315,6 +319,18 @@ export class SearchService {
   sendReferralInvite(payload: { searchTerm: string; channel: 'email' | 'whatsapp' | 'copy'; inviteeEmail?: string; source?: string; locationLabel?: string }): Observable<{ ok: boolean; referralLink?: string; emailSent?: boolean }> {
     return this.http.post<{ ok: boolean; referralLink?: string; emailSent?: boolean }>(
       `${this.apiUrl}/client/referrals/invite`,
+      payload,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adomi_access_token')}`
+        }
+      }
+    );
+  }
+
+  trackSearchClick(payload: { providerId: number; searchEventId: number; positionIndex?: number; source?: string }): Observable<{ ok: boolean; clickEventId?: number | null }> {
+    return this.http.post<{ ok: boolean; clickEventId?: number | null }>(
+      `${this.apiUrl}/client/search/click`,
       payload,
       {
         headers: {

@@ -33,6 +33,8 @@ import { Subscription } from 'rxjs';
 })
 export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   workerId: string | null = null;
+  sourceSearchEventId: number | null = null;
+  profileSource: string | null = null;
   workerData: any = null;
   tbkReady = false;
   loading: boolean = true;
@@ -111,6 +113,10 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.workerId = this.route.snapshot.paramMap.get('workerId');
+    const seParam = Number(this.route.snapshot.queryParamMap.get('se') || this.route.snapshot.queryParamMap.get('search_event_id') || 0);
+    this.sourceSearchEventId = Number.isFinite(seParam) && seParam > 0 ? seParam : null;
+    const srcParam = this.route.snapshot.queryParamMap.get('src') || this.route.snapshot.queryParamMap.get('source');
+    this.profileSource = srcParam ? String(srcParam) : null;
 
     this.syncClientContext(this.auth.getCurrentUser());
     this.authSubscription = this.auth.authState$.subscribe((user) => {
@@ -135,7 +141,10 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   private loadWorkerData(): void {
     this.loading = true;
     const id = Number(this.workerId);
-    this.providerService.getProviderDetail(id).subscribe({
+    this.providerService.getProviderDetail(id, {
+      searchEventId: this.sourceSearchEventId,
+      source: this.profileSource || 'explorar'
+    }).subscribe({
       next: (resp: ProviderDetailResponse) => {
         if (!resp.success) {
           this.loading = false;

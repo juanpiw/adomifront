@@ -291,6 +291,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   referralLoadingChannel: 'email' | 'whatsapp' | 'copy' | null = null;
   referralCopySuccess = false;
   referralEmailSuccess = false;
+  private lastSearchEventId: number | null = null;
   private referralCopyTimeout: any;
   private referralLinkCache: string | null = null;
   private isBrowser = false;
@@ -430,8 +431,10 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     this.referralLinkCache = null;
     this.referralCopySuccess = false;
     this.referralEmailSuccess = false;
+    this.lastSearchEventId = null;
 
     const filters: SearchFilters = {
+      source: 'explorar',
       limit: 20,
       offset: 0
     };
@@ -445,6 +448,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
         this.providers = results.providers.data;
         this.services = results.services.data;
+        this.lastSearchEventId = Number(results.providers?.meta?.search_event_id || results.services?.meta?.search_event_id || 0) || null;
         this.filteredProviders = [...this.providers];
         this.sortFilteredProviders();
         this.filteredServices = [...this.services];
@@ -556,15 +560,15 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     this.searchTermInvalidReason = '';
 
     const price = this.getPriceRange(this.selectedPriceRange);
+    const hasDateTime = !!(this.selectedDateTime && (this.selectedDateTime.value || this.selectedDateTime.type));
     const baseFilters: SearchFilters = {
+      source: 'explorar',
       location: this.selectedLocationId,
       price_min: price.min === null ? undefined : price.min,
       price_max: price.max === null ? undefined : price.max,
       limit: 20,
       offset: 0
     };
-
-    const hasDateTime = !!(this.selectedDateTime && (this.selectedDateTime.value || this.selectedDateTime.type));
     const termForValidation = (this.selectedService || this.searchTerm || '').trim();
 
     const runSearch = (sanitizedTerm?: string) => {
@@ -581,6 +585,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
             end: this.getEndTime(this.selectedDateTime),
             location: this.selectedLocationId || '',
             category: searchTerm,
+            source: 'available',
             limit: 20,
             offset: 0,
             is_now: this.isNowFilter(this.selectedDateTime)
@@ -592,6 +597,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
           if (hasDateTime) {
             console.log('[EXPLORAR] ✅ Filtros aplicados (disponibilidad):', { providers: results.data.length });
             this.filteredProviders = results.data;
+            this.lastSearchEventId = Number(results?.meta?.search_event_id || 0) || null;
             this.filteredServices = [];
             this.providers = [...this.filteredProviders];
             this.services = [];
@@ -604,6 +610,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
             });
             this.providers = results.providers.data;
             this.services = results.services.data;
+            this.lastSearchEventId = Number(results.providers?.meta?.search_event_id || results.services?.meta?.search_event_id || 0) || null;
             this.filteredProviders = this.providers.map((p: any) => {
               let minPrice: number | undefined = undefined;
               if (Array.isArray(p.services) && p.services.length > 0) {
@@ -771,6 +778,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     this.referralLinkCache = null;
 
     const baseFilters: SearchFilters = {
+      source: 'explorar',
       search: '',
       category: this.selectedCategory,
       location: this.selectedLocation,
@@ -794,6 +802,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
           this.providers = results.providers.data;
           this.services = results.services.data;
+        this.lastSearchEventId = Number(results.providers?.meta?.search_event_id || results.services?.meta?.search_event_id || 0) || null;
         this.filteredProviders = [...results.providers.data];
         this.sortFilteredProviders();
           this.filteredServices = [...results.services.data];
@@ -912,6 +921,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     this.validatedTerm = null;
     this.searchTermInvalidReason = '';
     this.referralLinkCache = null;
+    this.lastSearchEventId = null;
     this.referralCopySuccess = false;
     this.referralEmailSuccess = false;
     if (this.referralCopyTimeout) {
@@ -1094,8 +1104,30 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       event.preventDefault();
     }
     console.log('Ver perfil del proveedor:', providerId);
-    // Navigate to worker profile with dynamic route
-    this.router.navigate(['/client/explorar', providerId]);
+    const source = this.nearbyActive ? 'nearby' : 'explorar';
+    const searchEventId = this.lastSearchEventId;
+    const positionIndex = Math.max(
+      1,
+      (this.filteredProviders.findIndex(p => Number(p.id) === Number(providerId)) + 1) || 1
+    );
+
+    if (searchEventId) {
+      this.searchService.trackSearchClick({
+        providerId,
+        searchEventId,
+        positionIndex,
+        source
+      }).subscribe({
+        next: () => {},
+        error: () => {}
+      });
+    }
+
+    const queryParams: Record<string, any> = { src: source };
+    if (searchEventId) {
+      queryParams['se'] = searchEventId;
+    }
+    this.router.navigate(['/client/explorar', providerId], { queryParams });
   }
 
   toggleFavorite(providerId: number) {
@@ -1311,12 +1343,14 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       radius_km: evt.radiusKm,
       search: this.selectedService || this.searchTerm || '',
       category: this.selectedCategory || '',
+      source: 'nearby',
       rating_min: undefined,
       limit: 20,
       offset: 0
     }).subscribe({
       next: (resp) => {
         console.log('[EXPLORAR] Nearby resultados:', resp.data.length);
+        this.lastSearchEventId = Number(resp?.meta?.search_event_id || 0) || null;
         // Mapear a providers mínimos para reutilizar render actual
         this.filteredProviders = resp.data.map((p: any) => ({
           id: p.id,

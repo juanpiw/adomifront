@@ -246,6 +246,44 @@ export class AdminPaymentsService {
       responseType: 'text'
     });
   }
+
+  analyticsTopTerms(secret: string, token: string | null, params: { from?: string | null; to?: string | null; limit?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/search/top-terms${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsMostVisitedProviders(secret: string, token: string | null, params: { from?: string | null; to?: string | null; limit?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/providers/most-visited${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsSearchTrends(secret: string, token: string | null, params: { from?: string | null; to?: string | null; group?: 'day' | 'week' } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.group) searchParams.set('group', params.group);
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/search/trends${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsWhoSearchesWhom(secret: string, token: string | null, params: { from?: string | null; to?: string | null; term?: string; providerId?: number; limit?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.term) searchParams.set('term', params.term);
+    if (params.providerId) searchParams.set('providerId', String(params.providerId));
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/search/who-searches-whom${qs}`, { headers: this.headers(secret, token) });
+  }
 }
 
 

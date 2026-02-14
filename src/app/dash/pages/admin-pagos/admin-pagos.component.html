@@ -22,6 +22,131 @@
 
   <app-admin-summary-cards [summary]="summary"></app-admin-summary-cards>
 
+  <section *ngIf="adminSecret" class="analytics-panel">
+    <div class="analytics-panel__header">
+      <h3>Métricas de búsqueda y perfiles</h3>
+      <button type="button" class="btn-secondary" (click)="loadAnalytics()" [disabled]="analyticsLoading">Refrescar métricas</button>
+    </div>
+    <p class="analytics-panel__subtitle">Fuente oficial: backend analytics events.</p>
+    <div *ngIf="analyticsError" class="error-message">{{ analyticsError }}</div>
+    <div *ngIf="analyticsLoading" class="analytics-panel__loading">Cargando métricas...</div>
+
+    <div class="analytics-panel__kpis" *ngIf="!analyticsLoading">
+      <div class="analytics-panel__kpi">
+        <span>Top términos</span>
+        <strong>{{ analyticsTopTerms.length }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Perfiles visitados</span>
+        <strong>{{ analyticsMostVisited.length }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Puntos de tendencia</span>
+        <strong>{{ analyticsTrends.length }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Relaciones cliente->proveedor</span>
+        <strong>{{ analyticsWhoSearchesWhom.length }}</strong>
+      </div>
+    </div>
+
+    <div class="analytics-panel__grid" *ngIf="!analyticsLoading">
+      <div class="analytics-panel__card">
+        <h4>Top palabras buscadas</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Término</th>
+              <th>Búsquedas</th>
+              <th>Clientes únicos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsTopTerms">
+              <td>{{ row.term }}</td>
+              <td>{{ row.total }}</td>
+              <td>{{ row.unique_clients || 0 }}</td>
+            </tr>
+            <tr *ngIf="analyticsTopTerms.length === 0">
+              <td colspan="3">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Perfiles más visitados</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Visitas</th>
+              <th>Clientes únicos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsMostVisited">
+              <td>{{ row.provider_name }} <span class="muted">#{{ row.provider_id }}</span></td>
+              <td>{{ row.visits }}</td>
+              <td>{{ row.unique_clients || 0 }}</td>
+            </tr>
+            <tr *ngIf="analyticsMostVisited.length === 0">
+              <td colspan="3">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Tendencia de búsquedas</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th>Búsquedas</th>
+              <th>Clientes únicos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsTrends">
+              <td>{{ row.period }}</td>
+              <td>{{ row.total_searches }}</td>
+              <td>{{ row.unique_clients || 0 }}</td>
+            </tr>
+            <tr *ngIf="analyticsTrends.length === 0">
+              <td colspan="3">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Quién busca a quién</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Término</th>
+              <th>Proveedor</th>
+              <th>Visitas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsWhoSearchesWhom">
+              <td>{{ row.client_name || 'Cliente anónimo' }}</td>
+              <td>{{ row.search_term || 'Sin término enlazado' }}</td>
+              <td>{{ row.provider_name }}</td>
+              <td>{{ row.visits }}</td>
+            </tr>
+            <tr *ngIf="analyticsWhoSearchesWhom.length === 0">
+              <td colspan="4">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- Monitor de transacciones (vista unificada tipo captured_hold/released/disputed/refunded) -->
   <app-admin-transactions-monitor *ngIf="adminSecret" [rows]="rows"></app-admin-transactions-monitor>
 

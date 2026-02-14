@@ -349,6 +349,10 @@
     flex-wrap: wrap;
     max-width: 100%;
     min-width: 0;
+
+    @media (min-width: 769px) {
+        justify-content: flex-end !important;
+    }
     
     @media (max-width: 768px) {
         flex-direction: column;
@@ -411,6 +415,10 @@
   box-sizing: border-box;
   box-shadow: 0 20px 45px -30px rgba(217, 119, 6, 0.35);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  @media (min-width: 769px) {
+    min-width: 600px;
+  }
 
   &--collapsed {
     padding-bottom: 1rem;
