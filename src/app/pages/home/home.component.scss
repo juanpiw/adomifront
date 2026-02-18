@@ -1287,6 +1287,13 @@ nav {
 }
 
 @media (max-width: 768px) {
+  .plans-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10rem;
+    align-items: start;
+  }
+
   .pricing-v2__title {
     font-size: 1.75rem;
   }
