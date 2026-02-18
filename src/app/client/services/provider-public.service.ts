@@ -45,6 +45,9 @@ export interface ProviderDetailResponse {
       created_at: string;
     }>;
   };
+  meta?: {
+    profile_view_event_id?: number | null;
+  };
 }
 
 export interface ProviderFaqResponse {

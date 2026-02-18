@@ -106,6 +106,11 @@ export class AdminPagosComponent implements OnInit {
   analyticsMostVisited: Array<{ provider_id: number; provider_name: string; visits: number; unique_clients?: number; last_visit_at?: string }> = [];
   analyticsTrends: Array<{ period: string; total_searches: number; unique_clients?: number }> = [];
   analyticsWhoSearchesWhom: Array<{ client_id: number | null; client_name?: string | null; provider_id: number; provider_name: string; search_term?: string | null; visits: number; last_seen_at?: string }> = [];
+  analyticsConversionTotals: { searches: number; profile_views: number; bookings: number; search_to_booking_rate: number } | null = null;
+  analyticsConversionFunnel: Array<{ period: string; searches: number; profile_views: number; bookings: number; search_to_booking_rate: number }> = [];
+  analyticsConversionByTerm: Array<{ term: string; searches: number; bookings: number; conversion_rate: number }> = [];
+  analyticsConversionByProvider: Array<{ provider_id: number; provider_name: string; profile_views: number; bookings: number; profile_to_booking_rate: number }> = [];
+  analyticsAttributionQuality: { total_bookings: number; attributed_bookings: number; unattributed_bookings: number; attributed_rate: number } | null = null;
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -253,6 +258,44 @@ export class AdminPagosComponent implements OnInit {
             this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
           }
         });
+
+        this.adminApi.analyticsConversionFunnel(this.adminSecret, token, { from, to, group: 'day' }).subscribe({
+          next: (r: any) => {
+            this.analyticsConversionTotals = r?.totals || null;
+            this.analyticsConversionFunnel = r?.data || [];
+          },
+          error: () => {
+            this.analyticsConversionTotals = null;
+            this.analyticsConversionFunnel = [];
+          }
+        });
+
+        this.adminApi.analyticsConversionByTerm(this.adminSecret, token, { from, to, limit: 20, min_searches: 3 }).subscribe({
+          next: (r: any) => {
+            this.analyticsConversionByTerm = r?.data || [];
+          },
+          error: () => {
+            this.analyticsConversionByTerm = [];
+          }
+        });
+
+        this.adminApi.analyticsConversionByProvider(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+          next: (r: any) => {
+            this.analyticsConversionByProvider = r?.data || [];
+          },
+          error: () => {
+            this.analyticsConversionByProvider = [];
+          }
+        });
+
+        this.adminApi.analyticsAttributionQuality(this.adminSecret, token, { from, to }).subscribe({
+          next: (r: any) => {
+            this.analyticsAttributionQuality = r?.data || null;
+          },
+          error: () => {
+            this.analyticsAttributionQuality = null;
+          }
+        });
       },
       error: (err: any) => {
         console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/search/top-terms', {
@@ -264,6 +307,11 @@ export class AdminPagosComponent implements OnInit {
         this.analyticsMostVisited = [];
         this.analyticsTrends = [];
         this.analyticsWhoSearchesWhom = [];
+        this.analyticsConversionTotals = null;
+        this.analyticsConversionFunnel = [];
+        this.analyticsConversionByTerm = [];
+        this.analyticsConversionByProvider = [];
+        this.analyticsAttributionQuality = null;
         this.analyticsLoading = false;
         if (err?.status === 404) {
           this.analyticsError = 'Los endpoints de analytics aún no están desplegados en backend.';

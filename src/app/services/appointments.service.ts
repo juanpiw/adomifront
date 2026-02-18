@@ -115,6 +115,11 @@ export class AppointmentsService {
     end_time: string;
     notes?: string;
     quote_id?: number;
+    attribution?: {
+      source?: string | null;
+      search_event_id?: number | null;
+      profile_view_event_id?: number | null;
+    };
     // Optional: snapshot de coordenadas del destino (evidencia de llegada proveedor)
     service_lat?: number;
     service_lng?: number;

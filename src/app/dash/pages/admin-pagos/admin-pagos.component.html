@@ -48,6 +48,18 @@
         <span>Relaciones cliente->proveedor</span>
         <strong>{{ analyticsWhoSearchesWhom.length }}</strong>
       </div>
+      <div class="analytics-panel__kpi">
+        <span>Bookings (funnel)</span>
+        <strong>{{ analyticsConversionTotals?.bookings || 0 }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Tasa búsqueda->cita</span>
+        <strong>{{ ((analyticsConversionTotals?.search_to_booking_rate || 0) * 100).toFixed(1) }}%</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Calidad de atribución</span>
+        <strong>{{ ((analyticsAttributionQuality?.attributed_rate || 0) * 100).toFixed(1) }}%</strong>
+      </div>
     </div>
 
     <div class="analytics-panel__grid" *ngIf="!analyticsLoading">
@@ -139,6 +151,83 @@
               <td>{{ row.visits }}</td>
             </tr>
             <tr *ngIf="analyticsWhoSearchesWhom.length === 0">
+              <td colspan="4">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Funnel búsqueda -> perfil -> booking</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th>Búsquedas</th>
+              <th>Visitas perfil</th>
+              <th>Bookings</th>
+              <th>Conv. búsqueda->cita</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsConversionFunnel">
+              <td>{{ row.period }}</td>
+              <td>{{ row.searches }}</td>
+              <td>{{ row.profile_views }}</td>
+              <td>{{ row.bookings }}</td>
+              <td>{{ (row.search_to_booking_rate * 100).toFixed(1) }}%</td>
+            </tr>
+            <tr *ngIf="analyticsConversionFunnel.length === 0">
+              <td colspan="5">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Top términos por conversión</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Término</th>
+              <th>Búsquedas</th>
+              <th>Bookings</th>
+              <th>Conversion rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsConversionByTerm">
+              <td>{{ row.term }}</td>
+              <td>{{ row.searches }}</td>
+              <td>{{ row.bookings }}</td>
+              <td>{{ (row.conversion_rate * 100).toFixed(1) }}%</td>
+            </tr>
+            <tr *ngIf="analyticsConversionByTerm.length === 0">
+              <td colspan="4">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Top proveedores por booking atribuible</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Visitas perfil</th>
+              <th>Bookings</th>
+              <th>Conv. perfil->cita</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsConversionByProvider">
+              <td>{{ row.provider_name }} <span class="muted">#{{ row.provider_id }}</span></td>
+              <td>{{ row.profile_views }}</td>
+              <td>{{ row.bookings }}</td>
+              <td>{{ (row.profile_to_booking_rate * 100).toFixed(1) }}%</td>
+            </tr>
+            <tr *ngIf="analyticsConversionByProvider.length === 0">
               <td colspan="4">Sin datos para el rango seleccionado.</td>
             </tr>
           </tbody>

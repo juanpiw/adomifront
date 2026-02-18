@@ -284,6 +284,42 @@ export class AdminPaymentsService {
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.http.get<any>(`${this.baseUrl}/admin/analytics/search/who-searches-whom${qs}`, { headers: this.headers(secret, token) });
   }
+
+  analyticsConversionFunnel(secret: string, token: string | null, params: { from?: string | null; to?: string | null; group?: 'day' | 'week' } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.group) searchParams.set('group', params.group);
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/conversion/funnel${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsConversionByTerm(secret: string, token: string | null, params: { from?: string | null; to?: string | null; limit?: number; min_searches?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    if (params.min_searches) searchParams.set('min_searches', String(params.min_searches));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/conversion/by-term${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsConversionByProvider(secret: string, token: string | null, params: { from?: string | null; to?: string | null; limit?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/conversion/by-provider${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsAttributionQuality(secret: string, token: string | null, params: { from?: string | null; to?: string | null } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/conversion/attribution-quality${qs}`, { headers: this.headers(secret, token) });
+  }
 }
 
 

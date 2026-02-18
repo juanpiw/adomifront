@@ -34,6 +34,7 @@ import { Subscription } from 'rxjs';
 export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
   workerId: string | null = null;
   sourceSearchEventId: number | null = null;
+  sourceProfileViewEventId: number | null = null;
   profileSource: string | null = null;
   workerData: any = null;
   tbkReady = false;
@@ -150,6 +151,7 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
           this.loading = false;
           return;
         }
+        this.sourceProfileViewEventId = Number(resp?.meta?.profile_view_event_id || 0) || null;
         const d = resp.data;
         this.workerData = {
           id: d.profile.id,
@@ -386,7 +388,12 @@ export class PerfilTrabajadorComponent implements OnInit, OnDestroy {
       service_id: Number(activeService.id),
       date: this.toIsoDate(summary.date),
       start_time: summary.time,
-      end_time: endTime
+      end_time: endTime,
+      attribution: {
+        source: this.profileSource || 'direct',
+        search_event_id: this.sourceSearchEventId,
+        profile_view_event_id: this.sourceProfileViewEventId
+      }
     };
     
     console.log('🔵 [BOOKING] Datos de la cita a crear (base):', appointmentData);

@@ -529,30 +529,30 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     if (this.nearbyActive && this.mapCenter) {
       this.onMapCardSearchHere({ center: this.mapCenter, radiusKm: this.mapRadiusKm || 10 });
     } else {
-      this.applyAdvancedFilters();
+      this.applyAdvancedFilters('submit');
     }
     this.updateMapPanelTitle();
   }
 
   onServiceChange(service: string) {
     this.selectedService = service;
-    this.applyAdvancedFilters();
+    this.applyAdvancedFilters('typing');
     this.updateMapPanelTitle();
   }
 
   onLocationChange(locationId: string) {
     this.selectedLocationId = locationId;
-    this.applyAdvancedFilters();
+    this.applyAdvancedFilters('submit');
     this.updateMapPanelTitle();
   }
 
   onDateTimeChange(dateTime: any) {
     this.selectedDateTime = dateTime;
-    this.applyAdvancedFilters();
+    this.applyAdvancedFilters('submit');
     this.updateMapPanelTitle();
   }
 
-  applyAdvancedFilters() {
+  applyAdvancedFilters(trigger: 'submit' | 'typing' = 'submit') {
     console.log('[EXPLORAR] Aplicando filtros avanzados...');
     this.loading = true;
     this.hasAutoCentered = false;
@@ -561,8 +561,10 @@ export class ExplorarComponent implements OnInit, OnDestroy {
 
     const price = this.getPriceRange(this.selectedPriceRange);
     const hasDateTime = !!(this.selectedDateTime && (this.selectedDateTime.value || this.selectedDateTime.type));
+    const searchSource = trigger === 'typing' ? 'explorar_typing' : 'explorar';
+    const availableSource = trigger === 'typing' ? 'available_typing' : 'available';
     const baseFilters: SearchFilters = {
-      source: 'explorar',
+      source: searchSource,
       location: this.selectedLocationId,
       price_min: price.min === null ? undefined : price.min,
       price_max: price.max === null ? undefined : price.max,
@@ -585,7 +587,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
             end: this.getEndTime(this.selectedDateTime),
             location: this.selectedLocationId || '',
             category: searchTerm,
-            source: 'available',
+            source: availableSource,
             limit: 20,
             offset: 0,
             is_now: this.isNowFilter(this.selectedDateTime)
