@@ -514,6 +514,11 @@ nav {
 }
 
 @media (max-width: 767px) {
+  :host {
+    display: inline-block;
+    width: 100%;
+  }
+
   .home-hero-mockup-img {
     max-width: 300px;
   }
