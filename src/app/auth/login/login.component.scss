@@ -213,6 +213,10 @@
       box-shadow: -40px 0 80px rgba(15, 23, 42, 0.25);
     }
 
+    @media (max-width: 768px) {
+      width: auto;
+    }
+
     .theme-switch-wrapper {
       position: absolute;
       top: clamp(1.25rem, 3vw, 2rem);
