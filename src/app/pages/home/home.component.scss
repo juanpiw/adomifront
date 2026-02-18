@@ -3,8 +3,10 @@
 /* Base styles */
 :host {
   display: block;
+  width: 100%;
   font-family: 'Inter', sans-serif;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 .font-serif-elegant {
@@ -514,11 +516,6 @@ nav {
 }
 
 @media (max-width: 767px) {
-  :host {
-    display: inline-block;
-    width: 100%;
-  }
-
   .home-hero-mockup-img {
     max-width: 300px;
   }
@@ -546,6 +543,11 @@ nav {
 }
 
 @media (max-width: 420px) {
+  .container.px-6 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
   .home-nav__brand {
     display: flex;
     flex-direction: column;
