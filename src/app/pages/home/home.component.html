@@ -3,7 +3,11 @@
   <div class="container mx-auto px-6 py-4">
     <div class="home-nav__row flex items-center justify-between">
       <div class="home-nav__brand text-2xl font-bold">
-        <span class="text-gradient">Adomiapp</span>
+        <img
+          src="https://adomiapp.cl/logo_adomi.svg"
+          alt="Adomiapp"
+          class="home-nav__logo"
+        />
         <span class="typewriter-text text-gray-400">domicilio</span>
       </div>
       <div class="hidden md:flex items-center space-x-8">
@@ -76,7 +80,7 @@
       </div>
 
       <!-- Mobile: simple CTA -->
-      <div class="fade-in-up mb-12 sm:hidden">
+      <div class="fade-in-up mb-12 sm:hidden mobile-inline-cta">
         <a
           routerLink="/auth/register"
           class="inline-flex w-full max-w-md mx-auto items-center justify-center rounded-full bg-indigo-600 px-8 py-4 font-semibold text-white transition-colors hover:bg-indigo-700"

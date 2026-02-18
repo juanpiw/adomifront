@@ -511,11 +511,22 @@ nav {
   gap: 1rem;
 }
 
+.home-nav__logo {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: min(52vw, 180px);
+}
+
 .home-hero-mockup-img {
   max-width: 500px;
 }
 
 @media (max-width: 767px) {
+  .mobile-inline-cta {
+    display: inline;
+  }
+
   .home-hero-mockup-img {
     max-width: 300px;
   }
@@ -527,6 +538,11 @@ nav {
 
   .home-nav__brand {
     min-width: 0;
+  }
+
+  .home-nav__logo {
+    height: 28px;
+    max-width: min(58vw, 150px);
   }
 
   .home-nav__actions {
