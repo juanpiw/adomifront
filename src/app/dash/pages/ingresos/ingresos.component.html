@@ -29,7 +29,7 @@
           </div>
           <div class="tbk-card__chips">
             <span class="chip chip--neutral">Estado: {{ mpStatusLabel }}</span>
-            <span *ngIf="mpUserId" class="chip chip--neutral">Usuario MP: {{ mpUserId }}</span>
+            <span *ngIf="mpConnected && mpUserId" class="chip chip--neutral">Usuario MP: {{ mpUserId }}</span>
           </div>
         </div>
 
