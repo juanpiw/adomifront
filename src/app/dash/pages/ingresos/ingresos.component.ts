@@ -256,30 +256,67 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
       mpConnected: this.mpConnected,
       mpStatusLabel: this.mpStatusLabel
     });
-    this.mpActionLoading = true;
-    this.payments.mpOAuthStart().subscribe({
-      next: (resp: any) => {
-        console.log(`${this.mpLogPrefix} oauth/start respuesta`, resp);
-        this.mpActionLoading = false;
-        const url = String(resp?.url || '').trim();
-        if (resp?.success && url) {
-          console.log(`${this.mpLogPrefix} redirigiendo a Mercado Pago`, { url });
-          try { window.location.assign(url); } catch { window.open(url, '_self'); }
-          return;
+    const startOAuth = () => {
+      this.mpActionLoading = true;
+      this.payments.mpOAuthStart().subscribe({
+        next: (resp: any) => {
+          console.log(`${this.mpLogPrefix} oauth/start respuesta`, resp);
+          this.mpActionLoading = false;
+          const url = String(resp?.url || '').trim();
+          if (resp?.success && url) {
+            console.log(`${this.mpLogPrefix} redirigiendo a Mercado Pago`, { url });
+            try { window.location.assign(url); } catch { window.open(url, '_self'); }
+            return;
+          }
+          console.warn(`${this.mpLogPrefix} oauth/start sin URL valida`, { resp });
+          this.mpStatusLabel = 'Error';
+        },
+        error: (err) => {
+          console.error(`${this.mpLogPrefix} error en oauth/start`, {
+            status: err?.status,
+            message: err?.message,
+            error: err?.error
+          });
+          this.mpActionLoading = false;
+          this.mpStatusLabel = 'Error';
         }
-        console.warn(`${this.mpLogPrefix} oauth/start sin URL valida`, { resp });
-        this.mpStatusLabel = 'Error';
-      },
-      error: (err) => {
-        console.error(`${this.mpLogPrefix} error en oauth/start`, {
-          status: err?.status,
-          message: err?.message,
-          error: err?.error
-        });
-        this.mpActionLoading = false;
-        this.mpStatusLabel = 'Error';
-      }
-    });
+      });
+    };
+
+    if (this.mpConnected) {
+      const confirmed = typeof window !== 'undefined'
+        ? window.confirm('Para reconectar desde cero, primero desconectaremos la cuenta actual y luego abriremos Mercado Pago. ¿Continuar?')
+        : true;
+      if (!confirmed) return;
+      this.mpActionLoading = true;
+      this.payments.mpRevoke().subscribe({
+        next: (resp: any) => {
+          console.log(`${this.mpLogPrefix} revoke previo a reconnect`, resp);
+          this.mpActionLoading = false;
+          if (resp?.success) {
+            this.mpConnected = false;
+            this.mpStatusLabel = 'Desconectado';
+            this.mpUserId = null;
+            this.mpExpiresAt = null;
+            startOAuth();
+            return;
+          }
+          this.mpStatusLabel = 'Error';
+        },
+        error: (err) => {
+          console.error(`${this.mpLogPrefix} error revocando antes de reconnect`, {
+            status: err?.status,
+            message: err?.message,
+            error: err?.error
+          });
+          this.mpActionLoading = false;
+          this.mpStatusLabel = 'Error';
+        }
+      });
+      return;
+    }
+
+    startOAuth();
   }
 
   disconnectMercadoPago(): void {
