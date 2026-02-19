@@ -256,6 +256,37 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     });
   }
 
+  disconnectMercadoPago(): void {
+    if (this.mpActionLoading || !this.mpConnected) return;
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm('Se desconectará tu cuenta de Mercado Pago. Luego podrás volver a inscribirla desde cero. ¿Deseas continuar?')
+      : true;
+    if (!confirmed) return;
+
+    this.mpActionLoading = true;
+    this.payments.mpRevoke().subscribe({
+      next: (resp: any) => {
+        this.mpActionLoading = false;
+        if (resp?.success) {
+          this.mpConnected = false;
+          this.mpStatusLabel = 'Desconectado';
+          this.mpUserId = null;
+          this.mpExpiresAt = null;
+          this.showTbkSection = true;
+          this.showToast('Cuenta de Mercado Pago desconectada. Puedes reconectarla cuando quieras.');
+          this.loadMercadoPagoStatus();
+          return;
+        }
+        this.mpStatusLabel = 'Error';
+      },
+      error: () => {
+        this.mpActionLoading = false;
+        this.mpStatusLabel = 'Error';
+        this.showToast('No se pudo desconectar Mercado Pago. Intenta nuevamente.');
+      }
+    });
+  }
+
   // ============================================================
   // UI: Ayuda Transbank (trigger inline + modal)
   // ============================================================

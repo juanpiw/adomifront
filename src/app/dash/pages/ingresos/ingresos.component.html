@@ -45,6 +45,15 @@
               <button type="button" class="tbk-btn tbk-btn--primary" (click)="connectMercadoPago()" [disabled]="mpActionLoading">
                 {{ mpActionLoading ? 'Abriendo…' : (mpConnected ? 'Reconectar' : (mpStatusLabel === 'Requiere reinscripción' ? 'Reinscribir cuenta MP' : 'Conectar Mercado Pago')) }}
               </button>
+              <button
+                *ngIf="mpConnected"
+                type="button"
+                class="tbk-btn tbk-btn--secondary"
+                (click)="disconnectMercadoPago()"
+                [disabled]="mpActionLoading"
+              >
+                {{ mpActionLoading ? 'Procesando…' : 'Desconectar cuenta MP' }}
+              </button>
             </div>
           </div>
         </div>

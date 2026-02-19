@@ -160,6 +160,15 @@ export class PaymentsService {
     );
   }
 
+  // Mercado Pago (Split): revoke current provider connection
+  mpRevoke(): Observable<{ success: boolean; error?: string }>{
+    return this.http.post<{ success: boolean; error?: string }>(
+      `${this.base}/provider/mercadopago/revoke`,
+      {},
+      { headers: this.headers() }
+    );
+  }
+
   // Mercado Pago (Split): create preference for appointment payment
   mpCreatePreference(appointmentId: number): Observable<{ success: boolean; init_point?: string; preference_id?: string; error?: string; message?: string }>{
     return this.http.post<{ success: boolean; init_point?: string; preference_id?: string; error?: string; message?: string }>(
