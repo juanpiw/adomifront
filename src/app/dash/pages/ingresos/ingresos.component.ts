@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { 
@@ -217,6 +217,8 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         this.mpExpiresAt = resp?.expires_at ? new Date(resp.expires_at) : null;
         if (connected) {
           this.mpStatusLabel = 'Conectado';
+        } else if (resp?.status === 'conflict') {
+          this.mpStatusLabel = 'Requiere reinscripción';
         } else if (resp?.status === 'revoked') {
           this.mpStatusLabel = 'Desconectado';
         } else if (resp?.status === 'expired') {
