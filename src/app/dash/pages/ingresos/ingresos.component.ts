@@ -101,6 +101,7 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   mpUserId: number | null = null;
   mpExpiresAt: Date | null = null;
   mpActionLoading = false;
+  private readonly mpLogPrefix = '[MP_FRONT][INGRESOS]';
   tbkForm = this.fb.group({
     commerceName: ['', [Validators.required, Validators.minLength(3)]],
     commerceEmail: ['', [Validators.required, Validators.email]]
@@ -207,8 +208,10 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
   }
 
   loadMercadoPagoStatus(): void {
+    console.log(`${this.mpLogPrefix} solicitando estado de conexion`);
     this.payments.mpProviderStatus().subscribe({
       next: (resp: any) => {
+        console.log(`${this.mpLogPrefix} estado recibido`, resp);
         const connected = !!resp?.connected;
         this.mpConnected = connected;
         // Si Mercado Pago NO está conectado, mostramos TBK como alternativa.
@@ -226,8 +229,19 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         } else {
           this.mpStatusLabel = 'No conectado';
         }
+        console.log(`${this.mpLogPrefix} estado aplicado`, {
+          mpConnected: this.mpConnected,
+          mpStatusLabel: this.mpStatusLabel,
+          mpUserId: this.mpUserId,
+          mpExpiresAt: this.mpExpiresAt
+        });
       },
-      error: () => {
+      error: (err) => {
+        console.error(`${this.mpLogPrefix} error consultando estado`, {
+          status: err?.status,
+          message: err?.message,
+          error: err?.error
+        });
         this.mpConnected = false;
         this.mpStatusLabel = 'No conectado';
         // Si no podemos consultar estado MP, mostramos TBK como fallback.
@@ -238,18 +252,30 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
 
   connectMercadoPago(): void {
     if (this.mpActionLoading) return;
+    console.log(`${this.mpLogPrefix} click conectar/reconectar`, {
+      mpConnected: this.mpConnected,
+      mpStatusLabel: this.mpStatusLabel
+    });
     this.mpActionLoading = true;
     this.payments.mpOAuthStart().subscribe({
       next: (resp: any) => {
+        console.log(`${this.mpLogPrefix} oauth/start respuesta`, resp);
         this.mpActionLoading = false;
         const url = String(resp?.url || '').trim();
         if (resp?.success && url) {
+          console.log(`${this.mpLogPrefix} redirigiendo a Mercado Pago`, { url });
           try { window.location.assign(url); } catch { window.open(url, '_self'); }
           return;
         }
+        console.warn(`${this.mpLogPrefix} oauth/start sin URL valida`, { resp });
         this.mpStatusLabel = 'Error';
       },
-      error: () => {
+      error: (err) => {
+        console.error(`${this.mpLogPrefix} error en oauth/start`, {
+          status: err?.status,
+          message: err?.message,
+          error: err?.error
+        });
         this.mpActionLoading = false;
         this.mpStatusLabel = 'Error';
       }
@@ -264,8 +290,10 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
     if (!confirmed) return;
 
     this.mpActionLoading = true;
+    console.log(`${this.mpLogPrefix} iniciando revocacion`);
     this.payments.mpRevoke().subscribe({
       next: (resp: any) => {
+        console.log(`${this.mpLogPrefix} respuesta revoke`, resp);
         this.mpActionLoading = false;
         if (resp?.success) {
           this.mpConnected = false;
@@ -279,7 +307,12 @@ export class DashIngresosComponent implements OnInit, OnDestroy {
         }
         this.mpStatusLabel = 'Error';
       },
-      error: () => {
+      error: (err) => {
+        console.error(`${this.mpLogPrefix} error en revoke`, {
+          status: err?.status,
+          message: err?.message,
+          error: err?.error
+        });
         this.mpActionLoading = false;
         this.mpStatusLabel = 'Error';
         this.showToast('No se pudo desconectar Mercado Pago. Intenta nuevamente.');
