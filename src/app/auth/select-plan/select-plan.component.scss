@@ -845,6 +845,10 @@
 
 // Responsive
 @media (max-width: 768px) {
+  .plan-selection-container {
+    padding: 20px;
+  }
+
   .plans-grid {
     display: block;
     grid-template-columns: 1fr;
