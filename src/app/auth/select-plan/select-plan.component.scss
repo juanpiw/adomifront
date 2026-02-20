@@ -846,6 +846,7 @@
 // Responsive
 @media (max-width: 768px) {
   .plans-grid {
+    display: block;
     grid-template-columns: 1fr;
   }
 
@@ -865,7 +866,6 @@
   }
   
   .actions {
-    position: sticky;
     bottom: 0;
     left: 0;
     right: 0;
@@ -876,11 +876,16 @@
     padding: 1.25rem;
     box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
     backdrop-filter: blur(12px);
-    width: 120%;
+    width: 100%;
   }
   
   .btn-primary, .btn-secondary {
     width: 100%;
+  }
+
+  .billing-toggle-wrapper {
+    flex-direction: column;
+    border-radius: 19px;
   }
 }
 
