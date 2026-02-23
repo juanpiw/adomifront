@@ -73,6 +73,10 @@ interface ProviderCoordinates {
           (currentLocation)="onUseCurrentLocation($event)"
           ariaLabel="Búsqueda avanzada de servicios"
         ></ui-search-input>
+        <p *ngIf="searchAnalyticsDebug" class="text-xs text-gray-500 mt-2">
+          Debug analytics: search_event_id = {{ lastSearchEventIdForDebug || 'null' }} ·
+          término = "{{ (validatedTerm?.sanitized || searchTerm || '').trim() || 'vacío' }}"
+        </p>
       </header>
 
       <!-- Filters Section -->
@@ -292,6 +296,11 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   referralCopySuccess = false;
   referralEmailSuccess = false;
   private lastSearchEventId: number | null = null;
+  searchAnalyticsDebug = !environment.production;
+
+  get lastSearchEventIdForDebug(): number | null {
+    return this.lastSearchEventId;
+  }
   private referralCopyTimeout: any;
   private referralLinkCache: string | null = null;
   private isBrowser = false;

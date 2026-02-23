@@ -108,6 +108,7 @@ export class AdminPagosComponent implements OnInit {
     provider_id: number;
     provider_name?: string | null;
     provider_email?: string | null;
+    user_role?: string | null;
     verification_status?: string;
     active_services?: number;
     reasons: string[];
@@ -425,6 +426,13 @@ export class AdminPagosComponent implements OnInit {
     return 'Sin faltantes';
   }
 
+  getRoleLabel(role: string | null | undefined): string {
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'provider') return 'Proveedor';
+    if (normalized === 'client') return 'Cliente';
+    return role || 'No definido';
+  }
+
   openIncompleteEmailDialog(row: any) {
     const providerId = Number(row?.provider_id || 0);
     if (!providerId) return;
@@ -464,6 +472,19 @@ export class AdminPagosComponent implements OnInit {
     this.incompleteEmailError = null;
     this.incompleteEmailSuccess = null;
     this.incompleteEmailSending = false;
+  }
+
+  onIncompleteEmailBackdropClick(event: MouseEvent) {
+    if (event.target === event.currentTarget && !this.incompleteEmailSending) {
+      this.closeIncompleteEmailDialog();
+    }
+  }
+
+  getSelectedIncompleteEmailReasons(): string[] {
+    return this.incompleteEmailReasons
+      .filter((reason) => reason.selected)
+      .map((reason) => reason.label)
+      .filter(Boolean);
   }
 
   sendIncompleteProfileEmail() {
