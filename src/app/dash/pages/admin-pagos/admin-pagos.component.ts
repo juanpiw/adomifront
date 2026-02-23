@@ -138,6 +138,13 @@ export class AdminPagosComponent implements OnInit {
   incompleteEmailError: string | null = null;
   incompleteEmailSuccess: string | null = null;
   incompleteEmailStatusByProvider: Record<number, { sending?: boolean; sentAt?: string; error?: string | null }> = {};
+  selectedIncompleteProviderIds: number[] = [];
+  incompleteBulkSelectAll = false;
+  incompleteNotifTitle = '';
+  incompleteNotifMessage = '';
+  incompleteNotifSending = false;
+  incompleteNotifSuccess: string | null = null;
+  incompleteNotifError: string | null = null;
   private incompleteReasonLabelMap: Record<string, string> = {
     NO_PROVIDER_ROLE: 'La cuenta no tiene rol de proveedor',
     USER_INACTIVE: 'La cuenta está inactiva',
@@ -281,6 +288,10 @@ export class AdminPagosComponent implements OnInit {
                   }))
                   : [])
             }));
+            const validIds = new Set(this.analyticsIncompleteProfiles.map((row) => Number(row.provider_id)));
+            this.selectedIncompleteProviderIds = this.selectedIncompleteProviderIds.filter((id) => validIds.has(id));
+            this.syncIncompleteBulkSelection();
+            this.autofillIncompleteNotificationMessage();
           },
           error: (err: any) => {
             console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/providers/incomplete-profiles', {
@@ -431,6 +442,106 @@ export class AdminPagosComponent implements OnInit {
     if (normalized === 'provider') return 'Proveedor';
     if (normalized === 'client') return 'Cliente';
     return role || 'No definido';
+  }
+
+  isIncompleteProviderSelected(providerId: number): boolean {
+    return this.selectedIncompleteProviderIds.includes(Number(providerId));
+  }
+
+  toggleIncompleteProviderSelection(providerId: number, checked: boolean) {
+    const id = Number(providerId);
+    if (!Number.isFinite(id) || id <= 0) return;
+    if (checked) {
+      if (!this.selectedIncompleteProviderIds.includes(id)) {
+        this.selectedIncompleteProviderIds = [...this.selectedIncompleteProviderIds, id];
+      }
+    } else {
+      this.selectedIncompleteProviderIds = this.selectedIncompleteProviderIds.filter((value) => value !== id);
+    }
+    this.syncIncompleteBulkSelection();
+    this.autofillIncompleteNotificationMessage();
+  }
+
+  toggleAllIncompleteProviders(checked: boolean) {
+    this.incompleteBulkSelectAll = checked;
+    this.selectedIncompleteProviderIds = checked
+      ? this.analyticsIncompleteProfiles.map((row) => Number(row.provider_id)).filter((id) => Number.isFinite(id) && id > 0)
+      : [];
+    this.autofillIncompleteNotificationMessage();
+  }
+
+  private syncIncompleteBulkSelection() {
+    const selectableCount = this.analyticsIncompleteProfiles.length;
+    this.incompleteBulkSelectAll = selectableCount > 0 && this.selectedIncompleteProviderIds.length === selectableCount;
+  }
+
+  private getSelectedIncompleteProfiles() {
+    const selectedSet = new Set(this.selectedIncompleteProviderIds);
+    return this.analyticsIncompleteProfiles.filter((row) => selectedSet.has(Number(row.provider_id)));
+  }
+
+  private autofillIncompleteNotificationMessage() {
+    const selectedRows = this.getSelectedIncompleteProfiles();
+    const defaultTitle = 'Completa tu perfil para aparecer en búsquedas';
+    this.incompleteNotifTitle = defaultTitle;
+
+    if (!selectedRows.length) {
+      this.incompleteNotifMessage = '';
+      return;
+    }
+
+    if (selectedRows.length === 1) {
+      const row = selectedRows[0];
+      const reasons = (row.reason_labels || []).map((reason: any) => reason?.label).filter(Boolean);
+      this.incompleteNotifMessage =
+        `Detectamos que tu perfil tiene información pendiente:\n` +
+        `${reasons.map((label) => `• ${label}`).join('\n')}\n\n` +
+        `Actualiza tu perfil aquí: {{link_perfil}}`;
+      return;
+    }
+
+    const uniqueReasons = Array.from(
+      new Set(
+        selectedRows.flatMap((row) =>
+          ((row.reason_labels || []) as any[])
+            .map((reason) => reason?.label)
+            .filter(Boolean)
+        )
+      )
+    );
+    this.incompleteNotifMessage =
+      `Tienes campos pendientes en tu perfil que impiden una mejor visibilidad en búsquedas.\n` +
+      `${uniqueReasons.slice(0, 6).map((label) => `• ${label}`).join('\n')}\n\n` +
+      `Revisa y completa tu perfil aquí: {{link_perfil}}`;
+  }
+
+  sendIncompleteProfilesNotification() {
+    this.incompleteNotifSuccess = null;
+    this.incompleteNotifError = null;
+    if (!this.selectedIncompleteProviderIds.length) {
+      this.incompleteNotifError = 'Selecciona al menos un proveedor.';
+      return;
+    }
+
+    const token = this.session.getAccessToken();
+    this.incompleteNotifSending = true;
+    this.adminApi.notifyIncompleteProfiles(this.adminSecret, token, {
+      providerIds: this.selectedIncompleteProviderIds,
+      title: this.incompleteNotifTitle?.trim() || null,
+      message: this.incompleteNotifMessage?.trim() || null
+    }).subscribe({
+      next: (res) => {
+        this.incompleteNotifSending = false;
+        const sent = Number(res?.sent_count || 0);
+        const skipped = Number(res?.skipped_count || 0);
+        const failed = Number(res?.failed_count || 0);
+        this.incompleteNotifSuccess = `Notificaciones enviadas: ${sent}. Omitidas: ${skipped}. Fallidas: ${failed}.`;
+      },
+      error: (err) => {
+        this.incompleteNotifSending = false;
+        this.incompleteNotifError = err?.error?.error || 'No fue posible enviar notificaciones.';
+      }
+    });
   }
 
   openIncompleteEmailDialog(row: any) {

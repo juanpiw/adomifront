@@ -979,6 +979,14 @@
     <table class="table">
       <thead>
         <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="incompleteBulkSelectAll"
+              (change)="toggleAllIncompleteProviders($any($event.target).checked)"
+              title="Seleccionar todos"
+            />
+          </th>
           <th>Proveedor</th>
           <th>Tipo</th>
           <th>Estado</th>
@@ -989,6 +997,13 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of analyticsIncompleteProfiles">
+          <td>
+            <input
+              type="checkbox"
+              [checked]="isIncompleteProviderSelected(row.provider_id)"
+              (change)="toggleIncompleteProviderSelection(row.provider_id, $any($event.target).checked)"
+            />
+          </td>
           <td>
             {{ row.provider_name || 'Sin nombre' }}
             <span class="muted">#{{ row.provider_id }}</span>
@@ -1016,10 +1031,48 @@
           </td>
         </tr>
         <tr *ngIf="analyticsIncompleteProfiles.length === 0">
-          <td colspan="6">No hay perfiles incompletos para mostrar.</td>
+          <td colspan="7">No hay perfiles incompletos para mostrar.</td>
         </tr>
       </tbody>
     </table>
+
+    <div class="incomplete-notify" style="margin-top:16px;">
+      <h5>Centro de Notificaciones</h5>
+      <p class="muted">
+        Seleccionados: {{ selectedIncompleteProviderIds.length }} proveedor(es). El mensaje se autocompleta según los faltantes detectados.
+      </p>
+      <div class="incomplete-notify__form">
+        <div class="incomplete-notify__field">
+          <label>Título</label>
+          <input
+            type="text"
+            [(ngModel)]="incompleteNotifTitle"
+            placeholder="Ej: Completa tu perfil profesional"
+          />
+        </div>
+        <div class="incomplete-notify__field">
+          <label>Mensaje</label>
+          <textarea
+            rows="5"
+            [(ngModel)]="incompleteNotifMessage"
+            placeholder="Incluye &#123;&#123;faltantes&#125;&#125; y &#123;&#123;link_perfil&#125;&#125; si quieres texto dinámico."
+          ></textarea>
+          <p class="muted">Tip: puedes usar {{'{{faltantes}}'}} y {{'{{link_perfil}}'}} en el texto.</p>
+        </div>
+        <div class="incomplete-notify__actions">
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="sendIncompleteProfilesNotification()"
+            [disabled]="incompleteNotifSending || !selectedIncompleteProviderIds.length"
+          >
+            {{ incompleteNotifSending ? 'Enviando…' : 'Enviar notificación' }}
+          </button>
+        </div>
+        <p *ngIf="incompleteNotifSuccess" class="founder-card__status founder-card__status--success">{{ incompleteNotifSuccess }}</p>
+        <p *ngIf="incompleteNotifError" class="founder-card__status founder-card__status--error">{{ incompleteNotifError }}</p>
+      </div>
+    </div>
   </div>
   <!-- Drawer simple de pago -->
   <div *ngIf="payRow" class="pay-drawer">
