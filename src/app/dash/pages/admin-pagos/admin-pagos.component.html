@@ -126,6 +126,7 @@
               <th>Estado</th>
               <th>Servicios activos</th>
               <th>Faltantes</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -136,13 +137,72 @@
               </td>
               <td>{{ row.verification_status || 'none' }}</td>
               <td>{{ row.active_services || 0 }}</td>
-              <td>{{ (row.reasons || []).join(', ') }}</td>
+              <td>{{ getIncompleteReasonsText(row) }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  (click)="openIncompleteEmailDialog(row)"
+                  [disabled]="!row.provider_email || incompleteEmailStatusByProvider[row.provider_id]?.sending"
+                >
+                  {{ incompleteEmailStatusByProvider[row.provider_id]?.sending ? 'Enviando…' : 'Enviar correo al usuario' }}
+                </button>
+                <div *ngIf="!row.provider_email" class="muted">Sin email registrado</div>
+                <div *ngIf="incompleteEmailStatusByProvider[row.provider_id]?.sentAt" class="muted">
+                  Correo enviado
+                </div>
+                <div *ngIf="incompleteEmailStatusByProvider[row.provider_id]?.error" class="muted" style="color:#b91c1c;">
+                  {{ incompleteEmailStatusByProvider[row.provider_id]?.error }}
+                </div>
+              </td>
             </tr>
             <tr *ngIf="analyticsIncompleteProfiles.length === 0">
-              <td colspan="4">No hay perfiles incompletos para mostrar.</td>
+              <td colspan="5">No hay perfiles incompletos para mostrar.</td>
             </tr>
           </tbody>
         </table>
+
+        <div *ngIf="incompleteEmailDialogOpen && incompleteEmailTarget as target" class="founder-card" style="margin-top: 1rem;">
+          <div class="founder-card__header">
+            <div>
+              <h3>Enviar correo de perfil incompleto</h3>
+              <p>
+                {{ target.provider_name || 'Proveedor' }} (#{{ target.provider_id }}) ·
+                {{ target.provider_email || 'Sin correo' }}
+              </p>
+            </div>
+            <button type="button" class="founder-card__reset" (click)="closeIncompleteEmailDialog()">Cerrar</button>
+          </div>
+          <div class="founder-card__content">
+            <div class="founder-card__column">
+              <div class="founder-card__field">
+                <label>Asunto</label>
+                <input type="text" [(ngModel)]="incompleteEmailSubject" placeholder="Asunto del correo" />
+              </div>
+              <div class="founder-card__field">
+                <label>Motivos detectados</label>
+                <label *ngFor="let reason of incompleteEmailReasons" class="muted" style="display:flex;gap:.5rem;align-items:flex-start;">
+                  <input type="checkbox" [(ngModel)]="reason.selected" />
+                  <span>{{ reason.label }}</span>
+                </label>
+              </div>
+              <div class="founder-card__field">
+                <label>Mensaje adicional (opcional)</label>
+                <textarea rows="3" [(ngModel)]="incompleteEmailMessage" placeholder="Ej: Actualiza estos datos hoy para que tu perfil vuelva a aparecer en búsquedas."></textarea>
+              </div>
+              <div class="founder-card__actions">
+                <button type="button" class="btn-primary" (click)="sendIncompleteProfileEmail()" [disabled]="incompleteEmailSending">
+                  {{ incompleteEmailSending ? 'Enviando…' : 'Enviar correo al usuario' }}
+                </button>
+                <button type="button" class="btn-secondary" (click)="closeIncompleteEmailDialog()" [disabled]="incompleteEmailSending">
+                  Cancelar
+                </button>
+              </div>
+              <p *ngIf="incompleteEmailSuccess" class="founder-card__status founder-card__status--success">{{ incompleteEmailSuccess }}</p>
+              <p *ngIf="incompleteEmailError" class="founder-card__status founder-card__status--error">{{ incompleteEmailError }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="analytics-panel__card">

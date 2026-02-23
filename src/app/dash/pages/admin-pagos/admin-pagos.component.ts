@@ -104,7 +104,16 @@ export class AdminPagosComponent implements OnInit {
   analyticsError: string | null = null;
   analyticsTopTerms: Array<{ term: string; total: number; unique_clients?: number; last_seen_at?: string }> = [];
   analyticsExternalTopTerms: Array<{ term: string; total: number; unique_sessions?: number; last_seen_at?: string }> = [];
-  analyticsIncompleteProfiles: Array<{ provider_id: number; provider_name?: string | null; provider_email?: string | null; verification_status?: string; active_services?: number; reasons: string[]; missing_count: number }> = [];
+  analyticsIncompleteProfiles: Array<{
+    provider_id: number;
+    provider_name?: string | null;
+    provider_email?: string | null;
+    verification_status?: string;
+    active_services?: number;
+    reasons: string[];
+    reason_labels?: Array<{ code: string; label: string }>;
+    missing_count: number;
+  }> = [];
   analyticsMostVisited: Array<{ provider_id: number; provider_name: string; visits: number; unique_clients?: number; last_visit_at?: string }> = [];
   analyticsTrends: Array<{ period: string; total_searches: number; unique_clients?: number }> = [];
   analyticsWhoSearchesWhom: Array<{ client_id: number | null; client_name?: string | null; provider_id: number; provider_name: string; search_term?: string | null; visits: number; last_seen_at?: string }> = [];
@@ -113,6 +122,38 @@ export class AdminPagosComponent implements OnInit {
   analyticsConversionByTerm: Array<{ term: string; searches: number; bookings: number; conversion_rate: number }> = [];
   analyticsConversionByProvider: Array<{ provider_id: number; provider_name: string; profile_views: number; bookings: number; profile_to_booking_rate: number }> = [];
   analyticsAttributionQuality: { total_bookings: number; attributed_bookings: number; unattributed_bookings: number; attributed_rate: number } | null = null;
+  incompleteEmailDialogOpen = false;
+  incompleteEmailTarget: {
+    provider_id: number;
+    provider_name?: string | null;
+    provider_email?: string | null;
+    reasons: string[];
+    reason_labels?: Array<{ code: string; label: string }>;
+  } | null = null;
+  incompleteEmailSubject = '';
+  incompleteEmailMessage = '';
+  incompleteEmailReasons: Array<{ code: string; label: string; selected: boolean }> = [];
+  incompleteEmailSending = false;
+  incompleteEmailError: string | null = null;
+  incompleteEmailSuccess: string | null = null;
+  incompleteEmailStatusByProvider: Record<number, { sending?: boolean; sentAt?: string; error?: string | null }> = {};
+  private incompleteReasonLabelMap: Record<string, string> = {
+    NO_PROVIDER_ROLE: 'La cuenta no tiene rol de proveedor',
+    USER_INACTIVE: 'La cuenta está inactiva',
+    MISSING_PROFILE: 'Falta crear el perfil profesional',
+    MISSING_PROFESSIONAL_TITLE: 'Falta título profesional',
+    MISSING_DESCRIPTION: 'Falta descripción de tu perfil',
+    MISSING_PROFILE_PHOTO: 'Falta foto de perfil',
+    MISSING_MAIN_COMMUNE: 'Falta comuna principal',
+    MISSING_MAIN_REGION: 'Falta región principal',
+    MISSING_LOCATION: 'Falta ubicación de atención',
+    MISSING_PHONE: 'Falta teléfono de contacto',
+    MISSING_YEARS_EXPERIENCE: 'Faltan años de experiencia',
+    MISSING_SCHEDULE: 'Falta configurar horario/disponibilidad',
+    NOT_VERIFIED_FOR_PUBLIC: 'La verificación de identidad aún no está aprobada',
+    NO_ACTIVE_SERVICES: 'No tienes servicios activos publicados',
+    MISSING_SERVICE_PRICE: 'Falta valor en tus servicios activos'
+  };
 
   ngOnInit() {
     const email = this.session.getUser()?.email?.toLowerCase();
@@ -228,7 +269,17 @@ export class AdminPagosComponent implements OnInit {
             console.log('[ADMIN_ANALYTICS] OK /admin/analytics/providers/incomplete-profiles', {
               count: Array.isArray(r?.data) ? r.data.length : 0
             });
-            this.analyticsIncompleteProfiles = r?.data || [];
+            this.analyticsIncompleteProfiles = (r?.data || []).map((item: any) => ({
+              ...item,
+              reason_labels: Array.isArray(item?.reason_labels)
+                ? item.reason_labels
+                : (Array.isArray(item?.reasons)
+                  ? item.reasons.map((code: string) => ({
+                    code,
+                    label: this.getIncompleteReasonLabel(code)
+                  }))
+                  : [])
+            }));
           },
           error: (err: any) => {
             console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/providers/incomplete-profiles', {
@@ -356,6 +407,111 @@ export class AdminPagosComponent implements OnInit {
         } else {
           this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
         }
+      }
+    });
+  }
+
+  getIncompleteReasonLabel(code: string): string {
+    return this.incompleteReasonLabelMap[String(code || '').trim()] || code || 'Sin detalle';
+  }
+
+  getIncompleteReasonsText(row: any): string {
+    if (Array.isArray(row?.reason_labels) && row.reason_labels.length) {
+      return row.reason_labels.map((reason: any) => reason?.label || reason?.code || '').filter(Boolean).join(', ');
+    }
+    if (Array.isArray(row?.reasons) && row.reasons.length) {
+      return row.reasons.map((code: string) => this.getIncompleteReasonLabel(code)).join(', ');
+    }
+    return 'Sin faltantes';
+  }
+
+  openIncompleteEmailDialog(row: any) {
+    const providerId = Number(row?.provider_id || 0);
+    if (!providerId) return;
+    const reasonLabels = Array.isArray(row?.reason_labels) && row.reason_labels.length
+      ? row.reason_labels
+      : (Array.isArray(row?.reasons)
+        ? row.reasons.map((code: string) => ({ code, label: this.getIncompleteReasonLabel(code) }))
+        : []);
+    this.incompleteEmailTarget = {
+      provider_id: providerId,
+      provider_name: row?.provider_name || null,
+      provider_email: row?.provider_email || null,
+      reasons: Array.isArray(row?.reasons) ? row.reasons : [],
+      reason_labels: reasonLabels
+    };
+    this.incompleteEmailReasons = reasonLabels.map((reason: any) => ({
+      code: String(reason?.code || '').trim(),
+      label: String(reason?.label || this.getIncompleteReasonLabel(reason?.code || '')).trim(),
+      selected: true
+    }));
+    const providerName = (row?.provider_name || '').toString().trim();
+    this.incompleteEmailSubject = providerName
+      ? `AdomiApp – Completa tu perfil, ${providerName}`
+      : 'AdomiApp – Completa tu perfil para aparecer en búsquedas';
+    this.incompleteEmailMessage = '';
+    this.incompleteEmailError = null;
+    this.incompleteEmailSuccess = null;
+    this.incompleteEmailDialogOpen = true;
+  }
+
+  closeIncompleteEmailDialog() {
+    this.incompleteEmailDialogOpen = false;
+    this.incompleteEmailTarget = null;
+    this.incompleteEmailReasons = [];
+    this.incompleteEmailSubject = '';
+    this.incompleteEmailMessage = '';
+    this.incompleteEmailError = null;
+    this.incompleteEmailSuccess = null;
+    this.incompleteEmailSending = false;
+  }
+
+  sendIncompleteProfileEmail() {
+    if (!this.incompleteEmailTarget || !this.adminSecret) return;
+    const providerId = Number(this.incompleteEmailTarget.provider_id || 0);
+    if (!providerId) return;
+
+    const selectedReasonCodes = this.incompleteEmailReasons
+      .filter((reason) => reason.selected)
+      .map((reason) => reason.code)
+      .filter(Boolean);
+
+    if (!selectedReasonCodes.length) {
+      this.incompleteEmailError = 'Selecciona al menos un faltante para incluir en el correo.';
+      this.incompleteEmailSuccess = null;
+      return;
+    }
+
+    const token = this.session.getAccessToken();
+    const subject = this.incompleteEmailSubject?.trim() || null;
+    const message = this.incompleteEmailMessage?.trim() || null;
+
+    this.incompleteEmailSending = true;
+    this.incompleteEmailError = null;
+    this.incompleteEmailSuccess = null;
+    this.incompleteEmailStatusByProvider[providerId] = { sending: true, error: null };
+
+    this.adminApi.sendIncompleteProfileEmail(this.adminSecret, token, providerId, {
+      subject,
+      message,
+      reasonCodes: selectedReasonCodes
+    }).subscribe({
+      next: () => {
+        this.incompleteEmailSending = false;
+        this.incompleteEmailSuccess = 'Correo enviado correctamente.';
+        this.incompleteEmailStatusByProvider[providerId] = {
+          sending: false,
+          sentAt: new Date().toISOString(),
+          error: null
+        };
+      },
+      error: (err) => {
+        this.incompleteEmailSending = false;
+        this.incompleteEmailError = err?.error?.error || 'No fue posible enviar el correo.';
+        this.incompleteEmailStatusByProvider[providerId] = {
+          sending: false,
+          error: this.incompleteEmailError
+        };
       }
     });
   }

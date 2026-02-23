@@ -281,6 +281,19 @@ export class AdminPaymentsService {
     return this.http.get<any>(`${this.baseUrl}/admin/analytics/providers/incomplete-profiles${qs}`, { headers: this.headers(secret, token) });
   }
 
+  sendIncompleteProfileEmail(
+    secret: string,
+    token: string | null,
+    providerId: number,
+    payload: { subject?: string | null; message?: string | null; reasonCodes?: string[] }
+  ) {
+    return this.http.post<any>(
+      `${this.baseUrl}/admin/analytics/providers/incomplete-profiles/${providerId}/send-email`,
+      payload || {},
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   analyticsSearchTrends(secret: string, token: string | null, params: { from?: string | null; to?: string | null; group?: 'day' | 'week' } = {}) {
     const searchParams = new URLSearchParams();
     if (params.from) searchParams.set('from', params.from);
