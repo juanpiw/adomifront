@@ -3,7 +3,7 @@
 
   <div class="filters">
     <label>Rango:</label>
-    <select #rangeSel (change)="0">
+    <select #rangeSel (change)="applyRange(rangeSel.value)">
       <option value="day">Hoy</option>
       <option value="week">Esta semana</option>
       <option value="month">Este mes</option>
@@ -35,6 +35,14 @@
       <div class="analytics-panel__kpi">
         <span>Top términos</span>
         <strong>{{ analyticsTopTerms.length }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Top términos externos</span>
+        <strong>{{ analyticsExternalTopTerms.length }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Perfiles incompletos</span>
+        <strong>{{ analyticsIncompleteProfiles.length }}</strong>
       </div>
       <div class="analytics-panel__kpi">
         <span>Perfiles visitados</span>
@@ -81,6 +89,57 @@
             </tr>
             <tr *ngIf="analyticsTopTerms.length === 0">
               <td colspan="3">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Top palabras externas (Landing)</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Término</th>
+              <th>Búsquedas</th>
+              <th>Sesiones únicas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsExternalTopTerms">
+              <td>{{ row.term }}</td>
+              <td>{{ row.total }}</td>
+              <td>{{ row.unique_sessions || 0 }}</td>
+            </tr>
+            <tr *ngIf="analyticsExternalTopTerms.length === 0">
+              <td colspan="3">Sin datos para el rango seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="analytics-panel__card">
+        <h4>Perfiles incompletos (no visibles en búsqueda)</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Estado</th>
+              <th>Servicios activos</th>
+              <th>Faltantes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of analyticsIncompleteProfiles">
+              <td>
+                {{ row.provider_name || 'Sin nombre' }}
+                <span class="muted">#{{ row.provider_id }}</span>
+              </td>
+              <td>{{ row.verification_status || 'none' }}</td>
+              <td>{{ row.active_services || 0 }}</td>
+              <td>{{ (row.reasons || []).join(', ') }}</td>
+            </tr>
+            <tr *ngIf="analyticsIncompleteProfiles.length === 0">
+              <td colspan="4">No hay perfiles incompletos para mostrar.</td>
             </tr>
           </tbody>
         </table>

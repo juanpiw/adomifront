@@ -103,6 +103,8 @@ export class AdminPagosComponent implements OnInit {
   analyticsLoading = false;
   analyticsError: string | null = null;
   analyticsTopTerms: Array<{ term: string; total: number; unique_clients?: number; last_seen_at?: string }> = [];
+  analyticsExternalTopTerms: Array<{ term: string; total: number; unique_sessions?: number; last_seen_at?: string }> = [];
+  analyticsIncompleteProfiles: Array<{ provider_id: number; provider_name?: string | null; provider_email?: string | null; verification_status?: string; active_services?: number; reasons: string[]; missing_count: number }> = [];
   analyticsMostVisited: Array<{ provider_id: number; provider_name: string; visits: number; unique_clients?: number; last_visit_at?: string }> = [];
   analyticsTrends: Array<{ period: string; total_searches: number; unique_clients?: number }> = [];
   analyticsWhoSearchesWhom: Array<{ client_id: number | null; client_name?: string | null; provider_id: number; provider_name: string; search_term?: string | null; visits: number; last_seen_at?: string }> = [];
@@ -221,6 +223,23 @@ export class AdminPagosComponent implements OnInit {
           }
         });
 
+        this.adminApi.analyticsIncompleteProfiles(this.adminSecret, token, { limit: 120 }).subscribe({
+          next: (r: any) => {
+            console.log('[ADMIN_ANALYTICS] OK /admin/analytics/providers/incomplete-profiles', {
+              count: Array.isArray(r?.data) ? r.data.length : 0
+            });
+            this.analyticsIncompleteProfiles = r?.data || [];
+          },
+          error: (err: any) => {
+            console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/providers/incomplete-profiles', {
+              status: err?.status,
+              message: err?.error?.error || err?.message,
+              url: err?.url
+            });
+            this.analyticsIncompleteProfiles = [];
+          }
+        });
+
         this.adminApi.analyticsSearchTrends(this.adminSecret, token, { from, to, group: 'day' }).subscribe({
           next: (r: any) => {
             console.log('[ADMIN_ANALYTICS] OK /admin/analytics/search/trends', {
@@ -256,6 +275,23 @@ export class AdminPagosComponent implements OnInit {
             this.analyticsWhoSearchesWhom = [];
             this.analyticsLoading = false;
             this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
+          }
+        });
+
+        this.adminApi.analyticsExternalTopTerms(this.adminSecret, token, { from, to, limit: 20 }).subscribe({
+          next: (r: any) => {
+            console.log('[ADMIN_ANALYTICS] OK /admin/analytics/search/external-top-terms', {
+              count: Array.isArray(r?.data) ? r.data.length : 0
+            });
+            this.analyticsExternalTopTerms = r?.data || [];
+          },
+          error: (err: any) => {
+            console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/search/external-top-terms', {
+              status: err?.status,
+              message: err?.error?.error || err?.message,
+              url: err?.url
+            });
+            this.analyticsExternalTopTerms = [];
           }
         });
 
@@ -304,6 +340,8 @@ export class AdminPagosComponent implements OnInit {
           url: err?.url
         });
         this.analyticsTopTerms = [];
+        this.analyticsExternalTopTerms = [];
+        this.analyticsIncompleteProfiles = [];
         this.analyticsMostVisited = [];
         this.analyticsTrends = [];
         this.analyticsWhoSearchesWhom = [];

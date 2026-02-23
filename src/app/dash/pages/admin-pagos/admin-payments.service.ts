@@ -256,6 +256,15 @@ export class AdminPaymentsService {
     return this.http.get<any>(`${this.baseUrl}/admin/analytics/search/top-terms${qs}`, { headers: this.headers(secret, token) });
   }
 
+  analyticsExternalTopTerms(secret: string, token: string | null, params: { from?: string | null; to?: string | null; limit?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/search/external-top-terms${qs}`, { headers: this.headers(secret, token) });
+  }
+
   analyticsMostVisitedProviders(secret: string, token: string | null, params: { from?: string | null; to?: string | null; limit?: number } = {}) {
     const searchParams = new URLSearchParams();
     if (params.from) searchParams.set('from', params.from);
@@ -263,6 +272,13 @@ export class AdminPaymentsService {
     if (params.limit) searchParams.set('limit', String(params.limit));
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.http.get<any>(`${this.baseUrl}/admin/analytics/providers/most-visited${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  analyticsIncompleteProfiles(secret: string, token: string | null, params: { limit?: number } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/analytics/providers/incomplete-profiles${qs}`, { headers: this.headers(secret, token) });
   }
 
   analyticsSearchTrends(secret: string, token: string | null, params: { from?: string | null; to?: string | null; group?: 'day' | 'week' } = {}) {
