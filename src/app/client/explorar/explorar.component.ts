@@ -150,7 +150,9 @@ interface ProviderCoordinates {
                 </p>
               </div>
             </div>
-            <p class="text-gray-600 text-sm mb-4">{{ provider.description }}</p>
+            <p *ngIf="hasProviderDescription(provider.description)" class="text-gray-600 text-sm mb-4">
+              {{ provider.description }}
+            </p>
             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
               <div class="flex items-center">
                 <ui-icon name="star" class="w-5 h-5 text-yellow-400"></ui-icon>
@@ -1245,6 +1247,13 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     if (raw.startsWith('/uploads')) return `${environment.apiBaseUrl}${raw}`;
     // Otros casos: intentar con base URL
     return `${environment.apiBaseUrl}/${raw.replace(/^\//, '')}`;
+  }
+
+  hasProviderDescription(value: string | null | undefined): boolean {
+    const normalized = String(value || '').trim();
+    if (!normalized) return false;
+    const lowered = normalized.toLowerCase();
+    return lowered !== 'sin descripción disponible' && lowered !== 'sin descripcion disponible';
   }
 
   generateMapCardMarkers() {
