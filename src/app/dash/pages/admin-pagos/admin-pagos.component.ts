@@ -145,6 +145,7 @@ export class AdminPagosComponent implements OnInit {
   incompleteNotifSending = false;
   incompleteNotifSuccess: string | null = null;
   incompleteNotifError: string | null = null;
+  incompleteProfilesSearch = '';
   private incompleteReasonLabelMap: Record<string, string> = {
     NO_PROVIDER_ROLE: 'La cuenta no tiene rol de proveedor',
     USER_INACTIVE: 'La cuenta está inactiva',
@@ -442,6 +443,15 @@ export class AdminPagosComponent implements OnInit {
     if (normalized === 'provider') return 'Proveedor';
     if (normalized === 'client') return 'Cliente';
     return role || 'No definido';
+  }
+
+  get filteredIncompleteProfiles() {
+    const term = this.incompleteProfilesSearch.trim().toLowerCase();
+    if (!term) return this.analyticsIncompleteProfiles;
+    return this.analyticsIncompleteProfiles.filter((row) => {
+      const name = String(row?.provider_name || '').toLowerCase();
+      return name.includes(term);
+    });
   }
 
   isIncompleteProviderSelected(providerId: number): boolean {

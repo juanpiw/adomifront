@@ -976,6 +976,14 @@
 
   <div class="analytics-panel__card" style="margin-top:16px;">
     <h4>Perfiles incompletos (no visibles en búsqueda)</h4>
+    <div style="margin: 10px 0 12px 0;">
+      <input
+        type="text"
+        [(ngModel)]="incompleteProfilesSearch"
+        placeholder="Buscar proveedor por nombre..."
+        style="width: 100%; max-width: 360px;"
+      />
+    </div>
     <table class="table">
       <thead>
         <tr>
@@ -996,7 +1004,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of analyticsIncompleteProfiles">
+        <tr *ngFor="let row of filteredIncompleteProfiles">
           <td>
             <input
               type="checkbox"
@@ -1030,7 +1038,7 @@
             </div>
           </td>
         </tr>
-        <tr *ngIf="analyticsIncompleteProfiles.length === 0">
+        <tr *ngIf="filteredIncompleteProfiles.length === 0">
           <td colspan="7">No hay perfiles incompletos para mostrar.</td>
         </tr>
       </tbody>
