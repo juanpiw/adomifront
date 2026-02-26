@@ -21,6 +21,14 @@
   }
 }
 
+.provider-description-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 5rem;
+}
+
 .explorar-container {
   max-width: 1200px;
   margin: 0 auto;

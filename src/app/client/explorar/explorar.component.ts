@@ -150,7 +150,7 @@ interface ProviderCoordinates {
                 </p>
               </div>
             </div>
-            <p *ngIf="hasProviderDescription(provider.description)" class="text-gray-600 text-sm mb-4">
+            <p *ngIf="hasProviderDescription(provider.description)" class="text-gray-600 text-sm mb-4 provider-description-clamp">
               {{ provider.description }}
             </p>
             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
