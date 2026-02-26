@@ -151,7 +151,7 @@ interface ProviderCoordinates {
               </div>
             </div>
             <p *ngIf="hasProviderDescription(provider.description)" class="text-gray-600 text-sm mb-4 provider-description-clamp">
-              {{ provider.description }}
+              {{ getProviderDescriptionPreview(provider.description) }}
             </p>
             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
               <div class="flex items-center">
@@ -1254,6 +1254,16 @@ export class ExplorarComponent implements OnInit, OnDestroy {
     if (!normalized) return false;
     const lowered = normalized.toLowerCase();
     return lowered !== 'sin descripción disponible' && lowered !== 'sin descripcion disponible';
+  }
+
+  getProviderDescriptionPreview(value: string | null | undefined): string {
+    const normalized = String(value || '').trim();
+    if (!normalized) return '';
+
+    // Limite duro para evitar cards desproporcionadas por textos extremadamente largos.
+    const maxChars = 300;
+    if (normalized.length <= maxChars) return normalized;
+    return `${normalized.slice(0, maxChars).trimEnd()}...`;
   }
 
   generateMapCardMarkers() {

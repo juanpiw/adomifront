@@ -1,4 +1,4 @@
-﻿<div class="client-layout" [class.sidebar-collapsed]="isCollapsed">
+<div class="client-layout" [class.sidebar-collapsed]="isCollapsed">
   <aside class="sidebar" [class.collapsed]="isCollapsed">
     <!-- Rail Menu (siempre visible) -->
     <div class="rail">
@@ -105,6 +105,33 @@
     </div>
   </main>
 </div>
+
+<!-- WhatsApp flotante (solo frontend cliente) -->
+<a
+  class="client-wsp-float client-wsp-float--desktop"
+  [href]="clientWhatsAppSupportUrl"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Soporte por WhatsApp"
+>
+  <span class="client-wsp-float__icon-wrap">
+    <ui-icon name="message-circle" [size]="24"></ui-icon>
+  </span>
+  <span class="client-wsp-float__text">
+    <span class="client-wsp-float__hint">¿Sin tiempo?</span>
+    <span class="client-wsp-float__title">Nosotros buscamos</span>
+  </span>
+</a>
+
+<a
+  class="client-wsp-float client-wsp-float--mobile"
+  [href]="clientWhatsAppSupportUrl"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Soporte por WhatsApp"
+>
+  <ui-icon name="message-circle" [size]="24"></ui-icon>
+</a>
 
 <div class="switch-account-backdrop" *ngIf="switchModalVisible">
   <div class="switch-account-modal">

@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -28,6 +28,9 @@ import { PlanService, PlanInfo } from '../../services/plan.service';
 export class ClientLayoutComponent implements OnInit, OnDestroy {
   isCollapsed = false;
   private menuSubscription?: Subscription;
+  private readonly companyWhatsAppNumber = '56967428497';
+  private readonly companyWhatsAppMessage = 'Hola, no quiero buscar. Necesito que me recomienden el mejor dato ahora.';
+  readonly clientWhatsAppSupportUrl = `https://wa.me/${this.companyWhatsAppNumber}?text=${encodeURIComponent(this.companyWhatsAppMessage)}`;
 
   // Configuración del topbar para cliente
   topbarConfig: TopbarConfig = {
