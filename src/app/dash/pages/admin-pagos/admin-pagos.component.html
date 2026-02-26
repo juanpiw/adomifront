@@ -1063,7 +1063,7 @@
           <textarea
             rows="5"
             [(ngModel)]="incompleteNotifMessage"
-            placeholder="Incluye &#123;&#123;faltantes&#125;&#125; y &#123;&#123;link_perfil&#125;&#125; si quieres texto dinámico."
+            [attr.placeholder]="'Incluye {{faltantes}} y {{link_perfil}} si quieres texto dinámico.'"
           ></textarea>
           <p class="muted">Tip: puedes usar {{'{{faltantes}}'}} y {{'{{link_perfil}}'}} en el texto.</p>
         </div>
