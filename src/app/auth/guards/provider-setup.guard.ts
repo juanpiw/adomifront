@@ -36,6 +36,14 @@ const guardImpl = async (targetUrl?: string): Promise<boolean | UrlTree> => {
   const debug = !environment.production;
 
   const hasToken = !!auth.getAccessToken();
+  // Sin token no hay sesión activa: no bloquear por datos stale en storage.
+  if (!hasToken) {
+    if (debug) {
+      console.log('[PROVIDER_SETUP_GUARD] allow (no token)');
+    }
+    return true;
+  }
+
   let user: AuthUser | null = auth.getCurrentUser() || getStoredUser();
   if (debug) {
     console.log('[PROVIDER_SETUP_GUARD] start', {

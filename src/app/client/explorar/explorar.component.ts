@@ -14,7 +14,10 @@ import { AuthService } from '../../auth/services/auth.service';
 import { SearchService, SearchFilters, Provider, Service, Category, Location } from '../../services/search.service';
 import { NotificationService } from '../../../libs/shared-ui/notifications/services/notification.service';
 import { UiReferralInviteEmptyComponent } from '../../../libs/shared-ui/referrals/referral-invite-empty.component';
-import { finalize } from 'rxjs/operators';
+import { MisDatoPublicado, MisDatosPanelComponent } from '../../../libs/shared-ui/mis-datos';
+import { ClientTengoDatoItemApi, ClientTengoDatosService, TengoDatoFeedActivityItemApi } from '../../services/client-tengo-datos.service';
+import { finalize, catchError } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
 
 // Interfaces moved to search.service.ts
 
@@ -31,7 +34,7 @@ interface ProviderCoordinates {
 @Component({
   selector: 'app-explorar',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent, ProfileRequiredModalComponent, UiReferralInviteEmptyComponent],
+  imports: [CommonModule, FormsModule, IconComponent, SearchInputComponent, MapCardComponent, ProfileRequiredModalComponent, UiReferralInviteEmptyComponent, MisDatosPanelComponent],
   template: `
     <!-- Modal de Perfil Requerido -->
     <app-profile-required-modal 
@@ -59,6 +62,28 @@ interface ProviderCoordinates {
         </div>
       </section>
 
+      <!-- Navegación de secciones -->
+      <div class="mis-datos-tabs">
+        <button
+          type="button"
+          (click)="switchClientView('explorar')"
+          class="tab-btn"
+          [class.active]="clientViewTab === 'explorar'"
+        >
+          Explorar Servicios
+        </button>
+        <button
+          type="button"
+          (click)="switchClientView('mis-datos')"
+          class="tab-btn"
+          [class.active]="clientViewTab === 'mis-datos'"
+        >
+          Mis Datos
+          <span *ngIf="misDatosBadge > 0" class="tab-badge">{{ misDatosBadge }} nuevo</span>
+        </button>
+      </div>
+
+      <ng-container *ngIf="clientViewTab === 'explorar'">
       <!-- Header with Search -->
       <header class="mb-8">
         <h2 class="text-4xl font-extrabold text-gray-800">Hola, {{ user?.name || 'Usuario' }}!</h2>
@@ -73,10 +98,6 @@ interface ProviderCoordinates {
           (currentLocation)="onUseCurrentLocation($event)"
           ariaLabel="Búsqueda avanzada de servicios"
         ></ui-search-input>
-        <p *ngIf="searchAnalyticsDebug" class="text-xs text-gray-500 mt-2">
-          Debug analytics: search_event_id = {{ lastSearchEventIdForDebug || 'null' }} ·
-          término = "{{ (validatedTerm?.sanitized || searchTerm || '').trim() || 'vacío' }}"
-        </p>
       </header>
 
       <!-- Filters Section -->
@@ -192,8 +213,8 @@ interface ProviderCoordinates {
       </section>
 
       <!-- No Results -->
-      <ng-container *ngIf="!loading && filteredProviders.length === 0 && filteredServices.length === 0">
-        <ng-container *ngIf="searchTerm; else genericNoResults">
+      <ng-container *ngIf="!loading && !!searchTerm && filteredProviders.length === 0 && filteredServices.length === 0">
+        <ng-container *ngIf="searchTerm">
           <div *ngIf="searchTermInvalidReason === 'offensive'" class="no-results invalid-term text-center py-10">
             <ui-icon name="alert-triangle" class="w-12 h-12 text-amber-500 mx-auto mb-3"></ui-icon>
             <h3 class="text-xl font-bold text-gray-800 mb-2">Este término no es válido</h3>
@@ -224,17 +245,12 @@ interface ProviderCoordinates {
         </ui-referral-invite-empty>
         </ng-container>
 
-        <ng-template #genericNoResults>
-          <div class="no-results text-center py-12">
-            <ui-icon name="search" class="w-16 h-16 text-gray-400 mx-auto mb-4"></ui-icon>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">No se encontraron resultados</h3>
-            <p class="text-gray-600 mb-6">Intenta ajustar tus filtros de búsqueda</p>
-            <button (click)="clearFilters()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
-              Limpiar Filtros
-            </button>
-          </div>
-        </ng-template>
       </ng-container>
+      </ng-container>
+
+      <section *ngIf="clientViewTab === 'mis-datos'" class="mis-datos-view">
+        <ui-mis-datos-panel [datos]="misDatos"></ui-mis-datos-panel>
+      </section>
     </div>
   `,
   styleUrls: ['./explorar.component.scss']
@@ -248,9 +264,13 @@ export class ExplorarComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
   private notifications = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
+  private clientTengoDatosService = inject(ClientTengoDatosService);
 
   // User data
   user: any = null;
+  clientViewTab: 'explorar' | 'mis-datos' = 'explorar';
+  misDatosBadge = 0;
+  misDatos: MisDatoPublicado[] = [];
 
   // Profile validation
   showProfileModal: boolean = false;
@@ -348,8 +368,85 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       this.loadCategories();
       this.loadLocations();
       this.loadData(); // Cargar datos reales
+      this.loadMisDatosPublished();
       this.updateMapPanelTitle();
     }
+  }
+
+  switchClientView(tab: 'explorar' | 'mis-datos'): void {
+    this.clientViewTab = tab;
+  }
+
+  private loadMisDatosPublished(): void {
+    forkJoin({
+      feed: this.clientTengoDatosService.listFromFeedActivity(30),
+      mine: this.clientTengoDatosService.listPublished(30).pipe(
+        catchError(() => of({ success: true, data: { items: [] as ClientTengoDatoItemApi[] } }))
+      )
+    }).subscribe({
+      next: ({ feed, mine }) => {
+        const feedItems = Array.isArray(feed?.data) ? feed.data : [];
+        const mineItems = Array.isArray(mine?.data?.items) ? mine.data.items : [];
+        const mineByEventId = new Map<number, ClientTengoDatoItemApi>(
+          mineItems
+            .filter((item) => Number(item?.id || 0) > 0)
+            .map((item) => [Number(item.id), item])
+        );
+
+        if (!feedItems.length) {
+          this.misDatos = [];
+          this.misDatosBadge = 0;
+          return;
+        }
+
+        this.misDatos = feedItems.map((item) => this.mapFeedApiToMisDato(item, mineByEventId.get(Number(item?.id || 0))));
+        this.misDatosBadge = Math.min(this.misDatos.length, 9);
+      },
+      error: (error) => {
+        console.warn('[EXPLORAR] No se pudo cargar datos de Mis Datos', error);
+        this.misDatos = [];
+        this.misDatosBadge = 0;
+      }
+    });
+  }
+
+  private mapFeedApiToMisDato(item: TengoDatoFeedActivityItemApi, ownerItem?: ClientTengoDatoItemApi): MisDatoPublicado {
+    const createdAt = item?.created_at ? new Date(item.created_at) : null;
+    const daysAgo = createdAt ? Math.max(0, Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+    const publishedLabel = daysAgo <= 0 ? 'Publicado hoy' : `Publicado hace ${daysAgo} día${daysAgo === 1 ? '' : 's'}`;
+    const location = item?.commune || item?.region || 'Sin ubicación';
+    const category = item?.category || 'General';
+    const currentSessionEmail = String(this.auth.getCurrentUser()?.email || '').trim().toLowerCase();
+    const canViewPostulaciones = !!ownerItem && !!currentSessionEmail;
+    const ownerApplications = canViewPostulaciones ? (ownerItem?.applications || []) : [];
+    const likes = Number(item?.reactions_count || 0);
+    const comments = Number(item?.comments_count || 0);
+    const applicationsCount = Number(item?.applications_count || ownerApplications.length || 0);
+    const estimatedViews = Math.max(18, likes * 9 + comments * 7 + applicationsCount * 11 + 20);
+
+    return {
+      id: String(item.id),
+      title: `Pedido de ${category}`,
+      postedMeta: `${publishedLabel} ● ${location}`,
+      status: 'activo',
+      text: item.public_text || 'Dato publicado',
+      vistas: estimatedViews,
+      likes,
+      comentarios: comments,
+      aportes: comments,
+      postulaciones: ownerApplications.map((application) => ({
+        name: application?.profile?.name || 'Postulante',
+        profession: application?.profile?.professionalTitle || '',
+        commune: application?.profile?.commune || '',
+        message: application?.messageText || 'Me interesa ayudarte con este dato.',
+        avatar: application?.profile?.avatarUrl || '/assets/default-avatar.png',
+        online: false,
+        ctaLabel: application?.profile?.providerId ? 'Ver Perfil' : 'Ver Oferta',
+        providerId: application?.profile?.providerId || null
+      })),
+      matches: [],
+      canViewPostulaciones
+    };
   }
 
   ngOnDestroy(): void {

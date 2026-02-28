@@ -1,0 +1,17 @@
+<section class="mis-datos-view">
+  <header class="mis-datos-header">
+    <div>
+      <h2>Mis Datos Publicados</h2>
+      <p>Revisa el alcance de tus solicitudes y gestiona expertos.</p>
+    </div>
+    <button type="button" class="new-order-btn">+ Nuevo Pedido</button>
+  </header>
+
+  <div class="mis-datos-grid">
+    <ui-mis-datos-dato-card
+      *ngFor="let dato of datos"
+      [dato]="dato"
+    ></ui-mis-datos-dato-card>
+  </div>
+</section>
+

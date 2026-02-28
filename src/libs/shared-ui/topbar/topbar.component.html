@@ -58,6 +58,15 @@
       [userProfile]="config.userProfile || 'client'"
       (notificationClick)="onNotificationClick($event)">
     </ui-notification-container>
+
+    <button
+      *ngIf="config.quickAction as quickAction"
+      type="button"
+      class="quick-action"
+      [title]="quickAction.tooltip || quickAction.label"
+      (click)="onQuickActionClick()">
+      {{ quickAction.label }}
+    </button>
     
     <button 
       *ngIf="config.showSettings"

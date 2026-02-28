@@ -8,9 +8,18 @@ import { environment } from '../../../environments/environment';
 const redirectToPlan = async (): Promise<boolean | UrlTree> => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  let user = auth.getCurrentUser() || getStoredUser();
   const hasToken = !!auth.getAccessToken();
   const debug = !environment.production;
+
+  // Sin token no hay sesión activa: nunca forzar onboarding desde estado local viejo.
+  if (!hasToken) {
+    if (debug) {
+      console.log('[PROVIDER_ONBOARDING_GUARD] Skip: no token');
+    }
+    return true;
+  }
+
+  let user = auth.getCurrentUser() || getStoredUser();
   if (debug) {
     console.log('[PROVIDER_ONBOARDING_GUARD] start', {
       hasToken,

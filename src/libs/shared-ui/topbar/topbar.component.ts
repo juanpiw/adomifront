@@ -27,6 +27,10 @@ export interface TopbarConfig {
     tooltip?: string;
     link?: string;
   } | null;
+  quickAction?: {
+    label: string;
+    tooltip?: string;
+  } | null;
 }
 
 @Component({
@@ -47,7 +51,8 @@ export class TopbarComponent implements OnInit {
     helpContext: 'general',
     userProfile: 'client',
     planBadge: null,
-    verificationBadge: null
+    verificationBadge: null,
+    quickAction: null
   };
   @Input() cashNotice: {
     amount: number;
@@ -63,6 +68,7 @@ export class TopbarComponent implements OnInit {
   @Output() hamburgerClick = new EventEmitter<void>();
   @Output() notificationClick = new EventEmitter<Notification>();
   @Output() settingsClick = new EventEmitter<void>();
+  @Output() quickActionClick = new EventEmitter<void>();
   @Output() notificationAction = new EventEmitter<Notification>();
   @Output() searchSuggestionClick = new EventEmitter<SearchSuggestion>();
 
@@ -99,6 +105,10 @@ export class TopbarComponent implements OnInit {
 
   onSettingsClick(): void {
     this.settingsClick.emit();
+  }
+
+  onQuickActionClick(): void {
+    this.quickActionClick.emit();
   }
 
   onNotificationAction(notification: Notification): void {

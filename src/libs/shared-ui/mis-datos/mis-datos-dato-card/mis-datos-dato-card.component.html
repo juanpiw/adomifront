@@ -1,0 +1,77 @@
+<article class="dato-card" [class.owner-card]="dato.canViewPostulaciones">
+  <div class="dato-main">
+    <div *ngIf="dato.canViewPostulaciones; else classicCard">
+      <div class="dato-top">
+        <div class="dato-live">
+          <span class="live-dot" [class.closed]="dato.status === 'cerrado'"></span>
+          <span>{{ dato.status === 'activo' ? 'Solicitud Abierta' : 'Solicitud Cerrada' }} ● {{ dato.postedMeta }}</span>
+        </div>
+        <div class="dato-toolbar">
+          <button type="button" class="icon-btn">Editar</button>
+          <button
+            type="button"
+            class="icon-btn icon-btn-success"
+            [disabled]="closing || dato.status === 'cerrado'"
+            (click)="closeDato()">
+            {{ dato.status === 'cerrado' ? 'Cerrado' : (closing ? 'Cerrando...' : 'Cerrar') }}
+          </button>
+        </div>
+      </div>
+
+      <h4 class="dato-title">{{ dato.title }}</h4>
+      <p class="dato-text">"{{ dato.text }}"</p>
+
+      <div class="dato-stats-grid">
+        <div>
+          <span class="stat-label">Vistas</span>
+          <strong class="stat-value">{{ dato.vistas || 0 }}</strong>
+        </div>
+        <div>
+          <span class="stat-label">Me gusta</span>
+          <strong class="stat-value">{{ dato.likes }}</strong>
+        </div>
+        <div>
+          <span class="stat-label stat-label-accent">Postulantes</span>
+          <strong class="stat-value stat-value-accent">{{ dato.postulaciones.length }}</strong>
+        </div>
+      </div>
+      <p *ngIf="closeFeedback" class="owner-feedback">{{ closeFeedback }}</p>
+    </div>
+
+    <ng-template #classicCard>
+      <div class="dato-top">
+        <div class="dato-identidad">
+          <div class="dato-initial">C</div>
+          <div>
+            <h4>{{ dato.title }}</h4>
+            <p>{{ dato.postedMeta }}</p>
+          </div>
+        </div>
+        <span class="dato-status" [class.activo]="dato.status === 'activo'">{{ dato.status }}</span>
+      </div>
+
+      <p class="dato-text">"{{ dato.text }}"</p>
+
+      <div class="dato-stats">
+        <span><ui-icon name="heart" [size]="15"></ui-icon>{{ dato.likes }} Me gusta</span>
+        <span><ui-icon name="message" [size]="15"></ui-icon>{{ dato.comentarios }} comentarios</span>
+        <button type="button" class="link-btn"><ui-icon name="paper-plane" [size]="15"></ui-icon>Ver {{ dato.aportes }} aportes</button>
+      </div>
+
+      <div *ngIf="canApplyAsProvider" class="dato-apply-wrap">
+        <button type="button" class="apply-btn" [disabled]="applying" (click)="applyToDato()">
+          {{ applying ? 'Postulando...' : 'Postularme' }}
+        </button>
+        <p *ngIf="applicationFeedback" class="apply-feedback">{{ applicationFeedback }}</p>
+      </div>
+    </ng-template>
+
+    <ui-mis-datos-matches-list [matches]="dato.matches"></ui-mis-datos-matches-list>
+  </div>
+
+  <ui-mis-datos-postulaciones-list
+    *ngIf="dato.canViewPostulaciones"
+    [postulaciones]="dato.postulaciones">
+  </ui-mis-datos-postulaciones-list>
+</article>
+

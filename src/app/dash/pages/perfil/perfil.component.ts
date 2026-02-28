@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, forkJoin, of } from 'rxjs';
 import { ProviderProfileService, BasicInfo as ServiceBasicInfo, ProviderFaq, CurrentLocationPayload } from '../../../services/provider-profile.service';
 import { ProfileProgressService } from '../../../services/profile-progress.service';
 import { environment } from '../../../../environments/environment';
@@ -29,6 +29,9 @@ import { OnlineStatusSwitchComponent } from '../../../../libs/shared-ui/online-s
 import { ReviewsComponent, ReviewsData } from '../../../../libs/shared-ui/reviews/reviews.component';
 import { NotificationService } from '../../../../libs/shared-ui/notifications/services/notification.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ClientTengoDatoItemApi, ClientTengoDatosService, TengoDatoFeedActivityItemApi } from '../../../services/client-tengo-datos.service';
+import { MisDatoPublicado, MisDatosPanelComponent } from '../../../../libs/shared-ui/mis-datos';
+import { catchError } from 'rxjs/operators';
 
 type PortfolioItemDisplay = PortfolioImage & { thumbnailUrl?: string | null; order?: number };
 interface EditableFaq extends Partial<ProviderFaq> {
@@ -66,7 +69,8 @@ type LiveLocationStatus = 'off' | 'requesting' | 'watching' | 'error' | 'denied'
     ExcepcionesFeriadosComponent,
     VerificacionPerfilComponent,
     OnlineStatusSwitchComponent,
-    ReviewsComponent
+    ReviewsComponent,
+    MisDatosPanelComponent
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
@@ -79,12 +83,22 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   private progressService = inject(ProfileProgressService);
   private notifications = inject(NotificationService);
   private auth = inject(AuthService);
+  private clientTengoDatosService = inject(ClientTengoDatosService);
 
   ngOnInit() {
     // Leer query parameters para activar tab específico
     this.route.queryParams.subscribe(params => {
-      if (params['tab']) {
-        this.activeTab = params['tab'] as TabType;
+      const tabParam = String(params['tab'] || '').trim();
+      if (tabParam === 'datos') {
+        this.showDatosView = true;
+        this.loadMisDatosPublished();
+        return;
+      }
+
+      this.showDatosView = false;
+      const validTabs: TabType[] = ['perfil-publico', 'verificacion', 'configuracion', 'ver-perfil-publico'];
+      if (validTabs.includes(tabParam as TabType)) {
+        this.activeTab = tabParam as TabType;
       }
     });
 
@@ -378,6 +392,10 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
 
   // Estado de las tabs
   activeTab: TabType = 'perfil-publico';
+  showDatosView = false;
+  misDatos: MisDatoPublicado[] = [];
+  misDatosLoading = false;
+  misDatosBadge = 0;
 
   // Estado del modal de servicios
   showServiceModal = false;
@@ -804,6 +822,7 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
   // Event handlers para tabs
   onTabChange(tab: TabType) {
     this.activeTab = tab;
+    this.showDatosView = false;
     console.log('[PERFIL] Tab cambiado a:', tab);
     
     // Cargar datos específicos cuando se cambie al perfil público
@@ -2134,5 +2153,104 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
       return `${environment.apiBaseUrl}${url}`;
     }
     return `${environment.apiBaseUrl}/${url}`;
+  }
+
+  private loadMisDatosPublished(): void {
+    this.misDatosLoading = true;
+    forkJoin({
+      feed: this.clientTengoDatosService.listFromFeedActivity(30),
+      mine: this.clientTengoDatosService.listPublished(30).pipe(
+        catchError(() => of({ success: true, data: { items: [] as ClientTengoDatoItemApi[] } }))
+      )
+    }).subscribe({
+      next: ({ feed, mine }) => {
+        const feedItems = Array.isArray(feed?.data) ? feed.data : [];
+        const mineItems = Array.isArray(mine?.data?.items) ? mine.data.items : [];
+        const mineByEventId = new Map<number, ClientTengoDatoItemApi>(
+          mineItems
+            .filter((item) => Number(item?.id || 0) > 0)
+            .map((item) => [Number(item.id), item])
+        );
+        const feedByEventId = new Map<number, TengoDatoFeedActivityItemApi>(
+          feedItems
+            .filter((item) => Number(item?.id || 0) > 0)
+            .map((item) => [Number(item.id), item])
+        );
+
+        const visibleItems = feedItems.map((item) =>
+          this.mapFeedApiToMisDato(item, mineByEventId.get(Number(item?.id || 0)))
+        );
+
+        const mineOnlyItems = mineItems
+          .filter((item) => Number(item?.id || 0) > 0 && !feedByEventId.has(Number(item.id)))
+          .map((item) => {
+            const syntheticFeedItem: TengoDatoFeedActivityItemApi = {
+              id: Number(item.id),
+              lead_id: Number(item.leadId || 0),
+              status: String(item.status || 'active'),
+              category: item.category,
+              commune: item.commune,
+              region: item.region,
+              public_text: item.publicText,
+              reactions_count: Number(item.stats?.likesCount || 0),
+              comments_count: Number(item.stats?.commentsCount || 0),
+              applications_count: Number(item.stats?.applicationsCount || 0),
+              created_at: item.createdAt
+            };
+            return this.mapFeedApiToMisDato(syntheticFeedItem, item);
+          });
+
+        this.misDatos = [...visibleItems, ...mineOnlyItems];
+        this.misDatosBadge = Math.min(this.misDatos.length, 9);
+        this.misDatosLoading = false;
+      },
+      error: (error) => {
+        console.warn('[PERFIL] No se pudo cargar datos publicados', error);
+        this.misDatos = [];
+        this.misDatosBadge = 0;
+        this.misDatosLoading = false;
+      }
+    });
+  }
+
+  private mapFeedApiToMisDato(item: TengoDatoFeedActivityItemApi, ownerItem?: ClientTengoDatoItemApi): MisDatoPublicado {
+    const createdAt = item?.created_at ? new Date(item.created_at) : null;
+    const daysAgo = createdAt ? Math.max(0, Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+    const publishedLabel = daysAgo <= 0 ? 'Publicado hoy' : `Publicado hace ${daysAgo} día${daysAgo === 1 ? '' : 's'}`;
+    const location = item?.commune || item?.region || 'Sin ubicación';
+    const category = item?.category || 'General';
+    const currentSessionEmail = String(this.auth.getCurrentUser()?.email || '').trim().toLowerCase();
+    const canViewPostulaciones = !!ownerItem && !!currentSessionEmail;
+    const ownerApplications = canViewPostulaciones ? (ownerItem?.applications || []) : [];
+    const statusRaw = String(ownerItem?.status || item?.status || 'active').trim().toLowerCase();
+    const status: 'activo' | 'cerrado' = statusRaw === 'closed' ? 'cerrado' : 'activo';
+    const likes = Number(item?.reactions_count || 0);
+    const comments = Number(item?.comments_count || 0);
+    const applicationsCount = Number(item?.applications_count || ownerApplications.length || 0);
+    const estimatedViews = Math.max(18, likes * 9 + comments * 7 + applicationsCount * 11 + 20);
+
+    return {
+      id: String(item.id),
+      title: `Pedido de ${category}`,
+      postedMeta: `${publishedLabel} ● ${location}`,
+      status,
+      text: item.public_text || 'Dato publicado',
+      vistas: estimatedViews,
+      likes,
+      comentarios: comments,
+      aportes: comments,
+      postulaciones: ownerApplications.map((application) => ({
+        name: application?.profile?.name || 'Postulante',
+        profession: application?.profile?.professionalTitle || '',
+        commune: application?.profile?.commune || '',
+        message: application?.messageText || 'Me interesa ayudarte con este dato.',
+        avatar: application?.profile?.avatarUrl || '/assets/default-avatar.png',
+        online: false,
+        ctaLabel: application?.profile?.providerId ? 'Ver Perfil' : 'Ver Oferta',
+        providerId: application?.profile?.providerId || null
+      })),
+      matches: [],
+      canViewPostulaciones
+    };
   }
 }

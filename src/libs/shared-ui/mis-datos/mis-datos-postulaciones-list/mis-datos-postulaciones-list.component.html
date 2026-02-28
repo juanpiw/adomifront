@@ -1,0 +1,12 @@
+<div class="dato-postulaciones">
+  <div class="dato-postulaciones-head">
+    <h5>Propuestas de Expertos ({{ postulaciones.length }})</h5>
+  </div>
+
+  <ui-mis-datos-postulacion-item
+    *ngFor="let postulacion of postulaciones; let idx = index"
+    [postulacion]="postulacion"
+    [dimmed]="idx > 0"
+  ></ui-mis-datos-postulacion-item>
+</div>
+

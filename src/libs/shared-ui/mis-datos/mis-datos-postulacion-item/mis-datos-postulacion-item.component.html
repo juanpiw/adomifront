@@ -1,0 +1,21 @@
+<div class="postulacion-item" [class.dim]="dimmed">
+  <div class="postulacion-left">
+    <div class="avatar-wrap">
+      <img [src]="postulacion.avatar" [alt]="postulacion.name" />
+      <span class="status-dot" [class.online]="postulacion.online" [class.offline]="!postulacion.online"></span>
+    </div>
+    <div>
+      <h6>{{ postulacion.name }}</h6>
+      <p>"{{ postulacion.message }}"</p>
+    </div>
+  </div>
+  <button
+    type="button"
+    class="postulacion-cta"
+    [disabled]="!postulacion.providerId"
+    (click)="goToProviderProfile()"
+  >
+    {{ postulacion.ctaLabel }}
+  </button>
+</div>
+

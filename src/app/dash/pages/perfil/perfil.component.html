@@ -1,15 +1,33 @@
 <div class="perfil-trabajador">
   <!-- Tabs de navegación -->
-  <app-tabs-perfil 
+  <app-tabs-perfil
+    *ngIf="!showDatosView"
     [activeTab]="activeTab"
     (tabChange)="onTabChange($event)">
   </app-tabs-perfil>
 
   <!-- Contenido del tab activo -->
   <div class="perfil-trabajador__content">
+    <div *ngIf="showDatosView" class="perfil-trabajador__tab-content perfil-trabajador__datos-view">
+      <header class="perfil-trabajador__datos-header">
+        <div>
+          <h2>Datos Publicados</h2>
+          <p>Mostrando los datos del feed con la misma fuente usada en exploración.</p>
+        </div>
+        <button type="button" class="perfil-trabajador__datos-back" (click)="showDatosView = false; activeTab = 'perfil-publico'">
+          Volver al perfil
+        </button>
+      </header>
+
+      <div *ngIf="misDatosLoading" class="perfil-trabajador__datos-loading">
+        Cargando datos...
+      </div>
+
+      <ui-mis-datos-panel *ngIf="!misDatosLoading" [datos]="misDatos"></ui-mis-datos-panel>
+    </div>
     
     <!-- Tab: Perfil Público -->
-    <div *ngIf="activeTab === 'perfil-publico'" class="perfil-trabajador__tab-content">
+    <div *ngIf="!showDatosView && activeTab === 'perfil-publico'" class="perfil-trabajador__tab-content">
       <!-- Progreso del perfil -->
       <app-progress-perfil>
       </app-progress-perfil>
@@ -132,12 +150,12 @@
     </div>
 
     <!-- Tab: Verificación -->
-    <div *ngIf="activeTab === 'verificacion'" class="perfil-trabajador__tab-content">
+    <div *ngIf="!showDatosView && activeTab === 'verificacion'" class="perfil-trabajador__tab-content">
       <app-verificacion-perfil></app-verificacion-perfil>
     </div>
 
     <!-- Tab: Configuración -->
-    <div *ngIf="activeTab === 'configuracion'" class="perfil-trabajador__tab-content">
+    <div *ngIf="!showDatosView && activeTab === 'configuracion'" class="perfil-trabajador__tab-content">
       <!-- Configuración del Perfil de la Aplicación -->
       <section class="configuracion-app">
         <h2 class="configuracion-app__title">Configuración del Perfil de la Aplicación</h2>
@@ -327,7 +345,7 @@
     </div>
 
     <!-- Tab: Ver Perfil Público -->
-    <div *ngIf="activeTab === 'ver-perfil-publico'" class="perfil-trabajador__tab-content">
+    <div *ngIf="!showDatosView && activeTab === 'ver-perfil-publico'" class="perfil-trabajador__tab-content">
       <div class="ver-perfil-publico">
         <div class="ver-perfil-publico__header">
           <h2 class="ver-perfil-publico__title">Vista Previa del Perfil Público</h2>

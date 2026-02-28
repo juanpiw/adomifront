@@ -1,0 +1,22 @@
+<div class="matches-wrap" *ngIf="matches.length">
+  <div class="matches-head">
+    <h5>Personas que calzan ({{ matches.length }})</h5>
+    <div class="matches-avatars">
+      <img *ngFor="let match of matches | slice:0:4" [src]="match.avatar" [alt]="match.name" [title]="match.name" />
+    </div>
+  </div>
+
+  <div class="matches-list">
+    <div class="match-item" *ngFor="let match of matches | slice:0:4">
+      <div class="match-left">
+        <img [src]="match.avatar" [alt]="match.name" />
+        <div>
+          <h6>{{ match.name }}</h6>
+          <p>{{ match.profession }} · {{ match.commune }}</p>
+        </div>
+      </div>
+      <span class="match-state" [class.online]="match.online">{{ match.online ? 'online' : 'disponible' }}</span>
+    </div>
+  </div>
+</div>
+

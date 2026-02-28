@@ -81,7 +81,8 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     helpContext: 'dashboard',
     userProfile: 'provider',
     planBadge: null,
-    verificationBadge: null
+    verificationBadge: null,
+    quickAction: null
   };
 
   private planService = inject(PlanService);
@@ -302,11 +303,13 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
 
     // Al navegar al chat o agenda, limpiar badges
     this.currentUrl = this.router.url;
+    this.refreshTopbarQuickAction();
     this.evaluateTbkBlocking();
 
     this.router.events.subscribe((ev: any) => {
       if (ev && ev.urlAfterRedirects && typeof ev.urlAfterRedirects === 'string') {
         this.currentUrl = ev.urlAfterRedirects;
+        this.refreshTopbarQuickAction();
         this.evaluateTbkBlocking();
         // Refrescar banner de horarios al navegar (el estado puede cambiar durante /dash/provider-setup sin recargar el layout)
         this.loadScheduleBanner();
@@ -677,6 +680,12 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  onTopbarQuickAction(): void {
+    this.router.navigate(['/dash/perfil'], {
+      queryParams: { tab: 'datos' }
+    });
+  }
+
   private loadVerificationState(): void {
     this.providerVerification.getStatus().subscribe({
       next: (payload) => {
@@ -848,6 +857,16 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       ...this.topbarConfig,
       planBadge: this.topbarPlanBadge,
       verificationBadge: this.topbarVerificationBadge
+    };
+  }
+
+  private refreshTopbarQuickAction(): void {
+    const showDatosButton = this.isProviderLike && !this.isProviderSetupRoute;
+    this.topbarConfig = {
+      ...this.topbarConfig,
+      quickAction: showDatosButton
+        ? { label: 'Datos', tooltip: 'Ver datos publicados' }
+        : null
     };
   }
 

@@ -92,6 +92,25 @@
       transform: translateY(-1px);
     }
   }
+
+  .quick-action {
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--color-primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 0 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--color-primary);
+      color: white;
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .plan-badge {
@@ -341,6 +360,17 @@
         color: #f8fafc;
       }
     }
+
+    .quick-action {
+      background: rgba(67, 56, 202, 0.2);
+      border-color: rgba(129, 140, 248, 0.5);
+      color: #c7d2fe;
+
+      &:hover {
+        background: #4338ca;
+        color: #f8fafc;
+      }
+    }
   }
 
   .plan-badge {
@@ -526,6 +556,11 @@
       .icon {
         width: 36px;
         height: 36px;
+      }
+
+      .quick-action {
+        height: 36px;
+        padding: 0 10px;
       }
     }
     
