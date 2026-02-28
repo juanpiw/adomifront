@@ -2234,6 +2234,7 @@ export class DashPerfilComponent implements OnInit, OnDestroy {
       title: `Pedido de ${category}`,
       postedMeta: `${publishedLabel} ● ${location}`,
       status,
+      appliedByMe: !!item?.applied_by_me,
       text: item.public_text || 'Dato publicado',
       vistas: estimatedViews,
       likes,

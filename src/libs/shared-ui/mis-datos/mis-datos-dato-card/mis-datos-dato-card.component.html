@@ -1,4 +1,4 @@
-<article class="dato-card" [class.owner-card]="dato.canViewPostulaciones">
+<article class="dato-card" [class.owner-card]="dato.canViewPostulaciones" [class.applied-by-me]="!dato.canViewPostulaciones && dato.appliedByMe">
   <div class="dato-main">
     <div *ngIf="dato.canViewPostulaciones; else classicCard">
       <div class="dato-top">
@@ -59,10 +59,13 @@
       </div>
 
       <div *ngIf="canApplyAsProvider" class="dato-apply-wrap">
-        <button type="button" class="apply-btn" [disabled]="applying" (click)="applyToDato()">
+        <button type="button" class="apply-btn" [class.applied]="dato.appliedByMe" [disabled]="applying || !!dato.appliedByMe" (click)="applyToDato()">
           {{ applying ? 'Postulando...' : 'Postularme' }}
         </button>
         <p *ngIf="applicationFeedback" class="apply-feedback">{{ applicationFeedback }}</p>
+      </div>
+      <div *ngIf="!canApplyAsProvider && dato.appliedByMe" class="dato-apply-wrap">
+        <button type="button" class="apply-btn applied" disabled>Ya postulado</button>
       </div>
     </ng-template>
 

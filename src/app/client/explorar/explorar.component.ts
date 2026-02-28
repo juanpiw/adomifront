@@ -429,6 +429,7 @@ export class ExplorarComponent implements OnInit, OnDestroy {
       title: `Pedido de ${category}`,
       postedMeta: `${publishedLabel} ● ${location}`,
       status: 'activo',
+      appliedByMe: !!item?.applied_by_me,
       text: item.public_text || 'Dato publicado',
       vistas: estimatedViews,
       likes,

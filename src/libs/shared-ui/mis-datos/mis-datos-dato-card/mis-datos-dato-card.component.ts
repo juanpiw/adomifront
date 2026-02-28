@@ -26,6 +26,7 @@ export class MisDatosDatoCardComponent {
   get canApplyAsProvider(): boolean {
     if (this.dato?.canViewPostulaciones) return false;
     if (this.dato?.status === 'cerrado') return false;
+    if (this.dato?.appliedByMe) return false;
     try {
       const raw = localStorage.getItem('adomi_user');
       if (!raw) return false;
@@ -51,6 +52,7 @@ export class MisDatosDatoCardComponent {
       this.clientTengoDatosService.applyToFeedEvent(eventId, defaultMessage).subscribe({
         next: () => {
           this.applying = false;
+          this.dato.appliedByMe = true;
           this.applicationFeedback = 'Te has postulado con exito';
         },
         error: () => {

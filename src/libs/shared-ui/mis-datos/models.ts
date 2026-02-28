@@ -23,6 +23,7 @@ export interface MisDatoPublicado {
   title: string;
   postedMeta: string;
   status: 'activo' | 'cerrado';
+  appliedByMe?: boolean;
   text: string;
   vistas?: number;
   likes: number;

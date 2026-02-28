@@ -56,6 +56,7 @@ export interface TengoDatoFeedActivityItemApi {
   id: number;
   lead_id?: number | null;
   status?: string;
+  applied_by_me?: boolean;
   category: string;
   commune: string | null;
   region: string | null;
@@ -95,9 +96,16 @@ export class ClientTengoDatosService {
 
   listFromFeedActivity(limit = 30): Observable<TengoDatoFeedActivityResponse> {
     const params = new HttpParams().set('limit', String(limit));
-    const tengoDatoToken = localStorage.getItem(this.tengoDatoTokenKey) || '';
-    const options = tengoDatoToken
-      ? { headers: new HttpHeaders({ Authorization: `Bearer ${tengoDatoToken}` }), params }
+    const tengoDatoToken = String(localStorage.getItem(this.tengoDatoTokenKey) || '').trim();
+    const adomiToken = String(
+      this.auth.getAccessToken() ||
+      localStorage.getItem('adomi_access_token') ||
+      sessionStorage.getItem('adomi_access_token') ||
+      ''
+    ).trim();
+    const authToken = String(adomiToken || tengoDatoToken || '').trim();
+    const options = authToken
+      ? { headers: new HttpHeaders({ Authorization: `Bearer ${authToken}` }), params }
       : { params };
 
     return this.http.get<TengoDatoFeedActivityResponse>(

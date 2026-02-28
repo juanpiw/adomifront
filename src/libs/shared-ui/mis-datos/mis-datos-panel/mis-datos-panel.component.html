@@ -7,11 +7,24 @@
     <button type="button" class="new-order-btn">+ Nuevo Pedido</button>
   </header>
 
+  <div class="mis-datos-search-wrap">
+    <input
+      type="text"
+      class="mis-datos-search-input"
+      placeholder="Buscar por contexto, servicio, comuna o texto..."
+      [(ngModel)]="searchContext"
+    />
+  </div>
+
   <div class="mis-datos-grid">
     <ui-mis-datos-dato-card
-      *ngFor="let dato of datos"
+      *ngFor="let dato of filteredDatos"
       [dato]="dato"
     ></ui-mis-datos-dato-card>
   </div>
+
+  <p *ngIf="filteredDatos.length === 0" class="mis-datos-empty">
+    No encontramos resultados para tu búsqueda.
+  </p>
 </section>
 

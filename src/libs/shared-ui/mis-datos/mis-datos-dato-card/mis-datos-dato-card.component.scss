@@ -6,6 +6,11 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
 }
 
+.dato-card.applied-by-me {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.25), 0 12px 28px -10px rgba(22, 163, 74, 0.3);
+}
+
 .dato-card.owner-card {
   border-color: #f59e0b;
   border-radius: 2rem;
@@ -240,6 +245,12 @@
     opacity: 0.65;
     cursor: not-allowed;
   }
+}
+
+.apply-btn.applied {
+  border-color: #16a34a;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .apply-feedback {

@@ -10,6 +10,35 @@
   gap: 1.25rem;
 }
 
+.mis-datos-search-wrap {
+  width: 100%;
+}
+
+.mis-datos-search-input {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 0.9rem;
+  padding: 0.72rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+}
+
+.mis-datos-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
 .mis-datos-header {
   display: flex;
   flex-direction: column;
