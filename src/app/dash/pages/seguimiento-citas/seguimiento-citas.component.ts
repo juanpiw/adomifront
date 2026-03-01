@@ -42,21 +42,21 @@ export class SeguimientoCitasComponent implements OnInit {
 
   appointment: SeguimientoAppointment = {
     client: {
-      name: 'Impact Render',
+      name: '',
       roleLabel: 'Cliente',
       avatarEmoji: '👤',
-      whatsappCount: 2,
-      emailCount: 1
+      whatsappCount: 0,
+      emailCount: 0
     },
     provider: {
-      name: 'Alejandra Gajardo',
+      name: '',
       roleLabel: 'Proveedor Pro',
-      photoUrl: 'https://adomi.impactrenderstudio.com/uploads/providers/326/photo-1772222799691-271385952.jpeg',
-      whatsappCount: 3,
-      emailCount: 1
+      photoUrl: '',
+      whatsappCount: 0,
+      emailCount: 0
     },
-    service: 'Reparacion Lavadora',
-    schedule: 'Hoy - 16:30 hrs',
+    service: '',
+    schedule: '',
     closureMessage: 'Esperando confirmacion de termino de servicio'
   };
 
@@ -70,29 +70,9 @@ export class SeguimientoCitasComponent implements OnInit {
     providerName: ''
   };
   historyModalOpen = false;
-  pendingCloseHistory: SeguimientoHistoryEntry[] = [
-    {
-      initials: 'JS',
-      title: 'Juan Soto - Gasfiteria',
-      subtitle: 'Servicio realizado hace 2h - Pendiente de pago'
-    }
-  ];
-  disputedHistory: SeguimientoHistoryEntry[] = [
-    {
-      initials: 'RC',
-      title: 'Roberto Carlos - Electricidad',
-      subtitle: 'Cliente marco "No asistio" - Proveedor indica que si asistio'
-    }
-  ];
-  closedHistory: SeguimientoHistoryEntry[] = [
-    {
-      imageUrl:
-        'https://adomi.impactrenderstudio.com/uploads/profiles/providers/compressed-7a29e239-ad92-4110-b745-64d9293a3ee9.webp',
-      title: 'Macarena Diaz - LED',
-      subtitle: 'Cerrada el 24 Feb - $45.000 OK',
-      statusLabel: 'Pagado'
-    }
-  ];
+  pendingCloseHistory: SeguimientoHistoryEntry[] = [];
+  disputedHistory: SeguimientoHistoryEntry[] = [];
+  closedHistory: SeguimientoHistoryEntry[] = [];
 
   ngOnInit(): void {
     const email = String(this.session.getUser()?.email || '').trim().toLowerCase();
@@ -161,9 +141,9 @@ export class SeguimientoCitasComponent implements OnInit {
   }
 
   private loadTrackingData(): void {
-    const adminSecret = typeof sessionStorage !== 'undefined'
-      ? sessionStorage.getItem('admin:secret') || ''
-      : '';
+    const fromSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : '';
+    const fromLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('admin:secret') : '';
+    const adminSecret = String(fromSession || fromLocal || '').trim();
     const token = this.session.getAccessToken?.() || null;
 
     if (!adminSecret) {
@@ -182,6 +162,10 @@ export class SeguimientoCitasComponent implements OnInit {
       },
       error: (err: any) => {
         this.loading = false;
+        this.activeAppointmentsCount = 0;
+        this.pendingCloseHistory = [];
+        this.disputedHistory = [];
+        this.closedHistory = [];
         this.apiError = err?.error?.error || 'No se pudieron cargar los datos de seguimiento.';
       }
     });

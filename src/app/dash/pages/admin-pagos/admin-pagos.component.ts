@@ -170,7 +170,9 @@ export class AdminPagosComponent implements OnInit {
       this.error = 'Acceso restringido';
       return;
     }
-    const saved = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : null;
+    const savedSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : null;
+    const savedLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('admin:secret') : null;
+    const saved = String(savedSession || savedLocal || '').trim();
     if (saved) this.adminSecret = saved;
     if (this.adminSecret) {
       this.cashPayments.setSecret(this.adminSecret);
@@ -181,7 +183,9 @@ export class AdminPagosComponent implements OnInit {
   }
 
   setSecretAndLoad() {
+    this.adminSecret = String(this.adminSecret || '').trim();
     if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('admin:secret', this.adminSecret);
+    if (typeof localStorage !== 'undefined') localStorage.setItem('admin:secret', this.adminSecret);
     if (this.adminSecret) {
       this.cashPayments.setSecret(this.adminSecret);
     }
