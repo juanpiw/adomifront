@@ -40,26 +40,10 @@ export class SeguimientoCitasComponent implements OnInit {
   apiError: string | null = null;
   activeAppointmentsCount = 0;
   adminSecretInput = '';
+  activePeopleTodayCount: number | null = null;
+  activeAppointments: SeguimientoAppointment[] = [];
 
-  appointment: SeguimientoAppointment = {
-    client: {
-      name: '',
-      roleLabel: 'Cliente',
-      avatarEmoji: '👤',
-      whatsappCount: 0,
-      emailCount: 0
-    },
-    provider: {
-      name: '',
-      roleLabel: 'Proveedor Pro',
-      photoUrl: '',
-      whatsappCount: 0,
-      emailCount: 0
-    },
-    service: '',
-    schedule: '',
-    closureMessage: 'Esperando confirmacion de termino de servicio'
-  };
+  appointment: SeguimientoAppointment = this.emptyAppointment();
 
   reminderModal = {
     open: false,
@@ -171,6 +155,7 @@ export class SeguimientoCitasComponent implements OnInit {
     const token = this.session.getAccessToken?.() || null;
 
     if (!adminSecret) {
+      this.activePeopleTodayCount = null;
       this.apiError = 'Falta admin secret. Abre Admin Pagos y configura la clave para cargar datos reales.';
       return;
     }
@@ -183,13 +168,17 @@ export class SeguimientoCitasComponent implements OnInit {
         this.loading = false;
         const rows = res?.success && Array.isArray(res?.data) ? res.data : [];
         this.mapRowsToBoard(rows);
+        this.loadActivePeopleMetric(adminSecret, token);
       },
       error: (err: any) => {
         this.loading = false;
         this.activeAppointmentsCount = 0;
+        this.activeAppointments = [];
+        this.appointment = this.emptyAppointment();
         this.pendingCloseHistory = [];
         this.disputedHistory = [];
         this.closedHistory = [];
+        this.activePeopleTodayCount = null;
         this.apiError = err?.error?.error || 'No se pudieron cargar los datos de seguimiento.';
       }
     });
@@ -197,39 +186,25 @@ export class SeguimientoCitasComponent implements OnInit {
 
   private mapRowsToBoard(rows: any[]): void {
     const activeStatuses = new Set(['scheduled', 'confirmed', 'in_progress']);
-    const activeRows = rows.filter((r) => activeStatuses.has(String(r?.appointment_status || '').toLowerCase()));
+    const activeRows = rows
+      .filter((r) => activeStatuses.has(String(r?.appointment_status || '').toLowerCase()))
+      .sort((a, b) => this.dateTimeToMillis(a?.appointment_date, a?.start_time) - this.dateTimeToMillis(b?.appointment_date, b?.start_time));
     this.activeAppointmentsCount = activeRows.length;
+    this.activeAppointments = activeRows.map((main) => this.toAppointmentCard(main));
+    this.appointment = this.activeAppointments[0] || this.emptyAppointment();
 
-    const main = activeRows[0];
-    if (main) {
-      this.appointment = {
-        client: {
-          name: main.client_name || 'Cliente',
-          roleLabel: 'Cliente',
-          avatarEmoji: '👤',
-          whatsappCount: 0,
-          emailCount: 0
-        },
-        provider: {
-          name: main.provider_name || 'Proveedor',
-          roleLabel: 'Proveedor Pro',
-          avatarEmoji: '👷',
-          whatsappCount: 0,
-          emailCount: 0
-        },
-        service: main.service_name || 'Servicio',
-        schedule: this.formatSchedule(main.appointment_date, main.start_time),
-        closureMessage: 'Esperando confirmacion de termino de servicio'
-      };
-    }
-
-    const pending = rows.filter((r) => {
+    const completedRows = rows.filter((r) => String(r?.appointment_status || '').toLowerCase() === 'completed');
+    const pending = completedRows.filter((r) => {
       const release = String(r?.release_status || '').toLowerCase();
-      const apptStatus = String(r?.appointment_status || '').toLowerCase();
-      return (release === 'pending' || release === 'eligible') && apptStatus === 'completed';
+      return release === 'pending' || release === 'eligible';
     });
-    const disputed = rows.filter((r) => !!r?.has_in_app_dispute || !!r?.has_active_chargeback);
-    const closed = rows.filter((r) => String(r?.release_status || '').toLowerCase() === 'completed');
+    const disputed = completedRows.filter((r) => !!r?.has_in_app_dispute || !!r?.has_active_chargeback);
+    const closed = completedRows.filter((r) => {
+      const release = String(r?.release_status || '').toLowerCase();
+      const inDispute = !!r?.has_in_app_dispute || !!r?.has_active_chargeback;
+      const pendingRelease = release === 'pending' || release === 'eligible';
+      return !inDispute && !pendingRelease;
+    });
 
     this.pendingCloseHistory = pending.slice(0, 20).map((r) => ({
       initials: this.initialsFromName(r?.provider_name),
@@ -249,6 +224,28 @@ export class SeguimientoCitasComponent implements OnInit {
       subtitle: `Cerrada ${this.formatDate(r?.appointment_date)} - ${this.formatAmount(r?.provider_amount || r?.amount)}`,
       statusLabel: 'Pagado'
     }));
+  }
+
+  private toAppointmentCard(main: any): SeguimientoAppointment {
+    return {
+      client: {
+        name: main.client_name || 'Cliente',
+        roleLabel: 'Cliente',
+        avatarEmoji: '👤',
+        whatsappCount: 0,
+        emailCount: 0
+      },
+      provider: {
+        name: main.provider_name || 'Proveedor',
+        roleLabel: 'Proveedor Pro',
+        avatarEmoji: '👷',
+        whatsappCount: 0,
+        emailCount: 0
+      },
+      service: main.service_name || 'Servicio',
+      schedule: this.formatSchedule(main.appointment_date, main.start_time),
+      closureMessage: 'Esperando confirmacion de termino de servicio'
+    };
   }
 
   private formatSchedule(date: any, startTime: any): string {
@@ -280,6 +277,58 @@ export class SeguimientoCitasComponent implements OnInit {
     const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return 'AD';
     return parts.slice(0, 2).map((p) => p.charAt(0).toUpperCase()).join('');
+  }
+
+  private dateTimeToMillis(date: any, time: any): number {
+    const d = String(date || '').slice(0, 10);
+    const t = String(time || '').slice(0, 5);
+    const dt = new Date(`${d}T${t || '00:00'}:00`);
+    return Number.isNaN(dt.getTime()) ? 0 : dt.getTime();
+  }
+
+  private emptyAppointment(): SeguimientoAppointment {
+    return {
+      client: {
+        name: '',
+        roleLabel: 'Cliente',
+        avatarEmoji: '👤',
+        whatsappCount: 0,
+        emailCount: 0
+      },
+      provider: {
+        name: '',
+        roleLabel: 'Proveedor Pro',
+        photoUrl: '',
+        whatsappCount: 0,
+        emailCount: 0
+      },
+      service: '',
+      schedule: '',
+      closureMessage: 'Esperando confirmacion de termino de servicio'
+    };
+  }
+
+  private loadActivePeopleMetric(adminSecret: string, token: string | null): void {
+    const today = this.todayIso();
+    this.adminApi.analyticsSearchTrends(adminSecret, token, { from: today, to: today, group: 'day' }).subscribe({
+      next: (resp: any) => {
+        const rows = Array.isArray(resp?.data) ? resp.data : [];
+        const first = rows[0];
+        const uniqueClients = Number(first?.unique_clients ?? 0);
+        this.activePeopleTodayCount = Number.isFinite(uniqueClients) ? uniqueClients : 0;
+      },
+      error: () => {
+        this.activePeopleTodayCount = null;
+      }
+    });
+  }
+
+  private todayIso(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 }
 

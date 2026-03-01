@@ -28,6 +28,13 @@
         </button>
       </nav>
 
+      <div class="kpi-inline">
+        <span class="kpi-inline__label">Personas activas hoy (aprox)</span>
+        <strong class="kpi-inline__value">
+          {{ activePeopleTodayCount === null ? 'N/D' : activePeopleTodayCount }}
+        </strong>
+      </div>
+
       <ng-container *ngIf="activeTab === 'activas'; else historialView">
         <header class="page-header">
           <div>
@@ -57,15 +64,19 @@
         <p *ngIf="!loading && apiError" class="status-note status-note--error">{{ apiError }}</p>
 
         <ng-container *ngIf="!loading && !apiError">
-          <app-seguimiento-citas-appointment-card
-            *ngIf="activeAppointmentsCount > 0; else emptyActivas"
-            [appointment]="appointment"
-            (reminder)="openReminder($event)"
-            (noShow)="openNoShow($event)"
-            (resendAlerts)="resendAlerts()"
-            (openLog)="openHistory()"
-            (validatePayment)="openPaymentValidation()"
-          ></app-seguimiento-citas-appointment-card>
+          <ng-container *ngIf="activeAppointmentsCount > 0; else emptyActivas">
+            <div class="active-list">
+              <app-seguimiento-citas-appointment-card
+                *ngFor="let item of activeAppointments"
+                [appointment]="item"
+                (reminder)="openReminder($event)"
+                (noShow)="openNoShow($event)"
+                (resendAlerts)="resendAlerts()"
+                (openLog)="openHistory()"
+                (validatePayment)="openPaymentValidation()"
+              ></app-seguimiento-citas-appointment-card>
+            </div>
+          </ng-container>
         </ng-container>
 
         <ng-template #emptyActivas>

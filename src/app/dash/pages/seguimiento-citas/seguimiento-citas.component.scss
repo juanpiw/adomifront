@@ -130,6 +130,36 @@
   cursor: pointer;
 }
 
+.kpi-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.1rem 0 0.8rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+}
+
+.kpi-inline__label {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.kpi-inline__value {
+  color: #0f172a;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.active-list {
+  display: grid;
+  gap: 1rem;
+}
+
 @media (min-width: 768px) {
   .secret-box__row {
     grid-template-columns: 1fr auto;
