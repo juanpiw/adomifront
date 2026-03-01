@@ -37,6 +37,22 @@
           <div class="date-chip">Hoy, {{ currentDateLabel }}</div>
         </header>
 
+        <div *ngIf="isMissingSecretError()" class="secret-box">
+          <p class="secret-box__title">Falta clave secreta de admin</p>
+          <p class="secret-box__text">Pega la clave aqui para cargar datos reales.</p>
+          <div class="secret-box__row">
+            <input
+              type="password"
+              class="secret-box__input"
+              [value]="adminSecretInput"
+              (input)="adminSecretInput = $any($event.target).value"
+              placeholder="ADMIN_PANEL_SECRET"
+              autocomplete="new-password"
+            />
+            <button type="button" class="secret-box__btn" (click)="saveSecretAndRefresh()">Guardar y refrescar</button>
+          </div>
+        </div>
+
         <p *ngIf="loading" class="status-note">Cargando seguimiento...</p>
         <p *ngIf="!loading && apiError" class="status-note status-note--error">{{ apiError }}</p>
 

@@ -39,6 +39,7 @@ export class SeguimientoCitasComponent implements OnInit {
   loading = false;
   apiError: string | null = null;
   activeAppointmentsCount = 0;
+  adminSecretInput = '';
 
   appointment: SeguimientoAppointment = {
     client: {
@@ -77,6 +78,9 @@ export class SeguimientoCitasComponent implements OnInit {
   ngOnInit(): void {
     const email = String(this.session.getUser()?.email || '').trim().toLowerCase();
     this.restricted = email !== this.adminEmail;
+    const fromSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : '';
+    const fromLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('admin:secret') : '';
+    this.adminSecretInput = String(fromSession || fromLocal || '').trim();
     if (!this.restricted) {
       this.loadTrackingData();
     }
@@ -138,6 +142,26 @@ export class SeguimientoCitasComponent implements OnInit {
 
   openReviewCase(item: SeguimientoHistoryEntry): void {
     alert(`Abriendo revision de caso: ${item.title}`);
+  }
+
+  isMissingSecretError(): boolean {
+    return String(this.apiError || '').toLowerCase().includes('admin secret');
+  }
+
+  saveSecretAndRefresh(): void {
+    const secret = String(this.adminSecretInput || '').trim();
+    if (!secret) {
+      this.apiError = 'Debes ingresar la clave secreta de admin.';
+      return;
+    }
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('admin:secret', secret);
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('admin:secret', secret);
+    }
+    this.adminSecretInput = secret;
+    this.loadTrackingData();
   }
 
   private loadTrackingData(): void {
