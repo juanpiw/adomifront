@@ -83,8 +83,11 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   // Modal de confirmación
   isConfirmOpen = false;
   isGeoInfoOpen = false;
+  isPaymentDropdownOpen = false;
   paymentPref: 'card' | 'cash' | null = null;
   loadingPaymentPref = false;
+  updatingPaymentPref = false;
+  paymentPrefError: string | null = null;
 
   // Errores de validación simples
   errorService = '';
@@ -271,6 +274,7 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   // Confirmación
   closeConfirm() {
     this.isConfirmOpen = false;
+    this.isPaymentDropdownOpen = false;
   }
 
   toggleGeoInfo(): void {
@@ -297,6 +301,43 @@ export class BookingPanelComponent implements OnChanges, OnInit {
   paymentMethodText(): string {
     if (this.loadingPaymentPref) return 'cargando…';
     return this.paymentPref === 'cash' ? 'Efectivo' : 'Tarjeta';
+  }
+
+  canChoosePaymentMethod(): boolean {
+    return !this.forceCash && !this.loadingPaymentPref && !this.updatingPaymentPref;
+  }
+
+  togglePaymentDropdown(): void {
+    if (!this.canChoosePaymentMethod()) {
+      return;
+    }
+    this.paymentPrefError = null;
+    this.isPaymentDropdownOpen = !this.isPaymentDropdownOpen;
+  }
+
+  selectPaymentPreference(pref: 'card' | 'cash'): void {
+    if (!this.canChoosePaymentMethod()) {
+      return;
+    }
+    const previous = this.paymentPref;
+    this.paymentPref = pref;
+    this.isPaymentDropdownOpen = false;
+    this.paymentPrefError = null;
+    this.updatingPaymentPref = true;
+
+    this.clientProfile.setPaymentPreference(pref).subscribe({
+      next: (res) => {
+        this.updatingPaymentPref = false;
+        if (res?.success && res?.preference) {
+          this.paymentPref = res.preference;
+        }
+      },
+      error: () => {
+        this.updatingPaymentPref = false;
+        this.paymentPref = previous;
+        this.paymentPrefError = 'No pudimos cambiar el metodo de pago. Intenta nuevamente.';
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {

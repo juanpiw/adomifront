@@ -465,16 +465,74 @@
   }
 }
 
+.payment-method-select {
+  position: relative;
+  width: fit-content;
+}
+
 .payment-method-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
   border-radius: 9999px;
-  background: #065f46; /* verde oscuro */
-  color: #ffffff; /* texto blanco */
+  border: 1px solid #047857;
+  background: #065f46;
+  color: #ffffff;
   font-weight: 700;
   width: fit-content;
+}
+
+.payment-method-pill--clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.payment-method-pill--clickable:hover {
+  background: #047857;
+  box-shadow: 0 8px 20px rgba(6, 95, 70, 0.25);
+}
+
+.payment-method-pill__chevron {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.payment-method-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+}
+
+.payment-method-dropdown__option {
+  border: 0;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 10px;
+  padding: 9px 10px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.payment-method-dropdown__option:hover {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.payment-method-dropdown__option--active {
+  background: #4338ca;
+  color: #fff;
 }
 
 .booking-confirm__error {

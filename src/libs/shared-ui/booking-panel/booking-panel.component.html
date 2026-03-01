@@ -109,14 +109,45 @@
       <p><strong>Servicio:</strong> {{ data.summary.service }}</p>
       <p><strong>Fecha y hora:</strong> {{ data.summary.date }} {{ data.summary.time }}</p>
       <p><strong>Precio:</strong> {{ data.summary.price }}</p>
-      <div class="payment-method-pill">
-        <span>Método de pago:</span>
-        <strong>{{ paymentMethodText() }}</strong>
+      <div class="payment-method-select">
+        <button
+          type="button"
+          class="payment-method-pill"
+          [class.payment-method-pill--clickable]="canChoosePaymentMethod()"
+          [attr.aria-expanded]="isPaymentDropdownOpen"
+          (click)="togglePaymentDropdown()">
+          <span>Método de pago:</span>
+          <strong>{{ paymentMethodText() }}</strong>
+          <span class="payment-method-pill__chevron" *ngIf="canChoosePaymentMethod()">▾</span>
+        </button>
+
+        <div class="payment-method-dropdown" *ngIf="isPaymentDropdownOpen">
+          <button
+            type="button"
+            class="payment-method-dropdown__option"
+            [class.payment-method-dropdown__option--active]="paymentPref === 'cash'"
+            (click)="selectPaymentPreference('cash')">
+            Efectivo
+          </button>
+          <button
+            type="button"
+            class="payment-method-dropdown__option"
+            [class.payment-method-dropdown__option--active]="paymentPref === 'card'"
+            (click)="selectPaymentPreference('card')">
+            Tarjeta
+          </button>
+        </div>
       </div>
-      <p class="booking-confirm__payment-hint">
+
+      <p class="booking-confirm__payment-hint" *ngIf="paymentPref === 'card'">
+        Configura tu tarjeta
+        <a href="https://adomiapp.com/client/pagos" target="_blank" rel="noopener">aquí</a>.
+      </p>
+      <p class="booking-confirm__payment-hint" *ngIf="paymentPref !== 'card'">
         Puedes cambiar tu método de pago
         <a href="https://adomiapp.com/client/pagos" target="_blank" rel="noopener">aquí</a>.
       </p>
+      <p class="booking-confirm__error" *ngIf="paymentPrefError">{{ paymentPrefError }}</p>
       <p class="booking-confirm__payment-hint">
         Al confirmar, aceptas los
         <a href="/client/terminos" target="_blank" rel="noopener">Términos y Condiciones</a>
