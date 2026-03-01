@@ -63,11 +63,13 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   isFounderAccount: boolean = false;
   planTierInfo: PlanTierDescriptor | null = null;
   planProgress: { percent: number; startLabel: string; endLabel: string; remainingLabel: string } | null = null;
+  private readonly adminAllowedEmail = 'juanpablojpw@gmail.com';
   
   get isAdmin(): boolean {
     try {
       const user = this.sessionService.getUser();
-      return !!user && user.email?.toLowerCase() === 'juanpablojpw@gmail.com';
+      const email = String(user?.email || '').trim().toLowerCase();
+      return email === this.adminAllowedEmail;
     } catch { return false; }
   }
 
