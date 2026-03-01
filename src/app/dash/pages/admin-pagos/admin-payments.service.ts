@@ -306,6 +306,23 @@ export class AdminPaymentsService {
     );
   }
 
+  sendAppointmentReminderEmail(
+    secret: string,
+    token: string | null,
+    appointmentId: number,
+    payload: {
+      recipient: 'client' | 'provider';
+      subject?: string | null;
+      message?: string | null;
+    }
+  ) {
+    return this.http.post<any>(
+      `${this.baseUrl}/admin/appointments/${appointmentId}/reminder-email`,
+      payload || {},
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   analyticsSearchTrends(secret: string, token: string | null, params: { from?: string | null; to?: string | null; group?: 'day' | 'week' } = {}) {
     const searchParams = new URLSearchParams();
     if (params.from) searchParams.set('from', params.from);

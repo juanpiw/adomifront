@@ -9,9 +9,30 @@
       via
       <strong>{{ channel }}</strong>.
     </p>
+
+    <div *ngIf="channel === 'Correo' && editorOpen" class="mail-editor">
+      <label>Asunto</label>
+      <input
+        type="text"
+        [disabled]="sending"
+        [(ngModel)]="draftSubject"
+        placeholder="Asunto del correo"
+      />
+      <label>Mensaje</label>
+      <textarea
+        rows="6"
+        [disabled]="sending"
+        [(ngModel)]="draftMessage"
+        placeholder="Contenido del correo"
+      ></textarea>
+      <small>Vista editable antes de enviar al destinatario.</small>
+    </div>
+
+    <p *ngIf="sendError" class="send-error">{{ sendError }}</p>
+
     <div class="actions">
-      <button type="button" class="primary" (click)="confirm.emit()">Enviar Ahora</button>
-      <button type="button" (click)="close.emit()">Cancelar</button>
+      <button type="button" class="primary" [disabled]="sending" (click)="onPrimaryClick()">{{ primaryLabel() }}</button>
+      <button type="button" [disabled]="sending" (click)="close.emit()">Cancelar</button>
     </div>
   </div>
 </div>

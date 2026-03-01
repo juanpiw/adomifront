@@ -4,6 +4,7 @@ import { SessionService } from '../../../auth/services/session.service';
 import { AdminPaymentsService } from '../admin-pagos/admin-payments.service';
 import {
   SeguimientoAppointment,
+  SeguimientoReminderRequest,
   SeguimientoCitasAppointmentCardComponent
 } from './components/seguimiento-citas-appointment-card.component';
 import { SeguimientoCitasReminderModalComponent } from './components/seguimiento-citas-reminder-modal.component';
@@ -47,9 +48,16 @@ export class SeguimientoCitasComponent implements OnInit {
 
   reminderModal = {
     open: false,
+    appointmentId: 0,
     target: '',
-    channel: 'WhatsApp' as 'WhatsApp' | 'Correo'
+    channel: 'WhatsApp' as 'WhatsApp' | 'Correo',
+    recipientType: 'client' as 'client' | 'provider',
+    recipientEmail: '' as string | null,
+    defaultSubject: '',
+    defaultMessage: ''
   };
+  reminderSending = false;
+  reminderSendError: string | null = null;
   noShowModal = {
     open: false,
     providerName: ''
@@ -70,21 +78,63 @@ export class SeguimientoCitasComponent implements OnInit {
     }
   }
 
-  openReminder(payload: { target: string; channel: 'WhatsApp' | 'Correo' }): void {
+  openReminder(payload: SeguimientoReminderRequest): void {
+    const template = this.buildReminderTemplate(payload);
     this.reminderModal = {
       open: true,
+      appointmentId: payload.appointmentId,
       target: payload.target,
-      channel: payload.channel
+      channel: payload.channel,
+      recipientType: payload.recipientType,
+      recipientEmail: payload.recipientEmail || null,
+      defaultSubject: template.subject,
+      defaultMessage: template.message
     };
+    this.reminderSendError = null;
   }
 
   closeReminder(): void {
     this.reminderModal.open = false;
+    this.reminderSending = false;
+    this.reminderSendError = null;
   }
 
-  confirmReminderSend(): void {
-    alert(`Exito: Recordatorio via ${this.reminderModal.channel} enviado a ${this.reminderModal.target}.`);
-    this.closeReminder();
+  confirmReminderSend(payload?: { subject?: string; message?: string }): void {
+    if (this.reminderModal.channel !== 'Correo') {
+      alert(`Exito: Recordatorio via ${this.reminderModal.channel} enviado a ${this.reminderModal.target}.`);
+      this.closeReminder();
+      return;
+    }
+
+    const adminSecret = this.resolveAdminSecret();
+    const token = this.session.getAccessToken?.() || null;
+    const appointmentId = Number(this.reminderModal.appointmentId || 0);
+    if (!adminSecret) {
+      this.reminderSendError = 'Falta admin secret para enviar correo.';
+      return;
+    }
+    if (!appointmentId) {
+      this.reminderSendError = 'No se pudo resolver la cita para enviar correo.';
+      return;
+    }
+
+    this.reminderSending = true;
+    this.reminderSendError = null;
+    this.adminApi.sendAppointmentReminderEmail(adminSecret, token, appointmentId, {
+      recipient: this.reminderModal.recipientType,
+      subject: payload?.subject || this.reminderModal.defaultSubject,
+      message: payload?.message || this.reminderModal.defaultMessage
+    }).subscribe({
+      next: () => {
+        this.reminderSending = false;
+        alert(`Correo enviado a ${this.reminderModal.target}.`);
+        this.closeReminder();
+      },
+      error: (err: any) => {
+        this.reminderSending = false;
+        this.reminderSendError = err?.error?.error || 'No pudimos enviar el correo.';
+      }
+    });
   }
 
   openNoShow(providerName: string): void {
@@ -228,6 +278,7 @@ export class SeguimientoCitasComponent implements OnInit {
 
   private toAppointmentCard(main: any): SeguimientoAppointment {
     return {
+      appointmentId: Number(main?.appointment_id || 0),
       client: {
         name: main.client_name || 'Cliente',
         roleLabel: 'Cliente',
@@ -235,6 +286,7 @@ export class SeguimientoCitasComponent implements OnInit {
         whatsappCount: 0,
         emailCount: 0
       },
+      clientEmail: main.client_email || null,
       provider: {
         name: main.provider_name || 'Proveedor',
         roleLabel: 'Proveedor Pro',
@@ -242,6 +294,7 @@ export class SeguimientoCitasComponent implements OnInit {
         whatsappCount: 0,
         emailCount: 0
       },
+      providerEmail: main.provider_email || null,
       service: main.service_name || 'Servicio',
       schedule: this.formatSchedule(main.appointment_date, main.start_time),
       closureMessage: 'Esperando confirmacion de termino de servicio'
@@ -288,6 +341,7 @@ export class SeguimientoCitasComponent implements OnInit {
 
   private emptyAppointment(): SeguimientoAppointment {
     return {
+      appointmentId: 0,
       client: {
         name: '',
         roleLabel: 'Cliente',
@@ -306,6 +360,29 @@ export class SeguimientoCitasComponent implements OnInit {
       schedule: '',
       closureMessage: 'Esperando confirmacion de termino de servicio'
     };
+  }
+
+  private buildReminderTemplate(payload: SeguimientoReminderRequest): { subject: string; message: string } {
+    const role = payload.recipientType === 'client' ? 'cliente' : 'proveedor';
+    const subject = `Recordatorio de cita - ${payload.service}`;
+    const message = [
+      `Hola,`,
+      ``,
+      `Te enviamos un recordatorio de tu cita como ${role}.`,
+      `Servicio: ${payload.service}`,
+      `Horario: ${payload.schedule}`,
+      ``,
+      `Si necesitas reagendar o reportar un problema, hazlo desde tu panel en AdomiApp.`,
+      ``,
+      `Equipo AdomiApp`
+    ].join('\n');
+    return { subject, message };
+  }
+
+  private resolveAdminSecret(): string {
+    const fromSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : '';
+    const fromLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('admin:secret') : '';
+    return String(fromSession || fromLocal || '').trim();
   }
 
   private loadActivePeopleMetric(adminSecret: string, token: string | null): void {

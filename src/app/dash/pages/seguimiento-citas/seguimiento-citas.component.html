@@ -99,8 +99,12 @@
       [visible]="reminderModal.open"
       [target]="reminderModal.target"
       [channel]="reminderModal.channel"
+      [defaultSubject]="reminderModal.defaultSubject"
+      [defaultMessage]="reminderModal.defaultMessage"
+      [sending]="reminderSending"
+      [sendError]="reminderSendError"
       (close)="closeReminder()"
-      (confirm)="confirmReminderSend()"
+      (confirm)="confirmReminderSend($event)"
     ></app-seguimiento-citas-reminder-modal>
 
     <app-seguimiento-citas-no-show-modal

@@ -74,3 +74,44 @@
   background: #4f46e5;
   color: #fff;
 }
+
+.mail-editor {
+  margin: 0.6rem 0 1rem;
+  text-align: left;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mail-editor label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mail-editor input,
+.mail-editor textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.75rem;
+  color: #0f172a;
+}
+
+.mail-editor textarea {
+  resize: vertical;
+}
+
+.mail-editor small {
+  color: #64748b;
+  font-size: 0.65rem;
+}
+
+.send-error {
+  margin: 0 0 0.55rem;
+  color: #dc2626;
+  font-size: 0.72rem;
+  font-weight: 600;
+}

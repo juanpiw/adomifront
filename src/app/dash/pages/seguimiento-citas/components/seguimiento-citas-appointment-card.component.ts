@@ -11,11 +11,24 @@ export interface SeguimientoParty {
 }
 
 export interface SeguimientoAppointment {
+  appointmentId: number;
   client: SeguimientoParty;
+  clientEmail?: string | null;
   provider: SeguimientoParty;
+  providerEmail?: string | null;
   service: string;
   schedule: string;
   closureMessage: string;
+}
+
+export interface SeguimientoReminderRequest {
+  appointmentId: number;
+  target: string;
+  channel: 'WhatsApp' | 'Correo';
+  recipientType: 'client' | 'provider';
+  recipientEmail?: string | null;
+  service: string;
+  schedule: string;
 }
 
 @Component({
@@ -28,7 +41,7 @@ export interface SeguimientoAppointment {
 export class SeguimientoCitasAppointmentCardComponent {
   @Input({ required: true }) appointment!: SeguimientoAppointment;
 
-  @Output() reminder = new EventEmitter<{ target: string; channel: 'WhatsApp' | 'Correo' }>();
+  @Output() reminder = new EventEmitter<SeguimientoReminderRequest>();
   @Output() noShow = new EventEmitter<string>();
   @Output() resendAlerts = new EventEmitter<void>();
   @Output() openLog = new EventEmitter<void>();

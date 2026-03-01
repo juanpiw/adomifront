@@ -10,10 +10,26 @@
       <p>{{ appointment.client.name }}</p>
       <small>{{ appointment.client.roleLabel }}</small>
       <div class="actions">
-        <button type="button" (click)="reminder.emit({ target: appointment.client.name + ' (Cliente)', channel: 'WhatsApp' })">
+        <button type="button" (click)="reminder.emit({
+          appointmentId: appointment.appointmentId,
+          target: appointment.client.name + ' (Cliente)',
+          channel: 'WhatsApp',
+          recipientType: 'client',
+          recipientEmail: appointment.clientEmail,
+          service: appointment.service,
+          schedule: appointment.schedule
+        })">
           WA <span>{{ appointment.client.whatsappCount }}</span>
         </button>
-        <button type="button" (click)="reminder.emit({ target: appointment.client.name + ' (Cliente)', channel: 'Correo' })">
+        <button type="button" (click)="reminder.emit({
+          appointmentId: appointment.appointmentId,
+          target: appointment.client.name + ' (Cliente)',
+          channel: 'Correo',
+          recipientType: 'client',
+          recipientEmail: appointment.clientEmail,
+          service: appointment.service,
+          schedule: appointment.schedule
+        })">
           Mail <span>{{ appointment.client.emailCount }}</span>
         </button>
       </div>
@@ -29,10 +45,26 @@
       <p>{{ appointment.provider.name }}</p>
       <small class="small-pill">{{ appointment.provider.roleLabel }}</small>
       <div class="actions">
-        <button type="button" (click)="reminder.emit({ target: appointment.provider.name + ' (Proveedor)', channel: 'WhatsApp' })">
+        <button type="button" (click)="reminder.emit({
+          appointmentId: appointment.appointmentId,
+          target: appointment.provider.name + ' (Proveedor)',
+          channel: 'WhatsApp',
+          recipientType: 'provider',
+          recipientEmail: appointment.providerEmail,
+          service: appointment.service,
+          schedule: appointment.schedule
+        })">
           WA <span>{{ appointment.provider.whatsappCount }}</span>
         </button>
-        <button type="button" (click)="reminder.emit({ target: appointment.provider.name + ' (Proveedor)', channel: 'Correo' })">
+        <button type="button" (click)="reminder.emit({
+          appointmentId: appointment.appointmentId,
+          target: appointment.provider.name + ' (Proveedor)',
+          channel: 'Correo',
+          recipientType: 'provider',
+          recipientEmail: appointment.providerEmail,
+          service: appointment.service,
+          schedule: appointment.schedule
+        })">
           Mail <span>{{ appointment.provider.emailCount }}</span>
         </button>
       </div>
