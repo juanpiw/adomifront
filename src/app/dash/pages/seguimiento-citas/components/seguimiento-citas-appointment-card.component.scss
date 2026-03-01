@@ -222,6 +222,21 @@
   font-size: 0.87rem;
 }
 
+.monitor-check {
+  margin-top: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.monitor-check input {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
 .footer-actions {
   display: flex;
   gap: 0.45rem;

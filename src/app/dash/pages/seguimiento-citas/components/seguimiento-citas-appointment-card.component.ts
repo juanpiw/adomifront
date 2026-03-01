@@ -19,6 +19,7 @@ export interface SeguimientoAppointment {
   service: string;
   schedule: string;
   closureMessage: string;
+  responded?: boolean;
 }
 
 export interface SeguimientoReminderRequest {
@@ -46,4 +47,5 @@ export class SeguimientoCitasAppointmentCardComponent {
   @Output() resendAlerts = new EventEmitter<void>();
   @Output() openLog = new EventEmitter<void>();
   @Output() validatePayment = new EventEmitter<void>();
+  @Output() responseChanged = new EventEmitter<{ appointmentId: number; responded: boolean }>();
 }

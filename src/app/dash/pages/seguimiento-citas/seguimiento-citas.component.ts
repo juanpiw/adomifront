@@ -43,6 +43,7 @@ export class SeguimientoCitasComponent implements OnInit {
   adminSecretInput = '';
   activePeopleTodayCount: number | null = null;
   activeAppointments: SeguimientoAppointment[] = [];
+  private responseByAppointment: Record<number, boolean> = {};
 
   appointment: SeguimientoAppointment = this.emptyAppointment();
 
@@ -73,6 +74,7 @@ export class SeguimientoCitasComponent implements OnInit {
     const fromSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : '';
     const fromLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('admin:secret') : '';
     this.adminSecretInput = String(fromSession || fromLocal || '').trim();
+    this.responseByAppointment = this.loadResponseState();
     if (!this.restricted) {
       this.loadTrackingData();
     }
@@ -176,6 +178,15 @@ export class SeguimientoCitasComponent implements OnInit {
 
   openReviewCase(item: SeguimientoHistoryEntry): void {
     alert(`Abriendo revision de caso: ${item.title}`);
+  }
+
+  onResponseChanged(payload: { appointmentId: number; responded: boolean }): void {
+    if (!payload?.appointmentId) return;
+    this.responseByAppointment[payload.appointmentId] = !!payload.responded;
+    this.persistResponseState();
+    this.activeAppointments = this.activeAppointments.map((item) =>
+      item.appointmentId === payload.appointmentId ? { ...item, responded: !!payload.responded } : item
+    );
   }
 
   isMissingSecretError(): boolean {
@@ -282,6 +293,7 @@ export class SeguimientoCitasComponent implements OnInit {
       client: {
         name: main.client_name || 'Cliente',
         roleLabel: 'Cliente',
+        photoUrl: this.resolveAvatarUrl(main.client_avatar_url),
         avatarEmoji: '👤',
         whatsappCount: 0,
         emailCount: 0
@@ -290,6 +302,7 @@ export class SeguimientoCitasComponent implements OnInit {
       provider: {
         name: main.provider_name || 'Proveedor',
         roleLabel: 'Proveedor Pro',
+        photoUrl: this.resolveAvatarUrl(main.provider_avatar_url),
         avatarEmoji: '👷',
         whatsappCount: 0,
         emailCount: 0
@@ -297,7 +310,8 @@ export class SeguimientoCitasComponent implements OnInit {
       providerEmail: main.provider_email || null,
       service: main.service_name || 'Servicio',
       schedule: this.formatSchedule(main.appointment_date, main.start_time),
-      closureMessage: 'Esperando confirmacion de termino de servicio'
+      closureMessage: 'Esperando confirmacion de termino de servicio',
+      responded: !!this.responseByAppointment[Number(main?.appointment_id || 0)]
     };
   }
 
@@ -358,7 +372,8 @@ export class SeguimientoCitasComponent implements OnInit {
       },
       service: '',
       schedule: '',
-      closureMessage: 'Esperando confirmacion de termino de servicio'
+      closureMessage: 'Esperando confirmacion de termino de servicio',
+      responded: false
     };
   }
 
@@ -406,6 +421,36 @@ export class SeguimientoCitasComponent implements OnInit {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+
+  private resolveAvatarUrl(raw: any): string {
+    const value = String(raw || '').trim();
+    if (!value) return '';
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
+      return value;
+    }
+    if (value.startsWith('/')) {
+      return value;
+    }
+    return `/${value}`;
+  }
+
+  private loadResponseState(): Record<number, boolean> {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('seguimiento:responses') : null;
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private persistResponseState(): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('seguimiento:responses', JSON.stringify(this.responseByAppointment));
+      }
+    } catch {}
   }
 }
 

@@ -6,7 +6,10 @@
 
   <div class="actors">
     <div class="party">
-      <div class="avatar avatar--client">{{ appointment.client.avatarEmoji || "👤" }}</div>
+      <div class="avatar avatar--client">
+        <img *ngIf="appointment.client.photoUrl; else clientEmoji" [src]="appointment.client.photoUrl" [alt]="appointment.client.name" />
+        <ng-template #clientEmoji>{{ appointment.client.avatarEmoji || "👤" }}</ng-template>
+      </div>
       <p>{{ appointment.client.name }}</p>
       <small>{{ appointment.client.roleLabel }}</small>
       <div class="actions">
@@ -97,6 +100,14 @@
     <div>
       <p>Cierre de Operacion</p>
       <strong>{{ appointment.closureMessage }}</strong>
+      <label class="monitor-check">
+        <input
+          type="checkbox"
+          [checked]="!!appointment.responded"
+          (change)="responseChanged.emit({ appointmentId: appointment.appointmentId, responded: $any($event.target).checked })"
+        />
+        Respondio correo / contesto
+      </label>
     </div>
     <div class="footer-actions">
       <button type="button" (click)="openLog.emit()">Log</button>
