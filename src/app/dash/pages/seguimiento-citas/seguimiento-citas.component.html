@@ -1,0 +1,84 @@
+<section class="seguimiento-citas-page">
+  <div *ngIf="restricted" class="seguimiento-citas-card seguimiento-citas-card--error">
+    <h2>Acceso restringido</h2>
+    <p>Este modulo esta habilitado solo para administracion interna.</p>
+  </div>
+
+  <ng-container *ngIf="!restricted">
+    <app-seguimiento-citas-topbar></app-seguimiento-citas-topbar>
+
+    <main class="content">
+      <nav class="tabs-nav" aria-label="Navegacion de seguimiento de citas">
+        <button
+          type="button"
+          class="tab"
+          [class.tab--active]="activeTab === 'activas'"
+          (click)="setTab('activas')"
+        >
+          Citas Activas
+          <span>{{ 1 }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="tab"
+          [class.tab--active]="activeTab === 'historial'"
+          (click)="setTab('historial')"
+        >
+          Historial y Cierres
+          <span>{{ pendingCloseHistory.length + disputedHistory.length + closedHistory.length }}</span>
+        </button>
+      </nav>
+
+      <ng-container *ngIf="activeTab === 'activas'; else historialView">
+        <header class="page-header">
+          <div>
+            <h2>Control de Citas</h2>
+            <p>Gestion de inasistencias y validacion de ejecucion en tiempo real.</p>
+          </div>
+          <div class="date-chip">Hoy, {{ currentDateLabel }}</div>
+        </header>
+
+        <app-seguimiento-citas-appointment-card
+          [appointment]="appointment"
+          (reminder)="openReminder($event)"
+          (noShow)="openNoShow($event)"
+          (resendAlerts)="resendAlerts()"
+          (openLog)="openHistory()"
+          (validatePayment)="openPaymentValidation()"
+        ></app-seguimiento-citas-appointment-card>
+      </ng-container>
+
+      <ng-template #historialView>
+        <app-seguimiento-citas-history-board
+          [pendingClose]="pendingCloseHistory"
+          [disputedClose]="disputedHistory"
+          [successfulClose]="closedHistory"
+          (validateClose)="openValidateClose($event)"
+          (reviewCase)="openReviewCase($event)"
+        ></app-seguimiento-citas-history-board>
+      </ng-template>
+    </main>
+
+    <app-seguimiento-citas-reminder-modal
+      [visible]="reminderModal.open"
+      [target]="reminderModal.target"
+      [channel]="reminderModal.channel"
+      (close)="closeReminder()"
+      (confirm)="confirmReminderSend()"
+    ></app-seguimiento-citas-reminder-modal>
+
+    <app-seguimiento-citas-no-show-modal
+      [visible]="noShowModal.open"
+      [providerName]="noShowModal.providerName"
+      (close)="closeNoShow()"
+      (confirm)="confirmNoShow()"
+    ></app-seguimiento-citas-no-show-modal>
+
+    <app-seguimiento-citas-history-modal
+      [visible]="historyModalOpen"
+      (close)="closeHistory()"
+    ></app-seguimiento-citas-history-modal>
+  </ng-container>
+</section>
+

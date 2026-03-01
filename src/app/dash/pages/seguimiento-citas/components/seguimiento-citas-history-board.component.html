@@ -1,0 +1,53 @@
+<section class="history-view">
+  <header class="view-header">
+    <h2>Historial de Citas</h2>
+    <p>Registro historico de cierres, intentos y proximas validaciones.</p>
+  </header>
+
+  <div class="group">
+    <h3>Proximas por cerrar</h3>
+    <article *ngFor="let item of pendingClose" class="row row--pending">
+      <div class="identity">
+        <div class="avatar avatar--indigo">{{ item.initials || 'AD' }}</div>
+        <div>
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.subtitle }}</p>
+        </div>
+      </div>
+      <button type="button" (click)="validateClose.emit(item)">Validar Cierre</button>
+    </article>
+  </div>
+
+  <div class="group">
+    <h3 class="warning">Intentos de cierre / En disputa</h3>
+    <article *ngFor="let item of disputedClose" class="row row--warning">
+      <div class="identity">
+        <div class="avatar avatar--amber">{{ item.initials || 'RC' }}</div>
+        <div>
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.subtitle }}</p>
+        </div>
+      </div>
+      <button type="button" class="outline" (click)="reviewCase.emit(item)">Revisar Caso</button>
+    </article>
+  </div>
+
+  <div class="group">
+    <h3 class="success">Cerradas con exito</h3>
+    <article *ngFor="let item of successfulClose" class="row row--success">
+      <div class="identity">
+        <img *ngIf="item.imageUrl; else initialsAvatar" class="avatar-img" [src]="item.imageUrl" [alt]="item.title" />
+        <ng-template #initialsAvatar>
+          <div class="avatar avatar--slate">{{ item.initials || 'OK' }}</div>
+        </ng-template>
+        <div>
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.subtitle }}</p>
+        </div>
+      </div>
+      <div class="status">
+        <span>{{ item.statusLabel || 'PAGADO' }}</span>
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,18 @@
+<div *ngIf="visible" class="overlay">
+  <div class="modal">
+    <button type="button" class="close" (click)="close.emit()">x</button>
+    <h3>Bitacora Log</h3>
+    <div class="timeline">
+      <article>
+        <small>11:20</small>
+        <p>Cita Agendada</p>
+      </article>
+      <article>
+        <small>09:00</small>
+        <p>Alertas Enviadas</p>
+        <em>WhatsApp (5) - Email (2)</em>
+      </article>
+    </div>
+    <button type="button" class="footer-btn" (click)="close.emit()">Cerrar</button>
+  </div>
+</div>

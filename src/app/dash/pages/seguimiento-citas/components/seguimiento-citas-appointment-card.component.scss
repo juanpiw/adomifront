@@ -1,0 +1,261 @@
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 2.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 18px 35px -26px rgba(15, 23, 42, 0.45);
+}
+
+.warnings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.warning {
+  font-size: 0.56rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ef4444;
+  letter-spacing: 0.18em;
+}
+
+.warning span {
+  display: inline-block;
+  width: 0.35rem;
+  height: 0.35rem;
+  margin-right: 0.3rem;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+.actors {
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+}
+
+.party {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: center;
+}
+
+.avatar {
+  width: 5.7rem;
+  height: 5.7rem;
+  border-radius: 2rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.party p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.party small {
+  font-size: 0.56rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.small-pill {
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.actions button {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.55rem;
+  padding: 0.2rem 0.45rem;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.actions span {
+  margin-left: 0.25rem;
+  border-radius: 0.4rem;
+  padding: 0.1rem 0.25rem;
+  background: #f8fafc;
+}
+
+.connector {
+  justify-self: stretch;
+  text-align: center;
+  font-size: 0.52rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.17em;
+  border-top: 2px dashed #cbd5e1;
+  border-bottom: 2px dashed #cbd5e1;
+  padding: 0.35rem 0;
+}
+
+.details-row {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.details,
+.intervention {
+  border-radius: 1.6rem;
+  padding: 1rem;
+}
+
+.details {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.details > p,
+.intervention > p {
+  margin: 0 0 0.65rem;
+  font-size: 0.56rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.details > p {
+  color: #64748b;
+}
+
+.details > div {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.details small {
+  display: block;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-size: 0.56rem;
+  margin-bottom: 0.2rem;
+}
+
+.details strong {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.intervention {
+  background: #0f172a;
+}
+
+.intervention > p {
+  color: #818cf8;
+}
+
+.intervention button {
+  width: 100%;
+  border: 0;
+  border-radius: 0.8rem;
+  margin-top: 0.45rem;
+  padding: 0.7rem;
+  font-size: 0.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.intervention button:first-of-type {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.intervention .danger {
+  background: #fff;
+  color: #ef4444;
+}
+
+.footer {
+  margin-top: 1rem;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  border-radius: 1.6rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  color: #818cf8;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.footer strong {
+  color: #312e81;
+  font-size: 0.87rem;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.footer-actions button {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.8rem;
+  padding: 0.62rem;
+  background: #fff;
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 0.58rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.footer-actions .primary {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+@media (min-width: 1024px) {
+  .actors {
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .details-row {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .details > div {
+    grid-template-columns: 1fr 1fr;
+  }
+}

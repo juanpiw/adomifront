@@ -62,6 +62,9 @@
         <ui-icon name="user" [size]="20"></ui-icon>
         <span *ngIf="adminPendingCount > 0" class="badge-unread" style="position:absolute; top:-6px; right:-6px;">{{ adminPendingCount }}</span>
       </a>
+      <a *ngIf="isAdmin" class="rail-item" routerLink="/dash/seguimiento-citas" routerLinkActive="active" title="Seguimiento Citas" (click)="onNav()">
+        <ui-icon name="calendar" [size]="20"></ui-icon>
+      </a>
       <a class="rail-item" routerLink="/dash/estadisticas" routerLinkActive="active" title="Estadísticas" (click)="onNav()"><ui-icon name="chart" [size]="20"></ui-icon></a>
       <a *ngIf="showPromotionsMenu" class="rail-item" routerLink="/dash/promocion" routerLinkActive="active" title="Promoción" (click)="onNav()"><ui-icon name="star" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/mensajes" routerLinkActive="active" title="Mensajes" (click)="onNav()" style="position: relative;">
@@ -145,6 +148,9 @@
         <a *ngIf="isAdmin" routerLink="/dash/admin-pagos" routerLinkActive="active" (click)="onNav()" style="position:relative;">
           <ui-icon name="user"></ui-icon><span>Admin Pagos</span>
           <span *ngIf="adminPendingCount > 0" class="badge-unread" style="position:absolute; right:12px;">{{ adminPendingCount }}</span>
+        </a>
+        <a *ngIf="isAdmin" routerLink="/dash/seguimiento-citas" routerLinkActive="active" (click)="onNav()">
+          <ui-icon name="calendar"></ui-icon><span>Seguimiento Citas</span>
         </a>
         <a routerLink="/dash/estadisticas" routerLinkActive="active" (click)="onNav()"><ui-icon name="chart"></ui-icon><span>Estadísticas</span></a>
         <a routerLink="/dash/mensajes" routerLinkActive="active" (click)="onNav()"><ui-icon name="message"></ui-icon><span>Mensajes</span></a>

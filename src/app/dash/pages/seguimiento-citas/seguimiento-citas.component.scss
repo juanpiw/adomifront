@@ -1,0 +1,135 @@
+.seguimiento-citas-page {
+  min-height: calc(100vh - 70px);
+  background: #f8f9fb;
+}
+
+.seguimiento-citas-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 8px 20px -16px rgba(15, 23, 42, 0.35);
+}
+
+.content {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 1.2rem 1rem 2.2rem;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 1.1rem;
+  overflow-x: auto;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+  scrollbar-width: none;
+}
+
+.tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.3rem 0 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tab span {
+  border-radius: 999px;
+  padding: 0.13rem 0.45rem;
+  font-size: 0.6rem;
+  line-height: 1;
+  font-weight: 900;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.tab--active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+}
+
+.tab--active span {
+  color: #fff;
+  background: #4f46e5;
+}
+
+.seguimiento-citas-card--error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  max-width: 600px;
+  margin: 1rem auto;
+}
+
+.seguimiento-citas-card--error h2 {
+  margin: 0 0 0.3rem;
+  color: #991b1b;
+  font-size: 1.2rem;
+}
+
+.seguimiento-citas-card--error p {
+  margin: 0;
+  color: #7f1d1d;
+}
+
+.page-header {
+  margin: 0.5rem 0 1.2rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.8vw, 2.35rem);
+  font-weight: 900;
+  color: #0f172a;
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.page-header p {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.date-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  padding: 0.7rem 1rem;
+  border-radius: 0.95rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .page-header {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  .date-chip {
+    justify-self: end;
+  }
+}
+

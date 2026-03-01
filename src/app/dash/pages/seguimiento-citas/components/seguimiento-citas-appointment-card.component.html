@@ -1,0 +1,74 @@
+<article class="card">
+  <div class="warnings">
+    <div class="warning"><span></span> Atencion: Cliente sin confirmar su cita</div>
+    <div class="warning"><span></span> Atencion: Proveedor sin confirmacion de arribo</div>
+  </div>
+
+  <div class="actors">
+    <div class="party">
+      <div class="avatar avatar--client">{{ appointment.client.avatarEmoji || "👤" }}</div>
+      <p>{{ appointment.client.name }}</p>
+      <small>{{ appointment.client.roleLabel }}</small>
+      <div class="actions">
+        <button type="button" (click)="reminder.emit({ target: appointment.client.name + ' (Cliente)', channel: 'WhatsApp' })">
+          WA <span>{{ appointment.client.whatsappCount }}</span>
+        </button>
+        <button type="button" (click)="reminder.emit({ target: appointment.client.name + ' (Cliente)', channel: 'Correo' })">
+          Mail <span>{{ appointment.client.emailCount }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="connector">SEGUIMIENTO</div>
+
+    <div class="party">
+      <div class="avatar avatar--provider">
+        <img *ngIf="appointment.provider.photoUrl; else providerEmoji" [src]="appointment.provider.photoUrl" [alt]="appointment.provider.name" />
+        <ng-template #providerEmoji>{{ appointment.provider.avatarEmoji || "👷" }}</ng-template>
+      </div>
+      <p>{{ appointment.provider.name }}</p>
+      <small class="small-pill">{{ appointment.provider.roleLabel }}</small>
+      <div class="actions">
+        <button type="button" (click)="reminder.emit({ target: appointment.provider.name + ' (Proveedor)', channel: 'WhatsApp' })">
+          WA <span>{{ appointment.provider.whatsappCount }}</span>
+        </button>
+        <button type="button" (click)="reminder.emit({ target: appointment.provider.name + ' (Proveedor)', channel: 'Correo' })">
+          Mail <span>{{ appointment.provider.emailCount }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="details-row">
+    <section class="details">
+      <p>Detalles de la Cita</p>
+      <div>
+        <div>
+          <small>Servicio</small>
+          <strong>{{ appointment.service }}</strong>
+        </div>
+        <div>
+          <small>Horario</small>
+          <strong>{{ appointment.schedule }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="intervention">
+      <p>Intervencion</p>
+      <button type="button" (click)="resendAlerts.emit()">Re-enviar Alertas</button>
+      <button type="button" class="danger" (click)="noShow.emit(appointment.provider.name)">No llego a la cita</button>
+    </section>
+  </div>
+
+  <div class="footer">
+    <div>
+      <p>Cierre de Operacion</p>
+      <strong>{{ appointment.closureMessage }}</strong>
+    </div>
+    <div class="footer-actions">
+      <button type="button" (click)="openLog.emit()">Log</button>
+      <button type="button" class="primary" (click)="validatePayment.emit()">Validar Pago</button>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,14 @@
+<div *ngIf="visible" class="overlay">
+  <div class="modal">
+    <div class="icon">!</div>
+    <h3>Inasistencia Detectada</h3>
+    <p>
+      Confirmas que <strong>{{ providerName }}</strong> no se presento.
+      Se enviara una notificacion al cliente y se registrara la falta.
+    </p>
+    <div class="actions">
+      <button type="button" class="danger" (click)="confirm.emit()">Confirmar Reporte</button>
+      <button type="button" (click)="close.emit()">Cancelar</button>
+    </div>
+  </div>
+</div>

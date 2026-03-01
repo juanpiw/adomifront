@@ -49,6 +49,7 @@ import { providerOnboardingGuard, providerOnboardingChildGuard } from './auth/gu
 import { InvitacionComponent } from './pages/invitacion/invitacion.component';
 import { ProviderSetupComponent } from './dash/pages/provider-setup/provider-setup.component';
 import { providerSetupGuard, providerSetupChildGuard } from './auth/guards/provider-setup.guard';
+import { SeguimientoCitasComponent } from './dash/pages/seguimiento-citas/seguimiento-citas.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -111,6 +112,7 @@ export const routes: Routes = [
       ,{ path: 'terminos', component: DashTerminosComponent }
       ,{ path: 'clientes/:clientId', component: PerfilSolicitanteComponent }
       ,{ path: 'admin-pagos', component: AdminPagosComponent }
+      ,{ path: 'seguimiento-citas', component: SeguimientoCitasComponent }
       ,{ path: 'soporte', loadComponent: () => import('./dash/pages/soporte/dash-support.component').then(m => m.DashSupportComponent) }
     ] },
   { path: '**', redirectTo: '' }

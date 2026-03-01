@@ -1,0 +1,17 @@
+<div *ngIf="visible" class="overlay">
+  <div class="modal">
+    <button type="button" class="close" (click)="close.emit()">x</button>
+    <div class="icon">{{ channel === 'WhatsApp' ? 'WA' : '@' }}</div>
+    <h3>Enviar Recordatorio</h3>
+    <p>
+      Estas por enviar un recordatorio manual de cita a
+      <strong>{{ target }}</strong>
+      via
+      <strong>{{ channel }}</strong>.
+    </p>
+    <div class="actions">
+      <button type="button" class="primary" (click)="confirm.emit()">Enviar Ahora</button>
+      <button type="button" (click)="close.emit()">Cancelar</button>
+    </div>
+  </div>
+</div>
