@@ -5,7 +5,6 @@ import {
   SeguimientoAppointment,
   SeguimientoCitasAppointmentCardComponent
 } from './components/seguimiento-citas-appointment-card.component';
-import { SeguimientoCitasTopbarComponent } from './components/seguimiento-citas-topbar.component';
 import { SeguimientoCitasReminderModalComponent } from './components/seguimiento-citas-reminder-modal.component';
 import { SeguimientoCitasNoShowModalComponent } from './components/seguimiento-citas-no-show-modal.component';
 import { SeguimientoCitasHistoryModalComponent } from './components/seguimiento-citas-history-modal.component';
@@ -19,7 +18,6 @@ import {
   standalone: true,
   imports: [
     CommonModule,
-    SeguimientoCitasTopbarComponent,
     SeguimientoCitasAppointmentCardComponent,
     SeguimientoCitasReminderModalComponent,
     SeguimientoCitasNoShowModalComponent,
