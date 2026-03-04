@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Evita indexar rutas privadas o de flujo interno
+Disallow: /dash/
+Disallow: /client/
+Disallow: /auth/
+Disallow: /tbk/
+Disallow: /onboarding/
+Disallow: /libreria/
+
+Sitemap: https://www.adomiapp.com/sitemap.xml

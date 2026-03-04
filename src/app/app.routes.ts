@@ -52,16 +52,42 @@ import { providerSetupGuard, providerSetupChildGuard } from './auth/guards/provi
 import { SeguimientoCitasComponent } from './dash/pages/seguimiento-citas/seguimiento-citas.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'terminos', component: ClientTerminosComponent, data: { tab: 'terminos' } },
-  { path: 'privacidad', component: ClientTerminosComponent, data: { tab: 'privacidad' } },
-  { path: 'invitacion', component: InvitacionComponent },
-  { path: 'tbk/return', component: TbkReturnComponent },
-  { path: 'tbk/oneclick/finish', component: TbkReturnComponent },
-  { path: 'tbk/plan-return', component: TbkPlanReturnComponent },
-  { path: 'libreria', component: LibraryComponent },
-  { path: 'onboarding', component: OnboardingComponent },
-  { path: 'client', component: ClientLayoutComponent, canActivate: [providerOnboardingGuard, providerSetupGuard], canActivateChild: [providerOnboardingChildGuard, providerSetupChildGuard], children: [
+  {
+    path: '',
+    component: HomeComponent,
+    data: {
+      seo: {
+        title: 'AdomiApp | Expertos y servicios a domicilio en Chile',
+        description:
+          'Reserva servicios a domicilio con expertos verificados: limpieza, gasfiteria, electricidad, belleza y mas en un solo lugar.',
+        keywords:
+          'servicios a domicilio, expertos a domicilio, profesionales a domicilio, adomiapp chile, reservas a domicilio',
+        canonicalPath: '/',
+        type: 'website'
+      }
+    }
+  },
+  {
+    path: 'terminos',
+    component: ClientTerminosComponent,
+    data: { tab: 'terminos', seo: { title: 'Terminos y condiciones | AdomiApp', noindex: false } }
+  },
+  {
+    path: 'privacidad',
+    component: ClientTerminosComponent,
+    data: { tab: 'privacidad', seo: { title: 'Politica de privacidad | AdomiApp', noindex: false } }
+  },
+  {
+    path: 'invitacion',
+    component: InvitacionComponent,
+    data: { seo: { title: 'Invitacion | AdomiApp', noindex: false } }
+  },
+  { path: 'tbk/return', component: TbkReturnComponent, data: { seo: { noindex: true } } },
+  { path: 'tbk/oneclick/finish', component: TbkReturnComponent, data: { seo: { noindex: true } } },
+  { path: 'tbk/plan-return', component: TbkPlanReturnComponent, data: { seo: { noindex: true } } },
+  { path: 'libreria', component: LibraryComponent, data: { seo: { noindex: true } } },
+  { path: 'onboarding', component: OnboardingComponent, data: { seo: { noindex: true } } },
+  { path: 'client', component: ClientLayoutComponent, data: { seo: { noindex: true } }, canActivate: [providerOnboardingGuard, providerSetupGuard], canActivateChild: [providerOnboardingChildGuard, providerSetupChildGuard], children: [
       { path: '', redirectTo: 'explorar', pathMatch: 'full' },
       { path: 'explorar', component: ExplorarComponent },
       { path: 'explorar/:workerId', component: PerfilTrabajadorComponent },
@@ -81,7 +107,7 @@ export const routes: Routes = [
       { path: 'soporte', loadComponent: () => import('./client/pages/soporte/client-support.component').then(m => m.ClientSupportComponent) },
       { path: 'validacion-datos-trabajador', component: ValidacionDatosTrabajadorComponent }
     ] },
-      { path: 'auth', children: [
+      { path: 'auth', data: { seo: { noindex: true } }, children: [
           { path: '', redirectTo: 'login', pathMatch: 'full' },
           { path: 'login', component: LoginComponent },
           { path: 'register', component: RegisterComponent },
@@ -96,7 +122,7 @@ export const routes: Routes = [
           { path: 'google/callback', component: GoogleCallbackComponent },
           { path: 'google/success', component: GoogleSuccessComponent }
         ] },
-  { path: 'dash', component: DashLayoutComponent, canActivate: [providerOnboardingGuard, providerSetupGuard], canActivateChild: [providerOnboardingChildGuard, providerSetupChildGuard], children: [
+  { path: 'dash', component: DashLayoutComponent, data: { seo: { noindex: true } }, canActivate: [providerOnboardingGuard, providerSetupGuard], canActivateChild: [providerOnboardingChildGuard, providerSetupChildGuard], children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'provider-setup', component: ProviderSetupComponent },
       { path: 'home', component: DashHomeComponent },

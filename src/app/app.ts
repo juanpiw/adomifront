@@ -5,6 +5,7 @@ import { SessionExpiredService } from './core/services/session-expired.service';
 import { RouterLoggerService } from './core/services/router-logger.service';
 import { Ga4Service } from './core/services/ga4.service';
 import { ClarityService } from './core/services/clarity.service';
+import { SeoService } from './core/services/seo.service';
 
 @Component({
   selector: 'app-root',
@@ -21,4 +22,6 @@ export class App {
   private ga4 = inject(Ga4Service);
   // Inyección intencional para activar Microsoft Clarity (si hay project id).
   private clarity = inject(ClarityService);
+  // Inyección intencional para activar SEO dinámico por ruta.
+  private seo = inject(SeoService);
 }
