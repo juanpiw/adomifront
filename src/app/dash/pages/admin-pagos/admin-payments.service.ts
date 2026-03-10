@@ -378,6 +378,21 @@ export class AdminPaymentsService {
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.http.get<any>(`${this.baseUrl}/admin/analytics/conversion/attribution-quality${qs}`, { headers: this.headers(secret, token) });
   }
+
+  listSchedulingLeads(
+    secret: string,
+    token: string | null,
+    params: { from?: string | null; to?: string | null; search?: string | null; limit?: number; offset?: number } = {}
+  ) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.search) searchParams.set('search', params.search);
+    if (typeof params.limit === 'number') searchParams.set('limit', String(params.limit));
+    if (typeof params.offset === 'number') searchParams.set('offset', String(params.offset));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/payments/scheduling-leads${qs}`, { headers: this.headers(secret, token) });
+  }
 }
 
 

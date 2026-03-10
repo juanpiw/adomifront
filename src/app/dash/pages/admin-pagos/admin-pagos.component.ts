@@ -123,6 +123,22 @@ export class AdminPagosComponent implements OnInit {
   analyticsConversionByTerm: Array<{ term: string; searches: number; bookings: number; conversion_rate: number }> = [];
   analyticsConversionByProvider: Array<{ provider_id: number; provider_name: string; profile_views: number; bookings: number; profile_to_booking_rate: number }> = [];
   analyticsAttributionQuality: { total_bookings: number; attributed_bookings: number; unattributed_bookings: number; attributed_rate: number } | null = null;
+  schedulingLeadsLoading = false;
+  schedulingLeadsError: string | null = null;
+  schedulingLeads: Array<{
+    id: number;
+    created_at: string;
+    expert_name: string;
+    expert_title?: string | null;
+    quote_message?: string | null;
+    time_slot?: string | null;
+    client_phone: string;
+    commune?: string | null;
+    search_query?: string | null;
+    source?: string | null;
+  }> = [];
+  schedulingLeadsTotal = 0;
+  schedulingLeadsSearch = '';
   incompleteEmailDialogOpen = false;
   incompleteEmailTarget: {
     provider_id: number;
@@ -231,6 +247,7 @@ export class AdminPagosComponent implements OnInit {
           this.loadVerificationRequests(this.verificationFilter);
           this.loadFounderCodes();
           this.loadAnalytics();
+          this.loadSchedulingLeads();
         } else {
           this.error = 'Respuesta inválida';
         }
@@ -424,6 +441,38 @@ export class AdminPagosComponent implements OnInit {
         } else {
           this.analyticsError = err?.error?.error || 'No fue posible cargar métricas de búsqueda.';
         }
+      }
+    });
+  }
+
+  loadSchedulingLeads() {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.schedulingLeadsLoading = true;
+    this.schedulingLeadsError = null;
+    this.adminApi.listSchedulingLeads(this.adminSecret, token, {
+      from: this.startISO,
+      to: this.endISO,
+      search: this.schedulingLeadsSearch?.trim() || null,
+      limit: 50,
+      offset: 0
+    }).subscribe({
+      next: (res: any) => {
+        this.schedulingLeadsLoading = false;
+        if (res?.success) {
+          this.schedulingLeads = Array.isArray(res.data) ? res.data : [];
+          this.schedulingLeadsTotal = Number(res?.pagination?.total || this.schedulingLeads.length || 0);
+        } else {
+          this.schedulingLeads = [];
+          this.schedulingLeadsTotal = 0;
+          this.schedulingLeadsError = res?.error || 'No fue posible cargar los leads de agendamiento.';
+        }
+      },
+      error: (err: any) => {
+        this.schedulingLeadsLoading = false;
+        this.schedulingLeads = [];
+        this.schedulingLeadsTotal = 0;
+        this.schedulingLeadsError = err?.error?.error || 'No fue posible cargar los leads de agendamiento.';
       }
     });
   }

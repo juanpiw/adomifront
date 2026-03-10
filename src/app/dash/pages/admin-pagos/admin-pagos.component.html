@@ -267,6 +267,69 @@
     </div>
   </section>
 
+  <section *ngIf="adminSecret" class="analytics-panel">
+    <div class="analytics-panel__header">
+      <h3>Leads de agendamiento (Landing externa)</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input
+          type="text"
+          [(ngModel)]="schedulingLeadsSearch"
+          placeholder="Buscar por nombre, teléfono, comuna o servicio"
+          style="min-width:280px;"
+        />
+        <button type="button" class="btn-secondary" (click)="loadSchedulingLeads()" [disabled]="schedulingLeadsLoading">
+          Refrescar
+        </button>
+      </div>
+    </div>
+    <p class="analytics-panel__subtitle">Leads capturados desde `landing-busqueda.html` para seguimiento comercial sin consultar BD manualmente.</p>
+    <div *ngIf="schedulingLeadsError" class="error-message">{{ schedulingLeadsError }}</div>
+    <div *ngIf="schedulingLeadsLoading" class="analytics-panel__loading">Cargando leads de agendamiento...</div>
+
+    <div class="analytics-panel__kpis" *ngIf="!schedulingLeadsLoading">
+      <div class="analytics-panel__kpi">
+        <span>Total leads</span>
+        <strong>{{ schedulingLeadsTotal }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Leads cargados</span>
+        <strong>{{ schedulingLeads.length }}</strong>
+      </div>
+    </div>
+
+    <div class="analytics-panel__card" *ngIf="!schedulingLeadsLoading">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Experto</th>
+            <th>Título</th>
+            <th>WhatsApp</th>
+            <th>Horario</th>
+            <th>Comuna</th>
+            <th>Búsqueda</th>
+            <th>Mensaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of schedulingLeads">
+            <td>{{ row.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ row.expert_name }}</td>
+            <td>{{ row.expert_title || '—' }}</td>
+            <td>{{ row.client_phone }}</td>
+            <td>{{ row.time_slot || 'No especificado' }}</td>
+            <td>{{ row.commune || '—' }}</td>
+            <td>{{ row.search_query || '—' }}</td>
+            <td>{{ row.quote_message || '—' }}</td>
+          </tr>
+          <tr *ngIf="schedulingLeads.length === 0">
+            <td colspan="8">No hay leads para los filtros actuales.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <div
     *ngIf="incompleteEmailDialogOpen && incompleteEmailTarget as target"
     class="incomplete-email-modal"
