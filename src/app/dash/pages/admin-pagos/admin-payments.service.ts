@@ -294,6 +294,18 @@ export class AdminPaymentsService {
     );
   }
 
+  sendIncompleteProfileEmailsBulk(
+    secret: string,
+    token: string | null,
+    payload: { providerIds: number[]; subject?: string | null; message?: string | null; reasonCodes?: string[] }
+  ) {
+    return this.http.post<any>(
+      `${this.baseUrl}/admin/analytics/providers/incomplete-profiles/send-emails`,
+      payload || {},
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   notifyIncompleteProfiles(
     secret: string,
     token: string | null,
@@ -392,6 +404,25 @@ export class AdminPaymentsService {
     if (typeof params.offset === 'number') searchParams.set('offset', String(params.offset));
     const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
     return this.http.get<any>(`${this.baseUrl}/admin/payments/scheduling-leads${qs}`, { headers: this.headers(secret, token) });
+  }
+
+  listPublicQuoteRequests(
+    secret: string,
+    token: string | null,
+    params: { from?: string | null; to?: string | null; search?: string | null; status?: string | null; providerId?: number | null; limit?: number; offset?: number } = {}
+  ) {
+    const searchParams = new URLSearchParams();
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.search) searchParams.set('search', params.search);
+    if (params.status) searchParams.set('status', params.status);
+    if (typeof params.providerId === 'number' && Number.isFinite(params.providerId) && params.providerId > 0) {
+      searchParams.set('providerId', String(params.providerId));
+    }
+    if (typeof params.limit === 'number') searchParams.set('limit', String(params.limit));
+    if (typeof params.offset === 'number') searchParams.set('offset', String(params.offset));
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return this.http.get<any>(`${this.baseUrl}/admin/quotes/public-requests${qs}`, { headers: this.headers(secret, token) });
   }
 }
 

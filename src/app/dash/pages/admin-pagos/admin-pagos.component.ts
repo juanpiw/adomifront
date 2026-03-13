@@ -108,6 +108,8 @@ export class AdminPagosComponent implements OnInit {
     provider_id: number;
     provider_name?: string | null;
     provider_email?: string | null;
+    main_commune?: string | null;
+    main_region?: string | null;
     user_role?: string | null;
     verification_status?: string;
     active_services?: number;
@@ -139,6 +141,25 @@ export class AdminPagosComponent implements OnInit {
   }> = [];
   schedulingLeadsTotal = 0;
   schedulingLeadsSearch = '';
+  publicQuotesLoading = false;
+  publicQuotesError: string | null = null;
+  publicQuotes: Array<{
+    quote_id: number;
+    provider_id: number;
+    provider_name?: string | null;
+    status: string;
+    service_summary?: string | null;
+    client_message?: string | null;
+    created_at: string;
+    guest_name?: string | null;
+    guest_phone?: string | null;
+    guest_email?: string | null;
+    preferred_date?: string | null;
+    preferred_time_range?: string | null;
+    session_id?: string | null;
+  }> = [];
+  publicQuotesTotal = 0;
+  publicQuotesSearch = '';
   incompleteEmailDialogOpen = false;
   incompleteEmailTarget: {
     provider_id: number;
@@ -162,6 +183,56 @@ export class AdminPagosComponent implements OnInit {
   incompleteNotifSuccess: string | null = null;
   incompleteNotifError: string | null = null;
   incompleteProfilesSearch = '';
+  emailEngineDefaultTemplate = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { margin: 0; padding: 20px; background-color: #f8fafc; font-family: Arial, sans-serif; color: #1e293b; }
+    .main-card { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 550px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .hero { background: linear-gradient(135deg, #4F46E5 0%, #9333EA 100%); padding: 40px; text-align: center; color: white; }
+    .content { padding: 40px; line-height: 1.7; }
+    .button { background-color: #4F46E5; color: white !important; padding: 18px 32px; text-decoration: none; border-radius: 12px; font-weight: bold; display: inline-block; margin: 30px 0; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+    .footer { padding: 30px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div class="main-card">
+    <div class="hero">
+      <img src="https://adomiapp.cl/logo_adomi.svg" width="120" style="filter: brightness(0) invert(1); margin-bottom: 20px;">
+      <h1 style="margin:0; font-size:26px; font-weight: 800;">Alta demanda en tu zona</h1>
+    </div>
+    <div class="content">
+      <p style="font-size: 18px;">Hola <strong>{{NOMBRE}}</strong>,</p>
+      <p>Estamos detectando un aumento importante de solicitudes de expertos en <strong>{{COMUNA}}</strong>. Queremos que seas parte de este crecimiento cubriendo los servicios de forma prioritaria.</p>
+      <div style="text-align:center;"><a href="https://www.adomiapp.com/auth/register" class="button">Activar mi cuenta ahora</a></div>
+      <p>Saludos,<br><strong>Equipo Soporte Adomiapp</strong></p>
+    </div>
+    <div class="footer">Adomiapp Chile</div>
+  </div>
+</body>
+</html>`;
+  emailEngineSubject = 'Alta demanda en {{COMUNA}}';
+  emailEngineTemplate = '';
+  emailEngineData = '';
+  emailEngineTestName = 'Edgardo Jose';
+  emailEngineTestCommune = 'Santiago';
+  emailEngineRenderedSubject = '...';
+  emailEnginePreviewHtml = '';
+  emailEngineLogs: Array<{
+    name: string;
+    commune: string;
+    email: string;
+    status: 'En cola' | 'Entregado' | 'Error' | 'Omitido';
+    active?: boolean;
+  }> = [];
+  emailEngineSent = 0;
+  emailEngineDelivered = 0;
+  emailEngineFailed = 0;
+  emailEngineSending = false;
+  emailEngineProgressPercent = 0;
+  emailEngineStatusLabel = 'Procesando envios...';
+  emailEngineError: string | null = null;
+  emailEngineSuccess: string | null = null;
   private incompleteReasonLabelMap: Record<string, string> = {
     NO_PROVIDER_ROLE: 'La cuenta no tiene rol de proveedor',
     USER_INACTIVE: 'La cuenta está inactiva',
@@ -196,6 +267,7 @@ export class AdminPagosComponent implements OnInit {
       this.loadFounderCodes();
       this.loadSupportTickets();
     }
+    this.initEmailEngineUi();
   }
 
   setSecretAndLoad() {
@@ -248,6 +320,7 @@ export class AdminPagosComponent implements OnInit {
           this.loadFounderCodes();
           this.loadAnalytics();
           this.loadSchedulingLeads();
+          this.loadPublicQuoteRequests();
         } else {
           this.error = 'Respuesta inválida';
         }
@@ -314,6 +387,7 @@ export class AdminPagosComponent implements OnInit {
             this.selectedIncompleteProviderIds = this.selectedIncompleteProviderIds.filter((id) => validIds.has(id));
             this.syncIncompleteBulkSelection();
             this.autofillIncompleteNotificationMessage();
+            this.syncEmailEngineDataFromSelection();
           },
           error: (err: any) => {
             console.error('[ADMIN_ANALYTICS] ERROR /admin/analytics/providers/incomplete-profiles', {
@@ -322,6 +396,7 @@ export class AdminPagosComponent implements OnInit {
               url: err?.url
             });
             this.analyticsIncompleteProfiles = [];
+            this.syncEmailEngineDataFromSelection();
           }
         });
 
@@ -477,6 +552,38 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
+  loadPublicQuoteRequests() {
+    if (!this.adminSecret) return;
+    const token = this.session.getAccessToken();
+    this.publicQuotesLoading = true;
+    this.publicQuotesError = null;
+    this.adminApi.listPublicQuoteRequests(this.adminSecret, token, {
+      from: this.startISO,
+      to: this.endISO,
+      search: this.publicQuotesSearch?.trim() || null,
+      limit: 50,
+      offset: 0
+    }).subscribe({
+      next: (res: any) => {
+        this.publicQuotesLoading = false;
+        if (res?.success) {
+          this.publicQuotes = Array.isArray(res.data) ? res.data : [];
+          this.publicQuotesTotal = Number(res?.pagination?.total || this.publicQuotes.length || 0);
+        } else {
+          this.publicQuotes = [];
+          this.publicQuotesTotal = 0;
+          this.publicQuotesError = res?.error || 'No fue posible cargar cotizaciones públicas.';
+        }
+      },
+      error: (err: any) => {
+        this.publicQuotesLoading = false;
+        this.publicQuotes = [];
+        this.publicQuotesTotal = 0;
+        this.publicQuotesError = err?.error?.error || 'No fue posible cargar cotizaciones públicas.';
+      }
+    });
+  }
+
   getIncompleteReasonLabel(code: string): string {
     return this.incompleteReasonLabelMap[String(code || '').trim()] || code || 'Sin detalle';
   }
@@ -523,6 +630,7 @@ export class AdminPagosComponent implements OnInit {
     }
     this.syncIncompleteBulkSelection();
     this.autofillIncompleteNotificationMessage();
+    this.syncEmailEngineDataFromSelection();
   }
 
   toggleAllIncompleteProviders(checked: boolean) {
@@ -531,6 +639,7 @@ export class AdminPagosComponent implements OnInit {
       ? this.analyticsIncompleteProfiles.map((row) => Number(row.provider_id)).filter((id) => Number.isFinite(id) && id > 0)
       : [];
     this.autofillIncompleteNotificationMessage();
+    this.syncEmailEngineDataFromSelection();
   }
 
   private syncIncompleteBulkSelection() {
@@ -1422,6 +1531,139 @@ export class AdminPagosComponent implements OnInit {
       next: () => this.load(),
       error: () => alert('No se pudo registrar la decisión')
     });
+  }
+
+  initEmailEngineUi() {
+    this.emailEngineTemplate = this.emailEngineDefaultTemplate;
+    this.emailEngineData = '';
+    this.renderEmailEnginePreview();
+  }
+
+  renderEmailEnginePreview(overrideName?: string, overrideCommune?: string) {
+    const name = (overrideName || this.emailEngineTestName || 'Profesional').trim();
+    const commune = (overrideCommune || this.emailEngineTestCommune || 'Santiago').trim();
+    this.emailEngineRenderedSubject = (this.emailEngineSubject || '')
+      .replace(/{{NOMBRE}}/g, name)
+      .replace(/{{COMUNA}}/g, commune);
+    this.emailEnginePreviewHtml = (this.emailEngineTemplate || '')
+      .replace(/{{NOMBRE}}/g, name)
+      .replace(/{{COMUNA}}/g, commune);
+  }
+
+  resetEmailEngineTemplate() {
+    this.emailEngineTemplate = this.emailEngineDefaultTemplate;
+    this.emailEngineSubject = 'Alta demanda en {{COMUNA}}';
+    this.renderEmailEnginePreview();
+  }
+
+  get emailEngineRecipientCount(): number {
+    return this.getSelectedIncompleteEmailRows().length;
+  }
+
+  clearEmailEngineLogs() {
+    this.emailEngineLogs = [];
+    this.emailEngineSent = 0;
+    this.emailEngineDelivered = 0;
+    this.emailEngineFailed = 0;
+    this.emailEngineProgressPercent = 0;
+    this.emailEngineStatusLabel = 'Procesando envios...';
+    this.emailEngineError = null;
+    this.emailEngineSuccess = null;
+  }
+
+  focusEmailEngineLog(idx: number) {
+    const row = this.emailEngineLogs[idx];
+    if (!row) return;
+    this.emailEngineLogs = this.emailEngineLogs.map((item, index) => ({ ...item, active: index === idx }));
+    this.renderEmailEnginePreview(row.name, row.commune);
+  }
+
+  async simulateEmailEngineSend() {
+    if (this.emailEngineSending || !this.adminSecret) return;
+    this.emailEngineError = null;
+    this.emailEngineSuccess = null;
+    const rows = this.getSelectedIncompleteEmailRows();
+    if (!rows.length) {
+      this.emailEngineError = 'Selecciona proveedores con email en la tabla de perfiles incompletos.';
+      return;
+    }
+
+    this.emailEngineSending = true;
+    this.clearEmailEngineLogs();
+    this.emailEngineSent = rows.length;
+    this.emailEngineStatusLabel = `Enviando ${rows.length} correos reales...`;
+    this.emailEngineProgressPercent = 15;
+
+    const token = this.session.getAccessToken();
+    this.adminApi.sendIncompleteProfileEmailsBulk(this.adminSecret, token, {
+      providerIds: rows.map((row) => row.provider_id),
+      subject: this.emailEngineSubject?.trim() || null,
+      message: this.emailEngineTemplate?.trim() || null
+    }).subscribe({
+      next: (res: any) => {
+        this.emailEngineSending = false;
+        this.emailEngineProgressPercent = 100;
+        const sentCount = Number(res?.sent_count || 0);
+        const skippedCount = Number(res?.skipped_count || 0);
+        const failedCount = Number(res?.failed_count || 0);
+        this.emailEngineDelivered = sentCount;
+        this.emailEngineFailed = skippedCount + failedCount;
+        this.emailEngineStatusLabel = 'Campana finalizada';
+        this.emailEngineSuccess = `Enviados: ${sentCount}. Omitidos: ${skippedCount}. Fallidos: ${failedCount}.`;
+
+        const sentLogs = Array.isArray(res?.sent) ? res.sent.map((item: any) => ({
+          name: String(item?.provider_name || '').trim() || `Proveedor #${item?.provider_id}`,
+          commune: '',
+          email: String(item?.provider_email || '').trim(),
+          status: 'Entregado' as const,
+          active: false
+        })) : [];
+
+        const skippedLogs = Array.isArray(res?.skipped) ? res.skipped.map((item: any) => ({
+          name: `Proveedor #${item?.provider_id || '-'}`,
+          commune: '',
+          email: '',
+          status: 'Omitido' as const,
+          active: false
+        })) : [];
+
+        const failedLogs = Array.isArray(res?.failed) ? res.failed.map((item: any) => ({
+          name: `Proveedor #${item?.provider_id || '-'}`,
+          commune: '',
+          email: '',
+          status: 'Error' as const,
+          active: false
+        })) : [];
+
+        this.emailEngineLogs = [...sentLogs, ...skippedLogs, ...failedLogs];
+      },
+      error: (err: any) => {
+        this.emailEngineSending = false;
+        this.emailEngineProgressPercent = 0;
+        this.emailEngineStatusLabel = 'Error en campana';
+        this.emailEngineError = err?.error?.error || 'No fue posible enviar la campana de correos.';
+      }
+    });
+  }
+
+  syncEmailEngineDataFromSelection() {
+    const rows = this.getSelectedIncompleteEmailRows();
+    this.emailEngineData = rows
+      .map((row) => `${row.name}, ${row.commune || 'Sin comuna'}, ${row.email}`)
+      .join('\n');
+  }
+
+  private getSelectedIncompleteEmailRows(): Array<{ provider_id: number; name: string; commune: string; email: string }> {
+    const selected = new Set(this.selectedIncompleteProviderIds.map((id) => Number(id)));
+    return this.analyticsIncompleteProfiles
+      .filter((row) => selected.has(Number(row.provider_id)))
+      .map((row) => ({
+        provider_id: Number(row.provider_id),
+        name: String(row.provider_name || '').trim() || `Proveedor #${row.provider_id}`,
+        commune: String(row.main_commune || '').trim(),
+        email: String(row.provider_email || '').trim().toLowerCase()
+      }))
+      .filter((row) => row.provider_id > 0 && row.email.includes('@'));
   }
 }
 

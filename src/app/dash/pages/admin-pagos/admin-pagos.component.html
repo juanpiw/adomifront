@@ -330,6 +330,71 @@
     </div>
   </section>
 
+  <section *ngIf="adminSecret" class="analytics-panel">
+    <div class="analytics-panel__header">
+      <h3>Cotizaciones públicas (HTML externo)</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input
+          type="text"
+          [(ngModel)]="publicQuotesSearch"
+          placeholder="Buscar por proveedor, nombre, teléfono o servicio"
+          style="min-width:280px;"
+        />
+        <button type="button" class="btn-secondary" (click)="loadPublicQuoteRequests()" [disabled]="publicQuotesLoading">
+          Refrescar
+        </button>
+      </div>
+    </div>
+    <p class="analytics-panel__subtitle">Solicitudes creadas por usuarios externos y guardadas en el sistema formal de `quotes`.</p>
+    <div *ngIf="publicQuotesError" class="error-message">{{ publicQuotesError }}</div>
+    <div *ngIf="publicQuotesLoading" class="analytics-panel__loading">Cargando cotizaciones públicas...</div>
+
+    <div class="analytics-panel__kpis" *ngIf="!publicQuotesLoading">
+      <div class="analytics-panel__kpi">
+        <span>Total</span>
+        <strong>{{ publicQuotesTotal }}</strong>
+      </div>
+      <div class="analytics-panel__kpi">
+        <span>Cargadas</span>
+        <strong>{{ publicQuotes.length }}</strong>
+      </div>
+    </div>
+
+    <div class="analytics-panel__card" *ngIf="!publicQuotesLoading">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Quote ID</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Proveedor</th>
+            <th>Nombre externo</th>
+            <th>WhatsApp</th>
+            <th>Email</th>
+            <th>Servicio</th>
+            <th>Mensaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of publicQuotes">
+            <td>#{{ row.quote_id }}</td>
+            <td>{{ row.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ row.status }}</td>
+            <td>{{ row.provider_name || 'Proveedor' }} <span class="muted">#{{ row.provider_id }}</span></td>
+            <td>{{ row.guest_name || '—' }}</td>
+            <td>{{ row.guest_phone || '—' }}</td>
+            <td>{{ row.guest_email || '—' }}</td>
+            <td>{{ row.service_summary || '—' }}</td>
+            <td>{{ row.client_message || '—' }}</td>
+          </tr>
+          <tr *ngIf="publicQuotes.length === 0">
+            <td colspan="9">No hay cotizaciones públicas para los filtros actuales.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <div
     *ngIf="incompleteEmailDialogOpen && incompleteEmailTarget as target"
     class="incomplete-email-modal"
@@ -1167,6 +1232,139 @@
       <button (click)="payRow=null">Cancelar</button>
     </div>
   </div>
+
+  <section class="email-engine">
+    <div class="email-engine__header">
+      <div>
+        <h3>Email Sender Pro (UI)</h3>
+        <p>Campana real de correos para perfiles incompletos usando el backend admin.</p>
+      </div>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="simulateEmailEngineSend()"
+        [disabled]="emailEngineSending"
+      >
+        {{ emailEngineSending ? 'Enviando...' : 'Lanzar campana' }}
+      </button>
+    </div>
+
+    <div class="email-engine__main">
+      <aside class="email-engine__sidebar">
+        <div class="email-engine__stats">
+          <div class="email-engine__stat">
+            <span>Enviados</span>
+            <strong>{{ emailEngineSent }}</strong>
+          </div>
+          <div class="email-engine__stat">
+            <span>Entregados</span>
+            <strong>{{ emailEngineDelivered }}</strong>
+          </div>
+          <div class="email-engine__stat">
+            <span>Fallidos</span>
+            <strong>{{ emailEngineFailed }}</strong>
+          </div>
+        </div>
+
+        <div class="email-engine__field">
+          <label>1. Asunto del mensaje</label>
+          <input type="text" [(ngModel)]="emailEngineSubject" (ngModelChange)="renderEmailEnginePreview()" />
+        </div>
+
+        <div class="email-engine__field">
+          <div class="email-engine__field-row">
+            <label>2. Cuerpo del correo (HTML)</label>
+            <button type="button" (click)="resetEmailEngineTemplate()">Reiniciar</button>
+          </div>
+          <textarea rows="8" [(ngModel)]="emailEngineTemplate" (ngModelChange)="renderEmailEnginePreview()"></textarea>
+        </div>
+
+        <div class="email-engine__field">
+          <div class="email-engine__field-row">
+            <label>3. Destinatarios (seleccion de perfiles incompletos)</label>
+            <span>{{ emailEngineRecipientCount }} con email</span>
+          </div>
+          <textarea rows="5" [(ngModel)]="emailEngineData" readonly></textarea>
+          <button type="button" class="btn-secondary" (click)="syncEmailEngineDataFromSelection()">
+            Cargar desde seleccion actual
+          </button>
+        </div>
+
+        <div class="email-engine__simulator">
+          <h4>Simulador de vista previa</h4>
+          <div class="email-engine__simulator-grid">
+            <div>
+              <label>Nombre test</label>
+              <input type="text" [(ngModel)]="emailEngineTestName" (ngModelChange)="renderEmailEnginePreview()" />
+            </div>
+            <div>
+              <label>Comuna test</label>
+              <input type="text" [(ngModel)]="emailEngineTestCommune" (ngModelChange)="renderEmailEnginePreview()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="email-engine__logs">
+          <div class="email-engine__field-row">
+            <h4>Historial de envio</h4>
+            <button type="button" (click)="clearEmailEngineLogs()" [disabled]="emailEngineSending">Limpiar</button>
+          </div>
+          <div class="email-engine__log-list">
+            <div class="email-engine__empty" *ngIf="emailEngineLogs.length === 0">Esperando inicio...</div>
+            <div
+              class="email-engine__log-row"
+              *ngFor="let log of emailEngineLogs; let i = index"
+              [class.email-engine__log-row--active]="log.active"
+              (click)="focusEmailEngineLog(i)"
+            >
+              <div>
+                <strong>{{ log.name }}</strong>
+                <span>{{ log.commune }}</span>
+                <small>{{ log.email }}</small>
+              </div>
+              <span [class]="log.status === 'Entregado' ? 'email-engine__chip email-engine__chip--ok' : (log.status === 'Error' ? 'email-engine__chip email-engine__chip--bad' : (log.status === 'Omitido' ? 'email-engine__chip email-engine__chip--skip' : 'email-engine__chip'))">
+                {{ log.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="email-engine__preview-panel">
+        <div class="email-engine__preview-header">
+          <div>
+            <h4>Render de salida</h4>
+            <p>Vista previa con variables inyectadas para asunto y cuerpo.</p>
+          </div>
+        </div>
+
+        <div class="email-engine__frame">
+          <div class="email-engine__frame-bar">
+            <div class="email-engine__dots">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="email-engine__subject">
+              <b>Subject</b>
+              <span>{{ emailEngineRenderedSubject || '...' }}</span>
+            </div>
+          </div>
+          <iframe [srcdoc]="emailEnginePreviewHtml" title="Email preview"></iframe>
+        </div>
+
+        <div class="email-engine__status" *ngIf="emailEngineSending || emailEngineProgressPercent > 0">
+          <div class="email-engine__status-row">
+            <strong>{{ emailEngineStatusLabel }}</strong>
+            <span>{{ emailEngineProgressPercent }}%</span>
+          </div>
+          <div class="email-engine__bar">
+            <div [style.width.%]="emailEngineProgressPercent"></div>
+          </div>
+        </div>
+        <p *ngIf="emailEngineSuccess" class="founder-card__status founder-card__status--success">{{ emailEngineSuccess }}</p>
+        <p *ngIf="emailEngineError" class="founder-card__status founder-card__status--error">{{ emailEngineError }}</p>
+      </div>
+    </div>
+  </section>
 </div>
 
 
