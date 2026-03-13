@@ -1348,7 +1348,7 @@
               <span>{{ emailEngineRenderedSubject || '...' }}</span>
             </div>
           </div>
-          <iframe [srcdoc]="emailEnginePreviewHtml" title="Email preview"></iframe>
+          <iframe [attr.srcdoc]="emailEnginePreviewHtml" title="Email preview"></iframe>
         </div>
 
         <div class="email-engine__status" *ngIf="emailEngineSending || emailEngineProgressPercent > 0">
