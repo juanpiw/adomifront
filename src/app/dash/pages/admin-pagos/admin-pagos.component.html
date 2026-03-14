@@ -1285,6 +1285,7 @@
             <span>{{ emailEngineRecipientCount }} con email</span>
           </div>
           <textarea rows="5" [(ngModel)]="emailEngineData"></textarea>
+          <p class="muted">Formato aceptado por linea: `email` o `nombre,email` o `nombre,comuna,email`.</p>
           <button type="button" class="btn-secondary" (click)="syncEmailEngineDataFromSelection()">
             Cargar desde seleccion actual
           </button>

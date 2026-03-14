@@ -1721,18 +1721,56 @@ ${html}
   }
 
   private getEmailEngineRowsFromCsv(): Array<{ provider_id: number; name: string; commune: string; region: string; email: string }> {
-    const csvRows = String(this.emailEngineData || '')
+    const lines = String(this.emailEngineData || '')
       .split('\n')
       .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => line.split(',').map((value) => value.trim()))
-      .filter((parts) => parts.length >= 3 && parts[2].includes('@'))
-      .map((parts) => ({
-        name: parts[0],
-        commune: parts[1],
-        region: '',
-        email: parts[2].toLowerCase()
-      }));
+      .filter(Boolean);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const csvRows = lines
+      .map((line) => {
+        const parts = line
+          .split(/[,\t;]+/)
+          .map((value) => value.trim())
+          .filter(Boolean);
+
+        // Caso 1: solo email por linea.
+        if (parts.length === 1 && emailRegex.test(parts[0])) {
+          const email = parts[0].toLowerCase();
+          const fallbackName = email.split('@')[0].replace(/[._-]+/g, ' ').trim() || 'Profesional';
+          return { name: fallbackName, commune: '', region: '', email };
+        }
+
+        // Caso 2: nombre + email.
+        if (parts.length >= 2 && emailRegex.test(parts[1])) {
+          return { name: parts[0], commune: '', region: '', email: parts[1].toLowerCase() };
+        }
+
+        // Caso 3: nombre + comuna + email (+ region opcional).
+        if (parts.length >= 3) {
+          const maybeEmail = parts[2];
+          if (emailRegex.test(maybeEmail)) {
+            return {
+              name: parts[0],
+              commune: parts[1],
+              region: parts[3] || '',
+              email: maybeEmail.toLowerCase()
+            };
+          }
+          const last = parts[parts.length - 1];
+          if (emailRegex.test(last)) {
+            return {
+              name: parts[0],
+              commune: parts[1] || '',
+              region: parts[2] || '',
+              email: last.toLowerCase()
+            };
+          }
+        }
+
+        return null;
+      })
+      .filter((row): row is { name: string; commune: string; region: string; email: string } => !!row);
 
     if (!csvRows.length) return this.getSelectedIncompleteEmailRows();
 
