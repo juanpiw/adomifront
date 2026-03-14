@@ -211,6 +211,17 @@ export class AdminPagosComponent implements OnInit {
   </div>
 </body>
 </html>`;
+  emailEngineFallbackCss = `
+    body { margin: 0; padding: 20px; background: #f8fafc; font-family: Arial, sans-serif; color: #1e293b; }
+    .wrapper { width: 100%; display: block; }
+    .main { margin: 0 auto; width: 100%; max-width: 620px; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .header { padding: 20px; text-align: center; background: #0f172a; }
+    .hero-banner { padding: 28px 24px; text-align: center; color: #fff; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+    .hero-banner h1 { margin: 8px 0 0; font-size: 24px; line-height: 1.25; }
+    .content { padding: 24px; line-height: 1.7; font-size: 15px; color: #334155; }
+    .button { display: inline-block; padding: 12px 18px; border-radius: 10px; background: #4f46e5; color: #fff !important; text-decoration: none; font-weight: 700; }
+    td p { margin: 0 0 12px; }
+  `;
   emailEngineSubject = 'Alta demanda en {{COMUNA}}';
   emailEngineTemplate = '';
   emailEngineData = '';
@@ -1545,9 +1556,10 @@ export class AdminPagosComponent implements OnInit {
     this.emailEngineRenderedSubject = (this.emailEngineSubject || '')
       .replace(/{{NOMBRE}}/g, name)
       .replace(/{{COMUNA}}/g, commune);
-    this.emailEnginePreviewHtml = (this.emailEngineTemplate || '')
+    const rawHtml = (this.emailEngineTemplate || '')
       .replace(/{{NOMBRE}}/g, name)
       .replace(/{{COMUNA}}/g, commune);
+    this.emailEnginePreviewHtml = this.normalizePreviewHtml(rawHtml);
   }
 
   resetEmailEngineTemplate() {
@@ -1557,7 +1569,8 @@ export class AdminPagosComponent implements OnInit {
   }
 
   get emailEngineRecipientCount(): number {
-    return this.getSelectedIncompleteEmailRows().length;
+    const csvRows = this.getEmailEngineRowsFromCsv();
+    return csvRows.length;
   }
 
   clearEmailEngineLogs() {
@@ -1582,9 +1595,9 @@ export class AdminPagosComponent implements OnInit {
     if (this.emailEngineSending || !this.adminSecret) return;
     this.emailEngineError = null;
     this.emailEngineSuccess = null;
-    const rows = this.getSelectedIncompleteEmailRows();
+    const rows = this.getEmailEngineRowsFromCsv();
     if (!rows.length) {
-      this.emailEngineError = 'Selecciona proveedores con email en la tabla de perfiles incompletos.';
+      this.emailEngineError = 'Agrega destinatarios (CSV) o carga los seleccionados desde perfiles incompletos.';
       return;
     }
 
@@ -1595,8 +1608,15 @@ export class AdminPagosComponent implements OnInit {
     this.emailEngineProgressPercent = 15;
 
     const token = this.session.getAccessToken();
+    const providerIds = rows.map((row) => row.provider_id).filter((id) => Number.isFinite(id) && id > 0);
+    if (!providerIds.length) {
+      this.emailEngineSending = false;
+      this.emailEngineError = 'Los destinatarios CSV no coinciden con proveedores incompletos disponibles.';
+      return;
+    }
+
     this.adminApi.sendIncompleteProfileEmailsBulk(this.adminSecret, token, {
-      providerIds: rows.map((row) => row.provider_id),
+      providerIds,
       subject: this.emailEngineSubject?.trim() || null,
       message: this.emailEngineTemplate?.trim() || null
     }).subscribe({
@@ -1651,6 +1671,58 @@ export class AdminPagosComponent implements OnInit {
     this.emailEngineData = rows
       .map((row) => `${row.name}, ${row.commune || 'Sin comuna'}, ${row.email}`)
       .join('\n');
+  }
+
+  private normalizePreviewHtml(html: string): string {
+    const hasHtmlTag = /<html[\s>]/i.test(html);
+    if (hasHtmlTag) return html;
+    const hasStyle = /<style[\s>]/i.test(html);
+    const headStyle = hasStyle ? '' : `<style>${this.emailEngineFallbackCss}</style>`;
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  ${headStyle}
+</head>
+<body>
+${html}
+</body>
+</html>`;
+  }
+
+  private getEmailEngineRowsFromCsv(): Array<{ provider_id: number; name: string; commune: string; email: string }> {
+    const csvRows = String(this.emailEngineData || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => line.split(',').map((value) => value.trim()))
+      .filter((parts) => parts.length >= 3 && parts[2].includes('@'))
+      .map((parts) => ({
+        name: parts[0],
+        commune: parts[1],
+        email: parts[2].toLowerCase()
+      }));
+
+    if (!csvRows.length) return this.getSelectedIncompleteEmailRows();
+
+    const byEmail = new Map(
+      this.analyticsIncompleteProfiles
+        .filter((row) => row?.provider_email)
+        .map((row) => [String(row.provider_email || '').trim().toLowerCase(), row] as const)
+    );
+
+    return csvRows
+      .map((row) => {
+        const profile = byEmail.get(row.email);
+        return {
+          provider_id: Number(profile?.provider_id || 0),
+          name: row.name || String(profile?.provider_name || '').trim() || 'Proveedor',
+          commune: row.commune || String(profile?.main_commune || '').trim() || '',
+          email: row.email
+        };
+      })
+      .filter((row) => row.email.includes('@'));
   }
 
   private getSelectedIncompleteEmailRows(): Array<{ provider_id: number; name: string; commune: string; email: string }> {

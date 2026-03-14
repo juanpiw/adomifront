@@ -1284,7 +1284,7 @@
             <label>3. Destinatarios (seleccion de perfiles incompletos)</label>
             <span>{{ emailEngineRecipientCount }} con email</span>
           </div>
-          <textarea rows="5" [(ngModel)]="emailEngineData" readonly></textarea>
+          <textarea rows="5" [(ngModel)]="emailEngineData"></textarea>
           <button type="button" class="btn-secondary" (click)="syncEmailEngineDataFromSelection()">
             Cargar desde seleccion actual
           </button>
