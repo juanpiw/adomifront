@@ -306,6 +306,22 @@ export class AdminPaymentsService {
     );
   }
 
+  sendCustomEmailCampaign(
+    secret: string,
+    token: string | null,
+    payload: {
+      recipients: Array<{ name?: string; commune?: string; region?: string; email: string }>;
+      subject?: string | null;
+      html: string;
+    }
+  ) {
+    return this.http.post<any>(
+      `${this.baseUrl}/admin/analytics/providers/incomplete-profiles/send-emails/custom-list`,
+      payload || {},
+      { headers: this.headers(secret, token) }
+    );
+  }
+
   notifyIncompleteProfiles(
     secret: string,
     token: string | null,

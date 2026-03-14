@@ -1608,62 +1608,91 @@ export class AdminPagosComponent implements OnInit {
     this.emailEngineProgressPercent = 15;
 
     const token = this.session.getAccessToken();
-    const providerIds = rows.map((row) => row.provider_id).filter((id) => Number.isFinite(id) && id > 0);
-    if (!providerIds.length) {
-      this.emailEngineSending = false;
-      this.emailEngineError = 'Los destinatarios CSV no coinciden con proveedores incompletos disponibles.';
-      return;
-    }
+    const providerRows = rows.filter((row) => Number.isFinite(row.provider_id) && row.provider_id > 0);
+    const customRows = rows.filter((row) => !(Number.isFinite(row.provider_id) && row.provider_id > 0));
 
-    this.adminApi.sendIncompleteProfileEmailsBulk(this.adminSecret, token, {
-      providerIds,
-      subject: this.emailEngineSubject?.trim() || null,
-      message: this.emailEngineTemplate?.trim() || null
-    }).subscribe({
-      next: (res: any) => {
-        this.emailEngineSending = false;
-        this.emailEngineProgressPercent = 100;
-        const sentCount = Number(res?.sent_count || 0);
-        const skippedCount = Number(res?.skipped_count || 0);
-        const failedCount = Number(res?.failed_count || 0);
-        this.emailEngineDelivered = sentCount;
-        this.emailEngineFailed = skippedCount + failedCount;
-        this.emailEngineStatusLabel = 'Campana finalizada';
-        this.emailEngineSuccess = `Enviados: ${sentCount}. Omitidos: ${skippedCount}. Fallidos: ${failedCount}.`;
+    const aggregate = {
+      sent_count: 0,
+      skipped_count: 0,
+      failed_count: 0,
+      sent: [] as any[],
+      skipped: [] as any[],
+      failed: [] as any[]
+    };
 
-        const sentLogs = Array.isArray(res?.sent) ? res.sent.map((item: any) => ({
-          name: String(item?.provider_name || '').trim() || `Proveedor #${item?.provider_id}`,
-          commune: '',
-          email: String(item?.provider_email || '').trim(),
-          status: 'Entregado' as const,
-          active: false
-        })) : [];
-
-        const skippedLogs = Array.isArray(res?.skipped) ? res.skipped.map((item: any) => ({
-          name: `Proveedor #${item?.provider_id || '-'}`,
-          commune: '',
-          email: '',
-          status: 'Omitido' as const,
-          active: false
-        })) : [];
-
-        const failedLogs = Array.isArray(res?.failed) ? res.failed.map((item: any) => ({
-          name: `Proveedor #${item?.provider_id || '-'}`,
-          commune: '',
-          email: '',
-          status: 'Error' as const,
-          active: false
-        })) : [];
-
-        this.emailEngineLogs = [...sentLogs, ...skippedLogs, ...failedLogs];
-      },
-      error: (err: any) => {
-        this.emailEngineSending = false;
-        this.emailEngineProgressPercent = 0;
-        this.emailEngineStatusLabel = 'Error en campana';
-        this.emailEngineError = err?.error?.error || 'No fue posible enviar la campana de correos.';
+    try {
+      if (providerRows.length) {
+        const providerIds = Array.from(new Set(providerRows.map((row) => row.provider_id)));
+        const res = await this.adminApi.sendIncompleteProfileEmailsBulk(this.adminSecret, token, {
+          providerIds,
+          subject: this.emailEngineSubject?.trim() || null,
+          message: this.emailEngineTemplate?.trim() || null
+        }).toPromise();
+        aggregate.sent_count += Number(res?.sent_count || 0);
+        aggregate.skipped_count += Number(res?.skipped_count || 0);
+        aggregate.failed_count += Number(res?.failed_count || 0);
+        aggregate.sent.push(...(Array.isArray(res?.sent) ? res.sent : []));
+        aggregate.skipped.push(...(Array.isArray(res?.skipped) ? res.skipped : []));
+        aggregate.failed.push(...(Array.isArray(res?.failed) ? res.failed : []));
       }
-    });
+
+      if (customRows.length) {
+        const res = await this.adminApi.sendCustomEmailCampaign(this.adminSecret, token, {
+          recipients: customRows.map((row) => ({
+            name: row.name,
+            commune: row.commune,
+            region: row.region,
+            email: row.email
+          })),
+          subject: this.emailEngineSubject?.trim() || null,
+          html: this.emailEngineTemplate?.trim() || ''
+        }).toPromise();
+        aggregate.sent_count += Number(res?.sent_count || 0);
+        aggregate.skipped_count += Number(res?.skipped_count || 0);
+        aggregate.failed_count += Number(res?.failed_count || 0);
+        aggregate.sent.push(...(Array.isArray(res?.sent) ? res.sent : []));
+        aggregate.skipped.push(...(Array.isArray(res?.skipped) ? res.skipped : []));
+        aggregate.failed.push(...(Array.isArray(res?.failed) ? res.failed : []));
+      }
+
+      this.emailEngineSending = false;
+      this.emailEngineProgressPercent = 100;
+      this.emailEngineDelivered = aggregate.sent_count;
+      this.emailEngineFailed = aggregate.skipped_count + aggregate.failed_count;
+      this.emailEngineStatusLabel = 'Campana finalizada';
+      this.emailEngineSuccess = `Enviados: ${aggregate.sent_count}. Omitidos: ${aggregate.skipped_count}. Fallidos: ${aggregate.failed_count}.`;
+
+      const sentLogs = aggregate.sent.map((item: any) => ({
+        name: String(item?.provider_name || item?.name || '').trim() || `Destino`,
+        commune: '',
+        email: String(item?.provider_email || item?.email || '').trim(),
+        status: 'Entregado' as const,
+        active: false
+      }));
+
+      const skippedLogs = aggregate.skipped.map((item: any) => ({
+        name: `Destino`,
+        commune: '',
+        email: String(item?.provider_email || item?.email || '').trim(),
+        status: 'Omitido' as const,
+        active: false
+      }));
+
+      const failedLogs = aggregate.failed.map((item: any) => ({
+        name: `Destino`,
+        commune: '',
+        email: String(item?.provider_email || item?.email || '').trim(),
+        status: 'Error' as const,
+        active: false
+      }));
+
+      this.emailEngineLogs = [...sentLogs, ...skippedLogs, ...failedLogs];
+    } catch (err: any) {
+      this.emailEngineSending = false;
+      this.emailEngineProgressPercent = 0;
+      this.emailEngineStatusLabel = 'Error en campana';
+      this.emailEngineError = err?.error?.error || 'No fue posible enviar la campana de correos.';
+    }
   }
 
   syncEmailEngineDataFromSelection() {
@@ -1691,7 +1720,7 @@ ${html}
 </html>`;
   }
 
-  private getEmailEngineRowsFromCsv(): Array<{ provider_id: number; name: string; commune: string; email: string }> {
+  private getEmailEngineRowsFromCsv(): Array<{ provider_id: number; name: string; commune: string; region: string; email: string }> {
     const csvRows = String(this.emailEngineData || '')
       .split('\n')
       .map((line) => line.trim())
@@ -1701,6 +1730,7 @@ ${html}
       .map((parts) => ({
         name: parts[0],
         commune: parts[1],
+        region: '',
         email: parts[2].toLowerCase()
       }));
 
@@ -1719,13 +1749,14 @@ ${html}
           provider_id: Number(profile?.provider_id || 0),
           name: row.name || String(profile?.provider_name || '').trim() || 'Proveedor',
           commune: row.commune || String(profile?.main_commune || '').trim() || '',
+          region: String(profile?.main_region || '').trim() || '',
           email: row.email
         };
       })
       .filter((row) => row.email.includes('@'));
   }
 
-  private getSelectedIncompleteEmailRows(): Array<{ provider_id: number; name: string; commune: string; email: string }> {
+  private getSelectedIncompleteEmailRows(): Array<{ provider_id: number; name: string; commune: string; region: string; email: string }> {
     const selected = new Set(this.selectedIncompleteProviderIds.map((id) => Number(id)));
     return this.analyticsIncompleteProfiles
       .filter((row) => selected.has(Number(row.provider_id)))
@@ -1733,6 +1764,7 @@ ${html}
         provider_id: Number(row.provider_id),
         name: String(row.provider_name || '').trim() || `Proveedor #${row.provider_id}`,
         commune: String(row.main_commune || '').trim(),
+        region: String(row.main_region || '').trim(),
         email: String(row.provider_email || '').trim().toLowerCase()
       }))
       .filter((row) => row.provider_id > 0 && row.email.includes('@'));
