@@ -1281,10 +1281,15 @@
 
         <div class="email-engine__field">
           <div class="email-engine__field-row">
-            <label>3. Destinatarios (seleccion de perfiles incompletos)</label>
+            <label>3. Destinatarios (manual o desde seleccion)</label>
             <span>{{ emailEngineRecipientCount }} con email</span>
           </div>
-          <textarea rows="5" [(ngModel)]="emailEngineData"></textarea>
+          <textarea
+            rows="5"
+            [(ngModel)]="emailEngineData"
+            [attr.placeholder]="'Ejemplos por linea:\ncorreo@dominio.com\nNombre,correo@dominio.com\nNombre,Comuna,correo@dominio.com'"
+          ></textarea>
+          <p class="muted">Puedes pegar lista manual aunque no haya perfiles seleccionados.</p>
           <p class="muted">Formato aceptado por linea: `email` o `nombre,email` o `nombre,comuna,email`.</p>
           <button type="button" class="btn-secondary" (click)="syncEmailEngineDataFromSelection()">
             Cargar desde seleccion actual

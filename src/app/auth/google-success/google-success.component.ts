@@ -118,10 +118,10 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
 
   private processSuccessCallback() {
     try {
-      // Obtener parámetros de la URL
-      const tokenParam = this.route.snapshot.queryParams['token'];
-      const refreshParam = this.route.snapshot.queryParams['refresh'];
-      const userParam = this.route.snapshot.queryParams['user'];
+      const callbackParams = this.readCallbackParams();
+      const tokenParam = callbackParams.token;
+      const refreshParam = callbackParams.refresh;
+      const userParam = callbackParams.user;
 
       if (tokenParam && refreshParam && userParam) {
         const accessToken = decodeURIComponent(tokenParam);
@@ -185,6 +185,31 @@ export class GoogleSuccessComponent implements OnInit, OnDestroy {
       this.error = error.message || 'Error al procesar la autenticación';
       this.loading = false;
     }
+  }
+
+  private readCallbackParams(): { token: string | null; refresh: string | null; user: string | null } {
+    const queryParams = this.route.snapshot.queryParams || {};
+    const queryToken = queryParams['token'] || null;
+    const queryRefresh = queryParams['refresh'] || null;
+    const queryUser = queryParams['user'] || null;
+    if (queryToken && queryRefresh && queryUser) {
+      return { token: queryToken, refresh: queryRefresh, user: queryUser };
+    }
+
+    if (typeof window === 'undefined') {
+      return { token: null, refresh: null, user: null };
+    }
+
+    const rawHash = String(window.location.hash || '').replace(/^#/, '');
+    const hashParams = new URLSearchParams(rawHash);
+    if (rawHash) {
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+    }
+    return {
+      token: hashParams.get('token'),
+      refresh: hashParams.get('refresh'),
+      user: hashParams.get('user'),
+    };
   }
 
   private startCountdown() {

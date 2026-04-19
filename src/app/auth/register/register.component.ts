@@ -151,6 +151,13 @@ export class RegisterComponent implements OnInit {
       ts: new Date().toISOString()
     });
     this.clearErrors();
+
+    // Blindaje de negocio: sin aceptar términos no se permite crear cuenta,
+    // aunque el método sea invocado por fuera del botón deshabilitado.
+    if (!this.termsAccepted) {
+      this.serverError = 'Debes aceptar los términos y condiciones para crear tu cuenta.';
+      return;
+    }
     
     if (!this.validateForm()) {
       console.warn('🟠 [REGISTER] Validación falló', {
