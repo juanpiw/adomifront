@@ -94,6 +94,7 @@ export class ProviderSetupComponent implements OnInit {
   createdServiceId: number | null = null;
   scheduleCreated = false;
   published = false;
+  showHealthChoiceModal = false;
 
   private router = inject(Router);
   private servicesApi = inject(ProviderServicesService);
@@ -315,6 +316,27 @@ export class ProviderSetupComponent implements OnInit {
     }
   }
 
+  handlePrimaryContinue(): void {
+    if (this.currentStep !== 1) {
+      this.nextStep();
+      return;
+    }
+    this.error = null;
+    if (!this.canGoNext) return;
+    this.showHealthChoiceModal = true;
+  }
+
+  closeHealthChoiceModal(): void {
+    if (this.saving) return;
+    this.showHealthChoiceModal = false;
+  }
+
+  chooseHealthTrack(isHealth: boolean): void {
+    if (this.saving) return;
+    this.showHealthChoiceModal = false;
+    this.continueFromStepOne(isHealth ? 'health' : 'general');
+  }
+
   continueFromStepOne(track: ProviderTrack): void {
     this.setProviderTrack(track);
     void this.persistProfileAndGoNext();
@@ -372,7 +394,7 @@ export class ProviderSetupComponent implements OnInit {
     this.error = null;
 
     if (this.currentStep === 1) {
-      void this.persistProfileAndGoNext();
+      this.handlePrimaryContinue();
       return;
     }
 

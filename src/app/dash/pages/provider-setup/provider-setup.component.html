@@ -304,23 +304,9 @@
       </button>
       <div class="wizard-footer__actions">
         <button
-          *ngIf="currentStep === 1"
-          type="button"
-          class="btn btn-secondary btn-health-track wizard-cta wizard-cta--health"
-          (click)="continueFromStepOne('health')"
-          [disabled]="!canGoNext"
-        >
-          <span class="wizard-cta__icon">⚕</span>
-          <span class="wizard-cta__copy">
-            <span class="wizard-cta__label" *ngIf="!saving">Profesional de salud</span>
-            <span class="wizard-cta__label" *ngIf="saving">Guardando...</span>
-            <span class="wizard-cta__hint">Activa verificación clínica</span>
-          </span>
-        </button>
-        <button
           type="button"
           class="btn btn-primary wizard-cta wizard-cta--primary"
-          (click)="currentStep === 1 ? continueFromStepOne('general') : nextStep()"
+          (click)="handlePrimaryContinue()"
           [disabled]="!canGoNext"
         >
           <span class="wizard-cta__copy">
@@ -329,6 +315,25 @@
             <span class="wizard-cta__hint">Siguiente paso</span>
           </span>
           <span class="wizard-cta__icon">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="health-choice-modal" *ngIf="showHealthChoiceModal" role="dialog" aria-modal="true" aria-labelledby="health-choice-title">
+    <button type="button" class="health-choice-modal__backdrop" (click)="closeHealthChoiceModal()" aria-label="Cerrar"></button>
+    <div class="health-choice-modal__card">
+      <div class="health-choice-modal__icon">⚕</div>
+      <h3 id="health-choice-title">¿Eres profesional de la salud?</h3>
+      <p>
+        Si respondes que sí, activaremos el flujo de verificación clínica para validar tus credenciales y habilitar prestaciones de salud.
+      </p>
+      <div class="health-choice-modal__actions">
+        <button type="button" class="btn btn-secondary" (click)="chooseHealthTrack(false)" [disabled]="saving">
+          No, continuar normal
+        </button>
+        <button type="button" class="btn btn-primary" (click)="chooseHealthTrack(true)" [disabled]="saving">
+          Sí, soy profesional de salud
         </button>
       </div>
     </div>

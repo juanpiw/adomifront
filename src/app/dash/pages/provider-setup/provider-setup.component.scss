@@ -727,9 +727,9 @@ input:checked + .slider:before {
 }
 
 .wizard-footer--choice-step .wizard-footer__actions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  max-width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 360px;
   width: 100%;
 }
 
@@ -846,6 +846,74 @@ input:checked + .slider:before {
   box-shadow: 0 22px 42px rgba(98, 0, 238, 0.32);
 }
 
+.health-choice-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.health-choice-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.health-choice-modal__card {
+  position: relative;
+  width: min(100%, 460px);
+  border-radius: 28px;
+  padding: 30px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.16), transparent 42%),
+    #fff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 34px 80px rgba(15, 23, 42, 0.28);
+  text-align: center;
+}
+
+.health-choice-modal__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0f2fe;
+  color: #0284c7;
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.health-choice-modal__card h3 {
+  margin: 0 0 10px;
+  color: #172033;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.health-choice-modal__card p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.health-choice-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
 @media (max-width: 640px) {
   .step-label {
     font-size: 9px;
@@ -898,6 +966,18 @@ input:checked + .slider:before {
 
   .wizard-cta--primary .wizard-cta__icon {
     margin-left: auto;
+  }
+
+  .wizard-footer--choice-step .wizard-footer__actions {
+    max-width: none;
+  }
+
+  .health-choice-modal__card {
+    padding: 24px;
+  }
+
+  .health-choice-modal__actions {
+    grid-template-columns: 1fr;
   }
 }
 
