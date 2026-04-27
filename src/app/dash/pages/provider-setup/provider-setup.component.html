@@ -292,8 +292,14 @@
       </div>
     </div>
 
-    <div class="wizard-footer">
-      <button type="button" class="btn btn-ghost" (click)="prevStep()" [style.visibility]="currentStep === 1 ? 'hidden' : 'visible'" [disabled]="saving">
+    <div class="wizard-footer" [class.wizard-footer--choice-step]="currentStep === 1">
+      <button
+        type="button"
+        class="btn btn-ghost wizard-back-button"
+        [class.wizard-back-button--hidden]="currentStep === 1"
+        (click)="prevStep()"
+        [disabled]="saving"
+      >
         Atrás
       </button>
       <div class="wizard-footer__actions">
