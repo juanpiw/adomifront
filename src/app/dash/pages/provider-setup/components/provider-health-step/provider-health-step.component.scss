@@ -107,6 +107,139 @@
   display: none;
 }
 
+.certificate-file-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f0fdf4, #ffffff);
+  box-shadow: 0 12px 26px rgba(16, 185, 129, 0.1);
+}
+
+.certificate-file-card--uploading {
+  border-color: #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff, #ffffff);
+  box-shadow: 0 12px 26px rgba(59, 130, 246, 0.1);
+}
+
+.certificate-file-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 900;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+}
+
+.certificate-file-card__body {
+  min-width: 0;
+}
+
+.certificate-file-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.certificate-file-card__name {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.94rem;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.certificate-file-card__meta {
+  flex-shrink: 0;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.certificate-file-card__status {
+  margin: 4px 0 10px;
+  color: #059669;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.certificate-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: #dbeafe;
+  overflow: hidden;
+}
+
+.certificate-progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #14b8a6);
+  animation: certificate-upload-progress 1.1s ease-in-out infinite;
+}
+
+.certificate-progress--done {
+  background: #dcfce7;
+}
+
+.certificate-progress--done span {
+  width: 100%;
+  background: #22c55e;
+  animation: none;
+}
+
+.certificate-file-card__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+}
+
+.certificate-action {
+  flex: 1;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.certificate-action--danger {
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.certificate-action:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+@keyframes certificate-upload-progress {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(260%);
+  }
+}
+
 .input-wrapper {
   position: relative;
 }

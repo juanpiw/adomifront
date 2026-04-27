@@ -54,6 +54,9 @@ export class ProviderSetupComponent implements OnInit {
   // Step 2 (solo salud): validacion profesional
   healthRnpiCertificateFile: File | null = null;
   healthRnpiCertificateName = '';
+  healthRnpiCertificateSize: number | null = null;
+  healthRnpiCertificateMimeType = '';
+  healthRnpiCertificateUploading = false;
   healthRnpiCertificateFolio = '';
   acceptsFonasa = true;
   healthVerificationGuideUrl = 'https://rnpi.supersalud.gob.cl/';
@@ -150,6 +153,8 @@ export class ProviderSetupComponent implements OnInit {
           const curriculumDoc = documents.find((doc) => doc?.document_type === 'curriculum_vitae');
           if (rnpiDoc?.file_name) {
             this.healthRnpiCertificateName = String(rnpiDoc.file_name).trim();
+            this.healthRnpiCertificateSize = Number.isFinite(Number(rnpiDoc?.size_bytes)) ? Number(rnpiDoc.size_bytes) : null;
+            this.healthRnpiCertificateMimeType = String(rnpiDoc?.mime_type || '').trim();
           }
           if (curriculumDoc?.file_name) {
             this.curriculumFileName = String(curriculumDoc.file_name).trim();
@@ -350,7 +355,40 @@ export class ProviderSetupComponent implements OnInit {
   onHealthCertificateSelected(file: File | null): void {
     this.healthRnpiCertificateFile = file;
     this.healthRnpiCertificateName = file?.name || '';
+    this.healthRnpiCertificateSize = file?.size || null;
+    this.healthRnpiCertificateMimeType = file?.type || '';
     this.persistHealthSetup();
+  }
+
+  onHealthCertificateRemoved(): void {
+    if (this.saving) return;
+    if (this.healthRnpiCertificateFile) {
+      this.healthRnpiCertificateFile = null;
+      this.healthRnpiCertificateName = '';
+      this.healthRnpiCertificateSize = null;
+      this.healthRnpiCertificateMimeType = '';
+      this.persistHealthSetup();
+      return;
+    }
+
+    if (!this.healthRnpiCertificateName.trim()) return;
+
+    this.error = null;
+    this.saving = true;
+    this.profileApi.deleteHealthDocument('rnpi_certificate')
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe({
+        next: () => {
+          this.healthRnpiCertificateName = '';
+          this.healthRnpiCertificateSize = null;
+          this.healthRnpiCertificateMimeType = '';
+          this.healthRnpiCertificateFolio = '';
+          this.persistHealthSetup();
+        },
+        error: (err) => {
+          this.error = err?.error?.error || err?.message || 'No pudimos eliminar tu certificado RNPI.';
+        }
+      });
   }
 
   onAcceptsFonasaChange(value: boolean): void {
@@ -555,6 +593,8 @@ export class ProviderSetupComponent implements OnInit {
       const data = JSON.parse(raw) as any;
       this.healthRnpiCertificateFolio = String(data?.folio || '').trim();
       this.healthRnpiCertificateName = String(data?.certificateName || '').trim();
+      this.healthRnpiCertificateSize = Number.isFinite(Number(data?.certificateSize)) ? Number(data.certificateSize) : null;
+      this.healthRnpiCertificateMimeType = String(data?.certificateMimeType || '').trim();
       this.acceptsFonasa = data?.acceptsFonasa !== false;
     } catch {
       // noop
@@ -591,6 +631,8 @@ export class ProviderSetupComponent implements OnInit {
         JSON.stringify({
           folio: this.healthRnpiCertificateFolio,
           certificateName: this.healthRnpiCertificateName,
+          certificateSize: this.healthRnpiCertificateSize,
+          certificateMimeType: this.healthRnpiCertificateMimeType,
           acceptsFonasa: this.acceptsFonasa
         })
       );
@@ -641,6 +683,7 @@ export class ProviderSetupComponent implements OnInit {
     if (!this.canGoNext) return;
     this.error = null;
     this.saving = true;
+    this.healthRnpiCertificateUploading = !!this.healthRnpiCertificateFile;
     this.persistHealthSetup();
 
     const upload$ = this.healthRnpiCertificateFile
@@ -651,7 +694,10 @@ export class ProviderSetupComponent implements OnInit {
       upload: upload$,
       saved: this.saveHealthProfile$().pipe(catchError((err) => of({ __err: err } as any)))
     })
-      .pipe(finalize(() => (this.saving = false)))
+      .pipe(finalize(() => {
+        this.saving = false;
+        this.healthRnpiCertificateUploading = false;
+      }))
       .subscribe(({ upload, saved }) => {
         if ((upload as any)?.__err) {
           const err = (upload as any).__err;
@@ -665,6 +711,8 @@ export class ProviderSetupComponent implements OnInit {
         }
         if ((upload as any)?.file_name) {
           this.healthRnpiCertificateName = String((upload as any).file_name || this.healthRnpiCertificateName);
+          this.healthRnpiCertificateSize = Number.isFinite(Number((upload as any).size_bytes)) ? Number((upload as any).size_bytes) : this.healthRnpiCertificateSize;
+          this.healthRnpiCertificateMimeType = String((upload as any).mime_type || this.healthRnpiCertificateMimeType || '').trim();
           this.healthRnpiCertificateFile = null;
         }
         this.currentStep = this.serviceStepNumber;

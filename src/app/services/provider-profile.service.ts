@@ -260,6 +260,15 @@ export class ProviderProfileService {
     );
   }
 
+  deleteHealthDocument(documentType: ProviderHealthDocument['document_type']): Observable<{ documentType: ProviderHealthDocument['document_type'] }> {
+    return this.http.delete<{ success: boolean; documentType: ProviderHealthDocument['document_type'] }>(
+      `${this.apiUrl}/provider/health/files/${documentType}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => ({ documentType: response.documentType || documentType }))
+    );
+  }
+
   /**
    * Subir foto de perfil o portada
    */

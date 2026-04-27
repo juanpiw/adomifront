@@ -13,11 +13,33 @@
     <section>
       <label class="field-label">1. Registro Nacional de Prestadores (SIS)</label>
 
-      <button type="button" class="drop-zone" (click)="certificateInput.click()" [disabled]="saving">
+      <button *ngIf="!hasCertificateFile" type="button" class="drop-zone" (click)="certificateInput.click()" [disabled]="saving">
         <div class="drop-zone__icon">📜</div>
         <p class="drop-zone__title">{{ certificateName || 'Subir Certificado RNPI' }}</p>
-        <p class="drop-zone__subtitle">Sube el PDF que obtienes en supersalud.gob.cl</p>
+        <p class="drop-zone__subtitle">Sube PDF, PNG, JPG o WEBP desde supersalud.gob.cl</p>
       </button>
+
+      <div *ngIf="hasCertificateFile" class="certificate-file-card" [class.certificate-file-card--uploading]="certificateUploading">
+        <div class="certificate-file-card__icon">{{ displayFileExtension }}</div>
+        <div class="certificate-file-card__body">
+          <div class="certificate-file-card__top">
+            <p class="certificate-file-card__name">{{ displayFileName }}</p>
+            <span class="certificate-file-card__meta">{{ displayFileExtension }} · {{ displayFileSize }}</span>
+          </div>
+          <p class="certificate-file-card__status">{{ fileStatusLabel }}</p>
+          <div class="certificate-progress" [class.certificate-progress--done]="!certificateUploading && !selectedCertificateFile">
+            <span></span>
+          </div>
+        </div>
+        <div class="certificate-file-card__actions">
+          <button type="button" class="certificate-action" (click)="certificateInput.click()" [disabled]="saving || certificateUploading">
+            Cambiar
+          </button>
+          <button type="button" class="certificate-action certificate-action--danger" (click)="onRemoveCertificate()" [disabled]="saving || certificateUploading">
+            Eliminar
+          </button>
+        </div>
+      </div>
 
       <input
         #certificateInput
