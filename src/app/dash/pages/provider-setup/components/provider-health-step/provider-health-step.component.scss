@@ -144,6 +144,7 @@
 }
 
 .certificate-file-card__top {
+  min-width: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -242,6 +243,8 @@
 
 .input-wrapper {
   position: relative;
+  width: 100%;
+  min-width: 0;
 }
 
 .input-icon {
@@ -253,6 +256,7 @@
 }
 
 .form-input {
+  box-sizing: border-box;
   width: 100%;
   padding: 12px 14px 12px 40px;
   border: 1px solid #d1d5db;

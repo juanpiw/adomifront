@@ -59,7 +59,7 @@ export class ProviderSetupComponent implements OnInit {
   healthRnpiCertificateUploading = false;
   healthRnpiCertificateFolio = '';
   acceptsFonasa = true;
-  healthVerificationGuideUrl = 'https://rnpi.supersalud.gob.cl/';
+  healthVerificationGuideUrl = 'https://rnpi.superdesalud.gob.cl/#';
 
   // Step 3 / 2: Servicio
   serviceName = '';

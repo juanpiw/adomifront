@@ -16,7 +16,7 @@ export class ProviderHealthStepComponent {
   @Input() certificateUploading = false;
   @Input() certificateFolio = '';
   @Input() acceptsFonasa = true;
-  @Input() guideUrl = 'https://rnpi.supersalud.gob.cl/';
+  @Input() guideUrl = 'https://rnpi.superdesalud.gob.cl/#';
   @Input() saving = false;
 
   @Output() certificateSelected = new EventEmitter<File | null>();

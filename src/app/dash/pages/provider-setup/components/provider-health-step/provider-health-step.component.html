@@ -27,7 +27,7 @@
             <span class="certificate-file-card__meta">{{ displayFileExtension }} · {{ displayFileSize }}</span>
           </div>
           <p class="certificate-file-card__status">{{ fileStatusLabel }}</p>
-          <div class="certificate-progress" [class.certificate-progress--done]="!certificateUploading && !selectedCertificateFile">
+          <div class="certificate-progress" [class.certificate-progress--done]="!certificateUploading">
             <span></span>
           </div>
         </div>
