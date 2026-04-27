@@ -300,21 +300,29 @@
         <button
           *ngIf="currentStep === 1"
           type="button"
-          class="btn btn-secondary btn-health-track"
+          class="btn btn-secondary btn-health-track wizard-cta wizard-cta--health"
           (click)="continueFromStepOne('health')"
           [disabled]="!canGoNext"
         >
-          <span *ngIf="!saving">Continuar como profesional de la salud</span>
-          <span *ngIf="saving">Guardando...</span>
+          <span class="wizard-cta__icon">⚕</span>
+          <span class="wizard-cta__copy">
+            <span class="wizard-cta__label" *ngIf="!saving">Profesional de salud</span>
+            <span class="wizard-cta__label" *ngIf="saving">Guardando...</span>
+            <span class="wizard-cta__hint">Activa verificación clínica</span>
+          </span>
         </button>
         <button
           type="button"
-          class="btn btn-primary"
+          class="btn btn-primary wizard-cta wizard-cta--primary"
           (click)="currentStep === 1 ? continueFromStepOne('general') : nextStep()"
           [disabled]="!canGoNext"
         >
-          <span *ngIf="!saving">{{ nextLabel }}</span>
-          <span *ngIf="saving">Guardando...</span>
+          <span class="wizard-cta__copy">
+            <span class="wizard-cta__label" *ngIf="!saving">{{ nextLabel }}</span>
+            <span class="wizard-cta__label" *ngIf="saving">Guardando...</span>
+            <span class="wizard-cta__hint">Siguiente paso</span>
+          </span>
+          <span class="wizard-cta__icon">→</span>
         </button>
       </div>
     </div>
