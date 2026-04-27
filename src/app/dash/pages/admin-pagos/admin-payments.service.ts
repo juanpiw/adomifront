@@ -7,11 +7,14 @@ export class AdminPaymentsService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl;
 
-  private headers(secret: string, token: string | null) {
-    return new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': secret
-    });
+  private headers(_secret: string, token: string | null) {
+    return token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
+  }
+
+  accessStatus(token: string | null) {
+    return this.http.get<any>(`${this.baseUrl}/admin/whoami`, { headers: this.headers('', token) });
   }
 
   list(secret: string, token: string | null, start?: string | null, end?: string | null, releaseStatus?: string, gateway?: string) {

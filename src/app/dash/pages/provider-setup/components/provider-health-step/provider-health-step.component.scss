@@ -1,0 +1,269 @@
+.health-step {
+  display: block;
+}
+
+.health-step__header {
+  margin-bottom: 24px;
+}
+
+.health-step__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.health-step__title-row h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.badge-fonasa {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00529b, #0072ce);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.health-step__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.health-step__content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.drop-zone {
+  width: 100%;
+  padding: 28px 20px;
+  margin-bottom: 12px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drop-zone:hover:not(:disabled) {
+  border-color: #6366f1;
+  background: #f1f5f9;
+}
+
+.drop-zone:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.drop-zone__icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+.drop-zone__title {
+  margin: 0;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.drop-zone__subtitle {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 0.73rem;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.toggle-card__title {
+  margin: 0 0 4px;
+  color: #1e293b;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.toggle-card__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #d1d5db;
+  transition: 0.2s ease;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.2s ease;
+}
+
+.toggle input:checked + .slider {
+  background: #16a34a;
+}
+
+.toggle input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+.guide-card {
+  padding: 20px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #eff6ff;
+}
+
+.guide-card__title {
+  margin: 0 0 16px;
+  color: #1e3a8a;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-step {
+  display: flex;
+  gap: 12px;
+}
+
+.guide-step p {
+  margin: 0;
+  color: #1e40af;
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.guide-number {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.guide-link {
+  display: block;
+  margin-top: 14px;
+  color: #2563eb;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.guide-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .health-step__title-row,
+  .toggle-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

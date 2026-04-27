@@ -32,11 +32,10 @@ export class AdminSupportService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl;
 
-  private headers(secret: string, token: string | null) {
-    return new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': secret
-    });
+  private headers(_secret: string, token: string | null) {
+    return token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
   }
 
   list(

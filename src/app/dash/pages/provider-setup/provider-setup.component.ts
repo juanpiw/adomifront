@@ -7,10 +7,13 @@ import { catchError, finalize, map } from 'rxjs/operators';
 import { ProviderAvailabilityService, WeeklyBlockDTO, WeeklyBlockInput } from '../../../services/provider-availability.service';
 import { ProviderServicesService, ProviderServiceDto } from '../../../services/provider-services.service';
 import { ProviderProfileService } from '../../../services/provider-profile.service';
+import { ProviderCvStepComponent } from './components/provider-cv-step/provider-cv-step.component';
+import { ProviderHealthStepComponent } from './components/provider-health-step/provider-health-step.component';
 
-type WizardStep = 1 | 2 | 3 | 4;
+type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
 type DurationOption = { label: string; minutes: number };
 type DayKey = WeeklyBlockDTO['day_of_week'];
+type ProviderTrack = 'general' | 'health';
 
 const DAY_LABELS: Array<{ key: DayKey; label: string }> = [
   { key: 'monday', label: 'Lunes' },
@@ -25,14 +28,18 @@ const DAY_LABELS: Array<{ key: DayKey; label: string }> = [
 @Component({
   selector: 'app-provider-setup',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProviderHealthStepComponent, ProviderCvStepComponent],
   templateUrl: './provider-setup.component.html',
   styleUrls: ['./provider-setup.component.scss']
 })
 export class ProviderSetupComponent implements OnInit {
+  private readonly providerTrackStorageKey = 'adomi_provider_track';
+  private readonly healthSetupStorageKey = 'adomi_provider_health_setup';
+  private readonly healthCurriculumStorageKey = 'adomi_provider_health_curriculum';
+
   // Wizard
   currentStep: WizardStep = 1;
-  readonly totalSteps = 4;
+  providerTrack: ProviderTrack = 'general';
 
   // Step 1: Perfil
   profilePhotoFile: File | null = null;
@@ -44,7 +51,14 @@ export class ProviderSetupComponent implements OnInit {
   profileYearsExperience: number | null = null;
   profileSaved = false;
 
-  // Step 2: Servicio
+  // Step 2 (solo salud): validacion profesional
+  healthRnpiCertificateFile: File | null = null;
+  healthRnpiCertificateName = '';
+  healthRnpiCertificateFolio = '';
+  acceptsFonasa = true;
+  healthVerificationGuideUrl = 'https://rnpi.supersalud.gob.cl/';
+
+  // Step 3 / 2: Servicio
   serviceName = '';
   servicePrice: number | null = null;
   servicePriceDisplay = '';
@@ -61,12 +75,17 @@ export class ProviderSetupComponent implements OnInit {
   ];
   selectedDurationMinutes = 30;
 
-  // Step 3: Horario
+  // Step 4 / 3: Horario
   dayOptions = DAY_LABELS;
   scheduleDay: DayKey = 'monday';
   scheduleStart = '09:00';
   scheduleEnd = '18:00';
   weeklyDraft: WeeklyBlockInput[] = [];
+
+  // Step 5 (solo salud): Curriculum
+  curriculumFile: File | null = null;
+  curriculumFileName = '';
+  curriculumBio = '';
 
   // State
   loading = false;
@@ -82,10 +101,15 @@ export class ProviderSetupComponent implements OnInit {
   private profileApi = inject(ProviderProfileService);
 
   ngOnInit(): void {
+    this.loadProviderTrack();
+    this.loadHealthSetup();
+    this.loadCurriculumSetup();
+
     // Si ya tiene servicio + horario, no mostrar wizard
     this.loading = true;
     forkJoin({
       profile: this.profileApi.getProfile().pipe(catchError(() => of(null))),
+      healthSetup: this.profileApi.getHealthSetup().pipe(catchError(() => of(null))),
       services: this.servicesApi.list().pipe(
         map((r: any) => (Array.isArray(r?.services) ? (r.services as ProviderServiceDto[]) : [])),
         catchError(() => of([] as ProviderServiceDto[]))
@@ -96,7 +120,7 @@ export class ProviderSetupComponent implements OnInit {
       )
     })
       .pipe(finalize(() => (this.loading = false)))
-      .subscribe(({ profile, services, blocks }) => {
+      .subscribe(({ profile, healthSetup, services, blocks }) => {
         // Prefill básico del perfil (si existe)
         if (profile) {
           const p: any = profile as any;
@@ -109,10 +133,35 @@ export class ProviderSetupComponent implements OnInit {
           const photoUrl = String(p?.profile_photo_url || '').trim();
           this.profilePhotoPreviewUrl = photoUrl || null;
         }
+        if (healthSetup) {
+          const profileData: any = (healthSetup as any)?.profile || null;
+          const documents: any[] = Array.isArray((healthSetup as any)?.documents) ? (healthSetup as any).documents : [];
+          if (profileData || documents.length > 0) {
+            this.providerTrack = 'health';
+            this.persistProviderTrack();
+          }
+          if (profileData) {
+            this.healthRnpiCertificateFolio = String(profileData?.rnpi_folio || this.healthRnpiCertificateFolio || '').trim();
+            this.acceptsFonasa = profileData?.accepts_fonasa !== false;
+            this.curriculumBio = String(profileData?.curriculum_bio || this.curriculumBio || '');
+          }
+          const rnpiDoc = documents.find((doc) => doc?.document_type === 'rnpi_certificate');
+          const curriculumDoc = documents.find((doc) => doc?.document_type === 'curriculum_vitae');
+          if (rnpiDoc?.file_name) {
+            this.healthRnpiCertificateName = String(rnpiDoc.file_name).trim();
+          }
+          if (curriculumDoc?.file_name) {
+            this.curriculumFileName = String(curriculumDoc.file_name).trim();
+          }
+        }
         if ((services?.length || 0) > 0 && (blocks?.length || 0) > 0) {
           this.router.navigateByUrl('/dash/home').catch(() => {});
         }
       });
+  }
+
+  get totalSteps(): number {
+    return this.isHealthProfessional ? 6 : 4;
   }
 
   get progressPercent(): number {
@@ -128,21 +177,105 @@ export class ProviderSetupComponent implements OnInit {
       const nameOk = this.profileFullName.trim().length >= 2;
       return nameOk;
     }
-    if (this.currentStep === 2) {
+    if (this.isHealthProfessional && this.currentStep === this.healthStepNumber) {
+      return this.healthRnpiCertificateFolio.trim().length >= 4 && this.healthRnpiCertificateName.trim().length > 0;
+    }
+    if (this.currentStep === this.serviceStepNumber) {
       const nameOk = this.serviceName.trim().length >= 2;
       const categoryOk = this.getResolvedCategory().trim().length >= 2;
       const priceOk = Number.isFinite(Number(this.servicePrice)) && Number(this.servicePrice) > 0;
       return nameOk && categoryOk && priceOk;
     }
-    if (this.currentStep === 3) {
+    if (this.currentStep === this.scheduleStepNumber) {
       return (this.weeklyDraft.length || 0) > 0;
+    }
+    if (this.isHealthProfessional && this.currentStep === this.curriculumStepNumber) {
+      return this.curriculumFileName.trim().length > 0;
     }
     return true;
   }
 
   get nextLabel(): string {
-    if (this.currentStep !== 4) return 'Continuar';
+    if (this.currentStep !== this.finalStepNumber) return 'Continuar';
     return this.published ? 'Configurar perfil' : 'Publicar Servicio';
+  }
+
+  get isHealthProfessional(): boolean {
+    return this.providerTrack === 'health';
+  }
+
+  get providerCategoryOptions(): string[] {
+    if (this.isHealthProfessional) return ['Salud', 'Otra'];
+    return this.categoryOptions.filter((option) => option !== 'Salud');
+  }
+
+  get healthStepNumber(): WizardStep {
+    return 2;
+  }
+
+  get serviceStepNumber(): WizardStep {
+    return this.isHealthProfessional ? 3 : 2;
+  }
+
+  get scheduleStepNumber(): WizardStep {
+    return this.isHealthProfessional ? 4 : 3;
+  }
+
+  get curriculumStepNumber(): WizardStep {
+    return 5;
+  }
+
+  get finalStepNumber(): WizardStep {
+    return this.isHealthProfessional ? 6 : 4;
+  }
+
+  get wizardSteps(): Array<{ number: WizardStep; label: string }> {
+    if (this.isHealthProfessional) {
+      return [
+        { number: 1, label: 'Perfil' },
+        { number: 2, label: 'Salud' },
+        { number: 3, label: 'Servicio' },
+        { number: 4, label: 'Horario' },
+        { number: 5, label: 'Curriculum' },
+        { number: 6, label: 'Listo' }
+      ];
+    }
+    return [
+      { number: 1, label: 'Perfil' },
+      { number: 2, label: 'Servicio' },
+      { number: 3, label: 'Horario' },
+      { number: 4, label: 'Listo' }
+    ];
+  }
+
+  get professionalTitleLabel(): string {
+    return this.isHealthProfessional ? 'Título / Especialidad' : 'Título Profesional';
+  }
+
+  get professionalTitlePlaceholder(): string {
+    return this.isHealthProfessional ? 'Ej: Kinesiólogo, Enfermera, Médico General' : 'Ej: Estilista, Masajista, Chef';
+  }
+
+  get serviceStepTitle(): string {
+    return this.isHealthProfessional ? '¿Qué prestación ofreces?' : '¿Qué servicio ofreces?';
+  }
+
+  get serviceStepSubtitle(): string {
+    return this.isHealthProfessional
+      ? 'Crea tu primera prestación de salud para que los pacientes puedan reservar. Podrás editarla después.'
+      : 'Crea tu primer servicio para que los clientes puedan reservar. Podrás editarlo después.';
+  }
+
+  get serviceNameLabel(): string {
+    return this.isHealthProfessional ? 'Nombre de la prestacion' : 'Nombre del servicio';
+  }
+
+  get serviceNamePlaceholder(): string {
+    return this.isHealthProfessional ? 'Ej. Evaluacion kinésica, Curacion avanzada...' : 'Ej. Corte de Cabello, Asesoria Legal...';
+  }
+
+  get healthVerificationCompleted(): boolean {
+    return this.healthRnpiCertificateFolio.trim().length >= 4 && this.healthRnpiCertificateName.trim().length > 0;
   }
 
   get availabilityLabel(): string {
@@ -182,6 +315,38 @@ export class ProviderSetupComponent implements OnInit {
     }
   }
 
+  continueFromStepOne(track: ProviderTrack): void {
+    this.setProviderTrack(track);
+    void this.persistProfileAndGoNext();
+  }
+
+  onHealthCertificateFolioChange(value: string): void {
+    this.healthRnpiCertificateFolio = value;
+    this.persistHealthSetup();
+  }
+
+  onHealthCertificateSelected(file: File | null): void {
+    this.healthRnpiCertificateFile = file;
+    this.healthRnpiCertificateName = file?.name || '';
+    this.persistHealthSetup();
+  }
+
+  onAcceptsFonasaChange(value: boolean): void {
+    this.acceptsFonasa = value;
+    this.persistHealthSetup();
+  }
+
+  onCurriculumFileSelected(file: File | null): void {
+    this.curriculumFile = file;
+    this.curriculumFileName = file?.name || '';
+    this.persistCurriculumSetup();
+  }
+
+  onCurriculumBioChange(value: string): void {
+    this.curriculumBio = value;
+    this.persistCurriculumSetup();
+  }
+
   private getResolvedCategory(): string {
     if (this.selectedCategory === 'Otra') return this.customCategory.trim();
     return String(this.selectedCategory || '').trim();
@@ -211,17 +376,27 @@ export class ProviderSetupComponent implements OnInit {
       return;
     }
 
-    if (this.currentStep === 2) {
+    if (this.isHealthProfessional && this.currentStep === this.healthStepNumber) {
+      this.persistHealthStepAndGoNext();
+      return;
+    }
+
+    if (this.currentStep === this.serviceStepNumber) {
       void this.persistServiceAndGoNext();
       return;
     }
 
-    if (this.currentStep === 3) {
+    if (this.currentStep === this.scheduleStepNumber) {
       void this.persistScheduleAndGoNext();
       return;
     }
 
-    // Step 4: "Publicar" (finalizar onboarding)
+    if (this.isHealthProfessional && this.currentStep === this.curriculumStepNumber) {
+      this.persistCurriculumAndGoNext();
+      return;
+    }
+
+    // Ultimo paso: "Publicar" (finalizar onboarding)
     if (!this.published) {
       this.published = true;
       return;
@@ -338,12 +513,182 @@ export class ProviderSetupComponent implements OnInit {
     this.router.navigateByUrl('/dash/perfil').catch(() => {});
   }
 
+  private loadProviderTrack(): void {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const stored = localStorage.getItem(this.providerTrackStorageKey);
+      if (stored === 'health' || stored === 'general') {
+        this.providerTrack = stored;
+      }
+    } catch {
+      // noop
+    }
+  }
+
+  private loadHealthSetup(): void {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(this.healthSetupStorageKey);
+      if (!raw) return;
+      const data = JSON.parse(raw) as any;
+      this.healthRnpiCertificateFolio = String(data?.folio || '').trim();
+      this.healthRnpiCertificateName = String(data?.certificateName || '').trim();
+      this.acceptsFonasa = data?.acceptsFonasa !== false;
+    } catch {
+      // noop
+    }
+  }
+
+  private loadCurriculumSetup(): void {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(this.healthCurriculumStorageKey);
+      if (!raw) return;
+      const data = JSON.parse(raw) as any;
+      this.curriculumFileName = String(data?.fileName || '').trim();
+      this.curriculumBio = String(data?.bio || '');
+    } catch {
+      // noop
+    }
+  }
+
+  private persistProviderTrack(): void {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(this.providerTrackStorageKey, this.providerTrack);
+    } catch {
+      // noop
+    }
+  }
+
+  private persistHealthSetup(): void {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(
+        this.healthSetupStorageKey,
+        JSON.stringify({
+          folio: this.healthRnpiCertificateFolio,
+          certificateName: this.healthRnpiCertificateName,
+          acceptsFonasa: this.acceptsFonasa
+        })
+      );
+    } catch {
+      // noop
+    }
+  }
+
+  private persistCurriculumSetup(): void {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(
+        this.healthCurriculumStorageKey,
+        JSON.stringify({
+          fileName: this.curriculumFileName,
+          bio: this.curriculumBio
+        })
+      );
+    } catch {
+      // noop
+    }
+  }
+
+  private setProviderTrack(track: ProviderTrack): void {
+    this.providerTrack = track;
+    this.persistProviderTrack();
+    if (track === 'health') {
+      if (!this.selectedCategory || this.selectedCategory === 'Otra') {
+        this.selectedCategory = 'Salud';
+      }
+      this.persistHealthSetup();
+      return;
+    }
+    if (this.selectedCategory === 'Salud') {
+      this.selectedCategory = '';
+    }
+  }
+
+  private saveHealthProfile$() {
+    return this.profileApi.saveHealthSetup({
+      rnpi_folio: this.healthRnpiCertificateFolio.trim() || null,
+      accepts_fonasa: this.acceptsFonasa,
+      curriculum_bio: this.curriculumBio.trim() || null
+    } as any);
+  }
+
+  private persistHealthStepAndGoNext(): void {
+    if (!this.canGoNext) return;
+    this.error = null;
+    this.saving = true;
+    this.persistHealthSetup();
+
+    const upload$ = this.healthRnpiCertificateFile
+      ? this.profileApi.uploadHealthDocument(this.healthRnpiCertificateFile, 'rnpi_certificate').pipe(catchError((err) => of({ __err: err } as any)))
+      : of(null);
+
+    forkJoin({
+      upload: upload$,
+      saved: this.saveHealthProfile$().pipe(catchError((err) => of({ __err: err } as any)))
+    })
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe(({ upload, saved }) => {
+        if ((upload as any)?.__err) {
+          const err = (upload as any).__err;
+          this.error = err?.error?.error || err?.message || 'No pudimos subir tu certificado RNPI.';
+          return;
+        }
+        if ((saved as any)?.__err) {
+          const err = (saved as any).__err;
+          this.error = err?.error?.error || err?.message || 'No pudimos guardar tu información de salud.';
+          return;
+        }
+        if ((upload as any)?.file_name) {
+          this.healthRnpiCertificateName = String((upload as any).file_name || this.healthRnpiCertificateName);
+          this.healthRnpiCertificateFile = null;
+        }
+        this.currentStep = this.serviceStepNumber;
+      });
+  }
+
+  private persistCurriculumAndGoNext(): void {
+    if (!this.canGoNext) return;
+    this.error = null;
+    this.saving = true;
+    this.persistCurriculumSetup();
+
+    const upload$ = this.curriculumFile
+      ? this.profileApi.uploadHealthDocument(this.curriculumFile, 'curriculum_vitae').pipe(catchError((err) => of({ __err: err } as any)))
+      : of(null);
+
+    forkJoin({
+      upload: upload$,
+      saved: this.saveHealthProfile$().pipe(catchError((err) => of({ __err: err } as any)))
+    })
+      .pipe(finalize(() => (this.saving = false)))
+      .subscribe(({ upload, saved }) => {
+        if ((upload as any)?.__err) {
+          const err = (upload as any).__err;
+          this.error = err?.error?.error || err?.message || 'No pudimos subir tu currículum.';
+          return;
+        }
+        if ((saved as any)?.__err) {
+          const err = (saved as any).__err;
+          this.error = err?.error?.error || err?.message || 'No pudimos guardar tu currículum.';
+          return;
+        }
+        if ((upload as any)?.file_name) {
+          this.curriculumFileName = String((upload as any).file_name || this.curriculumFileName);
+          this.curriculumFile = null;
+        }
+        this.currentStep = this.finalStepNumber;
+      });
+  }
+
   private async persistProfileAndGoNext(): Promise<void> {
     if (!this.canGoNext) return;
 
     // Evitar guardar 2 veces si el usuario vuelve atrás
     if (this.profileSaved) {
-      this.currentStep = 2;
+      this.currentStep = this.isHealthProfessional ? this.healthStepNumber : this.serviceStepNumber;
       return;
     }
 
@@ -374,7 +719,7 @@ export class ProviderSetupComponent implements OnInit {
           return;
         }
         this.profileSaved = true;
-        this.currentStep = 2;
+        this.currentStep = this.isHealthProfessional ? this.healthStepNumber : this.serviceStepNumber;
       });
   }
 
@@ -383,7 +728,7 @@ export class ProviderSetupComponent implements OnInit {
 
     // Evitar crear 2 veces si el usuario volvió atrás
     if (this.createdServiceId) {
-      this.currentStep = 3;
+      this.currentStep = this.scheduleStepNumber;
       return;
     }
 
@@ -414,7 +759,7 @@ export class ProviderSetupComponent implements OnInit {
         next: (resp: any) => {
           if (resp?.success && resp?.service?.id) {
             this.createdServiceId = Number(resp.service.id);
-            this.currentStep = 3;
+            this.currentStep = this.scheduleStepNumber;
             return;
           }
           this.error = resp?.error || 'No pudimos crear tu servicio. Intenta nuevamente.';
@@ -430,7 +775,7 @@ export class ProviderSetupComponent implements OnInit {
 
     // Evitar crear 2 veces si el usuario volvió atrás
     if (this.scheduleCreated) {
-      this.currentStep = 4;
+      this.currentStep = this.isHealthProfessional ? this.curriculumStepNumber : this.finalStepNumber;
       return;
     }
 
@@ -448,7 +793,7 @@ export class ProviderSetupComponent implements OnInit {
           if ((existing?.length || 0) > 0) {
             this.scheduleCreated = true;
             this.saving = false;
-            this.currentStep = 4;
+            this.currentStep = this.isHealthProfessional ? this.curriculumStepNumber : this.finalStepNumber;
             return;
           }
           this.saveDraftBlocks();
@@ -471,7 +816,7 @@ export class ProviderSetupComponent implements OnInit {
       next: (resp: any) => {
         if (resp?.success) {
           this.scheduleCreated = true;
-          this.currentStep = 4;
+          this.currentStep = this.isHealthProfessional ? this.curriculumStepNumber : this.finalStepNumber;
           return;
         }
         this.error = resp?.error || 'No pudimos guardar tu horario. Intenta nuevamente.';

@@ -57,6 +57,28 @@ export interface ProviderFaq {
   order_index: number;
 }
 
+export interface ProviderHealthDocument {
+  id: number;
+  document_type: 'rnpi_certificate' | 'curriculum_vitae';
+  file_url: string;
+  file_name?: string | null;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  uploaded_at?: string;
+}
+
+export interface ProviderHealthProfile {
+  provider_id: number;
+  rnpi_folio?: string | null;
+  accepts_fonasa: boolean;
+  curriculum_bio?: string | null;
+  status?: 'draft' | 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string | null;
+  review_notes?: string | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
+}
+
 export interface Availability {
   is_online: boolean;
   share_real_time_location: boolean;
@@ -190,6 +212,47 @@ export class ProviderProfileService {
       { headers: this.getHeaders() }
     ).pipe(
       tap(() => this.getProfile().subscribe())
+    );
+  }
+
+  getHealthSetup(): Observable<{ profile: ProviderHealthProfile | null; documents: ProviderHealthDocument[] }> {
+    return this.http.get<{ success: boolean; profile: ProviderHealthProfile | null; documents: ProviderHealthDocument[] }>(
+      `${this.apiUrl}/provider/health/setup`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => ({
+        profile: response.profile || null,
+        documents: Array.isArray(response.documents) ? response.documents : []
+      }))
+    );
+  }
+
+  saveHealthSetup(payload: Partial<ProviderHealthProfile>): Observable<ProviderHealthProfile> {
+    return this.http.put<{ success: boolean; profile: ProviderHealthProfile }>(
+      `${this.apiUrl}/provider/health/setup`,
+      payload,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.profile)
+    );
+  }
+
+  uploadHealthDocument(file: File, documentType: ProviderHealthDocument['document_type']): Observable<ProviderHealthDocument> {
+    const formData = new FormData();
+    formData.append('documentType', documentType);
+    formData.append('file', file);
+
+    const token = localStorage.getItem('adomi_access_token') || localStorage.getItem('adomi_token') || '';
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    return this.http.post<{ success: boolean; document: ProviderHealthDocument }>(
+      `${this.apiUrl}/provider/health/files`,
+      formData,
+      { headers }
+    ).pipe(
+      map(response => response.document)
     );
   }
 

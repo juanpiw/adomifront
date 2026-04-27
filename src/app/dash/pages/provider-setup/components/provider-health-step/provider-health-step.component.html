@@ -1,0 +1,69 @@
+<div class="health-step">
+  <div class="health-step__header">
+    <div class="health-step__title-row">
+      <h2>Verificación Profesional</h2>
+      <span class="badge-fonasa">Modo Salud</span>
+    </div>
+    <p class="health-step__subtitle">
+      Sube tus credenciales legales para habilitar la reserva por Bonos Fonasa en tu perfil.
+    </p>
+  </div>
+
+  <div class="health-step__content">
+    <section>
+      <label class="field-label">1. Registro Nacional de Prestadores (SIS)</label>
+
+      <button type="button" class="drop-zone" (click)="certificateInput.click()" [disabled]="saving">
+        <div class="drop-zone__icon">📜</div>
+        <p class="drop-zone__title">{{ certificateName || 'Subir Certificado RNPI' }}</p>
+        <p class="drop-zone__subtitle">Sube el PDF que obtienes en supersalud.gob.cl</p>
+      </button>
+
+      <input
+        #certificateInput
+        type="file"
+        accept=".pdf,.png,.jpg,.jpeg"
+        class="hidden-input"
+        (change)="onFileChange($event)"
+      />
+
+      <div class="input-wrapper">
+        <span class="input-icon">🔢</span>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="Número de Folio del Certificado"
+          [value]="certificateFolio"
+          (input)="onFolioInput($event)"
+          [disabled]="saving"
+        />
+      </div>
+    </section>
+
+    <section class="toggle-card">
+      <div class="toggle-card__content">
+        <p class="toggle-card__title">Aceptar Fonasa (Bono Web)</p>
+        <p class="toggle-card__subtitle">¿Tienes convenio vigente de "Libre Elección"?</p>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" [checked]="acceptsFonasa" (change)="onFonasaToggle($event)" [disabled]="saving" />
+        <span class="slider"></span>
+      </label>
+    </section>
+
+    <section class="guide-card">
+      <h4 class="guide-card__title">💡 ¿No estás habilitado aún?</h4>
+      <div class="guide-list">
+        <div class="guide-step">
+          <div class="guide-number">1</div>
+          <p>Obtén tu registro en la <strong>Superintendencia de Salud</strong> usando tu ClaveUnica.</p>
+        </div>
+        <div class="guide-step">
+          <div class="guide-number">2</div>
+          <p>Solicita tu convenio en <strong>Fonasa</strong> (Modalidad Libre Elección) para que tu RUT sea válido para bonos.</p>
+        </div>
+      </div>
+      <a class="guide-link" [href]="guideUrl" target="_blank" rel="noreferrer">Ir a sitio RNPI →</a>
+    </section>
+  </div>
+</div>

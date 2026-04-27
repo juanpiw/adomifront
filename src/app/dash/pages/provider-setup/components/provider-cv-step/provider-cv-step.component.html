@@ -1,0 +1,46 @@
+<div class="cv-step">
+  <div class="cv-step__header">
+    <h2>Trayectoria Profesional 📋</h2>
+    <p class="cv-step__subtitle">
+      Tu CV nos ayuda a conocer tu experiencia real para aprobar tu cuenta más rápido.
+    </p>
+  </div>
+
+  <div class="cv-step__content">
+    <section>
+      <label class="field-label">Archivo de Currículum (Obligatorio)</label>
+      <button type="button" class="drop-zone" (click)="curriculumInput.click()" [disabled]="saving">
+        <div class="drop-zone__icon">📤</div>
+        <p class="drop-zone__title">{{ fileName || 'Subir CV Actualizado' }}</p>
+        <p class="drop-zone__subtitle">PDF o Word (Máx. 10MB)</p>
+      </button>
+      <input
+        #curriculumInput
+        type="file"
+        accept=".pdf,.doc,.docx"
+        class="hidden-input"
+        (change)="onFileChange($event)"
+      />
+    </section>
+
+    <section>
+      <label class="field-label">Biografía para Clientes</label>
+      <textarea
+        rows="4"
+        class="bio-input"
+        placeholder="Ej: Kinesiólogo con 8 años de experiencia en rehabilitación post-operatoria..."
+        [value]="bio"
+        (input)="onBioInput($event)"
+        [disabled]="saving"
+      ></textarea>
+      <p class="field-hint">Esto aparecerá en tu ficha de reserva pública.</p>
+    </section>
+
+    <section class="privacy-card">
+      <span class="privacy-card__icon">🔒</span>
+      <p>
+        Tu información es confidencial. Solo el equipo interno de <strong>AdomiApp</strong> revisará tu CV para validar tu perfil profesional.
+      </p>
+    </section>
+  </div>
+</div>

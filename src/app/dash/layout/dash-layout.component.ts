@@ -63,15 +63,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
   isFounderAccount: boolean = false;
   planTierInfo: PlanTierDescriptor | null = null;
   planProgress: { percent: number; startLabel: string; endLabel: string; remainingLabel: string } | null = null;
-  private readonly adminAllowedEmail = 'juanpablojpw@gmail.com';
-  
-  get isAdmin(): boolean {
-    try {
-      const user = this.sessionService.getUser();
-      const email = String(user?.email || '').trim().toLowerCase();
-      return email === this.adminAllowedEmail;
-    } catch { return false; }
-  }
+  isAdmin = false;
 
   // Configuración del topbar
   topbarConfig: TopbarConfig = {
@@ -171,6 +163,7 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       currentPage: this.router.url
     });
     this.refreshFeatureFlags();
+    this.loadAdminAccess();
 
     const user = this.sessionService.getUser();
     if (user && user.role === 'provider') {
@@ -289,20 +282,6 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
       } catch {}
     });
 
-    // Cargar contador de pagos pendientes/eligibles (solo admin)
-    if (this.isAdmin) {
-      const token = this.sessionService.getAccessToken?.() as any;
-      const secret = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : null;
-      if (secret) {
-        this.adminPayments.pendingCount(secret, token).subscribe({
-          next: (r: any) => {
-            this.adminPendingCount = Number(r?.pending || 0) + Number(r?.eligible || 0);
-          },
-          error: () => {}
-        });
-      }
-    }
-
     // Al navegar al chat o agenda, limpiar badges
     this.currentUrl = this.router.url;
     this.refreshTopbarQuickAction();
@@ -344,6 +323,39 @@ export class DashLayoutComponent implements OnInit, OnDestroy {
     } catch (err) {
       // ignore
     }
+  }
+
+  private loadAdminAccess(): void {
+    const token = this.sessionService.getAccessToken?.() as string | null;
+    if (!token) {
+      this.isAdmin = false;
+      this.adminPendingCount = 0;
+      return;
+    }
+
+    this.adminPayments.accessStatus(token).subscribe({
+      next: (res: any) => {
+        this.isAdmin = !!res?.success;
+        if (this.isAdmin) {
+          this.loadAdminPendingCount(token);
+          return;
+        }
+        this.adminPendingCount = 0;
+      },
+      error: () => {
+        this.isAdmin = false;
+        this.adminPendingCount = 0;
+      }
+    });
+  }
+
+  private loadAdminPendingCount(token: string | null): void {
+    this.adminPayments.pendingCount('', token).subscribe({
+      next: (r: any) => {
+        this.adminPendingCount = Number(r?.pending || 0) + Number(r?.eligible || 0);
+      },
+      error: () => {}
+    });
   }
 
   private loadProviderProfile() {

@@ -32,6 +32,7 @@
 .progress-container {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 20px;
   position: relative;
 }
@@ -64,7 +65,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 60px;
+  width: auto;
+  flex: 1 1 0;
 }
 
 .step-circle {
@@ -257,6 +259,130 @@ p.subtitle {
 .form-input:focus {
   border-color: #6200ee;
   outline: none;
+}
+
+.input-wrapper--action .form-input {
+  padding-right: 132px;
+}
+
+.input-action-btn {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.input-action-btn:hover {
+  background: #e2e8f0;
+}
+
+.input-action-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.field-hint {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.health-step__header {
+  margin-bottom: 18px;
+}
+
+.health-step__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.badge-fonasa {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00529b, #0072ce);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.health-alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+}
+
+.health-alert__icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.health-alert p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #1e3a8a;
+}
+
+.health-status {
+  margin-top: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.health-status--success {
+  color: #059669;
+}
+
+.health-status--error {
+  color: #dc2626;
+}
+
+.health-toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.health-toggle-card__title {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.health-toggle-card__subtitle {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #64748b;
 }
 
 .chips-container {
@@ -577,8 +703,65 @@ input:checked + .slider:before {
   background: #fafafa;
   border-top: 1px solid #eee;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 15px;
+}
+
+.wizard-footer__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-health-track {
+  max-width: 280px;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+}
+
+@media (max-width: 640px) {
+  .step-label {
+    font-size: 9px;
+  }
+
+  .input-wrapper--action {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .input-wrapper--action .form-input {
+    padding-right: 12px;
+  }
+
+  .input-action-btn {
+    position: static;
+    width: 100%;
+  }
+
+  .health-toggle-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wizard-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wizard-footer__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .wizard-footer__actions .btn,
+  .btn-health-track {
+    width: 100%;
+    max-width: none;
+  }
 }
 
 .btn {

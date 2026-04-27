@@ -263,28 +263,38 @@ export class AdminPagosComponent implements OnInit {
   };
 
   ngOnInit() {
-    const email = this.session.getUser()?.email?.toLowerCase();
-    if (email !== 'juanpablojpw@gmail.com') {
+    const token = this.session.getAccessToken();
+    if (!token) {
       this.error = 'Acceso restringido';
+      this.initEmailEngineUi();
       return;
     }
-    const savedSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('admin:secret') : null;
-    const savedLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('admin:secret') : null;
-    const saved = String(savedSession || savedLocal || '').trim();
-    if (saved) this.adminSecret = saved;
-    if (this.adminSecret) {
-      this.cashPayments.setSecret(this.adminSecret);
-      this.load();
-      this.loadFounderCodes();
-      this.loadSupportTickets();
-    }
+
+    try { sessionStorage.removeItem('admin:secret'); } catch {}
+    try { localStorage.removeItem('admin:secret'); } catch {}
+
+    this.adminApi.accessStatus(token).subscribe({
+      next: (res: any) => {
+        if (!res?.success) {
+          this.error = 'Acceso restringido';
+          return;
+        }
+        this.adminSecret = 'authorized';
+        this.error = null;
+        this.cashPayments.setSecret(this.adminSecret);
+        this.load();
+        this.loadFounderCodes();
+        this.loadSupportTickets();
+      },
+      error: () => {
+        this.error = 'Acceso restringido';
+      }
+    });
+
     this.initEmailEngineUi();
   }
 
   setSecretAndLoad() {
-    this.adminSecret = String(this.adminSecret || '').trim();
-    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('admin:secret', this.adminSecret);
-    if (typeof localStorage !== 'undefined') localStorage.setItem('admin:secret', this.adminSecret);
     if (this.adminSecret) {
       this.cashPayments.setSecret(this.adminSecret);
     }
@@ -1371,12 +1381,15 @@ export class AdminPagosComponent implements OnInit {
     });
   }
 
-  exportCsv() {
+  private buildAuthHeaders(): HttpHeaders {
     const token = this.session.getAccessToken();
-    const headers = new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': this.adminSecret
-    });
+    return token
+      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+      : new HttpHeaders();
+  }
+
+  exportCsv() {
+    const headers = this.buildAuthHeaders();
     const params: string[] = [];
     if (this.startISO && this.endISO) {
       params.push(`start=${encodeURIComponent(this.startISO)}`);
@@ -1453,11 +1466,7 @@ export class AdminPagosComponent implements OnInit {
   }
 
   onMarkReleased(row: any) {
-    const token = this.session.getAccessToken();
-    const headers = new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': this.adminSecret
-    });
+    const headers = this.buildAuthHeaders();
     const ref = prompt('Referencia de transferencia (opcional):') || '';
     this.http.post(`${this.baseUrl}/admin/payments/${row.id}/mark-released`, { reference: ref }, { headers }).subscribe({
       next: () => this.load(),
@@ -1493,11 +1502,7 @@ export class AdminPagosComponent implements OnInit {
   }
 
   async confirmRefundPay(r: any) {
-    const token = this.session.getAccessToken();
-    const headers = new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': this.adminSecret
-    });
+    const headers = this.buildAuthHeaders();
     try {
       if (this.refundPayFile) {
         const fd = new FormData();
@@ -1514,11 +1519,7 @@ export class AdminPagosComponent implements OnInit {
 
   async confirmPay() {
     if (!this.payRow) return;
-    const token = this.session.getAccessToken();
-    const headers = new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
-      'x-admin-secret': this.adminSecret
-    });
+    const headers = this.buildAuthHeaders();
     try {
       // subir voucher si existe
       if (this.payFile) {

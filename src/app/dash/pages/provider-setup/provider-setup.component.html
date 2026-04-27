@@ -5,24 +5,9 @@
         <div class="progress-line"></div>
         <div class="progress-line-fill" [style.width.%]="progressPercent"></div>
 
-        <div class="step-indicator" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
-          <div class="step-circle">1</div>
-          <div class="step-label">Perfil</div>
-        </div>
-
-        <div class="step-indicator" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
-          <div class="step-circle">2</div>
-          <div class="step-label">Servicio</div>
-        </div>
-
-        <div class="step-indicator" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
-          <div class="step-circle">3</div>
-          <div class="step-label">Horario</div>
-        </div>
-
-        <div class="step-indicator" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
-          <div class="step-circle">4</div>
-          <div class="step-label">Listo</div>
+        <div class="step-indicator" *ngFor="let step of wizardSteps" [class.active]="currentStep === step.number" [class.completed]="currentStep > step.number">
+          <div class="step-circle">{{ step.number }}</div>
+          <div class="step-label">{{ step.label }}</div>
         </div>
       </div>
     </div>
@@ -66,10 +51,10 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Título Profesional</label>
+          <label class="form-label">{{ professionalTitleLabel }}</label>
           <div class="input-wrapper">
             <span class="input-icon">🎓</span>
-            <input type="text" class="form-input" placeholder="Ej: Estilista, Masajista, Chef" [(ngModel)]="profileProfessionalTitle" [disabled]="saving" />
+            <input type="text" class="form-input" [placeholder]="professionalTitlePlaceholder" [(ngModel)]="profileProfessionalTitle" [disabled]="saving" />
           </div>
         </div>
 
@@ -104,18 +89,33 @@
       </div>
 
       <!-- STEP 2 -->
-      <div class="step-content" [class.active]="currentStep === 2">
-        <h2>¿Qué servicio ofreces?</h2>
-        <p class="subtitle">Crea tu primer servicio para que los clientes puedan reservar. Podrás editarlo después.</p>
+      <app-provider-health-step
+        *ngIf="isHealthProfessional"
+        class="step-content"
+        [class.active]="currentStep === healthStepNumber"
+        [certificateName]="healthRnpiCertificateName"
+        [certificateFolio]="healthRnpiCertificateFolio"
+        [acceptsFonasa]="acceptsFonasa"
+        [guideUrl]="healthVerificationGuideUrl"
+        [saving]="saving"
+        (certificateSelected)="onHealthCertificateSelected($event)"
+        (folioChange)="onHealthCertificateFolioChange($event)"
+        (acceptsFonasaChange)="onAcceptsFonasaChange($event)"
+      ></app-provider-health-step>
+
+      <!-- STEP 3 / 2 -->
+      <div class="step-content" [class.active]="currentStep === serviceStepNumber">
+        <h2>{{ serviceStepTitle }}</h2>
+        <p class="subtitle">{{ serviceStepSubtitle }}</p>
 
         <div class="form-group">
-          <label class="form-label">Nombre del servicio</label>
+          <label class="form-label">{{ serviceNameLabel }}</label>
           <div class="input-wrapper">
             <span class="input-icon">✎</span>
             <input
               type="text"
               class="form-input"
-              placeholder="Ej. Corte de Cabello, Asesoría Legal..."
+              [placeholder]="serviceNamePlaceholder"
               [(ngModel)]="serviceName"
               [disabled]="saving"
             />
@@ -128,7 +128,7 @@
             <span class="input-icon">☰</span>
             <select class="form-input" [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange($event)" [disabled]="saving">
               <option value="" disabled>Selecciona una categoría</option>
-              <option *ngFor="let c of categoryOptions" [value]="c">{{ c }}</option>
+              <option *ngFor="let c of providerCategoryOptions" [value]="c">{{ c }}</option>
             </select>
           </div>
         </div>
@@ -181,8 +181,8 @@
         </div>
       </div>
 
-      <!-- STEP 3 -->
-      <div class="step-content" [class.active]="currentStep === 3">
+      <!-- STEP Horario -->
+      <div class="step-content" [class.active]="currentStep === scheduleStepNumber">
         <h2>Define tu disponibilidad</h2>
         <p class="subtitle">¿En qué horario quieres recibir reservas? Adomi bloqueará automáticamente las horas ocupadas.</p>
 
@@ -245,8 +245,20 @@
         </div>
       </div>
 
-      <!-- STEP 4 -->
-      <div class="step-content" [class.active]="currentStep === 4">
+      <!-- STEP Curriculum -->
+      <app-provider-cv-step
+        *ngIf="isHealthProfessional"
+        class="step-content"
+        [class.active]="currentStep === curriculumStepNumber"
+        [fileName]="curriculumFileName"
+        [bio]="curriculumBio"
+        [saving]="saving"
+        (fileSelected)="onCurriculumFileSelected($event)"
+        (bioChange)="onCurriculumBioChange($event)"
+      ></app-provider-cv-step>
+
+      <!-- STEP Final -->
+      <div class="step-content" [class.active]="currentStep === finalStepNumber">
         <div class="success-preview">
           <div class="success-icon">{{ published ? '✅' : '🎉' }}</div>
           <h2>{{ published ? 'Servicio publicado' : '¡Todo listo para empezar!' }}</h2>
@@ -284,10 +296,27 @@
       <button type="button" class="btn btn-ghost" (click)="prevStep()" [style.visibility]="currentStep === 1 ? 'hidden' : 'visible'" [disabled]="saving">
         Atrás
       </button>
-      <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="!canGoNext">
-        <span *ngIf="!saving">{{ nextLabel }}</span>
-        <span *ngIf="saving">Guardando...</span>
-      </button>
+      <div class="wizard-footer__actions">
+        <button
+          *ngIf="currentStep === 1"
+          type="button"
+          class="btn btn-secondary btn-health-track"
+          (click)="continueFromStepOne('health')"
+          [disabled]="!canGoNext"
+        >
+          <span *ngIf="!saving">Continuar como profesional de la salud</span>
+          <span *ngIf="saving">Guardando...</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="currentStep === 1 ? continueFromStepOne('general') : nextStep()"
+          [disabled]="!canGoNext"
+        >
+          <span *ngIf="!saving">{{ nextLabel }}</span>
+          <span *ngIf="saving">Guardando...</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
