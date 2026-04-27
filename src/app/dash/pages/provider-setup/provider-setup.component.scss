@@ -114,6 +114,8 @@
 .wizard-body {
   padding: 30px;
   min-height: 400px;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 /* Step 1 (Perfil) */
@@ -193,6 +195,9 @@
 .step-content {
   display: none;
   animation: fadeIn 0.4s;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .step-content.active {

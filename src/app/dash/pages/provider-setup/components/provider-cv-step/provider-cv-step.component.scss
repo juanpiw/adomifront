@@ -1,5 +1,13 @@
 .cv-step {
   display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.cv-step,
+.cv-step * {
+  box-sizing: border-box;
 }
 
 .cv-step__header {
@@ -25,6 +33,13 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.cv-step__content section {
+  min-width: 0;
 }
 
 .field-label {
@@ -36,7 +51,9 @@
 }
 
 .drop-zone {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
   padding: 34px 20px;
   border: 2px dashed #cbd5e1;
   border-radius: 16px;
@@ -73,6 +90,9 @@
   color: #334155;
   font-size: 0.95rem;
   font-weight: 700;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .drop-zone__subtitle {
@@ -86,7 +106,10 @@
 }
 
 .bio-input {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 16px;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
