@@ -50,6 +50,7 @@ import { InvitacionComponent } from './pages/invitacion/invitacion.component';
 import { ProviderSetupComponent } from './dash/pages/provider-setup/provider-setup.component';
 import { providerSetupGuard, providerSetupChildGuard } from './auth/guards/provider-setup.guard';
 import { SeguimientoCitasComponent } from './dash/pages/seguimiento-citas/seguimiento-citas.component';
+import { EspecialistasSaludComponent } from './dash/pages/especialistas-salud/especialistas-salud.component';
 
 export const routes: Routes = [
   {
@@ -131,6 +132,9 @@ export const routes: Routes = [
       { path: 'cotizaciones', component: DashQuotesComponent, canActivate: [quotesFeatureGuard] },
       { path: 'estadisticas', component: DashEstadisticasComponent },
       { path: 'promocion', component: DashPromocionComponent }
+      ,{ path: 'especialistas-salud', redirectTo: 'especialistas-salud/registro-sis', pathMatch: 'full' }
+      ,{ path: 'especialistas-salud/registro-sis', component: EspecialistasSaludComponent, data: { view: 'registro-sis' } }
+      ,{ path: 'especialistas-salud/guia-fonasa', component: EspecialistasSaludComponent, data: { view: 'guia-fonasa' } }
       ,{ path: 'mensajes', component: DashMensajesComponent }
       ,{ path: 'servicios', component: DashServiciosComponent }
       ,{ path: 'perfil', component: DashPerfilComponent }

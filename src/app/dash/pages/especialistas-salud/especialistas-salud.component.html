@@ -1,0 +1,177 @@
+<section class="specialists-shell">
+  <aside class="specialists-side">
+    <div class="specialists-brand">
+      <span class="specialists-brand__mark">A</span>
+      <span>Adomi<span>App</span></span>
+    </div>
+
+    <nav class="specialists-nav" aria-label="Especialistas de salud">
+      <p>Especialista</p>
+      <a
+        routerLink="/dash/especialistas-salud/registro-sis"
+        routerLinkActive="active"
+        class="specialists-nav__link"
+      >
+        <span class="specialists-nav__icon">SIS</span>
+        Registro SIS
+      </a>
+      <a
+        routerLink="/dash/especialistas-salud/guia-fonasa"
+        routerLinkActive="active"
+        class="specialists-nav__link"
+      >
+        <span class="specialists-nav__icon">MLE</span>
+        Guía Fonasa
+      </a>
+    </nav>
+
+    <div class="specialists-user">
+      <img [src]="providerAvatarUrl" [alt]="providerName" />
+      <div>
+        <strong>{{ providerName }}</strong>
+        <span>{{ providerRole }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="specialists-main">
+    <header class="specialists-header">
+      <div>
+        <p>{{ pageSubtitle }}</p>
+        <h1>{{ pageTitle }}</h1>
+      </div>
+      <div class="specialists-header__actions">
+        <div class="status-pill" [class.status-pill--pending]="!sisCertificateUploaded">
+          <span></span>
+          {{ sisCertificateUploaded ? 'SIS cargado' : 'SIS pendiente' }}
+        </div>
+        <label class="fonasa-switch">
+          <span>
+            <strong>Tengo disponible Fonasa</strong>
+            <small>En mis métodos de pago</small>
+          </span>
+          <input type="checkbox" [checked]="acceptsFonasa" (change)="toggleFonasa($event)" [disabled]="saving" />
+          <i></i>
+        </label>
+      </div>
+    </header>
+
+    <div class="health-feedback health-feedback--error" *ngIf="error">{{ error }}</div>
+    <div class="health-feedback health-feedback--success" *ngIf="success">{{ success }}</div>
+
+    <div class="loading-card" *ngIf="loading">Cargando centro de especialistas...</div>
+
+    <ng-container *ngIf="!loading">
+      <section class="sis-view" *ngIf="activeView === 'registro-sis'">
+        <div class="section-heading">
+          <div>
+            <h2>Validación legal</h2>
+            <p>Cumplimiento ministerial ante la Superintendencia de Salud.</p>
+          </div>
+        </div>
+
+        <div class="sis-grid">
+          <article class="premium-card certification-card">
+            <h3>Certificación individual</h3>
+            <div class="drop-zone" [class.drop-zone--ready]="sisCertificateUploaded">
+              <div class="drop-zone__icon">SIS</div>
+              <ng-container *ngIf="sisDocument; else emptySisState">
+                <p>{{ sisDocument.file_name || 'Certificado_SIS.pdf' }}</p>
+                <span>Guardado en BD · {{ formatDate(sisDocument.uploaded_at) }} · {{ formatFileSize(sisDocument.size_bytes) }}</span>
+              </ng-container>
+              <ng-template #emptySisState>
+                <p>Sube tu certificado SIS/RNPI</p>
+                <span>PDF, PNG o JPG hasta 10 MB</span>
+              </ng-template>
+            </div>
+
+            <label class="file-picker">
+              <input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" (change)="onSisFileSelected($event)" [disabled]="saving" />
+              {{ selectedSisFile ? selectedSisFile.name : 'Seleccionar certificado' }}
+            </label>
+            <button type="button" class="primary-action" (click)="uploadSisCertificate()" [disabled]="!selectedSisFile || saving">
+              {{ saving ? 'Guardando...' : 'Guardar certificado SIS' }}
+            </button>
+          </article>
+
+          <article class="legal-card">
+            <div class="legal-card__glow"></div>
+            <h3>Su respaldo legal es nuestra prioridad.</h3>
+            <p>
+              AdomiApp verifica cada RUT en el Registro Nacional para garantizar la seguridad de los pacientes y la seriedad de su práctica clínica.
+            </p>
+            <a href="https://rnpi.supersalud.gob.cl/" target="_blank" rel="noreferrer">
+              Portal SIS Oficial
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <section class="fonasa-view" *ngIf="activeView === 'guia-fonasa'">
+        <div class="bento-grid hero-grid">
+          <article class="premium-card fonasa-hero">
+            <span>Convenio institucional</span>
+            <h2>Guía de Habilitación <strong>Fonasa (MLE)</strong></h2>
+            <p>Transforme su consulta en un centro de atención accesible. Integre su flujo de pagos de salud con AdomiApp.</p>
+          </article>
+
+          <article class="portal-card">
+            <div class="portal-card__icon">↗</div>
+            <h3>Portal Prestadores</h3>
+            <p>Acceda a su cuenta oficial de Fonasa para trámites legales.</p>
+            <a href="https://www.fonasa.cl" target="_blank" rel="noreferrer">Ir a Fonasa</a>
+          </article>
+        </div>
+
+        <div class="bento-grid activation-grid">
+          <article class="premium-card activation-step">
+            <strong>01</strong>
+            <h3>Suscripción del Convenio</h3>
+            <p>Firma electrónica del contrato MLE en Fonasa.cl sección Prestadores.</p>
+            <span>Requisito: ClaveÚnica e inscripción vigente en el SIS.</span>
+          </article>
+
+          <article class="premium-card activation-step">
+            <strong>02</strong>
+            <h3>Punto de Venta Virtual</h3>
+            <p>Habilitación de terminal virtual con operadores autorizados I-Med o Medipass.</p>
+            <span>Función: Fonasa reconoce la transacción bajo su RUT.</span>
+          </article>
+
+          <article class="premium-card activation-step">
+            <strong>03</strong>
+            <h3>Sincronización AdomiApp</h3>
+            <p>El paciente registra el folio y usted recibe notificación de Atención Pagada.</p>
+            <span>Flujo: proceso automático.</span>
+          </article>
+
+          <article class="tip-card">
+            <div>TIP</div>
+            <h3>Pro-tip especialista</h3>
+            <p>Asegúrese de que su especialidad y domicilio estén actualizados en el SIS. Las discrepancias causan rechazos en Fonasa.</p>
+          </article>
+        </div>
+
+        <section class="tax-section">
+          <h3>Aspectos tributarios y ciclo de pagos</h3>
+          <div>
+            <article class="glass-module">
+              <strong>Boletas</strong>
+              <p>El Bono Fonasa reemplaza legalmente la boleta de honorarios por ese monto.</p>
+            </article>
+            <article class="glass-module glass-module--featured">
+              <strong>Depósitos</strong>
+              <p>Fonasa deposita directamente en la cuenta bancaria inscrita en el convenio.</p>
+            </article>
+            <article class="glass-module">
+              <strong>Plazos</strong>
+              <p>Los pagos son generalmente quincenales, según el calendario de Fonasa.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    </ng-container>
+
+    <footer class="specialists-footer">AdomiApp Specialty Portal · 2026</footer>
+  </main>
+</section>

@@ -65,6 +65,8 @@ export interface ProviderHealthDocument {
   mime_type?: string | null;
   size_bytes?: number | null;
   uploaded_at?: string;
+  storage_provider?: 'local' | 's3' | string;
+  storage_key?: string | null;
 }
 
 export interface ProviderHealthProfile {
@@ -77,6 +79,8 @@ export interface ProviderHealthProfile {
   review_notes?: string | null;
   submitted_at?: string | null;
   reviewed_at?: string | null;
+  sis_certificate_uploaded?: boolean;
+  sis_certificate_uploaded_at?: string | null;
 }
 
 export interface Availability {

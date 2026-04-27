@@ -67,6 +67,7 @@
       </a>
       <a class="rail-item" routerLink="/dash/estadisticas" routerLinkActive="active" title="Estadísticas" (click)="onNav()"><ui-icon name="chart" [size]="20"></ui-icon></a>
       <a *ngIf="showPromotionsMenu" class="rail-item" routerLink="/dash/promocion" routerLinkActive="active" title="Promoción" (click)="onNav()"><ui-icon name="star" [size]="20"></ui-icon></a>
+      <a class="rail-item rail-item--health" routerLink="/dash/especialistas-salud" routerLinkActive="active" title="Especialistas de salud" (click)="onNav()"><ui-icon name="shield-check" [size]="20"></ui-icon></a>
       <a class="rail-item" routerLink="/dash/mensajes" routerLinkActive="active" title="Mensajes" (click)="onNav()" style="position: relative;">
         <ui-icon name="message" [size]="20"></ui-icon>
         <span *ngIf="unreadTotal > 0" class="badge-unread">{{ unreadTotal }}</span>
@@ -157,6 +158,15 @@
         <a routerLink="/dash/servicios" routerLinkActive="active" (click)="onNav()"><ui-icon name="briefcase"></ui-icon><span>Mis Servicios</span></a>
         <a routerLink="/dash/soporte" routerLinkActive="active" (click)="onNav()"><ui-icon name="help-circle"></ui-icon><span>Soporte</span></a>
         <a *ngIf="showPromotionsMenu" routerLink="/dash/promocion" routerLinkActive="active" (click)="onNav()"><ui-icon name="star"></ui-icon><span>Promoción</span></a>
+        <div class="menu-health-group">
+          <div class="menu-health-group__title">Especialistas de salud</div>
+          <a routerLink="/dash/especialistas-salud/registro-sis" routerLinkActive="active" (click)="onNav()">
+            <ui-icon name="shield-check"></ui-icon><span>Registro SIS</span>
+          </a>
+          <a routerLink="/dash/especialistas-salud/guia-fonasa" routerLinkActive="active" (click)="onNav()">
+            <ui-icon name="credit-card"></ui-icon><span>Guía Fonasa</span>
+          </a>
+        </div>
         <a routerLink="/dash/perfil" routerLinkActive="active" (click)="onNav()"><ui-icon name="user"></ui-icon><span>Mi Perfil</span></a>
       </nav>
       <div class="footer">
