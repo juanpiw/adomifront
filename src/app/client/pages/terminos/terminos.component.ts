@@ -14,7 +14,7 @@ type TabType = 'terminos' | 'privacidad';
   styleUrls: ['./terminos.component.scss']
 })
 export class ClientTerminosComponent implements OnInit {
-  lastUpdated = '3 de octubre de 2025';
+  lastUpdated = '12 de julio de 2026';
   activeTab: TabType = 'terminos';
   private route = inject(ActivatedRoute);
 
@@ -308,6 +308,62 @@ export class ClientTerminosComponent implements OnInit {
           'Discriminación, acoso, violencia o incitación al odio.',
           'Publicar o solicitar Servicios ilegales o que requieran licencias no obtenidas.',
           'Compartir credenciales o vender Cuentas.',
+        ]
+      },
+      {
+        title: 'Anexo B: Términos para Profesionales y Prestadores de Salud',
+        paragraphs: [
+          'Estos términos especiales aplican a Profesionales, Técnicos en Enfermería (TENS), cuidadores/as, enfermeras/os, especialistas y otros prestadores que postulen, publiquen, acepten o ejecuten servicios domiciliarios de salud, asistencia, cuidado, confort o apoyo paliativo mediante Adomiapp.',
+          'Al presionar el botón "Acepto los términos y condiciones de prestador", completar su registro, cargar documentos profesionales, activar su perfil o postular a cualquier solicitud de servicio domiciliario, el Profesional declara aceptar de forma libre, expresa e informada estas cláusulas de carácter civil y comercial.',
+          'B.1. Naturaleza de la relación jurídica: ausencia de vínculo laboral. El Profesional y Aicomstudio SpA, operador de Adomiapp, declaran que la relación entre ambos es exclusivamente comercial y de prestación independiente de servicios inmateriales, regulada por el Código Civil y el Código de Comercio chileno. No existe contrato de trabajo, subordinación ni dependencia.',
+        ],
+        list: [
+          'Ausencia de subordinación y dependencia: el Profesional no está sujeto a órdenes directas, instrucciones vinculantes de ejecución, metas impuestas ni supervigilancia temporal o técnica de Adomiapp en el domicilio. Las pautas de cuidado son definidas por el Cliente conforme a las prescripciones del médico tratante del Paciente.',
+          'Inexistencia de jornada laboral: el Profesional conserva autonomía para determinar días, horas y turnos en que desea conectarse a la Plataforma y aceptar solicitudes. Adomiapp no impone horarios obligatorios.',
+          'No exclusividad: el Profesional puede prestar servicios de forma directa, en clínicas, hospitales, centros de salud o mediante otras plataformas, sin restricción de Adomiapp.',
+          'Exclusión de beneficios laborales: por la naturaleza civil y comercial de la relación, el Profesional no tiene derecho a remuneración fija, gratificaciones, vacaciones pagadas, feriados proporcionales, indemnización por años de servicio, asignaciones de colación o movilización, ni pago de licencias médicas bajo el Código del Trabajo.',
+          'Condiciones operacionales y medios propios: el Profesional presta servicios con sus propios conocimientos técnicos, títulos habilitantes, competencias, uniformes y herramientas básicas, asumiendo costos de transporte, viáticos y riesgos asociados al traslado al domicilio del Cliente.',
+          'Inicio de actividades: el Profesional deberá contar con iniciación de actividades vigente ante el Servicio de Impuestos Internos (SII), bajo la categoría tributaria correspondiente a su actividad profesional u oficio.',
+          'Flujo económico: el Profesional mandata y autoriza a Adomiapp para actuar como agente de recaudación y cobranza tecnológica respecto de los montos pagados por el Cliente en la Plataforma.',
+          'Comisión de intermediación: Adomiapp cobrará al Profesional una comisión del 25% o la tarifa vigente informada en la App sobre el valor total del Servicio efectivamente ejecutado y cobrado al Cliente.',
+          'Plazos de pago: los fondos del Servicio, deducida la comisión de la Plataforma, se transferirán a la cuenta bancaria registrada por el Profesional dentro de 3 a 5 días hábiles desde la finalización efectiva del turno o liberación del hito de pago, sujeto a conciliación, validaciones antifraude y plazos del PSP.',
+          'Obligación tributaria: el Profesional es responsable de emitir la boleta de honorarios electrónica al Cliente por el monto total bruto del servicio prestado. Adomiapp emitirá al Profesional la factura o boleta correspondiente por la comisión de intermediación digital.',
+          'Validación de antecedentes: el Profesional autoriza a Adomiapp a exigir cédula vigente, certificado de antecedentes para fines especiales y certificado de inscripción vigente en el Registro Nacional de Prestadores Individuales cuando corresponda.',
+          'Cumplimiento normativo: el Profesional se obliga a ejecutar sus labores con apego a las normas éticas de su profesión, la Lex Artis médica y las indicaciones e insumos proporcionados en el domicilio, bajo su exclusiva responsabilidad civil y penal individual.',
+          'Autonomía comercial y riesgo propio: Adomiapp no garantiza volumen mínimo de ofertas, turnos asignados, regularidad de llamados, ingresos base ni ganancias mínimas. El Profesional asume íntegramente su propio riesgo comercial.',
+          'Reputación y moderación: las calificaciones y ratings no constituyen subordinación ni poder de dirección laboral. Adomiapp podrá suspender o bloquear el acceso ante falsificación documental, pérdida de vigencia de títulos, bypass, maltrato o abandono injustificado del Paciente, difamación, fraude financiero o riesgos para la comunidad.',
+          'Ley aplicable: estos términos especiales se rigen por las leyes de la República de Chile y las controversias se someten a los Tribunales Ordinarios de Justicia de Santiago de Chile, sin perjuicio de competencias legales irrenunciables cuando correspondan.',
+        ]
+      },
+      {
+        title: 'Anexo C: Términos para Clientes en Modalidad Salud y Cuidado Domiciliario',
+        paragraphs: [
+          'Estos términos especiales aplican al Cliente, familiar responsable o tercero contratante que solicita, programa, paga o coordina servicios domiciliarios de salud, cuidado, asistencia, confort o soporte paliativo para sí mismo o para un Paciente mediante Adomiapp.',
+          'Al registrarse, utilizar la Plataforma, solicitar una reserva, entregar antecedentes clínicos o proceder al pago de cualquier hito, el Cliente declara haber leído, comprendido y aceptado estas reglas especiales de la modalidad salud.',
+          'Adomiapp es una plataforma tecnológica de intermediación, validación documental previa, asignación y coordinación operacional de profesionales y prestadores independientes. Adomiapp no es un centro de salud, clínica, hospital, prestador institucional, servicio médico directo ni empleador del personal asignado.',
+          'El Servicio es ejecutado de forma autónoma por el Profesional, quien responde por su calidad, idoneidad, permisos, seguridad, actos u omisiones en el domicilio y cumplimiento normativo aplicable, incluyendo la Lex Artis cuando corresponda.',
+        ],
+        list: [
+          'Cliente y familiar responsable: el Cliente debe tener 18 años o más, capacidad legal para contratar en Chile y autorización suficiente cuando contrata para un tercero o Paciente.',
+          'Veracidad de antecedentes: la información de registro, domicilio, condiciones de acceso, antecedentes del Cliente y datos clínicos del Paciente deben ser veraces, completos, exactos y actualizados.',
+          'Información médica: diagnósticos, recetas, pautas de medicamentos, indicaciones de cuidado y documentos clínicos entregados deben ser fidedignos, vigentes y emitidos por profesional médico habilitado cuando corresponda.',
+          'Actualización clínica: cualquier cambio de tratamiento, condición clínica, movilidad, riesgo de caída, oxigenoterapia, heridas, alergias, indicación farmacológica o requerimiento especial debe informarse de inmediato.',
+          'Suministro total de insumos clínicos: el Cliente debe proveer de forma oportuna y suficiente elementos de protección personal, asepsia, higiene, confort y cuidado requeridos, incluyendo guantes, pecheras, pañales, toallitas húmedas, alcohol, apósitos, cremas barrera, medicamentos prescritos y otros insumos necesarios.',
+          'Seguridad y habitabilidad: el domicilio debe contar con condiciones seguras, higiénicas, acceso razonable, iluminación, ventilación, espacio de trabajo y trato digno para el Profesional.',
+          'Prohibición de maltrato: cualquier maltrato físico, verbal, psicológico, discriminación, acoso o amenaza contra el Profesional podrá generar suspensión o cierre de cuenta.',
+          'Modalidades de jornada: los servicios de salud y cuidado podrán contratarse por turnos, fines de semana, jornadas de 12 o 24 horas, o paquetes mensuales sujetos a disponibilidad y condiciones informadas en la Plataforma.',
+          'Hito 1 o anticipo de reserva: podrá corresponder al 50% del valor total del ciclo o al monto informado en checkout. Su pago activa asignación, validación operacional de relevos y preparación de antecedentes. Sin este pago no se inicia cobertura.',
+          'Hito 2 o cierre de ciclo: podrá corresponder al saldo restante, cargado al cumplirse el hito operativo informado, por ejemplo el término del segundo fin de semana o turno pactado.',
+          'Tokenización y cargos diferidos: al registrar un medio de pago, el Cliente autoriza la tokenización segura por el PSP y cargos diferidos asociados a hitos, no-show, cancelaciones tardías o ajustes informados antes del pago.',
+          'Impago o retraso: el retraso o impago de hitos económicos podrá habilitar suspensión de la cobertura, sin responsabilidad de Adomiapp por la discontinuidad causada por falta de pago.',
+          'Cancelaciones: las cancelaciones con más de 24 horas podrán no tener penalización, salvo costos informados o reglas del plan. Cancelaciones con menos de 24 horas o ausencia en domicilio podrán generar cargos conforme al checkout.',
+          'Exclusión del derecho de retracto: una vez iniciado el Servicio o dentro de las 24 horas previas a su ejecución programada, el Cliente acepta que no procederá el derecho de retracto conforme al artículo 3 bis letra b) de la Ley N° 19.496.',
+          'Reembolsos: por regla general, los reembolsos aprobados podrán efectuarse mediante Créditos Adomi, salvo cobro duplicado, falla técnica comprobada, instrucción del PSP/banco, fraude acreditado o exigencia legal.',
+          'Riesgos clínicos: Adomiapp asume una obligación de medios tecnológicos, coordinación y filtro documental, no de resultados clínicos o médicos. No garantiza evolución, estabilización, mejoría o curación del Paciente.',
+          'Responsabilidad del Profesional: el Cliente acepta que el Profesional actúa bajo su libre ejercicio profesional o actividad independiente, respondiendo individualmente por negligencia, impericia, mala praxis, maltrato, hurto u otros actos civiles o penales ejecutados en el domicilio.',
+          'Falta de insumos: la falta, escasez, inoportunidad o mala calidad de insumos provistos por la familia podrá eximir a Adomiapp y al Profesional de responsabilidad por complicaciones derivadas.',
+          'Fármacos y procedimientos: cuidadoras estándar se limitan al recordatorio y asistencia en ingesta de medicamentos orales previamente dosificados. TENS o profesionales habilitados podrán ejecutar procedimientos autorizados por su título solo con orden o prescripción médica vigente. El personal no puede modificar dosis, suspender tratamientos, indicar medicamentos ni emitir diagnósticos.',
+          'Continuidad operacional: Adomiapp procurará gestionar sustituciones ante licencias, inasistencias, fuerza mayor o caso fortuito, sujeto a disponibilidad real de profesionales, cobertura geográfica, condiciones del domicilio, pago vigente y colaboración oportuna del Cliente.',
         ]
       }
     ];
