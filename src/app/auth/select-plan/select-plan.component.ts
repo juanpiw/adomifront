@@ -157,6 +157,11 @@ export class SelectPlanComponent implements OnInit {
   }
 
   selectTier(key: 'starter' | 'pro' | 'scale') {
+    if (key === 'starter') {
+      this.error = 'El plan gratuito ya no está disponible. Selecciona Pro o Scale para continuar.';
+      return;
+    }
+
     // Intento 1: según billing actual
     let plan = this.getPlanForKey(key);
 
@@ -172,32 +177,11 @@ export class SelectPlanComponent implements OnInit {
     }
 
     if (!plan) {
-      // Último recurso: si es starter, derivar plan gratuito por precio=0
-      if (key === 'starter') {
-        plan = {
-          id: 1, // se corregirá en checkout/free-activate si es otro id
-          name: 'Plan Starter',
-          price: 0,
-          currency: 'CLP',
-          interval: this.isAnnualBilling ? 'year' as const : 'month' as const,
-          description: '',
-          features: [],
-          max_services: 0,
-          max_bookings: 0,
-          metadata: { plan_key: 'starter' }
-        } as Plan;
-      } else {
-        this.error = 'Plan no disponible por ahora. Intenta más tarde.';
-        return;
-      }
+      this.error = 'Plan no disponible por ahora. Intenta más tarde.';
+      return;
     }
 
     this.selectPlan(plan);
-
-    // Flujo Starter: activar directo sin pasar por checkout
-    if (key === 'starter') {
-      void this.fastActivateStarter();
-    }
   }
 
   private http = inject(HttpClient);
@@ -322,12 +306,13 @@ export class SelectPlanComponent implements OnInit {
       .subscribe({
         next: (response) => {
           // Fallback defensivo: aunque backend filtre, evitamos que planes legacy aparezcan
-          const allowed = new Set(['starter', 'pro', 'scale']);
+          const allowed = new Set(['pro', 'scale']);
           const filtered = (response.plans || []).map(p => {
             const key =
               this.getPlanKey(p) ||
               ((String(p.plan_type || '').toLowerCase() === 'free' || Number(p.price || 0) <= 0) ? 'starter' : null);
             if (!key || !allowed.has(key)) return null;
+            if (key === 'starter' || String(p.plan_type || '').toLowerCase() === 'free' || Number(p.price || 0) <= 0) return null;
             // Asegurar que el plan lleve plan_key para usos posteriores
             const meta = this.normalizePlanMetadata(p);
             const metadata = { ...meta, plan_key: key };
@@ -1108,116 +1093,6 @@ export class SelectPlanComponent implements OnInit {
   }
 
   private async fastActivateStarter(): Promise<void> {
-    if (this.fastActivating) return;
-    this.fastActivating = true;
-    this.loading = true;
-    this.error = null;
-
-    try {
-      // Resolver planId starter (fallback al endpoint default). Si no hay ID válido, dejaremos que el backend resuelva.
-      let planId = Number(this.selectedPlan?.id || 0);
-      if (!Number.isFinite(planId) || planId <= 0) {
-        try {
-          const resp: any = await firstValueFrom(
-            this.http.get<{ ok: boolean; planId: number }>(`${environment.apiBaseUrl}/plans/free/default`)
-          );
-          if (resp?.ok && resp.planId) {
-            planId = Number(resp.planId);
-          }
-        } catch (e) {
-          console.warn('[SELECT_PLAN] No se pudo obtener planId starter por fallback', e);
-        }
-      }
-
-      // Si no hay token, registrar/login con tempUserData
-      const hasToken = !!this.authService.getAccessToken();
-      if (!hasToken) {
-        if (!this.tempUserData?.email || !this.tempUserData?.password) {
-          this.error = 'No pudimos completar tu registro. Vuelve al paso anterior.';
-          this.loading = false;
-          this.fastActivating = false;
-          return;
-        }
-        try {
-          await firstValueFrom(
-            this.authService.register({
-              email: this.tempUserData.email,
-              password: this.tempUserData.password,
-              role: 'provider',
-              name: this.tempUserData.name || this.tempUserData.email.split('@')[0]
-            })
-          );
-          // Asegurar token activo tras registro
-          await firstValueFrom(this.authService.login({
-            email: this.tempUserData.email,
-            password: this.tempUserData.password
-          }));
-          await firstValueFrom(this.authService.getCurrentUserInfo());
-        } catch (err: any) {
-          console.warn('[SELECT_PLAN] Registro previo falló o ya existe, intentando login', err);
-          try {
-            await firstValueFrom(this.authService.login({
-              email: this.tempUserData.email,
-              password: this.tempUserData.password
-            }));
-          } catch (loginErr) {
-            this.error = 'No pudimos iniciar sesión automáticamente. Intenta de nuevo.';
-            this.loading = false;
-            this.fastActivating = false;
-            return;
-          }
-        }
-      }
-
-      const token = this.authService.getAccessToken();
-      const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-
-      // Solo enviamos planId si es válido (>0); el backend ya hace fallback cuando falta.
-      const body: any = { planKey: 'starter' };
-      if (Number.isFinite(planId) && planId > 0) {
-        body.planId = planId;
-      }
-      if (!token && this.tempUserData?.email && this.tempUserData?.password) {
-        body.email = this.tempUserData.email;
-        body.password = this.tempUserData.password;
-        body.name = this.tempUserData.name || this.tempUserData.email.split('@')[0];
-      }
-
-      const resp: any = await firstValueFrom(
-        this.http.post(`${environment.apiBaseUrl}/plans/free/activate`, body, headers ? { headers } : {})
-      );
-
-      if (!resp?.ok) {
-        this.error = resp?.error || 'No pudimos activar el plan gratuito. Intenta nuevamente.';
-        this.loading = false;
-        this.fastActivating = false;
-        return;
-      }
-
-      try {
-        await firstValueFrom(this.authService.getCurrentUserInfo());
-      } catch (e) {
-        console.warn('[SELECT_PLAN] No se pudo refrescar /auth/me tras activar free', e);
-      }
-
-      try {
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.removeItem('tempUserData');
-          sessionStorage.removeItem('selectedPlan');
-          sessionStorage.removeItem('promoCode');
-          sessionStorage.removeItem('paymentGateway');
-          sessionStorage.removeItem('providerOnboarding');
-        }
-      } catch {}
-
-      this.loading = false;
-      this.fastActivating = false;
-      this.router.navigateByUrl('/dash/home');
-    } catch (err: any) {
-      console.error('[SELECT_PLAN] Error fastActivateStarter', err);
-      this.error = err?.error?.error || err?.message || 'No pudimos activar el plan gratuito. Intenta nuevamente.';
-      this.loading = false;
-      this.fastActivating = false;
-    }
+    this.error = 'El plan gratuito ya no está disponible. Selecciona Pro o Scale para continuar.';
   }
 }

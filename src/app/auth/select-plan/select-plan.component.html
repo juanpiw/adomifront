@@ -14,7 +14,7 @@
   <div class="pricing-v2">
     <div class="pricing-v2__header" id="mainHeader">
       <h1 class="pricing-v2__title">Elige cómo quieres crecer</h1>
-      <p class="pricing-v2__subtitle">Reduce tus comisiones pagando una suscripción mensual o empieza gratis.</p>
+      <p class="pricing-v2__subtitle">Reduce tus comisiones activando una suscripción mensual o anual.</p>
 
       <div class="status-banner status-banner--info" *ngIf="pendingActivation">
         <strong>Tu pago aún se está confirmando.</strong>
@@ -148,49 +148,6 @@
             <span class="error">{{ promoError }}</span>
           </div>
         </div>
-      </div>
-
-      <!-- PLAN STARTER (mismo HTML que Home) -->
-      <div class="plan-card">
-        <div class="card-header">
-          <h3 class="plan-name">Starter</h3>
-          <p class="plan-desc">Ideal para empezar sin costos fijos. Pagas solo cuando ganas.</p>
-        </div>
-
-        <div class="card-pricing">
-          <div class="price-value">
-            <span class="amount">Gratis</span>
-          </div>
-          <div class="commission-box high-comm">
-            <span class="comm-label">Tu Comisión</span>
-            <span class="comm-value">25%</span>
-          </div>
-        </div>
-
-        <ul class="features-list">
-          <li class="disabled">
-            <span class="material-icon icon">cancel</span>
-            <span>Pagos en Efectivo <span class="tooltip-hint">(Solo tarjeta)</span></span>
-          </li>
-          <li class="disabled">
-            <span class="material-icon icon">cancel</span>
-            <span>Sistema de Cotizaciones</span>
-          </li>
-          <li class="enabled">
-            <span class="material-icon icon">photo_library</span>
-            <span>Portafolio: <strong>5 items</strong></span>
-          </li>
-          <li class="enabled">
-            <span class="material-icon icon">analytics</span>
-            <span>Analytics: <strong>Básico</strong></span>
-          </li>
-          <li class="enabled">
-            <span class="material-icon icon">rocket_launch</span>
-            <span>Visibilidad: <strong>Estándar</strong></span>
-          </li>
-        </ul>
-
-        <button type="button" class="btn-select btn-outline" (click)="selectTier('starter')">Empezar Gratis</button>
       </div>
 
       <!-- PLAN PRO (mismo HTML que Home) -->

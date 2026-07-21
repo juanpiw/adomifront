@@ -384,6 +384,11 @@ export class RegisterComponent implements OnInit {
       mode: 'register',
       step: this.currentStep
     });
+
+    if (this.selectedRole === 'provider') {
+      this.serverError = 'El registro de profesionales debe realizarse con correo y contraseña.';
+      return;
+    }
     
     if (!this.googleAuth.isGoogleAuthAvailable()) {
       this.serverError = 'Autenticación con Google no está disponible en este momento.';
@@ -409,6 +414,11 @@ export class RegisterComponent implements OnInit {
   signUpWithGoogleFromRoleSelection(role: 'client'|'provider') {
     console.log('[REGISTER] Registro con Google desde selección de rol:', role);
     this.selectedRole = role;
+
+    if (role === 'provider') {
+      this.serverError = 'El registro de profesionales debe realizarse con correo y contraseña.';
+      return;
+    }
     
     if (!this.googleAuth.isGoogleAuthAvailable()) {
       this.serverError = 'Autenticación con Google no está disponible en este momento.';
